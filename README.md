@@ -14,7 +14,8 @@ Alot of mcps can be built with the help of: https://github.com/Riksarkivet/datap
 ___
 
 Current implementation:
-his server provides access to the Swedish National Archives (Riksarkivet) through multiple APIs.
+```
+This server provides access to the Swedish National Archives (Riksarkivet) through multiple APIs.
     SEARCH-BASED WORKFLOW (start here):
     - search_records: Search for content by keywords (e.g., "coffee", "medical records")
     - get_collection_info: Explore what's available in a collection
@@ -32,6 +33,7 @@ his server provides access to the Swedish National Archives (Riksarkivet) throug
     3. get_manifest_info(manifest_id) → explore specific image batch
     4. get_manifest_image(manifest_id, image_index) → download specific image
     Example PID: LmOmKigRrH6xqG3GjpvwY3
+```
 ___
 
 
