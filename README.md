@@ -24,6 +24,8 @@
 
 ### FastMCP 2.0
 
+https://gofastmcp.com/getting-started/welcome
+
 ### MCP Inspector Integration
 
 - Use inspector for interactive testing and debugging
