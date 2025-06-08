@@ -27,7 +27,6 @@ class RateLimitError(ApiClientError):
 class RiksarkivetApiClient:
     """Client for interacting with all Riksarkivet APIs following IIIF standards."""
 
-    # API base URLs
     SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api"
     COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
     IMAGE_API_BASE_URL = "https://lbiiif.riksarkivet.se"
@@ -81,7 +80,6 @@ class RiksarkivetApiClient:
             except Exception as e:
                 raise ApiClientError(f"Unexpected error: {e}")
 
-    # Search API methods
     async def search_records(
         self, query: str, only_digitized: bool = True, offset: int = 0, limit: int = 100
     ) -> SearchResults:
@@ -102,7 +100,6 @@ class RiksarkivetApiClient:
         if only_digitized:
             params["only_digitised_materials"] = "true"
 
-        # Build query string
         query_string = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{self.SEARCH_API_BASE_URL}/records?{query_string}"
 
@@ -115,7 +112,6 @@ class RiksarkivetApiClient:
         search_data = response.json()
         return SearchResults.from_api_response(query, search_data)
 
-    # Collection API methods (following IIIF Presentation API 3.0)
     async def get_collection(self, pid: str) -> CollectionInfo:
         """
         Get collection information from a PID.
@@ -157,32 +153,25 @@ class RiksarkivetApiClient:
             """Recursively process collections to find manifests (like the example script)."""
             for item in collection_info.items:
                 if item.type == "Collection":
-                    # It's a sub-collection, fetch and process it recursively
                     try:
-                        # Extract PID from the collection URL
-                        # item.id looks like: "https://lbiiif.riksarkivet.se/collection/arkiv/SOME_PID"
+    
                         sub_pid = item.id.split("/")[-1]
                         sub_collection = await self.get_collection(sub_pid)
                         await process_collection_recursive(sub_collection)
                     except Exception as e:
-                        # Continue processing other items if one fails
                         continue
                 elif item.type == "Manifest":
-                    # It's a manifest, fetch its details
                     try:
                         manifest = await self.get_manifest_from_url(item.id)
                         manifests.append(manifest)
                     except Exception as e:
-                        # Continue processing other items if one fails
                         continue
 
-        # Start with the main collection
         collection = await self.get_collection(pid)
         await process_collection_recursive(collection)
 
         return manifests
 
-    # Presentation API methods (following IIIF Presentation API 3.0)
     async def get_manifest_from_url(self, manifest_url: str) -> ManifestInfo:
         """
         Get a IIIF Presentation manifest from its URL.
@@ -214,14 +203,12 @@ class RiksarkivetApiClient:
         Returns:
             ManifestInfo containing manifest metadata and list of all images
         """
-        # Ensure manifest ID is properly formatted (arkis! prefix)
         if not manifest_id.startswith("arkis!"):
             manifest_id = f"arkis!{manifest_id}"
 
         url = f"{self.PRESENTATION_API_BASE_URL}/{manifest_id}/manifest"
         return await self.get_manifest_from_url(url)
 
-    # Image API methods (IIIF Image API 3.0)
     def build_image_url(
         self,
         identifier: str,
@@ -300,8 +287,7 @@ class RiksarkivetApiClient:
         Returns:
             str: Complete IIIF Image URL
         """
-        # This is a convenience method - for better performance,
-        # users should fetch the manifest once and reuse it
+
         raise NotImplementedError(
             "For performance reasons, please use: "
             "1. manifest = await client.get_manifest(manifest_id), "
