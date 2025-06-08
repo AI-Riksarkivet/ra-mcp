@@ -154,7 +154,6 @@ class RiksarkivetApiClient:
             for item in collection_info.items:
                 if item.type == "Collection":
                     try:
-    
                         sub_pid = item.id.split("/")[-1]
                         sub_collection = await self.get_collection(sub_pid)
                         await process_collection_recursive(sub_collection)

@@ -655,5 +655,3 @@ async def get_image_urls_from_pid(
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
-
-
