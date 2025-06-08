@@ -193,25 +193,15 @@ def htrflow_htr_url(image_path: str, document_type: Literal["letter_english", "l
                 break
         
         if output_file_path and os.path.exists(output_file_path):
-            # Read the file content
-            try:
-                with open(output_file_path, 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-            except UnicodeDecodeError:
-                # If UTF-8 fails, try with different encoding or read as binary for certain formats
-                try:
-                    with open(output_file_path, 'r', encoding='latin-1') as f:
-                        file_content = f.read()
-                except:
-                    with open(output_file_path, 'rb') as f:
-                        file_content = f.read().decode('utf-8', errors='replace')
+
+            with open(output_file_path, 'r', encoding='utf-8') as f:
+                file_content = f.read()
+
             
-            # Create the markdown link
             file_name = Path(output_file_path).name
             temp_folder = Path(output_file_path).parent.name
             markdown_link = f"[{file_name}](http://your-server:port/gradio_api//file=/tmp/gradio/{temp_folder}/{file_name})"
             
-            # Return JSON with both content and file path
             result = {
                 "content": file_content,
                 "file_path": markdown_link
