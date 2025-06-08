@@ -255,7 +255,6 @@ def create_htrflow_mcp_server():
         [htrflow_url, htrflow_viz],
         ["HTR URL", "HTR Visualizer"],
         title="HTRflow Handwritten Text Recognition",
-        description="Extract text and visualize handwritten historical documents using HTRflow",
     )
 
     return demo
