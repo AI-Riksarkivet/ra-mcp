@@ -12,9 +12,24 @@ from oxenstierna.ra_api.base_client import ApiClientError, BaseRiksarkivetClient
 class RiksarkivetIIIFClient(BaseRiksarkivetClient):
     """Client for interacting with Riksarkivet IIIF APIs (collections, manifests, images)."""
 
-    COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
-    IMAGE_API_BASE_URL = "https://lbiiif.riksarkivet.se"
-    PRESENTATION_API_BASE_URL = IMAGE_API_BASE_URL
+    def __init__(
+        self,
+        collection_api_base_url: str = "https://lbiiif.riksarkivet.se/collection/arkiv",
+        image_api_base_url: str = "https://lbiiif.riksarkivet.se",
+        presentation_api_base_url: Optional[str] = None,
+    ):
+        """
+        Initialize the IIIF client.
+
+        Args:
+            collection_api_base_url: Base URL for Collection API (default: Riksarkivet URL)
+            image_api_base_url: Base URL for Image API (default: Riksarkivet URL)
+            presentation_api_base_url: Base URL for Presentation API (default: same as image_api_base_url)
+
+        """
+        self.collection_api_base_url = collection_api_base_url
+        self.image_api_base_url = image_api_base_url
+        self.presentation_api_base_url = presentation_api_base_url or image_api_base_url
 
     async def get_collection(self, pid: str) -> CollectionInfo:
         """
@@ -26,7 +41,7 @@ class RiksarkivetIIIFClient(BaseRiksarkivetClient):
         Returns:
             CollectionInfo containing items (sub-collections and manifests)
         """
-        url = f"{self.COLLECTION_API_BASE_URL}/{pid}"
+        url = f"{self.collection_api_base_url}/{pid}"
         response = await self._make_request(url)
 
         content_type = response.headers.get("content-type", "")
@@ -109,7 +124,7 @@ class RiksarkivetIIIFClient(BaseRiksarkivetClient):
         if not manifest_id.startswith("arkis!"):
             manifest_id = f"arkis!{manifest_id}"
 
-        url = f"{self.PRESENTATION_API_BASE_URL}/{manifest_id}/manifest"
+        url = f"{self.presentation_api_base_url}/{manifest_id}/manifest"
         return await self.get_manifest_from_url(url)
 
     def build_image_url(
@@ -122,7 +137,7 @@ class RiksarkivetIIIFClient(BaseRiksarkivetClient):
         image_format: Format = Format.JPG,
     ) -> str:
         """Build a URL for the IIIF Image API 3.0."""
-        return f"{self.IMAGE_API_BASE_URL}/{identifier}/{region}/{size}/{rotation}/{quality.value}.{image_format.value}"
+        return f"{self.image_api_base_url}/{identifier}/{region}/{size}/{rotation}/{quality.value}.{image_format.value}"
 
     def build_image_url_from_canvas(
         self,
