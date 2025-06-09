@@ -24,10 +24,6 @@ async def generate_image(
     """
     Process handwritten text recognition (HTR) on uploaded images and return both file content and download link.
 
-    This function uses machine learning models to automatically detect, segment, and transcribe handwritten text
-    from historical documents. It supports different document types and languages, with specialized models
-    trained on historical handwriting from the Swedish National Archives (Riksarkivet).
-
     Args:
         image_path (str): The file path or URL to the image containing handwritten text to be processed.
                          Supports common image formats like JPG, PNG, TIFF.
@@ -48,12 +44,7 @@ async def generate_image(
                                 - "json": JSON format with structured text, layout information and metadata
                                 Default: "alto"
 
-        custom_settings (Optional[str]): Advanced users can provide custom pipeline configuration as a
-                                        JSON string to override the default processing steps.
-                                        Default: None (uses predefined configuration for document_type)
-
-        server_name (str): The base URL of the server for constructing download links.
-                          Default: "https://gabriel-htrflow-mcp.hf.space"
+        custom_settings (Optional[str]): Advanced users can provide custom pipeline settings as a JSON string.
 
             Returns:
         Tuple[str, str]: A tuple containing:

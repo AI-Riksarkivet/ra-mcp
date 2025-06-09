@@ -1,3 +1,4 @@
 run:
 	uv sync
-	uv run fastmcp dev server.py
+	uv pip install -e .
+	uv run fastmcp dev src/oxenstierna/server.py

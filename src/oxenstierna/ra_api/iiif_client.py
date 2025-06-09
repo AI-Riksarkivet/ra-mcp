@@ -1,6 +1,6 @@
 import re
 from typing import List, Optional, Tuple
-from oxenstierna.ra_api.api_models import (
+from .api_models import (
     CollectionInfo,
     Format,
     ManifestInfo,
