@@ -1,3 +1,5 @@
+# runs in a Gradio MCP server on HF Spaces
+
 import gradio as gr
 import json
 import tempfile

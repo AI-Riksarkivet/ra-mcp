@@ -1,116 +1,20 @@
-import httpx
 import re
 from typing import List, Optional, Tuple
-from oxenstierna.api_models import (
+from oxenstierna.ra_api.api_models import (
     CollectionInfo,
     Format,
     ManifestInfo,
     Quality,
-    SearchResults,
 )
+from oxenstierna.ra_api.base_client import ApiClientError, BaseRiksarkivetClient
 
 
-class ApiClientError(Exception):
-    """Base exception for API client errors."""
+class RiksarkivetIIIFClient(BaseRiksarkivetClient):
+    """Client for interacting with Riksarkivet IIIF APIs (collections, manifests, images)."""
 
-    pass
-
-
-class RateLimitError(ApiClientError):
-    """Exception raised when rate limit is exceeded."""
-
-    def __init__(self, message: str, retry_after: Optional[int] = None):
-        super().__init__(message)
-        self.retry_after = retry_after
-
-
-class RiksarkivetApiClient:
-    """Client for interacting with all Riksarkivet APIs following IIIF standards."""
-
-    SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api"
     COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
     IMAGE_API_BASE_URL = "https://lbiiif.riksarkivet.se"
     PRESENTATION_API_BASE_URL = IMAGE_API_BASE_URL
-
-    def _handle_riksarkivet_response(self, response: httpx.Response) -> None:
-        """Handle common Riksarkivet API error responses."""
-        if response.status_code == 400:
-            raise ApiClientError("Bad Request - incorrect parameters")
-        elif response.status_code == 403:
-            raise ApiClientError(
-                "Forbidden - the resource has no rights statement or is not available"
-            )
-        elif response.status_code == 404:
-            raise ApiClientError("Not Found - missing resource")
-        elif response.status_code == 429:
-            retry_after = None
-            for header_name, header_value in response.headers.items():
-                if header_name.lower().startswith("x-ratelimit-reset"):
-                    try:
-                        retry_after = int(header_value)
-                    except ValueError:
-                        pass
-            raise RateLimitError(
-                "Too many requests - rate limit exceeded", retry_after=retry_after
-            )
-        elif response.status_code == 501:
-            raise ApiClientError("Not Implemented - method not implemented")
-
-        response.raise_for_status()
-
-    async def _make_request(self, url: str) -> httpx.Response:
-        """Make HTTP request with headers that work reliably with Riksarkivet."""
-        headers = {
-            "Connection": "close",
-            "User-Agent": "curl/8.7.1",
-            "Accept": "*/*",
-        }
-
-        async with httpx.AsyncClient(http2=False) as client:
-            try:
-                response = await client.get(url, headers=headers, timeout=30.0)
-                self._handle_riksarkivet_response(response)
-                return response
-            except (RateLimitError, ApiClientError):
-                raise
-            except httpx.HTTPStatusError as e:
-                raise ApiClientError(f"HTTP error: {e}")
-            except httpx.RequestError as e:
-                raise ApiClientError(f"Request error: {e}")
-            except Exception as e:
-                raise ApiClientError(f"Unexpected error: {e}")
-
-    async def search_records(
-        self, query: str, only_digitized: bool = True, offset: int = 0, limit: int = 100
-    ) -> SearchResults:
-        """
-        Search the Riksarkivet records database.
-
-        Args:
-            query: Search terms (e.g., "coffee", "medical records")
-            only_digitized: Only return digitized materials (default: True)
-            offset: Pagination offset (default: 0)
-            limit: Maximum results to return (default: 100)
-
-        Returns:
-            SearchResults containing matching records with PIDs
-        """
-        params = {"text": query, "offset": offset}
-
-        if only_digitized:
-            params["only_digitised_materials"] = "true"
-
-        query_string = "&".join(f"{k}={v}" for k, v in params.items())
-        url = f"{self.SEARCH_API_BASE_URL}/records?{query_string}"
-
-        response = await self._make_request(url)
-
-        content_type = response.headers.get("content-type", "")
-        if not content_type.startswith("application/json"):
-            raise ApiClientError(f"Unexpected content type for search: {content_type}")
-
-        search_data = response.json()
-        return SearchResults.from_api_response(query, search_data)
 
     async def get_collection(self, pid: str) -> CollectionInfo:
         """

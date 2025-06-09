@@ -1,10 +1,13 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional, Tuple
 from fastmcp import FastMCP, Image
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
-from oxenstierna.iiif_client import ApiClientError, RateLimitError, RiksarkivetApiClient
-from oxenstierna.api_models import Format, Quality
+from oxenstierna.ra_api.iiif_client import RiksarkivetIIIFClient
+from oxenstierna.ra_api.api_models import Format, Quality
+from gradio_client import Client, handle_file
+
+from oxenstierna.ra_api.search_client import RiksarkivetSearchClient
 
 
 mcp = FastMCP(
@@ -35,7 +38,66 @@ mcp = FastMCP(
     """,
 )
 
-client = RiksarkivetApiClient()
+
+@mcp.tool()
+async def generate_image(
+    image_path: str,
+    document_type: str = "letter_swedish",
+    output_format: str = "alto",
+    custom_settings: Optional[str] = None,
+) -> Tuple[str, str]:
+    """
+    Process handwritten text recognition (HTR) on uploaded images and return both file content and download link.
+
+    This function uses machine learning models to automatically detect, segment, and transcribe handwritten text
+    from historical documents. It supports different document types and languages, with specialized models
+    trained on historical handwriting from the Swedish National Archives (Riksarkivet).
+
+    Args:
+        image_path (str): The file path or URL to the image containing handwritten text to be processed.
+                         Supports common image formats like JPG, PNG, TIFF.
+
+        document_type (FormatChoices): The type of document and language processing template to use.
+                                Available options:
+                                - "letter_english": Single-page English handwritten letters
+                                - "letter_swedish": Single-page Swedish handwritten letters (default)
+                                - "spread_english": Two-page spread English documents with marginalia
+                                - "spread_swedish": Two-page spread Swedish documents with marginalia
+                                Default: "letter_swedish"
+
+        output_format (FileChoices): The format for the output file containing the transcribed text.
+                                Available options:
+                                - "txt": Plain text format with line breaks
+                                - "alto": ALTO XML format with detailed layout and coordinate information
+                                - "page": PAGE XML format with structural markup and positioning data
+                                - "json": JSON format with structured text, layout information and metadata
+                                Default: "alto"
+
+        custom_settings (Optional[str]): Advanced users can provide custom pipeline configuration as a
+                                        JSON string to override the default processing steps.
+                                        Default: None (uses predefined configuration for document_type)
+
+        server_name (str): The base URL of the server for constructing download links.
+                          Default: "https://gabriel-htrflow-mcp.hf.space"
+
+            Returns:
+        Tuple[str, str]: A tuple containing:
+            - JSON string with extracted text, file content
+            - File path for direct download via gr.File (server_name/gradio_api/file=/tmp/gradio/{temp_folder}/{file_name})
+    """
+    client = Client("Gabriel/htrflow_mcp")
+    result = client.predict(
+        image_path=handle_file(image_path),
+        document_type=document_type,
+        output_format="alto",
+        custom_settings="",
+        api_name="/htrflow_htr_url",
+    )
+    return result
+
+
+iiif_client = RiksarkivetIIIFClient()
+search_client = RiksarkivetSearchClient()
 
 
 # Search API Tools
@@ -71,7 +133,7 @@ async def search_records(
     This is typically the first step in discovering archival content.
     """
     try:
-        results = await client.search_records(query, only_digitized, offset)
+        results = await search_client.search_records(query, only_digitized, offset)
 
         if not results.results:
             return f"No results found for '{query}'. Try different keywords or set only_digitized=False."
@@ -98,11 +160,6 @@ async def search_records(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error searching records: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -132,7 +189,7 @@ async def get_collection_info(
     Use this to explore the structure before downloading content.
     """
     try:
-        collection = await client.get_collection(pid)
+        collection = await iiif_client.get_collection(pid)
 
         info_lines = [
             f"Collection Information for {pid}:",
@@ -177,11 +234,6 @@ async def get_collection_info(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting collection info: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -209,7 +261,7 @@ async def get_all_manifests_from_pid(
     This discovers all available image content in the collection hierarchy.
     """
     try:
-        manifests = await client.get_all_manifests(pid)
+        manifests = await iiif_client.get_all_manifests(pid)
 
         if not manifests:
             return f"No manifests found in collection {pid}. The collection may only contain metadata or have no digitized images."
@@ -239,11 +291,6 @@ async def get_all_manifests_from_pid(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting manifests: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -272,7 +319,7 @@ async def get_manifest_info(
     Shows metadata and lists all individual images with their properties.
     """
     try:
-        manifest = await client.get_manifest(manifest_id)
+        manifest = await iiif_client.get_manifest(manifest_id)
 
         info_lines = [
             f"Manifest Information for {manifest_id}:",
@@ -291,7 +338,7 @@ async def get_manifest_info(
         if manifest.rights:
             info_lines.append(f"Rights: {manifest.rights}")
 
-        info_lines.append(f"\nImages in this batch:")
+        info_lines.append("\nImages in this batch:")
         for image in manifest.images:
             info_lines.append(
                 f"  {image.canvas_index}. {image.label} ({image.image_id}) - {image.width}×{image.height}px"
@@ -299,22 +346,17 @@ async def get_manifest_info(
             if image.viewer_url:
                 info_lines.append(f"     View: {image.viewer_url}")
 
-        info_lines.append(f"\nTo download images:")
+        info_lines.append("\nTo download images:")
         info_lines.append(
             f"Use get_manifest_image('{manifest_id}', image_index) where image_index is 1-{manifest.total_images}"
         )
 
         if manifest.source_reference:
-            info_lines.append(f"\nSource Reference:")
+            info_lines.append("\nSource Reference:")
             info_lines.append(f"{manifest.source_reference}")
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting manifest info: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -376,7 +418,7 @@ async def get_manifest_image(
     Use get_manifest_info first to see what images are available and their indices.
     """
     try:
-        image_data, image_id = await client.get_manifest_image_data(
+        image_data, image_id = await iiif_client.get_manifest_image_data(
             manifest_id,
             image_index,
             region,
@@ -388,11 +430,6 @@ async def get_manifest_image(
 
         return Image(data=image_data, format="jpeg")
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error retrieving manifest image: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error retrieving manifest image: {str(e)}")
 
@@ -429,10 +466,7 @@ async def get_all_images_from_pid(
     Use max_images to limit the download size.
     """
     try:
-        # Note: This returns a summary instead of actual images due to MCP limitations
-        # For actual bulk download, users would need to call get_manifest_image multiple times
-
-        manifests = await client.get_all_manifests(pid)
+        manifests = await iiif_client.get_all_manifests(pid)
 
         if not manifests:
             return f"No manifests found in collection {pid}."
@@ -465,11 +499,6 @@ async def get_all_images_from_pid(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting images from PID: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -520,7 +549,7 @@ async def build_image_url(
     Returns a URL that can be used to access the image with specified transformations.
     """
     try:
-        url = client.build_image_url(
+        url = iiif_client.build_image_url(
             identifier, region, size, rotation, Quality(quality), Format(image_format)
         )
 
@@ -557,7 +586,9 @@ async def get_image_urls_from_manifest(
     Returns a list of URLs that can be used for external downloading or processing.
     """
     try:
-        urls = await client.get_all_image_urls_from_manifest(manifest_id, size=size)
+        urls = await iiif_client.get_all_image_urls_from_manifest(
+            manifest_id, size=size
+        )
 
         if not urls:
             return f"No images found in manifest {manifest_id}."
@@ -575,11 +606,6 @@ async def get_image_urls_from_manifest(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting URLs from manifest: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
@@ -617,7 +643,7 @@ async def get_image_urls_from_pid(
     Returns URLs from all manifests in the collection for external downloading.
     """
     try:
-        urls = await client.get_all_image_urls_from_pid(pid, size=size)
+        urls = await iiif_client.get_all_image_urls_from_pid(pid, size=size)
 
         if not urls:
             return f"No images found in collection {pid}."
@@ -644,11 +670,6 @@ async def get_image_urls_from_pid(
 
         return "\n".join(info_lines)
 
-    except RateLimitError as e:
-        retry_msg = f" Retry after {e.retry_after} seconds." if e.retry_after else ""
-        raise ToolError(f"Rate limit exceeded: {str(e)}{retry_msg}")
-    except ApiClientError as e:
-        raise ToolError(f"Error getting URLs from PID: {str(e)}")
     except Exception as e:
         raise ToolError(f"Unexpected error: {str(e)}")
 
