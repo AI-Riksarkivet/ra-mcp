@@ -55,6 +55,19 @@ IIIF content search is not a viable option!
 #### HTRflow
 Would it be possible to HTR on the flow? 
 
+https://huggingface.co/spaces/Gabriel/htrflow_mcp
+
+![image](https://github.com/user-attachments/assets/64c876dc-d635-4e2a-b10b-cc5203b8f125)
+
+![image](https://github.com/user-attachments/assets/2c54655b-50a2-4b52-b5b2-d44960a2e8d9)
+
+schema: https://gabriel-htrflow-mcp.hf.space/gradio_api/mcp/schema
+
+TODO:
+- mcp https://github.com/knaw-huc/pagexml
+- sperate content from outpit file
+- visualizer
+
 #### Resource
 We want to resources simlair to this concept
 - https://gradio-docs-mcp.hf.space/
