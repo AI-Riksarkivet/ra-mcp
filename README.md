@@ -61,6 +61,10 @@ https://huggingface.co/spaces/Gabriel/htrflow_mcp
 
 schema: https://gabriel-htrflow-mcp.hf.space/gradio_api/mcp/schema
 
+TODO:
+- mcp https://github.com/knaw-huc/pagexml
+- sperate content from outpit file
+- visualizer
 
 #### Resource
 We want to resources simlair to this concept
