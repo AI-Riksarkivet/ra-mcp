@@ -5,7 +5,7 @@ from pydantic import Field
 from gradio_client import Client
 
 from oxenstierna.ra_api.iiif_client import RiksarkivetIIIFClient
-from oxenstierna.ra_api.api_models import Format, Quality
+from oxenstierna.ra_api.models.image_model import Format, Quality
 
 
 iiif_mcp = FastMCP(

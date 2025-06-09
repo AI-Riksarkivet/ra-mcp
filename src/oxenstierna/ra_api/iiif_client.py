@@ -1,10 +1,12 @@
 import re
 from typing import List, Optional, Tuple
-from .api_models import (
-    CollectionInfo,
+from oxenstierna.ra_api.models.image_model import (
     Format,
-    ManifestInfo,
     Quality,
+)
+from oxenstierna.ra_api.models.iiif_model import (
+    CollectionInfo,
+    ManifestInfo,
 )
 from oxenstierna.ra_api.base_client import ApiClientError, BaseRiksarkivetClient
 
