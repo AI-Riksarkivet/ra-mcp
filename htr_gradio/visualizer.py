@@ -81,27 +81,40 @@ def _get_dynamic_font_size(
     if not polygons:
         return 16
 
-    total_area = sum(
-        _calculate_polygon_area(points) for points in polygons if len(points) >= 3
-    )
-    valid_polygons = sum(
-        1
-        for points in polygons
-        if len(points) >= 3 and _calculate_polygon_area(points) > 0
-    )
+    total_area = 0
+    valid_count = 0
 
-    if valid_polygons == 0:
+    for points in polygons:
+        area = _calculate_polygon_area(points)
+        if area > 0:
+            total_area += area
+            valid_count += 1
+
+    if valid_count == 0:
         return 16
 
-    avg_area = total_area / valid_polygons
-    return max(8, min(72, int(math.sqrt(avg_area) * 0.15)))
+    avg_area = total_area / valid_count
+    font_size = int(math.sqrt(avg_area) * 0.2)
+
+    return max(12, min(72, font_size))
 
 
 def _get_font(size: int) -> Optional[ImageFont.FreeTypeFont]:
     try:
+        font_paths = [
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "C:\\Windows\\Fonts\\arial.ttf",
+        ]
+
+        for font_path in font_paths:
+            if os.path.exists(font_path):
+                return ImageFont.truetype(font_path, size)
+
         return ImageFont.load_default()
     except:
-        return None
+        return ImageFont.load_default()
 
 
 def _get_namespace(root: ET.Element) -> Optional[str]:
@@ -110,234 +123,143 @@ def _get_namespace(root: ET.Element) -> Optional[str]:
     return None
 
 
-def _find_elements_with_namespace(
-    root: ET.Element, element_name: str, namespace: Optional[str]
-) -> List[ET.Element]:
-    elements = root.findall(f".//{element_name}")
-
-    if not elements and namespace:
-        elements = root.findall(f".//{namespace}{element_name}")
-
-    if not elements:
-        elements = [elem for elem in root.iter() if elem.tag.endswith(element_name)]
-
-    return elements
-
-
-def _find_child_element(
-    parent: ET.Element, element_name: str, namespace: Optional[str]
-) -> Optional[ET.Element]:
-    element = parent.find(element_name)
-
-    if element is None and namespace:
-        element = parent.find(f"{namespace}{element_name}")
-
-    if element is None:
-        elements = [child for child in parent if child.tag.endswith(element_name)]
-        element = elements[0] if elements else None
-
-    return element
-
-
-def _extract_text_and_confidence(
-    element: ET.Element, namespace: Optional[str], format_type: str
-) -> Tuple[str, Optional[float]]:
-    text_content = ""
-    confidence = None
-
-    if format_type == "alto":
-        string_elem = _find_child_element(element, "String", namespace)
-        if string_elem is not None:
-            text_content = string_elem.get("CONTENT", "")
-            wc_attr = string_elem.get("WC")
-            if wc_attr:
-                try:
-                    confidence = float(wc_attr)
-                except ValueError:
-                    pass
-
-    elif format_type == "page":
-        text_equiv = element.find(".//TextEquiv/Unicode")
-        if text_equiv is not None and text_equiv.text:
-            text_content = text_equiv.text.strip()
-
-        text_equiv_parent = element.find("TextEquiv")
-        if text_equiv_parent is not None:
-            conf_attr = text_equiv_parent.get("conf")
-            if conf_attr:
-                try:
-                    confidence = float(conf_attr)
-                except ValueError:
-                    pass
-
-    display_text = text_content
-    if confidence is not None:
-        display_text = f"{text_content} ({confidence:.3f})"
-
-    return display_text, confidence
-
-
-def _extract_polygon_from_element(
-    element: ET.Element, namespace: Optional[str], format_type: str
-) -> List[Tuple[int, int]]:
-    if format_type == "alto":
-        shape = _find_child_element(element, "Shape", namespace)
-        if shape is not None:
-            polygon = _find_child_element(shape, "Polygon", namespace)
-            if polygon is not None:
-                points_str = polygon.get("POINTS", "")
-                return _parse_points(points_str)
-
-    elif format_type == "page":
-        coords_elem = _find_child_element(element, "Coords", namespace)
-        if coords_elem is not None:
-            points_str = coords_elem.get("points", "")
-            return _parse_points(points_str)
-
-    return []
-
-
-def _create_fallback_polygons(
-    root: ET.Element, namespace: Optional[str]
-) -> List[Tuple[str, List[Tuple[int, int]], str]]:
-    elements_with_polygons = []
-
-    for elem_type in ["String", "Word", "TextLine"]:
-        elements = _find_elements_with_namespace(root, elem_type, namespace)
-
-        for element in elements:
-            coords = [element.get(attr) for attr in ["HPOS", "VPOS", "WIDTH", "HEIGHT"]]
-            if all(coords):
-                try:
-                    x, y, w, h = map(int, coords)
-                    points = [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]
-
-                    text_content = element.get("CONTENT", "")
-                    confidence = None
-                    wc_attr = element.get("WC")
-                    if wc_attr:
-                        try:
-                            confidence = float(wc_attr)
-                        except ValueError:
-                            pass
-
-                    display_text = text_content
-                    if confidence is not None:
-                        display_text = f"{text_content} ({confidence:.3f})"
-
-                    elements_with_polygons.append((elem_type, points, display_text))
-                except ValueError:
-                    continue
-
-    return elements_with_polygons
-
-
-def _draw_polygons(
-    draw: ImageDraw.Draw,
-    elements_with_polygons: List[Tuple[str, List[Tuple[int, int]], str]],
-    font: Optional[ImageFont.FreeTypeFont],
-):
-    color_map = {
-        "TextBlock": ["green", "purple"],
-        "TextLine": ["red", "blue"],
-        "String": ["orange", "cyan"],
-        "Word": ["magenta", "yellow"],
-    }
-
-    for i, (elem_type, points, text_content) in enumerate(elements_with_polygons):
-        colors = color_map.get(elem_type, ["black", "gray"])
-        color = colors[i % 2]
-        width_val = (
-            3 if elem_type == "TextBlock" else 2 if elem_type == "TextLine" else 1
-        )
-
-        draw.polygon(points, outline=color, width=width_val, fill=None)
-
-        if text_content and elem_type == "TextLine":
-            centroid_x = sum(p[0] for p in points) // len(points)
-            centroid_y = sum(p[1] for p in points) // len(points)
-
-            if font:
-                bbox = draw.textbbox((centroid_x, centroid_y), text_content, font=font)
-                bbox = (bbox[0] - 2, bbox[1] - 2, bbox[2] + 2, bbox[3] + 2)
-                draw.rectangle(bbox, fill=(255, 255, 255, 200), outline="black")
-                draw.text(
-                    (centroid_x, centroid_y), text_content, fill="black", font=font
-                )
-            else:
-                draw.text((centroid_x, centroid_y), text_content, fill=color)
-
-
 def _visualize_page_xml(
     draw: ImageDraw.Draw, root: ET.Element, image_size: Tuple[int, int]
 ):
-    namespaces = {
-        "ns": "http://schema.primaresearch.org/PAGE/gts/pagecontent/2019-07-15"
-    }
-
-    text_lines = root.findall(".//ns:TextLine", namespaces)
-    if not text_lines:
-        text_lines = root.findall(".//TextLine")
+    text_lines = []
+    for elem in root.iter():
+        if elem.tag.endswith("TextLine"):
+            text_lines.append(elem)
 
     line_data = []
-    for text_line in text_lines:
-        points = _extract_polygon_from_element(text_line, None, "page")
-        if len(points) >= 3:
-            display_text, _ = _extract_text_and_confidence(text_line, None, "page")
-            line_data.append((points, display_text))
+    all_polygons = []
 
-    textline_polygons = [points for points, _ in line_data]
-    font_size = _get_dynamic_font_size(textline_polygons, image_size)
+    for text_line in text_lines:
+        coords_elem = None
+        for child in text_line:
+            if child.tag.endswith("Coords"):
+                coords_elem = child
+                break
+
+        if coords_elem is not None:
+            points_str = coords_elem.get("points", "")
+            points = _parse_points(points_str)
+
+            if len(points) >= 3:
+                text_content = ""
+                confidence = None
+
+                for te in text_line.iter():
+                    if te.tag.endswith("Unicode") and te.text:
+                        text_content = te.text.strip()
+                        break
+
+                for te in text_line.iter():
+                    if te.tag.endswith("TextEquiv"):
+                        conf_str = te.get("conf")
+                        if conf_str:
+                            try:
+                                confidence = float(conf_str)
+                            except:
+                                pass
+                        break
+
+                display_text = text_content
+                if confidence is not None:
+                    display_text = f"{text_content} ({confidence:.3f})"
+
+                line_data.append((points, display_text))
+                all_polygons.append(points)
+
+    font_size = _get_dynamic_font_size(all_polygons, image_size)
     font = _get_font(font_size)
 
     for i, (points, text) in enumerate(line_data):
         color = "red" if i % 2 == 0 else "blue"
-        draw.polygon(points, outline=color, width=2, fill=None)
+        draw.polygon(points, outline=color, width=2)
 
         if text:
             centroid_x = sum(p[0] for p in points) // len(points)
             centroid_y = sum(p[1] for p in points) // len(points)
 
-            if font:
-                bbox = draw.textbbox((centroid_x, centroid_y), text, font=font)
+            if font != ImageFont.load_default():
+                bbox = draw.textbbox(
+                    (centroid_x, centroid_y), text, font=font, anchor="mm"
+                )
                 bbox = (bbox[0] - 2, bbox[1] - 2, bbox[2] + 2, bbox[3] + 2)
                 draw.rectangle(bbox, fill=(255, 255, 255, 200), outline="black")
-                draw.text((centroid_x, centroid_y), text, fill="black", font=font)
+                draw.text(
+                    (centroid_x, centroid_y), text, fill="black", font=font, anchor="mm"
+                )
             else:
-                draw.text((centroid_x, centroid_y), text, fill=color)
+                draw.text((centroid_x, centroid_y), text, fill="black")
 
 
 def _visualize_alto_xml(
     draw: ImageDraw.Draw, root: ET.Element, image_size: Tuple[int, int]
 ):
     namespace = _get_namespace(root)
-    elements_with_polygons = []
 
-    text_blocks = _find_elements_with_namespace(root, "TextBlock", namespace)
-    for text_block in text_blocks:
-        points = _extract_polygon_from_element(text_block, namespace, "alto")
-        if len(points) >= 3:
-            text_block_id = text_block.get("ID", "")
-            elements_with_polygons.append(
-                ("TextBlock", points, f"TextBlock {text_block_id}")
-            )
+    text_lines = []
+    for elem in root.iter():
+        if elem.tag.endswith("TextLine"):
+            text_lines.append(elem)
 
-    text_lines = _find_elements_with_namespace(root, "TextLine", namespace)
+    line_data = []
+    all_polygons = []
+
     for text_line in text_lines:
-        points = _extract_polygon_from_element(text_line, namespace, "alto")
+        points = []
+        for shape in text_line.iter():
+            if shape.tag.endswith("Shape"):
+                for polygon in shape.iter():
+                    if polygon.tag.endswith("Polygon"):
+                        points_str = polygon.get("POINTS", "")
+                        points = _parse_points(points_str)
+                        break
+                break
+
         if len(points) >= 3:
-            display_text, _ = _extract_text_and_confidence(text_line, namespace, "alto")
-            elements_with_polygons.append(("TextLine", points, display_text))
+            text_content = ""
+            confidence = None
 
-    if not elements_with_polygons:
-        elements_with_polygons = _create_fallback_polygons(root, namespace)
+            for string_elem in text_line.iter():
+                if string_elem.tag.endswith("String"):
+                    text_content = string_elem.get("CONTENT", "")
+                    wc_str = string_elem.get("WC")
+                    if wc_str:
+                        try:
+                            confidence = float(wc_str)
+                        except:
+                            pass
+                    break
 
-    textline_polygons = [
-        points
-        for elem_type, points, _ in elements_with_polygons
-        if elem_type == "TextLine"
-    ]
-    font_size = _get_dynamic_font_size(textline_polygons, image_size)
+            display_text = text_content
+            if confidence is not None:
+                display_text = f"{text_content} ({confidence:.3f})"
+
+            line_data.append((points, display_text))
+            all_polygons.append(points)
+
+    font_size = _get_dynamic_font_size(all_polygons, image_size)
     font = _get_font(font_size)
 
-    _draw_polygons(draw, elements_with_polygons, font)
+    for i, (points, text) in enumerate(line_data):
+        color = "red" if i % 2 == 0 else "blue"
+        draw.polygon(points, outline=color, width=2)
+
+        if text:
+            centroid_x = sum(p[0] for p in points) // len(points)
+            centroid_y = sum(p[1] for p in points) // len(points)
+
+            if font != ImageFont.load_default():
+                bbox = draw.textbbox(
+                    (centroid_x, centroid_y), text, font=font, anchor="mm"
+                )
+                bbox = (bbox[0] - 2, bbox[1] - 2, bbox[2] + 2, bbox[3] + 2)
+                draw.rectangle(bbox, fill=(255, 255, 255, 200), outline="black")
+                draw.text(
+                    (centroid_x, centroid_y), text, fill="black", font=font, anchor="mm"
+                )
+            else:
+                draw.text((centroid_x, centroid_y), text, fill="black")
