@@ -88,5 +88,8 @@ https://gofastmcp.com/getting-started/welcome
 ### Claude Desktop Integration
 - Document how to add the server to Claude Desktop
 
+<img width="1002" alt="image" src="https://github.com/user-attachments/assets/c8cdb0fc-828b-425b-b592-e7f712a27e32" />
+
+
 ### Aider
 ..
