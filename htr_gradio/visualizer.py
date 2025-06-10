@@ -6,7 +6,7 @@ from typing import Optional, Tuple, List
 import math
 
 
-def htrflow_visualizer(image_path: str, htr_document_path: str) -> Optional[str]:
+def htrflow_visualizer(image_path: str, htr_document_path: str, server_name: str = "https://gabriel-htrflow-mcp.hf.space") -> Optional[str]:
     """
     Visualize HTR results by overlaying text regions and polygons on the original image.
 
@@ -15,7 +15,7 @@ def htrflow_visualizer(image_path: str, htr_document_path: str) -> Optional[str]
         htr_document_path (str): Path to the HTR XML file (ALTO or PAGE format)
 
     Returns:
-        Optional[str]: Path to the generated visualization image, or None if failed
+        str: File path to the generated visualization imagegenerated visualization image for direct download via gr.File (server_name/gradio_api/file=/tmp/gradio/{temp_folder}/{file_name})
     """
     try:
         if not image_path or not htr_document_path:

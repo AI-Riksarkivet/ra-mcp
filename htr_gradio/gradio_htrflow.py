@@ -169,7 +169,11 @@ def htr_text(
     document_type: FormatChoices = "letter_swedish",
     custom_settings: Optional[str] = None,
 ) -> str:
-    """Extract text from handwritten documents using HTR."""
+    """Extract text from handwritten documents using HTR.
+    
+    returns:
+        str: Extracted text from the image.
+    """
     try:
         processed_collection = _process_htr_pipeline(
             image_path, document_type, custom_settings
@@ -288,6 +292,11 @@ def create_htrflow_mcp_server():
         inputs=[
             gr.Image(type="filepath", label="Upload Original Image"),
             gr.File(label="Upload ALTO/PAGE XML File"),
+            gr.Textbox(
+                label="Server Name",
+                value="https://gabriel-htrflow-mcp.hf.space",
+                placeholder="Server URL for download links",
+            ),
         ],
         outputs=gr.File(label="Download Visualization Image"),
         description="Visualize HTR results by overlaying text regions and polygons on the original image",
