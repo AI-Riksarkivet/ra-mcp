@@ -50,6 +50,14 @@ search_mcp = FastMCP(
 
 search_client = RiksarkivetSearchClient()
 
+@search_mcp.prompt()
+def test_prompt(
+    string: Optional[str] = Field(description="Return string with hello world.", default=None),
+) -> str:
+    if string is None:
+        return "Hello, world!"
+    else:   
+        return f"Hello, world! {string}"
 
 @search_mcp.tool(
     tags={"search", "basic"},
@@ -60,26 +68,11 @@ search_client = RiksarkivetSearchClient()
     },
 )
 async def search_records(
-    text: Annotated[
-        Optional[str],
-        Field(description="General text search (e.g., 'coffee', 'Nobel', 'trade')"),
-    ] = None,
-    name: Annotated[
-        Optional[str],
-        Field(description="Search in names/titles"),
-    ] = None,
-    place: Annotated[
-        Optional[str],
-        Field(description="Search in place references"),
-    ] = None,
-    year_min: Annotated[
-        Optional[int],
-        Field(description="Earliest year (e.g., 1800)", ge=0, le=9999),
-    ] = None,
-    year_max: Annotated[
-        Optional[int],
-        Field(description="Latest year (e.g., 1920)", ge=0, le=9999),
-    ] = None,
+    text: str = Field(description="General text search (e.g., 'coffee', 'Nobel', 'trade')", default=""),
+    name: str = Field(description="Search in names/titles", default=""),
+    place: str = Field(description="Search in place references", default=""),
+    year_min: Optional[int] = Field(description="Earliest year (e.g., 1800)", ge=0, le=9999, default=None),
+    year_max: Optional[int] = Field(description="Latest year (e.g., 1920)", ge=0, le=9999, default=None),
     sort_by: Annotated[
         str,
         Field(
@@ -105,9 +98,10 @@ async def search_records(
     Basic search in the Riksarkivet database using core API parameters.
     Perfect for simple queries and exploration.
     """
+
     try:
         if not any([text, name, place]):
-            return "Please provide at least one search parameter: text, name, or place."
+            return f" {text}, Please provide at least one search parameter: text, name, or place."
 
         try:
             sort_enum = SortOption(sort_by)
@@ -320,7 +314,7 @@ async def advanced_search(
             return f"No results found with your filters ({', '.join(filters_used)}). Try broader criteria."
 
         info_lines = [
-            f"🎯 Advanced Search Results",
+            "🎯 Advanced Search Results",
             f"📊 {results.total_hits:,} total hits (showing {results.hits})",
             f"🔍 Query: {results.query}",
             "",

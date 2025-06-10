@@ -1,6 +1,6 @@
 import re
 from typing import List, Optional, Tuple
-from oxenstierna.ra_api.models.image_model import (
+from oxenstierna.ra_api.helpers import (
     Format,
     Quality,
 )

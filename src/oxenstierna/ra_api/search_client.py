@@ -66,11 +66,11 @@ class RiksarkivetSearchClient(BaseRiksarkivetClient):
         """
         params = {}
 
-        if text:
+        if text is not None and len(text) > 1:
             params["text"] = text
-        if name:
+        if name is not None and len(name) > 1:
             params["name"] = name
-        if place:
+        if place is not None and len(place) > 1:
             params["place"] = place
 
         if year_min:
