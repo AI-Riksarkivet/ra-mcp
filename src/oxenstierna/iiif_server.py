@@ -9,7 +9,7 @@ from oxenstierna.ra_api.models.image_model import Format, Quality
 
 
 iiif_mcp = FastMCP(
-    name="htr_server",
+    name="iiif_server",
     instructions="""
     🖼️ Riksarkivet IIIF Image Access Server
     
