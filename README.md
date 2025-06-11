@@ -61,6 +61,8 @@ https://huggingface.co/spaces/Gabriel/htrflow_mcp
 
 ![image](https://github.com/user-attachments/assets/2c54655b-50a2-4b52-b5b2-d44960a2e8d9)
 
+<img width="1492" alt="W1lfkOp_xazuhoWtrCFb-" src="https://github.com/user-attachments/assets/19f64ad9-23c7-4240-8839-e790270150ec" />
+
 schema: https://gabriel-htrflow-mcp.hf.space/gradio_api/mcp/schema
 
 TODO:
