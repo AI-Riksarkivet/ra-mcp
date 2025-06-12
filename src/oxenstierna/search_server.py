@@ -193,18 +193,9 @@ async def search_records(
     annotations={"readOnlyHint": True, "title": "Advanced Search with Facets"},
 )
 async def advanced_search(
-    text: Annotated[
-        Optional[str],
-        Field(description="General text search"),
-    ] = None,
-    name: Annotated[
-        Optional[str],
-        Field(description="Search in names/titles"),
-    ] = None,
-    place: Annotated[
-        Optional[str],
-        Field(description="Search in place references"),
-    ] = None,
+    text: str = Field(description="General text search", default=""),
+    name: str = Field(description="Search in names/titles", default=""),
+    place: str = Field(description="Search in place references", default=""),
     year_min: Annotated[
         Optional[int],
         Field(description="Earliest year", ge=0, le=9999),
@@ -217,24 +208,19 @@ async def advanced_search(
         Optional[str],
         Field(description="Object type: RecordSet, Record, Agent, Topography"),
     ] = None,
-    record_type: Annotated[
-        Optional[str],
-        Field(
-            description="Record type: Volume, Dossier, Photography, MapDrawing, etc."
-        ),
-    ] = None,
+    record_type: str = Field(
+        description="Record type: Volume, Dossier, Photography, MapDrawing, etc.", default=""
+    ),
     provenance: Annotated[
         Optional[str],
         Field(description="Provenance: GovernmentAuthority, Company, Person, etc."),
     ] = None,
-    archival_institution: Annotated[
-        Optional[str],
-        Field(description="Archival institution (e.g., 'Riksarkivet i Stockholm')"),
-    ] = None,
-    place_filter: Annotated[
-        Optional[str],
-        Field(description="Hierarchical place filter (e.g., 'Sverige/Stockholms län')"),
-    ] = None,
+    archival_institution: str = Field(
+        description="Archival institution (e.g., 'Riksarkivet i Stockholm')", default=""
+    ),
+    place_filter: str = Field(
+        description="Hierarchical place filter (e.g., 'Sverige/Stockholms län')", default=""
+    ),
     sort_by: Annotated[
         str,
         Field(
@@ -249,6 +235,12 @@ async def advanced_search(
         int,
         Field(description="Maximum results to return (default: 50)", ge=1, le=100),
     ] = 50,
+    max_per_type: Annotated[
+        int,
+        Field(
+            description="Max results to show per object type (default: 8)", ge=3, le=20
+        ),
+    ] = 8,
 ) -> str:
     """
     Advanced search with comprehensive filtering options using facets.
@@ -290,16 +282,16 @@ async def advanced_search(
                 return f"Invalid provenance. Use: {', '.join([e.value for e in Provenance])}"
 
         results = await search_client.search_records(
-            text=text,
-            name=name,
-            place=place,
+            text=text or None,
+            name=name or None,
+            place=place or None,
             year_min=year_min,
             year_max=year_max,
             object_type=obj_type_enum,
-            record_type=record_type,
+            record_type=record_type or None,
             provenance=prov_enum,
-            archival_institution=archival_institution,
-            place_filter=place_filter,
+            archival_institution=archival_institution or None,
+            place_filter=place_filter or None,
             sort=sort_enum,
             offset=offset,
             max_results=max_results,
@@ -320,25 +312,36 @@ async def advanced_search(
             "",
         ]
 
-        for i, result in enumerate(results.results, 1):
-            info_lines.append(f"{i}. {result.caption}")
-            info_lines.append(f"   PID: {result.id}")
-            info_lines.append(f"   Type: {result.object_type} → {result.type}")
+        by_type = {}
+        for result in results.results:
+            obj_type = result.object_type
+            if obj_type not in by_type:
+                by_type[obj_type] = []
+            by_type[obj_type].append(result)
 
-            if result.metadata:
-                if result.metadata.reference_code:
-                    info_lines.append(f"   Ref: {result.metadata.reference_code}")
-                if result.metadata.date:
-                    info_lines.append(f"   Date: {result.metadata.date}")
-                if result.metadata.hierarchy:
-                    hierarchy_path = " → ".join(
-                        [h.caption for h in result.metadata.hierarchy[-2:]]
-                    )
-                    info_lines.append(f"   Path: {hierarchy_path}")
+        for obj_type, type_results in by_type.items():
+            info_lines.append(f"📁 {obj_type} ({len(type_results)} results)")
+            for result in type_results[:max_per_type]:
+                info_lines.append(f"   • {result.caption}")
+                info_lines.append(f"     PID: {result.id}")
+                info_lines.append(f"     Type: {result.object_type} → {result.type}")
 
-            if result.links and "image" in result.links:
-                info_lines.append("   🖼️ Digitized content available")
+                if result.metadata:
+                    if result.metadata.reference_code:
+                        info_lines.append(f"     Ref: {result.metadata.reference_code}")
+                    if result.metadata.date:
+                        info_lines.append(f"     Date: {result.metadata.date}")
+                    if result.metadata.hierarchy:
+                        hierarchy_path = " → ".join(
+                            [h.caption for h in result.metadata.hierarchy[-2:]]
+                        )
+                        info_lines.append(f"     Path: {hierarchy_path}")
 
+                if result.links and "image" in result.links:
+                    info_lines.append("     🖼️ Digitized content available")
+
+            if len(type_results) > max_per_type:
+                info_lines.append(f"   ... and {len(type_results) - max_per_type} more")
             info_lines.append("")
 
         if results.facets:

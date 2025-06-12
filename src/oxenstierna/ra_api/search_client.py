@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from urllib.parse import urlencode
 
 from oxenstierna.ra_api.models.search_model import (
