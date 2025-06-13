@@ -60,6 +60,8 @@ def test_prompt(
         return f"Hello, world! {string}"
 
 @search_mcp.tool(
+    name="search_records",
+    description="Search Swedish National Archives for documents. ALWAYS extract keywords from user's question and provide them in the 'text' parameter. Example: user asks 'vad finns det om häxor?' → use text='häxor'",
     tags={"search", "basic"},
     annotations={
         "readOnlyHint": True,
@@ -68,9 +70,9 @@ def test_prompt(
     },
 )
 async def search_records(
-    text: str = Field(description="General text search (e.g., 'coffee', 'Nobel', 'trade')", default=""),
-    name: str = Field(description="Search in names/titles", default=""),
-    place: str = Field(description="Search in place references", default=""),
+    text: str = Field(description="Search text to look for in documents.", default=""),
+    name: str = Field(description="Search in names/titles (optional)", default=""),
+    place: str = Field(description="Search in place references (optional)", default=""),
     year_min: Optional[int] = Field(description="Earliest year (e.g., 1800)", ge=0, le=9999, default=None),
     year_max: Optional[int] = Field(description="Latest year (e.g., 1920)", ge=0, le=9999, default=None),
     sort_by: Annotated[
@@ -95,13 +97,16 @@ async def search_records(
     ] = 8,
 ) -> str:
     """
-    Basic search in the Riksarkivet database using core API parameters.
-    Perfect for simple queries and exploration.
+    Search for documents in the Swedish National Archives. 
+    
+    Examples:
+    - User asks "vad finns det om häxor?" → call with text="häxor"
+    - User asks "Stockholm records" → call with place="Stockholm"
     """
 
     try:
-        if not any([text, name, place]):
-            return f" {text}, Please provide at least one search parameter: text, name, or place."
+        if not text.strip():
+            return "❌ The 'text' parameter is required. Examples:\n• text='häxor' (search for witches)\n• text='Nobel' (search for Nobel-related content)\n• text='Stockholm' (search for Stockholm-related content)"
 
         try:
             sort_enum = SortOption(sort_by)
@@ -189,13 +194,15 @@ async def search_records(
 
 
 @search_mcp.tool(
+    name="advanced_search",
+    description="Advanced search in Swedish National Archives with filtering. ALWAYS extract keywords from user's question and provide them in the 'text' parameter. Example: user asks 'vad finns det om häxor?' → use text='häxor'",
     tags={"search", "advanced"},
     annotations={"readOnlyHint": True, "title": "Advanced Search with Facets"},
 )
 async def advanced_search(
-    text: str = Field(description="General text search", default=""),
-    name: str = Field(description="Search in names/titles", default=""),
-    place: str = Field(description="Search in place references", default=""),
+    text: str = Field(description="Search text to look for in documents.", default=""),
+    name: str = Field(description="Search in names/titles (optional)", default=""),
+    place: str = Field(description="Search in place references (optional)", default=""),
     year_min: Annotated[
         Optional[int],
         Field(description="Earliest year", ge=0, le=9999),
@@ -247,19 +254,8 @@ async def advanced_search(
     Perfect for precise queries and research.
     """
     try:
-        if not any(
-            [
-                text,
-                name,
-                place,
-                object_type,
-                record_type,
-                provenance,
-                archival_institution,
-                place_filter,
-            ]
-        ):
-            return "Please provide at least one search or filter parameter."
+        if not text.strip():
+            return "❌ The 'text' parameter is required for advanced search. Examples:\n• text='häxor' (search for witches)\n• text='Nobel' (search for Nobel-related content)\n• text='Stockholm' (search for Stockholm-related content)"
 
         obj_type_enum = None
         if object_type:

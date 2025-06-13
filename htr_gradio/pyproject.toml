@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "anthropic>=0.54.0",
+    "fastmcp>=2.8.0",
     "gradio[mcp]>=5.33.1",
     "pillow>=11.2.1",
 ]

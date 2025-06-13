@@ -23,4 +23,11 @@ mcp.mount("search", search_mcp)
 mcp.mount("iiif", iiif_mcp)
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "--http":
+        print("Starting FastMCP HTTP server on http://localhost:8000")
+        mcp.run(transport="sse", host="localhost", port=8000)
+    else:
+        print("Starting FastMCP stdio server")
+        mcp.run(transport="stdio")
