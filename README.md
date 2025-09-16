@@ -1,4 +1,4 @@
-# ra-mcp 🦬⭐ (WIP)
+# ra-mcp  (WIP)
 
 ##   MCPs for Riksarkivet 
 
@@ -96,4 +96,5 @@ https://gofastmcp.com/getting-started/welcome
 
 ### Aider
 ..
+
 
