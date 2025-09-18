@@ -58,14 +58,20 @@ ra_mcp = FastMCP(
     2. Continue pagination with increasing offsets (50, 100, 150...) to find all matches
     3. Use show_context=False (default) to see more results per query
     4. Only enable show_context=True when you want full page text for specific hits
-    5. Note reference codes and page numbers for detailed browsing
-    6. Use browse_document() to view full transcriptions of interesting pages
+    5. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
+       - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
+       - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)
+       - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
+       - Period-appropriate terminology and archaic spellings
+    6. Note reference codes and page numbers for detailed browsing
+    7. Use browse_document() to view full transcriptions of interesting pages
 
     TYPICAL WORKFLOW:
     1. Comprehensive search: search_transcribed(term, 0), then search_transcribed(term, 50), etc.
-    2. Review hit summaries to identify most relevant documents
-    3. Use browse_document() for detailed examination of specific pages
-    4. Use get_document_structure() to understand document organization
+    2. Search related terms in parallel to build complete context
+    3. Review hit summaries to identify most relevant documents across all searches
+    4. Use browse_document() for detailed examination of specific pages
+    5. Use get_document_structure() to understand document organization
 
     All tools return rich, formatted text optimized for LLM understanding.
     """,
