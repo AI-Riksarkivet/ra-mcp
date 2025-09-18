@@ -25,6 +25,7 @@ from formatters import (
     format_error
 )
 from cache import get_cache
+import os
 
 
 # Initialize FastMCP instance
@@ -433,4 +434,155 @@ async def get_document_structure(
         return format_error(
             f"Failed to get document structure: {str(e)}",
             suggestions=["Check the reference code or PID", "Try searching for the document first"]
+        )
+
+
+@ra_mcp.resource("riksarkivet://contents/table_of_contents")
+def get_table_of_contents() -> str:
+    """
+    Get the table of contents (Innehållsförteckning) for the Riksarkivet historical guide.
+
+    This resource provides an overview of all available sections and topics
+    covered in the historical guide to Swedish National Archives.
+
+    Returns:
+    - Complete table of contents in Swedish
+    - Links to different sections and subsections
+    - Hierarchical structure of the guide
+    """
+    try:
+        # Get the path to the markdown file
+        current_dir = os.path.dirname(__file__)
+        markdown_path = os.path.join(current_dir, "..", "..", "markdown", "00_Innehallsforteckning.md")
+
+        # Read the file
+        with open(markdown_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        return content
+
+    except FileNotFoundError:
+        return format_error(
+            "Table of contents file not found",
+            suggestions=[
+                "Check if the markdown/00_Innehallsforteckning.md file exists",
+                "Verify the file path is correct"
+            ]
+        )
+    except Exception as e:
+        return format_error(
+            f"Failed to load table of contents: {str(e)}",
+            suggestions=["Check file permissions", "Verify file encoding is UTF-8"]
+        )
+
+
+@ra_mcp.tool(
+    name="get_guide_content",
+    description="Load specific sections from the Riksarkivet historical guide"
+)
+async def get_guide_content(
+    filename: str = Field(description="Markdown filename to load (e.g., '01_Domstolar.md', '02_Fangelse.md')")
+) -> str:
+    """
+    Load content from specific sections of the Riksarkivet historical guide.
+
+    Available files include:
+    - 00_Inledning.md - Introduction
+    - 00_Register.md - Index
+    - 01_Domstolar.md - Courts
+    - 02_Fangelse.md - Prisons
+    - 03_Skatt.md - Taxes
+    - 04_Stadens_Forvaltning.md - City administration
+    - 05_Lan.md - Counties
+    - 06_Statskyrkan.md - State church
+    - 07_Folkbokforing.md - Population registration
+    - 08_Tull.md - Customs
+    - 09_Lantmateri.md - Land surveying
+    - 10_Bergsbruk.md - Mining
+    - 11_Fiske.md - Fishing
+    - 12_Skog.md - Forestry
+    - 13_Sjukvard.md - Healthcare
+    - 14_Sjofart.md - Shipping
+    - 15_Vagar.md - Roads
+    - 16_Tillverkning.md - Manufacturing
+    - 17_Handel.md - Trade
+    - 18_Lantbruk.md - Agriculture
+    - 19_Skola.md - Schools
+    - 20_Fattig_Socialtjanst.md - Poor relief and social services
+    - 21_Kommun.md - Municipalities
+    - 22_Landsting.md - County councils
+    - 23_Omsorg.md - Care
+    - 24_Polis.md - Police
+    - 25_Invandring.md - Immigration
+    - 26_Halsa_Miljo.md - Health and environment
+    - 27_Djur.md - Animals
+    - 28_Posten.md - Postal service
+    - 29_Jarnvagen.md - Railways
+    - 30_Tele.md - Telecommunications
+    - 31_Byggnader.md - Buildings
+    - 32_Forsorjning.md - Supply
+    - 33_Barn_Ungdom.md - Children and youth
+    - 34_Modrahjalp.md - Maternal aid
+    - 35_Pension.md - Pensions
+    - 36_Rattshjalp.md - Legal aid
+    - 37_Overvakning.md - Surveillance
+    - 38_Nykterhet.md - Temperance
+    - 39_Arbete.md - Work
+    - 40_Brand_Civilforsvar.md - Fire and civil defense
+    - 41_Energi.md - Energy
+    - 42_Luftfart.md - Aviation
+    - 43_Kultur.md - Culture
+    - 44_Internadministration.md - Internal administration
+    - 45_Studiestod.md - Student aid
+    - 46-61_Forsvaret.md - Defense
+    - 99_Litteratur.md - Literature
+    - Index.md - Index
+
+    Parameters:
+    - filename: The markdown file to load (with .md extension)
+
+    Example:
+    - get_guide_content("01_Domstolar.md") - Load courts section
+    - get_guide_content("13_Sjukvard.md") - Load healthcare section
+    """
+    try:
+        # Validate filename - ensure it ends with .md and contains no path traversal
+        if not filename.endswith('.md'):
+            return format_error(
+                "Invalid filename format",
+                suggestions=["Filename must end with .md extension"]
+            )
+
+        # Remove any path components for security
+        filename = os.path.basename(filename)
+
+        # Get the path to the markdown file
+        current_dir = os.path.dirname(__file__)
+        markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
+
+        # Check if file exists
+        if not os.path.exists(markdown_path):
+            return format_error(
+                f"Guide section '{filename}' not found",
+                suggestions=[
+                    "Check the filename spelling",
+                    "Use get_table_of_contents resource to see available sections",
+                    "Ensure the filename includes .md extension"
+                ]
+            )
+
+        # Read the file
+        with open(markdown_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        return content
+
+    except Exception as e:
+        return format_error(
+            f"Failed to load guide content '{filename}': {str(e)}",
+            suggestions=[
+                "Check file permissions",
+                "Verify file encoding is UTF-8",
+                "Ensure the filename is valid"
+            ]
         )

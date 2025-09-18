@@ -2,6 +2,13 @@
 
 ##   MCPs for Riksarkivet 
 
+
+# debug 
+
+ npx @modelcontextprotocol/inspector uv run python server.py  
+
+ 
+
 Alot of mcps can be built with the help of: https://github.com/Riksarkivet/dataplattform/wiki
 
 - Riksarkivet OAIPMH API Integration: https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH
