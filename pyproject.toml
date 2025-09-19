@@ -3,7 +3,7 @@ name = "ra-mcp"
 version = "0.1.0"
 description = "Riksarkivet first MCPs to expose APIs in dataplattformen"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "asyncio>=3.4.3",
     "fastmcp>=2.7.1",
