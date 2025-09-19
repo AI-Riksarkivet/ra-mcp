@@ -1,7 +1,7 @@
 [project]
-name = "oxenstierna"
+name = "ra-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Riksarkivet first MCPs to expose APIs in dataplattformen"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -11,9 +11,4 @@ dependencies = [
     "httpx>=0.28.1",
     "lxml>=5.3.0",
     "pydantic>=2.11.5",
-]
-
-[tool.uv.workspace]
-members = [
-    "gradio",
 ]
