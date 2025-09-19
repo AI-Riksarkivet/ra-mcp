@@ -12,3 +12,10 @@ dependencies = [
     "lxml>=5.3.0",
     "pydantic>=2.11.5",
 ]
+
+[project.scripts]
+example-pkg = "tools:ra:main"
+
+[build-system]
+requires = ["uv_build>=0.8.18"]
+build-backend = "uv_build"
