@@ -162,17 +162,6 @@ The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattfor
 - **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)** - Semantic search interface (under evaluation)
 - **AI-Riksarkivet HTRflow** - Handwritten text recognition pipeline (PyPI package)
 
-### Performance
-- **Optimized HTTP client** with retry strategies
-- **Concurrent processing** where possible
-- **Progress indicators** for long operations
-- **Graceful error handling** with fallbacks
-
-### Architecture
-- **Modular design** with separate clients for each API
-- **Rich formatting** with tables and panels
-- **URL generation** utilities for different resource types
-- **Caching support** for improved performance
 
 ## Troubleshooting
 
