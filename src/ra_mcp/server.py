@@ -12,10 +12,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 try:
     # Try relative import first (when used as module)
-    from .ra_tools import ra_mcp
+    from .mcp_tools import ra_mcp
 except ImportError:
     # Fall back to direct import (when run as script)
-    from ra_tools import ra_mcp
+    from mcp_tools import ra_mcp
 
 
 def main():
