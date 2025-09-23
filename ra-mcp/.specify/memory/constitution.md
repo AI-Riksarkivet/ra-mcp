@@ -73,10 +73,30 @@ All code must be developed with public visibility in mind. The project must be l
 - No local caching layer - rely on Riksarkivet API caching
 
 ### Code Quality Principles
-- **Descriptive Function Names**: Functions must have clear, self-documenting names that describe their purpose and behavior
-- **No Code Comments**: Code should be self-explanatory through descriptive naming and clean structure
-- **Logging Over Comments**: Use logging statements and print functions for debugging and runtime information instead of comments
-- **Self-Documenting Code**: Prefer code clarity through structure and naming over explanatory comments
+
+#### Naming and Readability
+- **Use Meaningful Names**: Choose descriptive and unambiguous names for variables, functions, and classes that clearly state their purpose
+- **Prioritize Clarity Over Cleverness**: Write code that is straightforward and easy to understand, rather than being overly complex or obscure
+- **Code Like a Story**: The code should explain itself, making it understandable without needing many comments
+- **Follow Consistent Formatting**: Maintain a consistent style throughout the codebase to avoid confusion and make the code more predictable
+
+#### Functions and Methods
+- **Keep Functions Small and Focused**: Functions should do one thing and do it well, following the Single Responsibility Principle (SRP)
+- **Limit Arguments**: Functions with fewer arguments are generally easier to understand and manage
+- **Avoid Side Effects**: Functions should not have unintended consequences that affect other parts of the system
+- **Use Early Returns**: Return values as soon as possible to reduce nesting of conditional statements
+
+#### Code Structure and Organization
+- **DRY (Don't Repeat Yourself)**: Avoid duplicating code; instead, create reusable components
+- **Separate Concerns**: Organize code into logical modules or units, with each handling a specific task
+- **Keep Code Vertically Dense**: Place related pieces of code and dependent functions close to each other
+- **Use White Space**: Use white space to group related code and separate dissimilar pieces, improving visual clarity
+
+#### Other Key Principles
+- **YAGNI (You Ain't Gonna Need It)**: Don't implement functionality that isn't currently required; focus only on what's necessary now
+- **Test Your Code**: Write automated tests to ensure that the code behaves as expected, making changes safer and more predictable
+- **Replace Magic Numbers**: Use named constants instead of hardcoded values to improve readability and maintainability
+- **The Boy Scout Rule**: Always strive to leave the code better than you found it
 
 ### Testing Requirements
 - Contract tests for all MCP tool definitions
