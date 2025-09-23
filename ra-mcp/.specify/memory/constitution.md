@@ -36,7 +36,7 @@ Follow-up TODOs:
 ## Core Principles
 
 ### I. MCP-First Architecture
-Every feature must be exposed through the Model Context Protocol interface. Tools must follow MCP specification standards for consistent integration. The server must support multiple transport protocols (stdio, SSE/HTTP) for flexibility.
+Every feature must be exposed through the Model Context Protocol interface. Tools must follow MCP specification standards for consistent integration. The server must support multiple transport protocols (stdio, HTTP) for flexibility.
 
 ### II. API Client Modularity
 Core API functionality must be separated from MCP server implementation. The `ra_core` module must be independently testable and reusable. Business logic must not depend on specific transport mechanisms.
