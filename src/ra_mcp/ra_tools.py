@@ -7,7 +7,7 @@ from typing import Optional, List
 from fastmcp import FastMCP
 from pydantic import Field
 
-from ra_core import (
+from .core import (
     SearchAPI,
     SearchEnrichmentService,
     PageContextService,

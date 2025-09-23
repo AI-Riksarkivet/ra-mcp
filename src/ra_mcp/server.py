@@ -10,16 +10,24 @@ import os
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from ra_tools import ra_mcp
+from .ra_tools import ra_mcp
 
 
 def main():
     """Main entry point for the server."""
-    # Check for command line arguments
-    if len(sys.argv) > 1 and sys.argv[1] == "--http":
-        print("Starting RA-MCP HTTP/SSE server on http://localhost:8000")
-        print("Connect with: claude mcp add --transport sse ra-mcp http://localhost:8000/sse")
-        ra_mcp.run(transport="sse", host="localhost", port=8000)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Riksarkivet MCP Server")
+    parser.add_argument('--http', action='store_true', help='Use HTTP/SSE transport instead of stdio')
+    parser.add_argument('--port', type=int, default=8000, help='Port for HTTP transport (default: 8000)')
+    parser.add_argument('--host', default='localhost', help='Host for HTTP transport (default: localhost)')
+
+    args = parser.parse_args()
+
+    if args.http:
+        print(f"Starting RA-MCP HTTP/SSE server on http://{args.host}:{args.port}")
+        print(f"Connect with: claude mcp add --transport sse ra-mcp http://{args.host}:{args.port}/sse")
+        ra_mcp.run(transport="sse", host=args.host, port=args.port)
     else:
         print("Starting RA-MCP stdio server")
         print("This mode is for direct integration with Claude Desktop")

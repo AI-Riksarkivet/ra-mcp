@@ -11,10 +11,13 @@ dependencies = [
     "httpx>=0.28.1",
     "lxml>=5.3.0",
     "pydantic>=2.11.5",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "requests>=2.31.0",
 ]
 
 [project.scripts]
-example-pkg = "tools:ra:main"
+ra = "ra_mcp.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.8.18"]
