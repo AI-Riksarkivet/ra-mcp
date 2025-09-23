@@ -4,34 +4,13 @@ This eliminates code duplication between CLI commands and MCP tools.
 """
 
 from typing import List, Optional, Tuple, Dict, Union
-from dataclasses import dataclass
 
 from ..clients import SearchAPI, IIIFClient, OAIPMHClient
-from ..models import SearchHit, PageContext
+from ..models import SearchHit, PageContext, SearchOperation, BrowseOperation
 from ..utils import HTTPClient, parse_page_range
 from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
-
-
-@dataclass
-class SearchOperation:
-    """Encapsulates a search operation with results and metadata."""
-    hits: List[SearchHit]
-    total_hits: int
-    keyword: str
-    offset: int
-    enriched: bool = False
-
-
-@dataclass
-class BrowseOperation:
-    """Encapsulates a browse operation with page contexts."""
-    contexts: List[PageContext]
-    reference_code: str
-    pages_requested: str
-    pid: Optional[str] = None
-    manifest_id: Optional[str] = None
 
 
 class SearchOperations:

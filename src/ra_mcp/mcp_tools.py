@@ -9,23 +9,13 @@ from pydantic import Field
 
 try:
     # Try relative imports first (when used as module)
-    from .services import (
-        SearchOperations,
-        UnifiedDisplayService,
-        PlainTextFormatter,
-        SearchResultsAnalyzer
-    )
-    from .formatters import format_error
+    from .services import SearchOperations, SearchResultsAnalyzer, DisplayService
+    from .formatters import MCPFormatter, format_error_message
     from .cache import get_cache
 except ImportError:
     # Fall back to direct imports (when run as script)
-    from services import (
-        SearchOperations,
-        UnifiedDisplayService,
-        PlainTextFormatter,
-        SearchResultsAnalyzer
-    )
-    from formatters import format_error
+    from services import SearchOperations, SearchResultsAnalyzer, DisplayService
+    from formatters import MCPFormatter, format_error_message
     from cache import get_cache
 
 
@@ -124,7 +114,7 @@ async def search_transcribed(
     try:
         # Use shared business logic
         search_ops = SearchOperations()
-        display_service = UnifiedDisplayService(PlainTextFormatter())
+        display_service = DisplayService(MCPFormatter())
         analyzer = SearchResultsAnalyzer()
         cache = get_cache()
 
@@ -188,7 +178,7 @@ async def search_transcribed(
         return formatted
 
     except Exception as e:
-        return format_error(
+        return format_error_message(
             f"Search failed: {str(e)}",
             suggestions=[
                 "Try a simpler search term",
@@ -224,7 +214,7 @@ async def browse_document(
     try:
         # Use shared business logic
         search_ops = SearchOperations()
-        display_service = UnifiedDisplayService(PlainTextFormatter())
+        display_service = DisplayService(MCPFormatter())
 
         # Perform browse using shared logic
         operation = search_ops.browse_document(
@@ -235,7 +225,7 @@ async def browse_document(
         )
 
         if not operation.contexts:
-            return format_error(
+            return format_error_message(
                 f"Could not load pages for {reference_code}",
                 suggestions=[
                     "The pages might not have transcriptions",
@@ -248,7 +238,7 @@ async def browse_document(
         return display_service.format_browse_results(operation, highlight_term)
 
     except Exception as e:
-        return format_error(
+        return format_error_message(
             f"Browse failed: {str(e)}",
             suggestions=[
                 "Check the reference code format",
@@ -280,14 +270,14 @@ async def get_document_structure(
     """
     try:
         if not reference_code and not pid:
-            return format_error(
+            return format_error_message(
                 "Either reference_code or pid must be provided",
                 suggestions=["Provide a reference code like 'SE/RA/420422/01'", "Or provide a PID from search results"]
             )
 
         # Use shared business logic
         search_ops = SearchOperations()
-        display_service = UnifiedDisplayService(PlainTextFormatter())
+        display_service = DisplayService(MCPFormatter())
 
         # Get document structure using shared logic
         collection_info = search_ops.get_document_structure(
@@ -296,7 +286,7 @@ async def get_document_structure(
         )
 
         if not collection_info:
-            return format_error(
+            return format_error_message(
                 f"Could not get structure for the document",
                 suggestions=["The document might not have IIIF manifests", "Try browsing specific pages instead"]
             )
@@ -305,7 +295,7 @@ async def get_document_structure(
         return display_service.format_document_structure(collection_info)
 
     except Exception as e:
-        return format_error(
+        return format_error_message(
             f"Failed to get document structure: {str(e)}",
             suggestions=["Check the reference code or PID", "Try searching for the document first"]
         )
@@ -327,7 +317,7 @@ def get_table_of_contents() -> str:
         return content
 
     except FileNotFoundError:
-        return format_error(
+        return format_error_message(
             "Table of contents file not found",
             suggestions=[
                 "Check if the markdown/00_Innehallsforteckning.md file exists",
@@ -335,7 +325,7 @@ def get_table_of_contents() -> str:
             ]
         )
     except Exception as e:
-        return format_error(
+        return format_error_message(
             f"Failed to load table of contents: {str(e)}",
             suggestions=["Check file permissions", "Verify file encoding is UTF-8"]
         )
@@ -356,7 +346,7 @@ async def get_guide_content(
 
         # Validate filename
         if not filename.endswith('.md'):
-            return format_error(
+            return format_error_message(
                 "Invalid filename format",
                 suggestions=["Filename must end with .md extension"]
             )
@@ -366,7 +356,7 @@ async def get_guide_content(
         markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
 
         if not os.path.exists(markdown_path):
-            return format_error(
+            return format_error_message(
                 f"Guide section '{filename}' not found",
                 suggestions=[
                     "Check the filename spelling",
@@ -380,7 +370,7 @@ async def get_guide_content(
         return content
 
     except Exception as e:
-        return format_error(
+        return format_error_message(
             f"Failed to load guide content '{filename}': {str(e)}",
             suggestions=[
                 "Check file permissions",

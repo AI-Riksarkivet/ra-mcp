@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 
 class SearchHit(BaseModel):
-    """A search hit with context."""
     pid: str
     title: str
     reference_code: str
@@ -29,7 +28,6 @@ class SearchHit(BaseModel):
 
 
 class PageContext(BaseModel):
-    """Full page context around a search hit."""
     page_number: int
     page_id: str
     reference_code: str
@@ -37,3 +35,19 @@ class PageContext(BaseModel):
     alto_url: str
     image_url: str
     bildvisning_url: str = ""
+
+
+class SearchOperation(BaseModel):
+    hits: List[SearchHit]
+    total_hits: int
+    keyword: str
+    offset: int
+    enriched: bool = False
+
+
+class BrowseOperation(BaseModel):
+    contexts: List[PageContext]
+    reference_code: str
+    pages_requested: str
+    pid: Optional[str] = None
+    manifest_id: Optional[str] = None
