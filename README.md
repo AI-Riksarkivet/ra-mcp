@@ -1,36 +1,43 @@
 
-# ra-mcp  (WIP)
+# ra-mcp (WIP)
 
-##   MCPs for Riksarkivet
+## MCPs for Riksarkivet
 
 A powerful MCP server and command-line tools for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet).
 
 ## Features
 
-- **Fast keyword search** in transcribed materials
-- **Full page context** with transcription display
-- **Document browsing** by reference code
-- **ALTO XML integration** for accurate text extraction
-- **Keyword highlighting** in search results
-- **IIIF image access** with direct links
-- **Rich formatting** with tables and panels
+- **Full-text search** across millions of transcribed historical documents
+- **Complete page transcriptions** with accurate text extraction from historical manuscripts
+- **Reference-based document browsing** using official archive reference codes
+- **Contextual search highlighting** to identify relevant content quickly
+- **High-resolution image access** to original document scans via IIIF
 
 
-## Command-line Tool Commands
+## Getting Started
 
-### 1. Search Command
+### Quick Setup
 
-Search for keywords across all transcribed materials:
+```bash
+# Search for anything - uv will auto-install dependencies
+uv run tools/ra.py search "Stockholm"
+```
+
+## How to Use
+
+### 1. Search for Keywords
+
+Find documents containing specific words or phrases:
 
 ```bash
 # Basic search
-./tools/ra.py search "Stockholm"
+uv run tools/ra.py search "Stockholm"
 
 # Search with full page transcriptions
-./tools/ra.py search "trolldom" --context --max-pages 5
+uv run tools/ra.py search "trolldom" --context --max-pages 5
 
 # Search without document grouping
-./tools/ra.py search "vasa" --context --no-grouping --max-pages 3
+uv run tools/ra.py search "vasa" --context --no-grouping --max-pages 3
 ```
 
 **Options:**
@@ -40,19 +47,19 @@ Search for keywords across all transcribed materials:
 - `--max-pages N` - Maximum pages to load context for (default: 10)
 - `--no-grouping` - Show pages individually instead of grouped by document
 
-### 2. Browse Command
+### 2. Browse Specific Documents
 
-Browse specific pages by reference code:
+When you find interesting documents, browse them directly:
 
 ```bash
 # View single page
-./tools/ra.py browse "SE/RA/123" --page 5
+uv run tools/ra.py browse "SE/RA/123" --page 5
 
 # View page range
-./tools/ra.py browse "SE/RA/123" --pages "1-10"
+uv run tools/ra.py browse "SE/RA/123" --pages "1-10"
 
 # View specific pages with search highlighting
-./tools/ra.py browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
+uv run tools/ra.py browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
 ```
 
 **Options:**
@@ -60,19 +67,19 @@ Browse specific pages by reference code:
 - `--search-term` - Highlight this term in the text
 - `--max-display N` - Maximum pages to display (default: 20)
 
-### 3. Show Pages Command
+### 3. Get Full Context
 
-Search and immediately display full page transcriptions with context:
+See complete pages with surrounding context for better understanding:
 
 ```bash
 # Find pages with keyword and show full transcriptions
-./tools/ra.py show-pages "Stockholm" --max-pages 5
+uv run tools/ra.py show-pages "Stockholm" --max-pages 5
 
 # Include surrounding pages for context
-./tools/ra.py show-pages "trolldom" --context-padding 2
+uv run tools/ra.py show-pages "trolldom" --context-padding 2
 
 # Show pages individually
-./tools/ra.py show-pages "vasa" --no-grouping
+uv run tools/ra.py show-pages "vasa" --no-grouping
 ```
 
 **Options:**
@@ -108,30 +115,30 @@ Search and immediately display full page transcriptions with context:
 
 1. **Search for a keyword:**
    ```bash
-   ./tools/ra.py search "Stockholm"
+   uv run tools/ra.py search "Stockholm"
    ```
 
 2. **Get full context for interesting hits:**
    ```bash
-   ./tools/ra.py search "Stockholm" --context --max-pages 3
+   uv run tools/ra.py search "Stockholm" --context --max-pages 3
    ```
 
 3. **Browse specific documents:**
    ```bash
-   ./tools/ra.py browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
+   uv run tools/ra.py browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
    ```
 
 ### Advanced Usage
 
 ```bash
 # Comprehensive search with context
-./tools/ra.py show-pages "handelsbalansen" --context-padding 2 --max-pages 8
+uv run tools/ra.py show-pages "handelsbalansen" --context-padding 2 --max-pages 8
 
 # Targeted document browsing
-./tools/ra.py browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
+uv run tools/ra.py browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
 
 # Large search with selective display
-./tools/ra.py search "järnväg" --max 100 --max-display 30
+uv run tools/ra.py search "järnväg" --max 100 --max-display 30
 ```
 
 ## Technical Details
@@ -165,31 +172,56 @@ Search and immediately display full page transcriptions with context:
 ### Getting Help
 
 ```bash
-./tools/ra.py --help
-./tools/ra.py search --help
-./tools/ra.py browse --help
-./tools/ra.py show-pages --help
+uv run tools/ra.py --help
+uv run tools/ra.py search --help
+uv run tools/ra.py browse --help
+uv run tools/ra.py show-pages --help
 ```
 
 For issues with the Riksarkivet APIs or data availability, consult the [Riksarkivet documentation](https://riksarkivet.se/).
 
 
-## MCP Debug
+## MCP Server Development
+
+### Running the MCP Server
 
 ```bash
-npx @modelcontextprotocol/inspector uv run python server.py
+# Install dependencies
+uv sync && uv pip install -e .
+
+# Run the main MCP server (stdio)
+cd src/ra_mcp && python server.py
+
+# Run with SSE/HTTP transport on port 8000
+cd src/ra_mcp && python server.py --http
 ```
 
+### Testing with MCP Inspector
 
-## API Integrations
+Use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to test and debug the MCP server:
 
-A lot of MCPs can be built with the help of: https://github.com/Riksarkivet/dataplattform/wiki
+```bash
+# Test the server interactively
+npx @modelcontextprotocol/inspector uv run python src/ra_mcp/server.py
+```
 
-- Riksarkivet OAIPMH API Integration: https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH
-- Riksarkivet IIIF API Integration: https://github.com/Riksarkivet/dataplattform/wiki/IIIF
-- Riksarkivet Search API Integration https://github.com/Riksarkivet/dataplattform/wiki/Search-API
-- (new) can we use this? with semantic search: https://forvaltningshistorik.riksarkivet.se/Index.htm <---
-- AI-Riksarkviet HTRflow pypi
+The MCP Inspector provides a web interface to test server tools, resources, and prompts during development.
+
+
+## Additional Riksarkivet Resources
+
+### API Documentation
+
+The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattform/wiki) provides comprehensive documentation for building additional MCP integrations:
+
+- **[OAI-PMH API](https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH)** - Metadata harvesting protocol for archive records
+- **[IIIF API](https://github.com/Riksarkivet/dataplattform/wiki/IIIF)** - International Image Interoperability Framework for digital images
+- **[Search API](https://github.com/Riksarkivet/dataplattform/wiki/Search-API)** - Full-text search across digitized materials
+
+### Experimental Features
+
+- **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)** - Semantic search interface (under evaluation)
+- **AI-Riksarkivet HTRflow** - Handwritten text recognition pipeline (PyPI package)
 
 ![image](https://github.com/user-attachments/assets/bde56408-5135-4a2a-baf3-f26c32fab9dc)
 
