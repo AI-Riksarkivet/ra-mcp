@@ -191,8 +191,6 @@ uv run tools/ra.py browse --help
 uv run tools/ra.py show-pages --help
 ```
 
-For issues with the Riksarkivet APIs or data availability, consult the [Riksarkivet documentation](https://riksarkivet.se/).
-
 
 ## MCP Server Development
 
