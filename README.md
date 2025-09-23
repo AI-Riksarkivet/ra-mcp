@@ -3,7 +3,7 @@
 
 ## MCPs for Riksarkivet
 
-A powerful MCP server and command-line tools for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet).
+A MCP server and command-line tools for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet).
 
 ## Features
 
@@ -143,11 +143,24 @@ uv run tools/ra.py search "järnväg" --max 100 --max-display 30
 
 ## Technical Details
 
-### Data Sources
-- **Search API**: `https://data.riksarkivet.se/api/records` and `https://data-acc.riksarkivet.se/api/records`
-- **IIIF Collections**: `https://lbiiif.riksarkivet.se/collection/arkiv`
-- **ALTO XML**: `https://sok.riksarkivet.se/dokument/alto`
-- **Images**: `https://lbiiif.riksarkivet.se` (IIIF Image API)
+### Riksarkivet APIs & Data Sources
+
+This tool integrates with multiple Riksarkivet APIs to provide comprehensive access to historical documents:
+
+#### Current Integrations
+- **[Search API](https://data.riksarkivet.se/api/records)** - Primary endpoint for full-text search across transcribed materials ([Documentation](https://github.com/Riksarkivet/dataplattform/wiki/Search-API))
+- **[IIIF Collections](https://lbiiif.riksarkivet.se/collection/arkiv)** - Access to digitized document collections via IIIF standard ([Documentation](https://github.com/Riksarkivet/dataplattform/wiki/IIIF))
+- **[ALTO XML](https://sok.riksarkivet.se/dokument/alto)** - Structured text transcriptions with precise positioning data
+- **[IIIF Images](https://lbiiif.riksarkivet.se)** - High-resolution document images with zoom and cropping capabilities
+- **[Bildvisning](https://sok.riksarkivet.se/bildvisning)** - Interactive document viewer with search highlighting
+- **[OAI-PMH](https://oai-pmh.riksarkivet.se/OAI)** - Metadata harvesting for archive records and references ([Documentation](https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH))
+
+#### Additional Resources
+The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattform/wiki) provides comprehensive documentation for building additional MCP integrations.
+
+#### Experimental Features
+- **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)** - Semantic search interface (under evaluation)
+- **AI-Riksarkivet HTRflow** - Handwritten text recognition pipeline (PyPI package)
 
 ### Performance
 - **Optimized HTTP client** with retry strategies
@@ -208,20 +221,6 @@ npx @modelcontextprotocol/inspector uv run python src/ra_mcp/server.py
 The MCP Inspector provides a web interface to test server tools, resources, and prompts during development.
 
 
-## Additional Riksarkivet Resources
-
-### API Documentation
-
-The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattform/wiki) provides comprehensive documentation for building additional MCP integrations:
-
-- **[OAI-PMH API](https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH)** - Metadata harvesting protocol for archive records
-- **[IIIF API](https://github.com/Riksarkivet/dataplattform/wiki/IIIF)** - International Image Interoperability Framework for digital images
-- **[Search API](https://github.com/Riksarkivet/dataplattform/wiki/Search-API)** - Full-text search across digitized materials
-
-### Experimental Features
-
-- **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)** - Semantic search interface (under evaluation)
-- **AI-Riksarkivet HTRflow** - Handwritten text recognition pipeline (PyPI package)
 
 ![image](https://github.com/user-attachments/assets/bde56408-5135-4a2a-baf3-f26c32fab9dc)
 
