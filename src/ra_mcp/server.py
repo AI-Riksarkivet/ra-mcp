@@ -10,7 +10,12 @@ import os
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from .ra_tools import ra_mcp
+try:
+    # Try relative import first (when used as module)
+    from .ra_tools import ra_mcp
+except ImportError:
+    # Fall back to direct import (when run as script)
+    from ra_tools import ra_mcp
 
 
 def main():

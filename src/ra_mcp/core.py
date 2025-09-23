@@ -5,7 +5,16 @@ This module serves as a replacement for the monolithic ra_core.py.
 
 # Re-export all main classes and functions for backward compatibility
 from .clients import SearchAPI, ALTOClient, OAIPMHClient, IIIFClient
-from .services import PageContextService, SearchEnrichmentService, DisplayService
+from .services import (
+    PageContextService,
+    SearchEnrichmentService,
+    DisplayService,
+    SearchOperations,
+    SearchResultsAnalyzer,
+    UnifiedDisplayService,
+    PlainTextFormatter,
+    RichConsoleFormatter
+)
 from .utils import HTTPClient, URLGenerator, parse_page_range
 from .models import SearchHit, PageContext
 from .config import (
@@ -32,6 +41,11 @@ __all__ = [
     'PageContextService',
     'SearchEnrichmentService',
     'DisplayService',
+    'SearchOperations',
+    'SearchResultsAnalyzer',
+    'UnifiedDisplayService',
+    'PlainTextFormatter',
+    'RichConsoleFormatter',
 
     # Utils
     'HTTPClient',
