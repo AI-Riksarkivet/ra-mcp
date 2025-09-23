@@ -1,24 +1,29 @@
 <!--
 Sync Impact Report
-Version change: 1.1.2 → 2.0.0
-Modified principles:
-- Principle IV: Changed from "Caching and Performance" to "API Performance and Reliability"
-  - Old: MCP must implement response caching
-  - New: MCP must rely on Riksarkivet's API caching (no local cache)
-Added sections: None
+Version change: 2.0.0 → 2.1.0
+Modified principles: None
+Added sections:
+- Principle VII: Open Source Excellence
+- Open Source Standards section with Security Requirements, Contribution Guidelines, and Repository Health
 Removed sections: None
 Changes made:
-- BREAKING: Removed local caching requirement from Principle IV
-- Updated Code Organization to explicitly state no local caching
-- Shifted focus to API reliability and error handling
+- Added Principle VII for open source governance
+- Specified Apache License 2.0 requirement
+- Added security standards for public repositories
+- Defined contribution guidelines and English language requirement
+- Added repository health requirements
 Templates requiring updates:
-✅ plan-template.md (references constitution v2.1.1, needs update to v2.0.0)
+✅ plan-template.md (references constitution v2.1.1, needs update to v2.1.0)
 ⚠ spec-template.md (no constitution references found)
-⚠ tasks-template.md (may need to remove cache-related tasks)
-⚠ command templates (directory not found)
+⚠ tasks-template.md (may need open source setup tasks)
 ⚠ CLAUDE.md (mentions cache.py which should be removed)
 Follow-up TODOs:
 - RATIFICATION_DATE set to TODO (pending user confirmation)
+- Create LICENSE file with Apache License 2.0
+- Create SECURITY.md for vulnerability reporting
+- Create CONTRIBUTING.md with contribution guidelines
+- Create CODE_OF_CONDUCT.md
+- Create .env.example file
 - Remove cache.py from src/ra_mcp/
 - Update CLAUDE.md to remove cache references
 - Create Dockerfile for containerization
@@ -48,6 +53,9 @@ Every MCP tool must have clear usage documentation with examples. API endpoints 
 ### VI. Reproducible CI/CD
 All builds must be containerized using Docker for consistency. CI pipelines must be defined as code using Dagger. Environments must be reproducible across development, testing, and production. Production artifacts must be published to Docker Hub for distribution.
 
+### VII. Open Source Excellence
+All code must be developed with public visibility in mind. The project must be licensed under Apache License 2.0 for patent protection and commercial compatibility. Security-sensitive information must never be committed to the repository. All documentation and code comments must be in English for international accessibility.
+
 ## Implementation Standards
 
 ### Technology Stack
@@ -58,6 +66,7 @@ All builds must be containerized using Docker for consistency. CI pipelines must
 - **Dependency Management**: uv for package management
 - **Containerization**: Docker for deployment and testing
 - **CI/CD**: Dagger for pipeline-as-code
+- **License**: Apache License 2.0
 
 ### Code Organization
 - `src/ra_mcp/` contains all server implementation
@@ -100,6 +109,30 @@ All builds must be containerized using Docker for consistency. CI pipelines must
 - Docker build must succeed without warnings
 - Dagger CI pipeline must pass all stages
 
+## Open Source Standards
+
+### Security Requirements
+- **No Secrets in Code**: API keys, credentials, and tokens must use environment variables
+- **Dependency Scanning**: Automated security scanning for all dependencies
+- **Security Disclosure**: SECURITY.md file with vulnerability reporting process
+- **Public Safety**: Example configurations must use dummy values
+- **.env.example**: Provide template without actual credentials
+
+### Contribution Guidelines
+- **Pull Request Process**: All changes via PR with at least one review
+- **Commit Standards**: Follow Conventional Commits specification
+- **Testing Required**: New features must include tests
+- **Documentation**: Update docs with code changes
+- **English Only**: All code, comments, and documentation in English
+- **Sign-off**: Contributors must sign commits with DCO (git commit -s)
+
+### Repository Health
+- **License File**: Apache License 2.0 in repository root
+- **Contributing Guide**: CONTRIBUTING.md with clear instructions
+- **Code of Conduct**: Respectful community standards
+- **Issue Templates**: Structured bug reports and feature requests
+- **Changelog**: Track all changes following Keep a Changelog format
+
 ## Governance
 
 ### Amendment Process
@@ -121,4 +154,4 @@ All builds must be containerized using Docker for consistency. CI pipelines must
 - Trade-offs must be explicitly stated
 - Alternative approaches must be recorded with rejection rationale
 
-**Version**: 2.0.0 | **Ratified**: TODO(RATIFICATION_DATE): Awaiting user confirmation | **Last Amended**: 2025-09-23
+**Version**: 2.1.0 | **Ratified**: TODO(RATIFICATION_DATE): Awaiting user confirmation | **Last Amended**: 2025-09-23
