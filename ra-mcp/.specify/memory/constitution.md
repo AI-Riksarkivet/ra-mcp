@@ -39,31 +39,26 @@ Follow-up TODOs:
 Every feature must be exposed through the Model Context Protocol interface. Tools must follow MCP specification standards for consistent integration. The server must support multiple transport protocols (stdio, HTTP) for flexibility.
 
 ### II. API Client Modularity
-Core API functionality must be separated from MCP server implementation. The `ra_core` module must be independently testable and reusable. Business logic must not depend on specific transport mechanisms.
+Core API functionality must be separated from MCP server implementation. Business logic must not depend on specific transport mechanisms.
 
-### III. Test-Driven Development
-Tests must be written before implementation for all new features. Every public API must have comprehensive test coverage. Integration tests must validate MCP tool contracts.
+### III. Documentation Standards
+Every MCP tool must have clear usage documentation with examples. Please always use the descriptions of how to write good tools from fastmcp docs: https://gofastmcp.com/servers/tools.md.  API endpoints and data formats must be documented in CLAUDE.md. User-facing documentation must prioritize clarity over technical detail.
 
-### IV. API Performance and Reliability
-The MCP server must rely on Riksarkivet's API-level caching, not implement its own cache layer. Performance metrics must be monitored for API response times. Error handling must gracefully manage API rate limits and failures.
+### IV. Reproducible CI/CD
+All builds must be containerized using Docker for consistency. CI pipelines must be defined as code using Dagger. Environments must be reproducible across development, testing, and production. Production artifacts must be published to Docker Hub for distribution. 
 
-### V. Documentation Standards
-Every MCP tool must have clear usage documentation with examples. API endpoints and data formats must be documented in CLAUDE.md. User-facing documentation must prioritize clarity over technical detail.
-
-### VI. Reproducible CI/CD
-All builds must be containerized using Docker for consistency. CI pipelines must be defined as code using Dagger. Environments must be reproducible across development, testing, and production. Production artifacts must be published to Docker Hub for distribution.
-
-### VII. Open Source Excellence
+### V. Open Source Excellence
 All code must be developed with public visibility in mind. The project must be licensed under Apache License 2.0 for patent protection and commercial compatibility. Security-sensitive information must never be committed to the repository. All documentation and code comments must be in English for international accessibility.
 
 ## Implementation Standards
+
 
 ### Technology Stack
 - **Language**: Python 3.12+
 - **MCP Framework**: FastMCP 2.7+
 - **HTTP Client**: httpx for async operations
 - **CLI Framework**: Typer for command-line interface
-- **Dependency Management**: uv for package management
+- **Dependency Management**: uv for package management, but also uses this linting and formatting.
 - **Containerization**: Docker for deployment and testing
 - **CI/CD**: Dagger for pipeline-as-code
 - **License**: Apache License 2.0
@@ -76,6 +71,12 @@ All code must be developed with public visibility in mind. The project must be l
 - CLI interface maintained separately from MCP server
 - `.dagger/` contains Go-based CI pipeline definitions
 - No local caching layer - rely on Riksarkivet API caching
+
+### Code Quality Principles
+- **Descriptive Function Names**: Functions must have clear, self-documenting names that describe their purpose and behavior
+- **No Code Comments**: Code should be self-explanatory through descriptive naming and clean structure
+- **Logging Over Comments**: Use logging statements and print functions for debugging and runtime information instead of comments
+- **Self-Documenting Code**: Prefer code clarity through structure and naming over explanatory comments
 
 ### Testing Requirements
 - Contract tests for all MCP tool definitions
