@@ -61,7 +61,6 @@ class OAIPMHClient:
         parser = etree.XMLParser(remove_blank_text=True)
         root = etree.fromstring(response.content, parser)
 
-        # Check for OAI-PMH errors
         errors = root.xpath("//oai:error", namespaces=NAMESPACES)
         if errors:
             error_code = errors[0].get("code", "unknown")
@@ -84,17 +83,14 @@ class OAIPMHClient:
 
         ead = ead[0]
 
-        # Extract title
         title = ead.xpath(".//ead:unittitle", namespaces=NAMESPACES)
         if title and title[0].text:
             metadata["title"] = title[0].text
 
-        # Extract date
         date = ead.xpath(".//ead:unitdate", namespaces=NAMESPACES)
         if date and date[0].text:
             metadata["date"] = date[0].text
 
-        # Extract NAD link for PID
         nad_links = ead.xpath(".//ead:extref/@xlink:href", namespaces=NAMESPACES)
         if nad_links:
             for link in nad_links:
@@ -103,3 +99,4 @@ class OAIPMHClient:
                     break
 
         return metadata
+

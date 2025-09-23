@@ -18,10 +18,10 @@ class SearchAPI:
 
     def search_transcribed_text(
         self,
-        keyword: str,
-        max_results: int = DEFAULT_MAX_RESULTS,
-        offset: int = 0,
-        max_hits_per_document: Optional[int] = None,
+        search_keyword: str,
+        maximum_documents: int = DEFAULT_MAX_RESULTS,
+        pagination_offset: int = 0,
+        maximum_hits_per_document: Optional[int] = None,
     ) -> Tuple[List[SearchHit], int]:
         """Fast search for keyword in transcribed materials.
 
@@ -34,100 +34,88 @@ class SearchAPI:
         Returns:
             tuple: (list of SearchHit objects, total number of results)
         """
-        params = {
-            "transcribed_text": keyword,
+        search_parameters = {
+            "transcribed_text": search_keyword,
             "only_digitised_materials": "true",
-            "max": max_results,
-            "offset": offset,
+            "max": maximum_documents,
+            "offset": pagination_offset,
             "sort": "relevance",
         }
 
         try:
-            response = self.session.get(
-                SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT
+            api_response = self.session.get(
+                SEARCH_API_BASE_URL, params=search_parameters, timeout=REQUEST_TIMEOUT
             )
-            response.raise_for_status()
-            data = response.json()
+            api_response.raise_for_status()
+            response_data = api_response.json()
 
-            # Get items from response
-            items = data.get("items", [])
+            document_items = response_data.get("items", [])
 
-            # IMPORTANT: The API doesn't respect the 'max' parameter properly,
-            # so we need to limit the documents ourselves
-            if max_results and len(items) > max_results:
-                items = items[:max_results]
+            if maximum_documents and len(document_items) > maximum_documents:
+                document_items = document_items[:maximum_documents]
 
-            hits = []
-            for item in items:
-                # Pass max_hits_per_document directly to _process_search_item
-                item_hits = self._process_search_item(item, max_hits_per_document)
-                hits.extend(item_hits)
+            search_hits = []
+            for document_item in document_items:
+                document_hits = self._process_search_item(document_item, maximum_hits_per_document)
+                search_hits.extend(document_hits)
 
-            # Get total hits from response - this is the total available in the API
-            total_hits = data.get("totalHits", len(hits))
+            total_available_hits = response_data.get("totalHits", len(search_hits))
 
-            # Return hits with metadata about total results
-            return hits, total_hits
+            return search_hits, total_available_hits
 
-        except Exception as e:
-            # Raise exception instead of printing
-            raise Exception(f"Search failed: {e}") from e
+        except Exception as error:
+            raise Exception(f"Search failed: {error}") from error
 
     def _process_search_item(
-        self, item: Dict[str, Union[str, Dict, List]], max_hits: Optional[int] = None
+        self, document_item: Dict[str, Union[str, Dict, List]], maximum_hits: Optional[int] = None
     ) -> List[SearchHit]:
         """Process a single search result item into SearchHit objects."""
-        metadata = item.get("metadata", {})
-        transcribed_data = item.get("transcribedText", {})
+        document_metadata = document_item.get("metadata", {})
+        transcribed_text_data = document_item.get("transcribedText", {})
 
-        # Extract basic info
-        pid = item.get("id", "Unknown")
-        title = item.get("caption", "(No title)")
-        reference_code = metadata.get("referenceCode", "")
+        document_pid = document_item.get("id", "Unknown")
+        document_title = document_item.get("caption", "(No title)")
+        document_reference_code = document_metadata.get("referenceCode", "")
 
-        # Extract enhanced metadata
-        hierarchy = metadata.get("hierarchy", [])
-        note = metadata.get("note")
-        archival_institution = metadata.get("archivalInstitution", [])
-        date = metadata.get("date")
+        document_hierarchy = document_metadata.get("hierarchy", [])
+        document_note = document_metadata.get("note")
+        document_institution = document_metadata.get("archivalInstitution", [])
+        document_date = document_metadata.get("date")
 
-        # Generate URLs
-        collection_url = URLGenerator.collection_url(pid) if pid else None
-        manifest_url = URLGenerator.manifest_url(pid) if pid else None
+        document_collection_url = URLGenerator.collection_url(document_pid) if document_pid else None
+        document_manifest_url = URLGenerator.manifest_url(document_pid) if document_pid else None
 
-        hits = []
-        if transcribed_data and "snippets" in transcribed_data:
-            for snippet in transcribed_data["snippets"]:
-                pages = snippet.get("pages", [])
-                for page in pages:
-                    # Check if we've reached the max hits limit for this document
-                    if max_hits is not None and len(hits) >= max_hits:
-                        return hits
+        document_hits = []
+        if transcribed_text_data and "snippets" in transcribed_text_data:
+            for text_snippet in transcribed_text_data["snippets"]:
+                snippet_pages = text_snippet.get("pages", [])
+                for page_info in snippet_pages:
+                    if maximum_hits is not None and len(document_hits) >= maximum_hits:
+                        return document_hits
 
-                    page_id = (
-                        page.get("id", "").lstrip("_")
-                        if isinstance(page, dict)
-                        else str(page)
+                    page_identifier = (
+                        page_info.get("id", "").lstrip("_")
+                        if isinstance(page_info, dict)
+                        else str(page_info)
                     )
 
-                    hit = SearchHit(
-                        pid=pid,
-                        title=title[:100] + "..." if len(title) > 100 else title,
-                        reference_code=reference_code,
-                        page_number=page_id,
-                        snippet_text=self._clean_html(snippet.get("text", "")),
-                        score=snippet.get("score", 0),
-                        hierarchy=hierarchy,
-                        note=note,
-                        collection_url=collection_url,
-                        manifest_url=manifest_url,
-                        archival_institution=archival_institution,
-                        date=date,
+                    search_hit = SearchHit(
+                        pid=document_pid,
+                        title=document_title[:100] + "..." if len(document_title) > 100 else document_title,
+                        reference_code=document_reference_code,
+                        page_number=page_identifier,
+                        snippet_text=self._clean_html(text_snippet.get("text", "")),
+                        score=text_snippet.get("score", 0),
+                        hierarchy=document_hierarchy,
+                        note=document_note,
+                        collection_url=document_collection_url,
+                        manifest_url=document_manifest_url,
+                        archival_institution=document_institution,
+                        date=document_date,
                     )
-                    hits.append(hit)
-        return hits
+                    document_hits.append(search_hit)
+        return document_hits
 
-    @staticmethod
-    def _clean_html(text: str) -> str:
+    def _clean_html(html_text: str) -> str:
         """Remove HTML tags from text."""
-        return re.sub(r"<[^>]+>", "", text)
+        return re.sub(r"<[^>]+>", "", html_text)

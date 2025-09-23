@@ -62,7 +62,6 @@ class IIIFClient:
         except Exception:
             return None
 
-    @staticmethod
     def _extract_iiif_label(
         label_obj: Union[str, Dict, List], default: str = "Unknown"
     ) -> str:

@@ -37,7 +37,6 @@ class ALTOClient:
         """Extract text content from ALTO XML root element."""
         text_lines = []
 
-        # Try with namespaces first
         for ns in ALTO_NAMESPACES:
             for string_elem in root.findall(".//alto:String", ns):
                 content = string_elem.get("CONTENT", "")
@@ -46,7 +45,6 @@ class ALTOClient:
             if text_lines:
                 break
 
-        # If no namespace works, try without namespace
         if not text_lines:
             for string_elem in root.findall(".//String"):
                 content = string_elem.get("CONTENT", "")

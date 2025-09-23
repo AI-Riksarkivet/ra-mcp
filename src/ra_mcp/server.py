@@ -1,21 +1,8 @@
-#!/usr/bin/env python3
 """
 RA-MCP Server
 Main entry point for the Riksarkivet MCP server.
 """
-
-import sys
-import os
-
-# Add the current directory to Python path
-sys.path.insert(0, os.path.dirname(__file__))
-
-try:
-    # Try relative import first (when used as module)
-    from .mcp_tools import ra_mcp
-except ImportError:
-    # Fall back to direct import (when run as script)
-    from mcp_tools import ra_mcp
+from mcp_tools import ra_mcp
 
 
 def main():

@@ -41,7 +41,6 @@ class SearchOperations:
 
         Returns SearchOperation with results and metadata.
         """
-        # Perform the search
         hits, total_hits = self.search_api.search_transcribed_text(
             keyword, max_results, offset, max_hits_per_document
         )
@@ -54,11 +53,9 @@ class SearchOperations:
             enriched=False,
         )
 
-        # Enrich with context if requested
         if show_context and hits and max_pages_with_context > 0:
             hits_to_enrich = hits[:max_pages_with_context]
 
-            # Expand with context padding if requested
             if context_padding > 0:
                 hits_to_enrich = (
                     self.enrichment_service.expand_hits_with_context_padding(
@@ -66,7 +63,6 @@ class SearchOperations:
                     )
                 )
 
-            # Enrich with full page text
             enriched_hits = self.enrichment_service.enrich_hits_with_context(
                 hits_to_enrich, len(hits_to_enrich), keyword
             )
@@ -88,7 +84,6 @@ class SearchOperations:
 
         Returns BrowseOperation with page contexts and metadata.
         """
-        # Find PID for the reference code
         pid = self._find_pid_for_reference(reference_code)
 
         if not pid:
@@ -99,16 +94,13 @@ class SearchOperations:
                 pid=None,
             )
 
-        # Get manifest information
         collection_info = self.iiif_client.explore_collection(pid)
         manifest_id = pid
         if collection_info and collection_info.get("manifests"):
             manifest_id = collection_info["manifests"][0]["id"]
 
-        # Parse page range
         selected_pages = parse_page_range(pages)[:max_pages]
 
-        # Load page contexts
         contexts = []
         for page_num in selected_pages:
             context = self.page_service.get_page_context(
@@ -139,7 +131,6 @@ class SearchOperations:
         - SearchOperation with the initial search results
         - List of enriched hits with context padding and full text
         """
-        # Step 1: Search for the keyword
         search_op = self.search_transcribed(
             keyword=keyword, max_results=search_limit, show_context=False
         )
@@ -147,15 +138,12 @@ class SearchOperations:
         if not search_op.hits:
             return search_op, []
 
-        # Step 2: Take the top hits and expand with context
         display_hits = search_op.hits[:max_pages]
 
-        # Expand with context padding
         expanded_hits = self.enrichment_service.expand_hits_with_context_padding(
             display_hits, context_padding
         )
 
-        # Enrich with full page text
         enriched_hits = self.enrichment_service.enrich_hits_with_context(
             expanded_hits, len(expanded_hits), keyword
         )

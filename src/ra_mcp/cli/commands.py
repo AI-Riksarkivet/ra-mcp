@@ -14,7 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..services import (
     SearchOperations,
-    UnifiedDisplayService,
+    DisplayService,
     RichConsoleFormatter,
     SearchResultsAnalyzer,
 )
@@ -25,12 +25,12 @@ console = Console()
 
 class RichDisplayAdapter:
     """
-    Adapter that bridges between UnifiedDisplayService and Rich console output.
+    Adapter that bridges between DisplayService and Rich console output.
     Handles the Rich-specific formatting that can't be abstracted.
     """
 
     def __init__(self):
-        self.display_service = UnifiedDisplayService(RichConsoleFormatter())
+        self.display_service = DisplayService(RichConsoleFormatter())
         self.analyzer = SearchResultsAnalyzer()
 
     def display_search_hits_rich(self, operation, max_display: int):
