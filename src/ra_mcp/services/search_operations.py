@@ -3,7 +3,7 @@ Unified search operations that can be used by both CLI and MCP interfaces.
 This eliminates code duplication between CLI commands and MCP tools.
 """
 
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple, Dict, Union
 from dataclasses import dataclass
 
 from ..clients import SearchAPI, IIIFClient, OAIPMHClient
@@ -194,7 +194,7 @@ class SearchOperations:
         self,
         reference_code: Optional[str] = None,
         pid: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """
         Get document structure information.
 
@@ -274,7 +274,7 @@ class SearchResultsAnalyzer:
         total_hits: int,
         offset: int,
         max_results: int
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Union[int, bool, Optional[int]]]:
         """Calculate pagination information for search results."""
         # Count unique documents
         unique_docs = set()
@@ -296,7 +296,7 @@ class SearchResultsAnalyzer:
         }
 
     @staticmethod
-    def extract_search_summary(operation: SearchOperation) -> Dict[str, Any]:
+    def extract_search_summary(operation: SearchOperation) -> Dict[str, Union[str, int, bool, Dict[str, List[SearchHit]]]]:
         """Extract summary information from a search operation."""
         grouped = SearchResultsAnalyzer.group_hits_by_document(operation.hits)
 

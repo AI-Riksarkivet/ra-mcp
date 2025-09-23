@@ -2,7 +2,7 @@
 IIIF client for Riksarkivet.
 """
 
-from typing import Any, Dict, Optional
+from typing import Dict, Optional, Union, List
 
 from ..config import COLLECTION_API_BASE_URL
 from ..utils import HTTPClient
@@ -14,7 +14,7 @@ class IIIFClient:
     def __init__(self):
         self.session = HTTPClient.create_session()
 
-    def explore_collection(self, pid: str, timeout: int = 10) -> Optional[Dict[str, Any]]:
+    def explore_collection(self, pid: str, timeout: int = 10) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """Explore IIIF collection to get manifests."""
         collection_url = f"{COLLECTION_API_BASE_URL}/{pid}"
 
@@ -51,7 +51,7 @@ class IIIFClient:
             return None
 
     @staticmethod
-    def _extract_iiif_label(label_obj: Any, default: str = "Unknown") -> str:
+    def _extract_iiif_label(label_obj: Union[str, Dict, List], default: str = "Unknown") -> str:
         """Smart IIIF label extraction supporting all language map formats."""
         if not label_obj:
             return default

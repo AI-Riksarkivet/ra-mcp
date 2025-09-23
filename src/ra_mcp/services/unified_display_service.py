@@ -4,7 +4,7 @@ This eliminates formatting code duplication between CLI and MCP tools.
 """
 
 import re
-from typing import List, Dict, Any, Optional, Protocol
+from typing import List, Dict, Optional, Protocol, Union
 from abc import ABC, abstractmethod
 
 from ..models import SearchHit, PageContext
@@ -317,7 +317,7 @@ class UnifiedDisplayService:
 
         return "\n".join(lines)
 
-    def format_document_structure(self, collection_info: Dict[str, Any]) -> str:
+    def format_document_structure(self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
         """Format document structure information."""
         if not collection_info:
             return "No document structure information available"

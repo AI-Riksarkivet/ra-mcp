@@ -12,11 +12,13 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ..core import (
+from ..services import (
     SearchOperations,
     UnifiedDisplayService,
     RichConsoleFormatter,
-    SearchResultsAnalyzer,
+    SearchResultsAnalyzer
+)
+from ..config import (
     DEFAULT_MAX_RESULTS,
     DEFAULT_MAX_DISPLAY,
     DEFAULT_MAX_PAGES

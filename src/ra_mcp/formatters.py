@@ -3,7 +3,7 @@ Output formatters for RA-MCP server.
 Converts search results and page content into well-formatted text for LLM consumption.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional, Union
 from dataclasses import dataclass
 import re
 
@@ -16,7 +16,7 @@ def highlight_keyword(text: str, keyword: str) -> str:
     return pattern.sub(lambda m: f"**{m.group()}**", text)
 
 
-def format_search_results(hits: List[Any], keyword: str, show_context: bool = True) -> str:
+def format_search_results(hits: List[Dict[str, Union[str, List, Dict, float]]], keyword: str, show_context: bool = True) -> str:
     """Format search results for LLM consumption."""
     if not hits:
         return f"No results found for '{keyword}'."
@@ -86,7 +86,7 @@ def format_search_results(hits: List[Any], keyword: str, show_context: bool = Tr
     return "\n".join(output)
 
 
-def format_page_contexts(contexts: List[Any], reference_code: str, highlight_term: Optional[str] = None) -> str:
+def format_page_contexts(contexts: List[Dict[str, Union[str, int]]], reference_code: str, highlight_term: Optional[str] = None) -> str:
     """Format page contexts for browsing."""
     if not contexts:
         return f"No pages found for reference code '{reference_code}'."
@@ -118,7 +118,7 @@ def format_page_contexts(contexts: List[Any], reference_code: str, highlight_ter
     return "\n".join(output)
 
 
-def format_document_structure(structure: Dict[str, Any]) -> str:
+def format_document_structure(structure: Dict[str, Union[str, List, Dict]]) -> str:
     """Format document structure information."""
     output = []
     output.append(f"## 📚 Document Structure")

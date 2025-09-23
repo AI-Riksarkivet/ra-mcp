@@ -3,7 +3,7 @@ Search API client for Riksarkivet.
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
 from ..models import SearchHit
@@ -71,7 +71,7 @@ class SearchAPI:
             # Raise exception instead of printing
             raise Exception(f"Search failed: {e}") from e
 
-    def _process_search_item(self, item: Dict[str, Any], max_hits: Optional[int] = None) -> List[SearchHit]:
+    def _process_search_item(self, item: Dict[str, Union[str, Dict, List]], max_hits: Optional[int] = None) -> List[SearchHit]:
         """Process a single search result item into SearchHit objects."""
         metadata = item.get('metadata', {})
         transcribed_data = item.get('transcribedText', {})

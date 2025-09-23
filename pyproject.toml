@@ -1,19 +1,17 @@
 [project]
 name = "ra-mcp"
 version = "0.1.0"
-description = "Riksarkivet first MCPs to expose APIs in dataplattformen"
+description = "Riksarkivet first MCPs to expose APIs in dataplattformen and htrflow"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "asyncio>=3.4.3",
-    "fastmcp>=2.7.1",
-    "gradio-client>=1.10.1",
-    "httpx>=0.28.1",
-    "lxml>=5.3.0",
-    "pydantic>=2.11.5",
-    "click>=8.1.0",
-    "rich>=13.0.0",
-    "requests>=2.31.0",
+    "asyncio>=4.0.0",
+    "fastmcp>=2.12.3",
+    "lxml>=6.0.2",
+    "pydantic>=2.11.9",
+    "requests>=2.32.4",
+    "rich>=14.1.0",
+    "typer>=0.19.2",
 ]
 
 [project.scripts]

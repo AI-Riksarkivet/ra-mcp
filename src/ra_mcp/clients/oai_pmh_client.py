@@ -2,7 +2,7 @@
 OAI-PMH client for Riksarkivet.
 """
 
-from typing import Any, Dict, Optional
+from typing import Dict, Optional, Union, List
 
 import requests
 from lxml import etree
@@ -18,7 +18,7 @@ class OAIPMHClient:
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': 'Transcribed-Search-Browser/1.0'})
 
-    def get_record(self, identifier: str, metadata_prefix: str = 'oai_ape_ead') -> Dict[str, Any]:
+    def get_record(self, identifier: str, metadata_prefix: str = 'oai_ape_ead') -> Dict[str, Union[str, List, Dict]]:
         """Get a specific record with full metadata."""
         params = {
             'verb': 'GetRecord',
@@ -73,7 +73,7 @@ class OAIPMHClient:
         result = element.xpath(xpath, namespaces=NAMESPACES)
         return result[0].text if result and result[0].text else None
 
-    def _extract_ead_metadata(self, record) -> Dict[str, Any]:
+    def _extract_ead_metadata(self, record) -> Dict[str, Union[str, List, Dict]]:
         """Extract metadata from EAD format."""
         metadata = {}
         ead = record.xpath('.//ead:ead', namespaces=NAMESPACES)

@@ -4,12 +4,11 @@ Data models for Riksarkivet MCP server.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import  Dict, List, Optional
+from pydantic import BaseModel
 
 
-@dataclass
-class SearchHit:
+class SearchHit(BaseModel):
     """A search hit with context."""
     pid: str
     title: str
@@ -29,8 +28,7 @@ class SearchHit:
     date: Optional[str] = None
 
 
-@dataclass
-class PageContext:
+class PageContext(BaseModel):
     """Full page context around a search hit."""
     page_number: int
     page_id: str

@@ -9,7 +9,7 @@ from pydantic import Field
 
 try:
     # Try relative imports first (when used as module)
-    from .core import (
+    from .services import (
         SearchOperations,
         UnifiedDisplayService,
         PlainTextFormatter,
@@ -19,7 +19,7 @@ try:
     from .cache import get_cache
 except ImportError:
     # Fall back to direct imports (when run as script)
-    from core import (
+    from services import (
         SearchOperations,
         UnifiedDisplayService,
         PlainTextFormatter,
