@@ -11,7 +11,6 @@ from ..formatters import BaseFormatter
 
 
 class DisplayService:
-
     def __init__(self, formatter: BaseFormatter):
         self.formatter = formatter
         self.analyzer = SearchResultsAnalyzer()
@@ -20,19 +19,23 @@ class DisplayService:
         self,
         search_operation: SearchOperation,
         maximum_documents_to_display: int = 20,
-        show_full_context: bool = False
+        show_full_context: bool = False,
     ) -> str:
         if not search_operation.hits:
             return "No search hits found."
 
         search_summary = self.analyzer.extract_search_summary(search_operation)
-        hits_grouped_by_document = search_summary['grouped_hits']
+        hits_grouped_by_document = search_summary["grouped_hits"]
 
         lines = []
-        lines.append(f"Found {search_summary['page_hits_returned']} page-level hits across {search_summary['documents_returned']} documents")
+        lines.append(
+            f"Found {search_summary['page_hits_returned']} page-level hits across {search_summary['documents_returned']} documents"
+        )
 
         if not show_full_context:
-            lines.append("💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes")
+            lines.append(
+                "💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes"
+            )
 
         lines.append("")
 
@@ -45,31 +48,41 @@ class DisplayService:
             first_hit = document_hits[0]
             lines.append(f"📚 Document: {reference_code}")
             if first_hit.archival_institution:
-                institution = first_hit.archival_institution[0].get('caption', '')
+                institution = first_hit.archival_institution[0].get("caption", "")
                 if institution:
                     lines.append(f"🏛️  Institution: {institution}")
 
             if first_hit.date:
                 lines.append(f"📅 Date: {first_hit.date}")
 
-            title = first_hit.title[:100] + '...' if len(first_hit.title) > 100 else first_hit.title
+            title = (
+                first_hit.title[:100] + "..."
+                if len(first_hit.title) > 100
+                else first_hit.title
+            )
             lines.append(f"📄 Title: {title}")
 
             page_numbers = sorted(set(hit.page_number for hit in document_hits))
-            trimmed_page_numbers = [page_num.lstrip('0') or '0' for page_num in page_numbers]
+            trimmed_page_numbers = [
+                page_num.lstrip("0") or "0" for page_num in page_numbers
+            ]
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
 
             if show_full_context and search_operation.enriched:
                 for hit in document_hits[:3]:
                     if hit.full_page_text:
-                        is_search_hit = hit.snippet_text != "[Context page - no search hit]"
+                        is_search_hit = (
+                            hit.snippet_text != "[Context page - no search hit]"
+                        )
                         page_type = "SEARCH HIT" if is_search_hit else "context"
 
                         lines.append(f"\n   📄 Page {hit.page_number} ({page_type}):")
 
                         display_text = hit.full_page_text
                         if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(display_text, search_operation.keyword)
+                            display_text = self.formatter.highlight_search_keyword(
+                                display_text, search_operation.keyword
+                            )
 
                         if len(display_text) > 500:
                             display_text = display_text[:500] + "..."
@@ -77,8 +90,14 @@ class DisplayService:
                         lines.append(f"   {display_text}")
             else:
                 for hit in document_hits[:3]:
-                    snippet = hit.snippet_text[:150] + '...' if len(hit.snippet_text) > 150 else hit.snippet_text
-                    snippet = self.formatter.highlight_search_keyword(snippet, search_operation.keyword)
+                    snippet = (
+                        hit.snippet_text[:150] + "..."
+                        if len(hit.snippet_text) > 150
+                        else hit.snippet_text
+                    )
+                    snippet = self.formatter.highlight_search_keyword(
+                        snippet, search_operation.keyword
+                    )
                     lines.append(f"   Page {hit.page_number}: {snippet}")
 
             if len(document_hits) > 3:
@@ -94,9 +113,7 @@ class DisplayService:
         return "\n".join(lines)
 
     def format_browse_results(
-        self,
-        operation: BrowseOperation,
-        highlight_term: Optional[str] = None
+        self, operation: BrowseOperation, highlight_term: Optional[str] = None
     ) -> str:
         """Format browse results with the configured formatter."""
         if not operation.contexts:
@@ -114,7 +131,9 @@ class DisplayService:
             # Format the text content
             display_text = context.full_text
             if highlight_term:
-                display_text = self.formatter.highlight_search_keyword(display_text, highlight_term)
+                display_text = self.formatter.highlight_search_keyword(
+                    display_text, highlight_term
+                )
 
             lines.append(display_text)
             lines.append("")
@@ -135,7 +154,7 @@ class DisplayService:
         self,
         search_op: SearchOperation,
         enriched_hits: List[SearchHit],
-        no_grouping: bool = False
+        no_grouping: bool = False,
     ) -> str:
         """Format show-pages results (search + context)."""
         if not enriched_hits:
@@ -143,7 +162,9 @@ class DisplayService:
 
         lines = []
         lines.append(f"🔍 Search results for '{search_op.keyword}':")
-        lines.append(f"Found {len(search_op.hits)} initial hits, showing {len(enriched_hits)} pages with context")
+        lines.append(
+            f"Found {len(search_op.hits)} initial hits, showing {len(enriched_hits)} pages with context"
+        )
         lines.append("")
 
         if no_grouping:
@@ -153,12 +174,16 @@ class DisplayService:
                     is_search_hit = hit.snippet_text != "[Context page - no search hit]"
                     page_type = "🎯 SEARCH HIT" if is_search_hit else "📄 context"
 
-                    lines.append(f"{page_type}: {hit.reference_code} - Page {hit.page_number}")
+                    lines.append(
+                        f"{page_type}: {hit.reference_code} - Page {hit.page_number}"
+                    )
                     lines.append("─" * 60)
 
                     display_text = hit.full_page_text
                     if is_search_hit:
-                        display_text = self.formatter.highlight_search_keyword(display_text, search_op.keyword)
+                        display_text = self.formatter.highlight_search_keyword(
+                            display_text, search_op.keyword
+                        )
 
                     lines.append(display_text)
                     lines.append("")
@@ -168,7 +193,9 @@ class DisplayService:
 
             for doc_ref, doc_hits in grouped.items():
                 # Sort by page number
-                doc_hits.sort(key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0)
+                doc_hits.sort(
+                    key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0
+                )
 
                 lines.append(f"📚 Document: {doc_ref} ({len(doc_hits)} pages)")
                 lines.append("=" * 60)
@@ -194,7 +221,9 @@ class DisplayService:
                     if hit.full_page_text:
                         display_text = hit.full_page_text
                         if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(display_text, search_op.keyword)
+                            display_text = self.formatter.highlight_search_keyword(
+                                display_text, search_op.keyword
+                            )
                         lines.append(display_text)
                     else:
                         lines.append("No text content available")
@@ -205,7 +234,9 @@ class DisplayService:
 
         return "\n".join(lines)
 
-    def format_document_structure(self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
+    def format_document_structure(
+        self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]
+    ) -> str:
         """Format document structure information."""
         if not collection_info:
             return "No document structure information available"
@@ -215,18 +246,22 @@ class DisplayService:
         lines.append(f"🔗 Collection URL: {collection_info.get('collection_url', '')}")
         lines.append("")
 
-        manifests = collection_info.get('manifests', [])
+        manifests = collection_info.get("manifests", [])
         if manifests:
             lines.append(f"📖 Available manifests ({len(manifests)}):")
             for manifest in manifests:
-                lines.append(f"  • {manifest.get('label', 'Untitled')} ({manifest.get('id', '')})")
+                lines.append(
+                    f"  • {manifest.get('label', 'Untitled')} ({manifest.get('id', '')})"
+                )
                 lines.append(f"    URL: {manifest.get('url', '')}")
         else:
             lines.append("No manifests found")
 
         return "\n".join(lines)
 
-    def format_error_message(self, error_message: str, error_suggestions: List[str] = None) -> str:
+    def format_error_message(
+        self, error_message: str, error_suggestions: List[str] = None
+    ) -> str:
         formatted_lines = [f"❌ Error: {error_message}"]
 
         if error_suggestions:

@@ -35,5 +35,5 @@ main.add_command(show_pages)
 main.add_command(serve)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

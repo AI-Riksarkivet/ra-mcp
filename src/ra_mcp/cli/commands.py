@@ -16,13 +16,9 @@ from ..services import (
     SearchOperations,
     UnifiedDisplayService,
     RichConsoleFormatter,
-    SearchResultsAnalyzer
+    SearchResultsAnalyzer,
 )
-from ..config import (
-    DEFAULT_MAX_RESULTS,
-    DEFAULT_MAX_DISPLAY,
-    DEFAULT_MAX_PAGES
-)
+from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
 console = Console()
 
@@ -44,16 +40,21 @@ class RichDisplayAdapter:
             return
 
         summary = self.analyzer.extract_search_summary(operation)
-        grouped_hits = summary['grouped_hits']
+        grouped_hits = summary["grouped_hits"]
 
-        console.print(f"\n✓ Found {summary['page_hits_returned']} page-level hits across {summary['documents_returned']} documents")
-        console.print("[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]")
+        console.print(
+            f"\n✓ Found {summary['page_hits_returned']} page-level hits across {summary['documents_returned']} documents"
+        )
+        console.print(
+            "[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]"
+        )
 
         table = Table(
-            "Institution & Reference", "Content",
+            "Institution & Reference",
+            "Content",
             title=f"Search Results for '{operation.keyword}'",
             show_lines=True,
-            expand=True
+            expand=True,
         )
 
         # Display grouped results
@@ -69,9 +70,17 @@ class RichDisplayAdapter:
             # Extract institution
             institution = ""
             if first_hit.archival_institution:
-                institution = first_hit.archival_institution[0].get('caption', '') if first_hit.archival_institution else ""
+                institution = (
+                    first_hit.archival_institution[0].get("caption", "")
+                    if first_hit.archival_institution
+                    else ""
+                )
             elif first_hit.hierarchy:
-                institution = first_hit.hierarchy[0].get('caption', '') if first_hit.hierarchy else ""
+                institution = (
+                    first_hit.hierarchy[0].get("caption", "")
+                    if first_hit.hierarchy
+                    else ""
+                )
 
             # Combine institution and reference with pages
             institution_and_ref = ""
@@ -82,17 +91,21 @@ class RichDisplayAdapter:
             pages = sorted(set(h.page_number for h in ref_hits))
             pages_trimmed = []
             for p in pages:
-                trimmed = p.lstrip('0') or '0'  # Keep at least one zero if all zeros
+                trimmed = p.lstrip("0") or "0"  # Keep at least one zero if all zeros
                 pages_trimmed.append(trimmed)
             pages_str = ",".join(pages_trimmed)
 
-            institution_and_ref += f"📚 \"{ref_code}\" --page \"{pages_str}\""
+            institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"'
 
             if first_hit.date:
                 institution_and_ref += f"\n📅 [dim]{first_hit.date}[/dim]"
 
             # Create content column with title and snippets from different pages
-            title_text = first_hit.title[:50] + '...' if len(first_hit.title) > 50 else first_hit.title
+            title_text = (
+                first_hit.title[:50] + "..."
+                if len(first_hit.title) > 50
+                else first_hit.title
+            )
             content_parts = []
 
             # Add title
@@ -103,12 +116,22 @@ class RichDisplayAdapter:
 
             # Add snippets with page numbers
             for hit in ref_hits[:3]:  # Show max 3 snippets per reference
-                snippet = hit.snippet_text[:150] + '...' if len(hit.snippet_text) > 150 else hit.snippet_text
-                snippet = self.display_service.formatter.keyword_highlight(snippet, operation.keyword)
-                content_parts.append(f"[dim]Page {hit.page_number}:[/dim] [italic]{snippet}[/italic]")
+                snippet = (
+                    hit.snippet_text[:150] + "..."
+                    if len(hit.snippet_text) > 150
+                    else hit.snippet_text
+                )
+                snippet = self.display_service.formatter.keyword_highlight(
+                    snippet, operation.keyword
+                )
+                content_parts.append(
+                    f"[dim]Page {hit.page_number}:[/dim] [italic]{snippet}[/italic]"
+                )
 
             if len(ref_hits) > 3:
-                content_parts.append(f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]")
+                content_parts.append(
+                    f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]"
+                )
 
             content = "\n".join(content_parts)
 
@@ -121,14 +144,18 @@ class RichDisplayAdapter:
             first_ref = next(iter(grouped_hits.keys()))
             first_group = grouped_hits[first_ref]
             pages = sorted(set(h.page_number for h in first_group))
-            pages_trimmed = [p.lstrip('0') or '0' for p in pages[:5]]
+            pages_trimmed = [p.lstrip("0") or "0" for p in pages[:5]]
 
             console.print(f"\n[dim]💡 Example: To view these hits, run:[/dim]")
             if len(pages_trimmed) == 1:
-                console.print(f"[cyan]   ra browse \"{first_ref}\" --page {pages_trimmed[0]} --search-term \"{operation.keyword}\"[/cyan]")
+                console.print(
+                    f'[cyan]   ra browse "{first_ref}" --page {pages_trimmed[0]} --search-term "{operation.keyword}"[/cyan]'
+                )
             else:
                 pages_str = ",".join(pages_trimmed)
-                console.print(f"[cyan]   ra browse \"{first_ref}\" --page \"{pages_str}\" --search-term \"{operation.keyword}\"[/cyan]")
+                console.print(
+                    f'[cyan]   ra browse "{first_ref}" --page "{pages_str}" --search-term "{operation.keyword}"[/cyan]'
+                )
 
         # Count remaining groups
         total_groups = len(grouped_hits)
@@ -142,42 +169,83 @@ class RichDisplayAdapter:
             console.print("[yellow]No page contexts found.[/yellow]")
             return
 
-        console.print(f"\n[bold]Full Page Transcriptions ({len(operation.contexts)} pages):[/bold]")
+        console.print(
+            f"\n[bold]Full Page Transcriptions ({len(operation.contexts)} pages):[/bold]"
+        )
 
         for context in operation.contexts:
             # Build page content
             page_content = []
 
             # Full transcribed text with keyword highlighting
-            display_text = self.display_service.formatter.keyword_highlight(context.full_text, highlight_term)
-            page_content.append(f"\n[bold magenta]📜 Full Transcription:[/bold magenta]")
+            display_text = self.display_service.formatter.keyword_highlight(
+                context.full_text, highlight_term
+            )
+            page_content.append(
+                f"\n[bold magenta]📜 Full Transcription:[/bold magenta]"
+            )
             page_content.append(f"[italic]{display_text}[/italic]")
 
             # Links section
             page_content.append(f"\n[bold cyan]🔗 Links:[/bold cyan]")
-            page_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+            page_content.append(
+                f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
+            )
             if context.image_url:
-                page_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+                page_content.append(
+                    f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]"
+                )
             if context.bildvisning_url:
-                page_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+                page_content.append(
+                    f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
+                )
 
             panel_title = f"[cyan]Page {context.page_number}: {context.reference_code or 'Unknown Reference'}[/cyan]"
-            console.print(Panel(
-                "\n".join(page_content),
-                title=panel_title,
-                border_style="green",
-                padding=(0, 1)
-            ))
+            console.print(
+                Panel(
+                    "\n".join(page_content),
+                    title=panel_title,
+                    border_style="green",
+                    padding=(0, 1),
+                )
+            )
 
 
 @click.command()
-@click.argument('keyword')
-@click.option('--max', 'max_results', type=int, default=DEFAULT_MAX_RESULTS, help='Maximum search results')
-@click.option('--max-display', type=int, default=DEFAULT_MAX_DISPLAY, help='Maximum results to display')
-@click.option('--context', is_flag=True, help='Show full page context for search hits')
-@click.option('--max-pages', type=int, default=DEFAULT_MAX_PAGES, help='Maximum pages to load context for')
-@click.option('--no-grouping', is_flag=True, help='Show pages individually instead of grouped by document (only with --context)')
-def search(keyword: str, max_results: int, max_display: int, context: bool, max_pages: int, no_grouping: bool):
+@click.argument("keyword")
+@click.option(
+    "--max",
+    "max_results",
+    type=int,
+    default=DEFAULT_MAX_RESULTS,
+    help="Maximum search results",
+)
+@click.option(
+    "--max-display",
+    type=int,
+    default=DEFAULT_MAX_DISPLAY,
+    help="Maximum results to display",
+)
+@click.option("--context", is_flag=True, help="Show full page context for search hits")
+@click.option(
+    "--max-pages",
+    type=int,
+    default=DEFAULT_MAX_PAGES,
+    help="Maximum pages to load context for",
+)
+@click.option(
+    "--no-grouping",
+    is_flag=True,
+    help="Show pages individually instead of grouped by document (only with --context)",
+)
+def search(
+    keyword: str,
+    max_results: int,
+    max_display: int,
+    context: bool,
+    max_pages: int,
+    no_grouping: bool,
+):
     """Search for keyword in transcribed materials.
 
     Fast search across all transcribed documents in Riksarkivet.
@@ -200,66 +268,106 @@ def search(keyword: str, max_results: int, max_display: int, context: bool, max_
             keyword=keyword,
             max_results=max_results,
             show_context=context,
-            max_pages_with_context=max_pages if context else 0
+            max_pages_with_context=max_pages if context else 0,
         )
 
-        console.print(f"[green]Found {len(operation.hits)} page-level hits in {operation.total_hits} documents[/green]")
+        console.print(
+            f"[green]Found {len(operation.hits)} page-level hits in {operation.total_hits} documents[/green]"
+        )
 
         if context and operation.hits:
             # For context display, use the unified display service with Rich panels
-            console.print(f"[green]Successfully loaded context for {len(operation.hits)} pages[/green]")
+            console.print(
+                f"[green]Successfully loaded context for {len(operation.hits)} pages[/green]"
+            )
 
             if not no_grouping:
                 # Group display
-                grouped_hits = display_adapter.analyzer.group_hits_by_document(operation.hits)
-                console.print(f"\n[bold]Search Results Grouped by Document ({len(grouped_hits)} documents, {len(operation.hits)} pages):[/bold]")
+                grouped_hits = display_adapter.analyzer.group_hits_by_document(
+                    operation.hits
+                )
+                console.print(
+                    f"\n[bold]Search Results Grouped by Document ({len(grouped_hits)} documents, {len(operation.hits)} pages):[/bold]"
+                )
 
                 for doc_ref, doc_hits in grouped_hits.items():
-                    doc_hits.sort(key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0)
+                    doc_hits.sort(
+                        key=lambda h: int(h.page_number)
+                        if h.page_number.isdigit()
+                        else 0
+                    )
 
                     # Create document panel content
                     content = []
                     first_hit = doc_hits[0]
-                    content.append(f"[bold blue]📄 Title:[/bold blue] {first_hit.title}")
-                    content.append(f"[bold green]📄 Pages with hits:[/bold green] {', '.join(h.page_number for h in doc_hits)}")
+                    content.append(
+                        f"[bold blue]📄 Title:[/bold blue] {first_hit.title}"
+                    )
+                    content.append(
+                        f"[bold green]📄 Pages with hits:[/bold green] {', '.join(h.page_number for h in doc_hits)}"
+                    )
 
                     if first_hit.date:
-                        content.append(f"[bold blue]📅 Date:[/bold blue] {first_hit.date}")
+                        content.append(
+                            f"[bold blue]📅 Date:[/bold blue] {first_hit.date}"
+                        )
 
                     for hit in doc_hits[:3]:
                         if hit.full_page_text:
-                            display_text = display_adapter.display_service.formatter.keyword_highlight(hit.full_page_text[:300], keyword)
-                            content.append(f"\n[bold cyan]Page {hit.page_number}:[/bold cyan]")
-                            content.append(f"[italic]{display_text}{'...' if len(hit.full_page_text) > 300 else ''}[/italic]")
+                            display_text = display_adapter.display_service.formatter.keyword_highlight(
+                                hit.full_page_text[:300], keyword
+                            )
+                            content.append(
+                                f"\n[bold cyan]Page {hit.page_number}:[/bold cyan]"
+                            )
+                            content.append(
+                                f"[italic]{display_text}{'...' if len(hit.full_page_text) > 300 else ''}[/italic]"
+                            )
 
-                    panel_title = f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
-                    console.print(Panel(
-                        "\n".join(content),
-                        title=panel_title,
-                        border_style="green",
-                        padding=(0, 1)
-                    ))
+                    panel_title = (
+                        f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
+                    )
+                    console.print(
+                        Panel(
+                            "\n".join(content),
+                            title=panel_title,
+                            border_style="green",
+                            padding=(0, 1),
+                        )
+                    )
             else:
                 # Individual page display
-                console.print(f"\n[bold]Search Results with Full Page Context ({len(operation.hits)} pages):[/bold]")
+                console.print(
+                    f"\n[bold]Search Results with Full Page Context ({len(operation.hits)} pages):[/bold]"
+                )
                 for hit in operation.hits:
                     if hit.full_page_text:
                         content = []
                         content.append(f"[bold blue]📄 Title:[/bold blue] {hit.title}")
                         if hit.date:
-                            content.append(f"[bold blue]📅 Date:[/bold blue] {hit.date}")
+                            content.append(
+                                f"[bold blue]📅 Date:[/bold blue] {hit.date}"
+                            )
 
-                        display_text = display_adapter.display_service.formatter.keyword_highlight(hit.full_page_text, keyword)
-                        content.append(f"\n[bold magenta]📜 Full Transcription:[/bold magenta]")
+                        display_text = (
+                            display_adapter.display_service.formatter.keyword_highlight(
+                                hit.full_page_text, keyword
+                            )
+                        )
+                        content.append(
+                            f"\n[bold magenta]📜 Full Transcription:[/bold magenta]"
+                        )
                         content.append(f"[italic]{display_text}[/italic]")
 
                         panel_title = f"[cyan]Hit: {hit.reference_code} - Page {hit.page_number}[/cyan]"
-                        console.print(Panel(
-                            "\n".join(content),
-                            title=panel_title,
-                            border_style="blue",
-                            padding=(0, 1)
-                        ))
+                        console.print(
+                            Panel(
+                                "\n".join(content),
+                                title=panel_title,
+                                border_style="blue",
+                                padding=(0, 1),
+                            )
+                        )
         else:
             # Use Rich table display for non-context results
             display_adapter.display_search_hits_rich(operation, max_display)
@@ -270,12 +378,23 @@ def search(keyword: str, max_results: int, max_display: int, context: bool, max_
 
 
 @click.command()
-@click.argument('reference_code')
-@click.option('--pages', help='Page range to display (e.g., "1-10" or "5,7,9")')
-@click.option('--page', help='Single page or page range to display (alias for --pages)')
-@click.option('--search-term', help='Highlight this term in the text')
-@click.option('--max-display', type=int, default=DEFAULT_MAX_DISPLAY, help='Maximum pages to display')
-def browse(reference_code: str, pages: Optional[str], page: Optional[str], search_term: Optional[str], max_display: int):
+@click.argument("reference_code")
+@click.option("--pages", help='Page range to display (e.g., "1-10" or "5,7,9")')
+@click.option("--page", help="Single page or page range to display (alias for --pages)")
+@click.option("--search-term", help="Highlight this term in the text")
+@click.option(
+    "--max-display",
+    type=int,
+    default=DEFAULT_MAX_DISPLAY,
+    help="Maximum pages to display",
+)
+def browse(
+    reference_code: str,
+    pages: Optional[str],
+    page: Optional[str],
+    search_term: Optional[str],
+    max_display: int,
+):
     """Browse pages by reference code.
 
     You can specify pages using either --pages or --page (they work the same way).
@@ -296,7 +415,11 @@ def browse(reference_code: str, pages: Optional[str], page: Optional[str], searc
     page_range = page if page is not None else pages
 
     try:
-        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
             task = progress.add_task("Loading document information...", total=None)
 
             # Perform browse using shared logic
@@ -304,7 +427,7 @@ def browse(reference_code: str, pages: Optional[str], page: Optional[str], searc
                 reference_code=reference_code,
                 pages=page_range or "1-20",
                 highlight_term=search_term,
-                max_pages=max_display
+                max_pages=max_display,
             )
 
             progress.update(task, description=f"✓ Found PID: {operation.pid}")
@@ -317,7 +440,9 @@ def browse(reference_code: str, pages: Optional[str], page: Optional[str], searc
             console.print("• The document might not have transcriptions")
             sys.exit(1)
 
-        console.print(f"[green]Successfully loaded {len(operation.contexts)} pages[/green]")
+        console.print(
+            f"[green]Successfully loaded {len(operation.contexts)} pages[/green]"
+        )
 
         # Use Rich panel display
         display_adapter.display_page_contexts_rich(operation, search_term or "")
@@ -327,11 +452,25 @@ def browse(reference_code: str, pages: Optional[str], page: Optional[str], searc
         sys.exit(1)
 
 
-@click.command(name='show-pages')
-@click.argument('keyword')
-@click.option('--max-pages', type=int, default=DEFAULT_MAX_PAGES, help='Maximum pages to display with full context')
-@click.option('--context-padding', type=int, default=1, help='Number of pages to include before and after each hit for context')
-@click.option('--no-grouping', is_flag=True, help='Show pages individually instead of grouped by document')
+@click.command(name="show-pages")
+@click.argument("keyword")
+@click.option(
+    "--max-pages",
+    type=int,
+    default=DEFAULT_MAX_PAGES,
+    help="Maximum pages to display with full context",
+)
+@click.option(
+    "--context-padding",
+    type=int,
+    default=1,
+    help="Number of pages to include before and after each hit for context",
+)
+@click.option(
+    "--no-grouping",
+    is_flag=True,
+    help="Show pages individually instead of grouped by document",
+)
 def show_pages(keyword: str, max_pages: int, context_padding: int, no_grouping: bool):
     """Search for keyword and show the exact pages containing it with context.
 
@@ -351,7 +490,11 @@ def show_pages(keyword: str, max_pages: int, context_padding: int, no_grouping: 
     console.print(f"[blue]Searching for '{keyword}' to find exact pages...[/blue]")
 
     try:
-        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
             task = progress.add_task("Searching and loading contexts...", total=None)
 
             # Perform show-pages using shared logic
@@ -359,17 +502,23 @@ def show_pages(keyword: str, max_pages: int, context_padding: int, no_grouping: 
                 keyword=keyword,
                 max_pages=max_pages,
                 context_padding=context_padding,
-                search_limit=max(max_pages * 3, 50)
+                search_limit=max(max_pages * 3, 50),
             )
 
-            progress.update(task, description=f"✓ Found {len(enriched_hits)} pages with context")
+            progress.update(
+                task, description=f"✓ Found {len(enriched_hits)} pages with context"
+            )
 
         if not enriched_hits:
             console.print("[yellow]No pages found containing the keyword.[/yellow]")
             return
 
-        console.print(f"\n[green]Found {len(search_op.hits)} pages containing '{keyword}'[/green]")
-        console.print(f"[blue]Showing {len(enriched_hits)} pages including context padding (+/- {context_padding} pages)...[/blue]")
+        console.print(
+            f"\n[green]Found {len(search_op.hits)} pages containing '{keyword}'[/green]"
+        )
+        console.print(
+            f"[blue]Showing {len(enriched_hits)} pages including context padding (+/- {context_padding} pages)...[/blue]"
+        )
 
         # Use the unified display service format but render with Rich
         result_text = display_adapter.display_service.format_show_pages_results(
@@ -385,8 +534,13 @@ def show_pages(keyword: str, max_pages: int, context_padding: int, no_grouping: 
 
 
 @click.command()
-@click.option('--port', type=int, default=None, help='Port for HTTP/SSE transport (enables HTTP mode)')
-@click.option('--host', default='localhost', help='Host for HTTP transport')
+@click.option(
+    "--port",
+    type=int,
+    default=None,
+    help="Port for HTTP/SSE transport (enables HTTP mode)",
+)
+@click.option("--host", default="localhost", help="Host for HTTP transport")
 def serve(port: Optional[int], host: str):
     """Start the MCP server.
 
@@ -395,14 +549,16 @@ def serve(port: Optional[int], host: str):
         ra serve --port 8000        # Start with HTTP/SSE transport on port 8000
     """
     if port:
-        console.print(f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]")
+        console.print(
+            f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]"
+        )
         # Import and run the HTTP server
         from ..server import main as server_main
         import sys
 
         # Set up sys.argv for the server
         original_argv = sys.argv
-        sys.argv = ['ra-mcp-server', '--http', '--port', str(port), '--host', host]
+        sys.argv = ["ra-mcp-server", "--http", "--port", str(port), "--host", host]
 
         try:
             server_main()
@@ -416,7 +572,7 @@ def serve(port: Optional[int], host: str):
 
         # Set up sys.argv for the server
         original_argv = sys.argv
-        sys.argv = ['ra-mcp-server']
+        sys.argv = ["ra-mcp-server"]
 
         try:
             server_main()

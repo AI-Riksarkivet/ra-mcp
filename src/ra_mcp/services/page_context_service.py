@@ -20,7 +20,7 @@ class PageContextService:
         pid: str,
         page_number: str,
         reference_code: str = "",
-        search_term: Optional[str] = None
+        search_term: Optional[str] = None,
     ) -> Optional[PageContext]:
         """Get full page context for a specific page."""
         alto_url = URLGenerator.alto_url(pid, page_number)
@@ -41,5 +41,5 @@ class PageContextService:
             full_text=full_text,
             alto_url=alto_url,
             image_url=image_url or "",
-            bildvisning_url=bildvisning_url or ""
+            bildvisning_url=bildvisning_url or "",
         )

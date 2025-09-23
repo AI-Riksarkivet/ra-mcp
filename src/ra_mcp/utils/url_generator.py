@@ -14,12 +14,12 @@ class URLGenerator:
     @staticmethod
     def clean_id(pid: str) -> str:
         """Extract clean ID from PID."""
-        return pid[6:] if pid.startswith('arkis!') else pid
+        return pid[6:] if pid.startswith("arkis!") else pid
 
     @staticmethod
     def format_page_number(page_number: str) -> str:
         """Format page number with proper padding."""
-        clean_page = page_number.lstrip('_')
+        clean_page = page_number.lstrip("_")
         if clean_page.isdigit():
             return f"{int(clean_page):05d}"
         return clean_page.zfill(5)
@@ -49,12 +49,16 @@ class URLGenerator:
             return None
 
     @classmethod
-    def bildvisning_url(cls, pid: str, page_number: str, search_term: Optional[str] = None) -> Optional[str]:
+    def bildvisning_url(
+        cls, pid: str, page_number: str, search_term: Optional[str] = None
+    ) -> Optional[str]:
         """Generate bildvisning URL with optional search highlighting."""
         try:
             clean_id = cls.clean_id(pid)
             padded_page = cls.format_page_number(page_number)
-            base_url = f"https://sok.riksarkivet.se/bildvisning/{clean_id}_{padded_page}"
+            base_url = (
+                f"https://sok.riksarkivet.se/bildvisning/{clean_id}_{padded_page}"
+            )
 
             if search_term and search_term.strip():
                 encoded_term = urllib.parse.quote(search_term.strip())

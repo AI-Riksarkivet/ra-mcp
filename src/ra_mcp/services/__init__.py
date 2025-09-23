@@ -8,9 +8,9 @@ from .display_service import DisplayService
 from .search_operations import SearchOperations, SearchResultsAnalyzer
 
 __all__ = [
-    'PageContextService',
-    'SearchEnrichmentService',
-    'DisplayService',
-    'SearchOperations',
-    'SearchResultsAnalyzer'
+    "PageContextService",
+    "SearchEnrichmentService",
+    "DisplayService",
+    "SearchOperations",
+    "SearchResultsAnalyzer",
 ]

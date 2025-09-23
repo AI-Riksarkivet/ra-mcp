@@ -19,8 +19,8 @@ class ALTOClient:
         """Fetch and parse ALTO XML file to extract full text content."""
         try:
             headers = {
-                'User-Agent': 'transcribed_search_browser/1.0',
-                'Accept': 'application/xml, text/xml, */*'
+                "User-Agent": "transcribed_search_browser/1.0",
+                "Accept": "application/xml, text/xml, */*",
             }
 
             response = self.session.get(alto_url, headers=headers, timeout=timeout)
@@ -39,8 +39,8 @@ class ALTOClient:
 
         # Try with namespaces first
         for ns in ALTO_NAMESPACES:
-            for string_elem in root.findall('.//alto:String', ns):
-                content = string_elem.get('CONTENT', '')
+            for string_elem in root.findall(".//alto:String", ns):
+                content = string_elem.get("CONTENT", "")
                 if content:
                     text_lines.append(content)
             if text_lines:
@@ -48,10 +48,10 @@ class ALTOClient:
 
         # If no namespace works, try without namespace
         if not text_lines:
-            for string_elem in root.findall('.//String'):
-                content = string_elem.get('CONTENT', '')
+            for string_elem in root.findall(".//String"):
+                content = string_elem.get("CONTENT", "")
                 if content:
                     text_lines.append(content)
 
-        full_text = ' '.join(text_lines)
+        full_text = " ".join(text_lines)
         return full_text.strip() if full_text else None
