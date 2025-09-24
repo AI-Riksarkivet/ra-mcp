@@ -124,8 +124,9 @@ class RichDisplayAdapter:
                 snippet = self.display_service.formatter.highlight_search_keyword(
                     snippet, operation.keyword
                 )
+                trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
                 content_parts.append(
-                    f"[dim]Page {hit.page_number}:[/dim] [italic]{snippet}[/italic]"
+                    f"[dim]Page {trimmed_page_number}:[/dim] [italic]{snippet}[/italic]"
                 )
 
             if len(ref_hits) > 3:
@@ -200,7 +201,8 @@ class RichDisplayAdapter:
                     f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
                 )
 
-            panel_title = f"[cyan]Page {context.page_number}: {context.reference_code or 'Unknown Reference'}[/cyan]"
+            trimmed_page_number = str(context.page_number).lstrip("0") or "0"
+            panel_title = f"[cyan]Page {trimmed_page_number}: {context.reference_code or 'Unknown Reference'}[/cyan]"
             console.print(
                 Panel(
                     "\n".join(page_content),
@@ -303,8 +305,18 @@ def search(
                     content.append(
                         f"[bold blue]📄 Title:[/bold blue] {first_hit.title}"
                     )
+                    # Get unique page numbers while preserving order and remove leading zeros
+                    unique_pages = []
+                    seen_pages = set()
+                    for hit in doc_hits:
+                        if hit.page_number not in seen_pages:
+                            # Remove leading zeros but keep at least one digit
+                            trimmed_page = hit.page_number.lstrip("0") or "0"
+                            unique_pages.append(trimmed_page)
+                            seen_pages.add(hit.page_number)
+
                     content.append(
-                        f"[bold green]📄 Pages with hits:[/bold green] {', '.join(h.page_number for h in doc_hits)}"
+                        f"[bold green]📄 Pages with hits:[/bold green] {', '.join(unique_pages)}"
                     )
 
                     if first_hit.date:
@@ -312,16 +324,42 @@ def search(
                             f"[bold blue]📅 Date:[/bold blue] {first_hit.date}"
                         )
 
-                    for hit in doc_hits[:3]:
+                    for hit in doc_hits:
                         if hit.full_page_text:
+                            # Create a snippet around the keyword if it exists
+                            full_text = hit.full_page_text
+                            keyword_lower = keyword.lower()
+                            text_lower = full_text.lower()
+
+                            # Find keyword position
+                            keyword_pos = text_lower.find(keyword_lower)
+                            if keyword_pos != -1:
+                                # Create snippet around keyword (300 chars total, keyword roughly centered)
+                                start = max(0, keyword_pos - 100)
+                                end = min(len(full_text), start + 300)
+                                # Adjust start if we're near the end of text
+                                if end - start < 300:
+                                    start = max(0, end - 300)
+                                snippet_text = full_text[start:end]
+                                if start > 0:
+                                    snippet_text = "..." + snippet_text
+                                if end < len(full_text):
+                                    snippet_text = snippet_text + "..."
+                            else:
+                                # Fallback to first 300 chars if keyword not found
+                                snippet_text = full_text[:300]
+                                if len(full_text) > 300:
+                                    snippet_text = snippet_text + "..."
+
                             display_text = display_adapter.display_service.formatter.highlight_search_keyword(
-                                hit.full_page_text[:300], keyword
+                                snippet_text, keyword
+                            )
+                            trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
+                            content.append(
+                                f"\n[bold cyan]Page {trimmed_page_number}:[/bold cyan]"
                             )
                             content.append(
-                                f"\n[bold cyan]Page {hit.page_number}:[/bold cyan]"
-                            )
-                            content.append(
-                                f"[italic]{display_text}{'...' if len(hit.full_page_text) > 300 else ''}[/italic]"
+                                f"[italic]{display_text}[/italic]"
                             )
 
                     panel_title = (
@@ -359,7 +397,8 @@ def search(
                         )
                         content.append(f"[italic]{display_text}[/italic]")
 
-                        panel_title = f"[cyan]Hit: {hit.reference_code} - Page {hit.page_number}[/cyan]"
+                        trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
+                        panel_title = f"[cyan]Hit: {hit.reference_code} - Page {trimmed_page_number}[/cyan]"
                         console.print(
                             Panel(
                                 "\n".join(content),
