@@ -15,9 +15,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from ..services import (
     SearchOperations,
     DisplayService,
-    RichConsoleFormatter,
     SearchResultsAnalyzer,
 )
+from ..formatters import RichConsoleFormatter
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
 console = Console()
@@ -121,7 +121,7 @@ class RichDisplayAdapter:
                     if len(hit.snippet_text) > 150
                     else hit.snippet_text
                 )
-                snippet = self.display_service.formatter.keyword_highlight(
+                snippet = self.display_service.formatter.highlight_search_keyword(
                     snippet, operation.keyword
                 )
                 content_parts.append(
@@ -178,7 +178,7 @@ class RichDisplayAdapter:
             page_content = []
 
             # Full transcribed text with keyword highlighting
-            display_text = self.display_service.formatter.keyword_highlight(
+            display_text = self.display_service.formatter.highlight_search_keyword(
                 context.full_text, highlight_term
             )
             page_content.append(
@@ -314,7 +314,7 @@ def search(
 
                     for hit in doc_hits[:3]:
                         if hit.full_page_text:
-                            display_text = display_adapter.display_service.formatter.keyword_highlight(
+                            display_text = display_adapter.display_service.formatter.highlight_search_keyword(
                                 hit.full_page_text[:300], keyword
                             )
                             content.append(
@@ -350,7 +350,7 @@ def search(
                             )
 
                         display_text = (
-                            display_adapter.display_service.formatter.keyword_highlight(
+                            display_adapter.display_service.formatter.highlight_search_keyword(
                                 hit.full_page_text, keyword
                             )
                         )

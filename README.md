@@ -20,7 +20,7 @@ A MCP server and command-line tools for searching and browsing transcribed histo
 
 ```bash
 # Search for anything - uv will auto-install dependencies
-uv run tools/ra.py search "Stockholm"
+uv run ra search "Stockholm"
 ```
 
 ## How to Use
@@ -31,13 +31,13 @@ Find documents containing specific words or phrases:
 
 ```bash
 # Basic search
-uv run tools/ra.py search "Stockholm"
+uv run ra search "Stockholm"
 
 # Search with full page transcriptions
-uv run tools/ra.py search "trolldom" --context --max-pages 5
+uv run ra search "trolldom" --context --max-pages 5
 
 # Search without document grouping
-uv run tools/ra.py search "vasa" --context --no-grouping --max-pages 3
+uv run ra search "vasa" --context --no-grouping --max-pages 3
 ```
 
 **Options:**
@@ -53,13 +53,13 @@ When you find interesting documents, browse them directly:
 
 ```bash
 # View single page
-uv run tools/ra.py browse "SE/RA/123" --page 5
+uv run ra browse "SE/RA/123" --page 5
 
 # View page range
-uv run tools/ra.py browse "SE/RA/123" --pages "1-10"
+uv run ra browse "SE/RA/123" --pages "1-10"
 
 # View specific pages with search highlighting
-uv run tools/ra.py browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
+uv run ra browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
 ```
 
 **Options:**
@@ -73,13 +73,13 @@ See complete pages with surrounding context for better understanding:
 
 ```bash
 # Find pages with keyword and show full transcriptions
-uv run tools/ra.py show-pages "Stockholm" --max-pages 5
+uv run ra show-pages "Stockholm" --max-pages 5
 
 # Include surrounding pages for context
-uv run tools/ra.py show-pages "trolldom" --context-padding 2
+uv run ra show-pages "trolldom" --context-padding 2
 
 # Show pages individually
-uv run tools/ra.py show-pages "vasa" --no-grouping
+uv run ra show-pages "vasa" --no-grouping
 ```
 
 **Options:**
@@ -115,30 +115,30 @@ uv run tools/ra.py show-pages "vasa" --no-grouping
 
 1. **Search for a keyword:**
    ```bash
-   uv run tools/ra.py search "Stockholm"
+   uv run ra search "Stockholm"
    ```
 
 2. **Get full context for interesting hits:**
    ```bash
-   uv run tools/ra.py search "Stockholm" --context --max-pages 3
+   uv run ra search "Stockholm" --context --max-pages 3
    ```
 
 3. **Browse specific documents:**
    ```bash
-   uv run tools/ra.py browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
+   uv run ra browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
    ```
 
 ### Advanced Usage
 
 ```bash
 # Comprehensive search with context
-uv run tools/ra.py show-pages "handelsbalansen" --context-padding 2 --max-pages 8
+uv run ra show-pages "handelsbalansen" --context-padding 2 --max-pages 8
 
 # Targeted document browsing
-uv run tools/ra.py browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
+uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
 
 # Large search with selective display
-uv run tools/ra.py search "järnväg" --max 100 --max-display 30
+uv run ra search "järnväg" --max 100 --max-display 30
 ```
 
 ## Technical Details
@@ -174,10 +174,10 @@ The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattfor
 ### Getting Help
 
 ```bash
-uv run tools/ra.py --help
-uv run tools/ra.py search --help
-uv run tools/ra.py browse --help
-uv run tools/ra.py show-pages --help
+uv run ra --help
+uv run ra search --help
+uv run ra browse --help
+uv run ra show-pages --help
 ```
 
 
