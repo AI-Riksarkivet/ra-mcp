@@ -36,6 +36,9 @@ uv run ra search "Stockholm"
 # Search with full page transcriptions
 uv run ra search "trolldom" --context --max-pages 5
 
+# Search with surrounding pages for context
+uv run ra search "trolldom" --context --context-padding 1 --max-pages 3
+
 # Search without document grouping
 uv run ra search "vasa" --context --no-grouping --max-pages 3
 ```
@@ -45,6 +48,7 @@ uv run ra search "vasa" --context --no-grouping --max-pages 3
 - `--max-display N` - Maximum results to display (default: 20)
 - `--context` - Show full page transcriptions
 - `--max-pages N` - Maximum pages to load context for (default: 10)
+- `--context-padding N` - Include N pages before/after each hit for context (default: 0)
 - `--no-grouping` - Show pages individually instead of grouped by document
 
 ### 2. Browse Specific Documents
@@ -67,25 +71,26 @@ uv run ra browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
 - `--search-term` - Highlight this term in the text
 - `--max-display N` - Maximum pages to display (default: 20)
 
-### 3. Get Full Context
+### 3. Search with Full Context
 
-See complete pages with surrounding context for better understanding:
+The `--context` flag shows complete page transcriptions instead of just snippets:
 
 ```bash
-# Find pages with keyword and show full transcriptions
-uv run ra show-pages "Stockholm" --max-pages 5
+# Search with full page transcriptions
+uv run ra search "Stockholm" --context --max-pages 5
 
-# Include surrounding pages for context
-uv run ra show-pages "trolldom" --context-padding 2
+# Include surrounding pages for additional context
+uv run ra search "trolldom" --context --context-padding 2
 
-# Show pages individually
-uv run ra show-pages "vasa" --no-grouping
+# Show pages individually instead of grouped by document
+uv run ra search "vasa" --context --no-grouping
 ```
 
-**Options:**
-- `--max-pages N` - Maximum pages to display (default: 10)
-- `--context-padding N` - Include N pages before/after each hit (default: 1)
-- `--no-grouping` - Show pages individually instead of grouped by document
+**Context Features:**
+- **Full page transcriptions** with keyword highlighting
+- **Context padding** to include surrounding pages
+- **Document grouping** or individual page display
+- **Complete metadata** with dates and institutions
 
 ## Output Features
 
@@ -123,6 +128,11 @@ uv run ra show-pages "vasa" --no-grouping
    uv run ra search "Stockholm" --context --max-pages 3
    ```
 
+2b. **Include surrounding pages for additional context:**
+   ```bash
+   uv run ra search "Stockholm" --context --context-padding 1 --max-pages 3
+   ```
+
 3. **Browse specific documents:**
    ```bash
    uv run ra browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
@@ -131,8 +141,8 @@ uv run ra show-pages "vasa" --no-grouping
 ### Advanced Usage
 
 ```bash
-# Comprehensive search with context
-uv run ra show-pages "handelsbalansen" --context-padding 2 --max-pages 8
+# Comprehensive search with context and surrounding pages
+uv run ra search "handelsbalansen" --context --context-padding 2 --max-pages 8
 
 # Targeted document browsing
 uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
@@ -177,7 +187,7 @@ The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattfor
 uv run ra --help
 uv run ra search --help
 uv run ra browse --help
-uv run ra show-pages --help
+uv run ra serve --help
 ```
 
 
