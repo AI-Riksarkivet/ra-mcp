@@ -69,6 +69,35 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+### Building and Publishing with Dagger
+The project uses Dagger for containerized builds and publishing.
+
+**Build locally:**
+```bash
+dagger call build
+```
+
+**Build and publish to Docker registry:**
+```bash
+dagger call publish \
+  --docker-username=env:DOCKER_USERNAME \
+  --docker-password=env:DOCKER_PASSWORD \
+  --image-repository="riksarkivet/ra-mcp" \
+  --tag="latest" \
+  --source=.
+```
+
+**Available Dagger functions:**
+- `build`: Creates a production-ready container image
+- `test`: Runs the test suite using the built container
+- `publish`: Builds and publishes container image to registry with authentication
+- `build-local`: Build with custom environment variables and settings
+
+**Prerequisites for publishing:**
+- Set `DOCKER_USERNAME` environment variable with Docker registry username
+- Set `DOCKER_PASSWORD` environment variable with Docker registry password
+- Ensure Docker registry access for the specified credentials
+
 ## Architecture
 
 ### MCP Server Structure

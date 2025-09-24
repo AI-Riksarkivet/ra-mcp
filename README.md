@@ -207,7 +207,48 @@ npx @modelcontextprotocol/inspector uv run python src/ra_mcp/server.py
 
 The MCP Inspector provides a web interface to test server tools, resources, and prompts during development.
 
+### Building and Publishing with Dagger
 
+The project uses Dagger for containerized builds and publishing to Docker registries.
+
+#### Prerequisites
+- [Dagger CLI](https://docs.dagger.io/install) installed
+- Docker registry credentials (for publishing)
+
+#### Available Commands
+
+**Build locally:**
+```bash
+dagger call build
+```
+
+**Run tests:**
+```bash
+dagger call test
+```
+
+**Build and publish to Docker registry:**
+```bash
+# Set environment variables
+export DOCKER_USERNAME="your-username"
+export DOCKER_PASSWORD="your-password"
+
+# Build and publish
+dagger call publish \
+  --docker-username=env:DOCKER_USERNAME \
+  --docker-password=env:DOCKER_PASSWORD \
+  --image-repository="riksarkivet/ra-mcp" \
+  --tag="latest" \
+  --source=.
+```
+
+#### Available Dagger Functions
+- `build`: Creates a production-ready container image using the Dockerfile
+- `test`: Runs the test suite using pytest with coverage reporting
+- `publish`: Builds and publishes container image to registry with authentication
+- `build-local`: Build with custom environment variables and registry settings
+
+The Dagger configuration is located in `.dagger/main.go` and provides a complete CI/CD pipeline for the project.
 
 ![image](https://github.com/user-attachments/assets/bde56408-5135-4a2a-baf3-f26c32fab9dc)
 
