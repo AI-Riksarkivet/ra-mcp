@@ -24,7 +24,7 @@ A MCP server and command-line tools for searching and browsing transcribed histo
 ### Quick Setup
 
 ```bash
-# Search for anything - uv will auto-install dependencies
+# Search for anything 
 uv run ra search "Stockholm"
 ```
 
@@ -91,33 +91,66 @@ uv run ra search "trolldom" --context --context-padding 2
 uv run ra search "vasa" --context --no-grouping
 ```
 
-**Context Features:**
-- **Full page transcriptions** with keyword highlighting
-- **Context padding** to include surrounding pages
-- **Document grouping** or individual page display
-- **Complete metadata** with dates and institutions
-
 ## Output Features
 
-### Search Results
-- **Grouped by document** for better context
-- **Institution and date** information
-- **Page numbers** with search hits
-- **Snippet previews** with keyword highlighting
-- **Browse command examples** for further exploration
+### 🔍 Search Results
+When you run a search, results are presented with:
 
-### Full Page Display
-- **Complete transcriptions** from ALTO XML
-- **Keyword highlighting** in yellow
-- **Document metadata** (title, date, hierarchy)
-- **Direct links** to images, ALTO XML, and Bildvisning
-- **Context pages** marked clearly
+- **Document grouping** - Related pages grouped together for context
+- **Institution & dates** - Archive location and document dates
+- **Page numbers** - Specific pages containing your search terms
+- **Highlighted snippets** - Preview text with keywords emphasized
+- **Browse commands** - Ready-to-run commands for deeper exploration
 
-### Links Provided
-- **ALTO XML** - Full transcription data
-- **IIIF Images** - High-resolution document images
-- **Bildvisning** - Interactive viewer with search highlighting
-- **Collections & Manifests** - IIIF metadata
+**Example output:**
+```
+Document: SE/RA/12345 - Stockholms stads tänkeböcker (1520-1550)
+Institution: Stockholms stadsarkiv | Date: 1545
+├─ Page 42: "...angående **Stockholm** rådstuga och dess underhåll..."
+├─ Page 98: "...borgmästaren i **Stockholm** beslutade att..."
+└─ Page 156: "...handlare från **Stockholm** begärde tillstånd..."
+
+Browse commands:
+  uv run ra browse "SE/RA/12345" --page 42 --search-term "Stockholm"
+  uv run ra browse "SE/RA/12345" --pages "42,98,156" --search-term "Stockholm"
+```
+
+### 📄 Full Page Display
+With the `--context` flag, you get complete page transcriptions featuring:
+
+- **Full text transcriptions** - Complete page content from ALTO XML
+- **Keyword highlighting** - Your search terms highlighted in yellow
+- **Rich metadata** - Document titles, dates, and archive hierarchy
+- **Direct access links** - Quick links to images, XML, and interactive viewer
+- **Context indicators** - Clear marking of surrounding pages when using `--context-padding`
+
+**Example output:**
+```
+═══ SE/RA/12345 - Page 42 ═══
+Title: Stockholms stads tänkeböcker
+Date: 1545-03-15 | Institution: Stockholms stadsarkiv
+
+Anno domini 1545 den 15 martii blef föredraget angående 🟡Stockholm🟡
+rådstuga och dess underhåll. Borgmästaren förklarade att byggnaden
+behöfde reparationer och att medel måste anskaffas för detta ändamål.
+Flera borgare från 🟡Stockholm🟡 stad deltog i diskussionen om hur
+kostnaderna skulle fördelas...
+
+Links:
+📄 ALTO XML: https://sok.riksarkivet.se/dokument/alto/SE_RA_12345_042.xml
+🖼️  Image: https://lbiiif.riksarkivet.se/arkiv/SE_RA_12345_042.jpg
+🔍 Bildvisning: https://sok.riksarkivet.se/bildvisning/SE_RA_12345#042
+```
+
+### 🔗 Available Resources
+Each result provides direct access to:
+
+| Resource | Description | Use Case |
+|----------|-------------|----------|
+| **ALTO XML** | Structured transcription data with precise positioning | Text analysis, data extraction |
+| **IIIF Images** | High-resolution document scans with zoom/crop support | Visual inspection, citations |
+| **Bildvisning** | Interactive web viewer with search highlighting | Online browsing, sharing |
+| **Collections** | IIIF metadata for document series | Understanding document context |
 
 ## Examples
 
