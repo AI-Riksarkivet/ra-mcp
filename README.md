@@ -128,12 +128,12 @@ uv run ra search "vasa" --context --no-grouping
    uv run ra search "Stockholm" --context --max-pages 3
    ```
 
-2b. **Include surrounding pages for additional context:**
+3. **Include surrounding pages for additional context:**
    ```bash
    uv run ra search "Stockholm" --context --context-padding 1 --max-pages 3
    ```
 
-3. **Browse specific documents:**
+4. **Browse specific documents:**
    ```bash
    uv run ra browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
    ```
@@ -142,13 +142,13 @@ uv run ra search "vasa" --context --no-grouping
 
 ```bash
 # Comprehensive search with context and surrounding pages
-uv run ra search "handelsbalansen" --context --context-padding 2 --max-pages 8
+uv run ra search "trolldom" --context --context-padding 2 --max-pages 8
 
 # Targeted document browsing
-uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "export"
+uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "trolldom"
 
 # Large search with selective display
-uv run ra search "järnväg" --max 100 --max-display 30
+uv run ra search "trolldom" --max 100 --max-display 30
 ```
 
 ## Technical Details
