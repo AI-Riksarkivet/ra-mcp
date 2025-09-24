@@ -208,7 +208,7 @@ The [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattfor
 
 #### Experimental Features
 - **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)** - Semantic search interface (under evaluation)
-- **AI-Riksarkivet HTRflow** - Handwritten text recognition pipeline (PyPI package)
+- **[AI-Riksarkivet HTRflow](https://pypi.org/project/htrflow/)** - Handwritten text recognition pipeline (PyPI package)
 
 
 ## Troubleshooting
@@ -257,7 +257,7 @@ The MCP Inspector provides a web interface to test server tools, resources, and 
 
 ### Building and Publishing with Dagger
 
-The project uses Dagger for containerized builds and publishing to Docker registries.
+The project uses Dagger for containerized builds and publishing to Docker registries. Pre-built images are available on [Docker Hub](https://hub.docker.com/r/riksarkivet/ra-mcp).
 
 #### Prerequisites
 - [Dagger CLI](https://docs.dagger.io/install) installed
