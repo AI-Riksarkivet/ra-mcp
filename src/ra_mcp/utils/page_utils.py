@@ -6,9 +6,11 @@ from typing import List, Optional
 
 
 def parse_page_range(page_range: Optional[str], total_pages: int = 1000) -> List[int]:
-    """Parse page range string and return list of page numbers."""
+    """Parse page range string and return list of page numbers.
+       ..Defaults to first 20 pages
+    """
     if not page_range:
-        return list(range(1, min(total_pages + 1, 21)))  # Default to first 20 pages
+        return list(range(1, min(total_pages + 1, 21)))  
 
     pages = []
     parts = page_range.split(",")

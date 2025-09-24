@@ -17,39 +17,109 @@ class ALTOClient:
 
     def fetch_content(self, alto_url: str, timeout: int = 10) -> Optional[str]:
         """Fetch and parse ALTO XML file to extract full text content."""
-        try:
-            headers = {
-                "User-Agent": "transcribed_search_browser/1.0",
-                "Accept": "application/xml, text/xml, */*",
-            }
+        xml_response_content = self._fetch_alto_xml(alto_url, timeout)
+        if not xml_response_content:
+            return None
 
-            response = self.session.get(alto_url, headers=headers, timeout=timeout)
-            if response.status_code != 200:
+        parsed_xml_root = self._parse_xml_content(xml_response_content)
+        if parsed_xml_root is None:
+            return None
+
+        return self._extract_text_from_alto(parsed_xml_root)
+
+    def _fetch_alto_xml(self, document_url: str, timeout_seconds: int) -> Optional[bytes]:
+        """Fetch ALTO XML document from URL."""
+        try:
+            request_headers = self._build_request_headers()
+            http_response = self.session.get(
+                document_url,
+                headers=request_headers,
+                timeout=timeout_seconds
+            )
+
+            if http_response.status_code != 200:
                 return None
 
-            root = ET.fromstring(response.content)
-            return self._extract_text_from_alto(root)
+            return http_response.content
 
         except Exception:
             return None
 
-    def _extract_text_from_alto(self, root: ET.Element) -> Optional[str]:
+    def _build_request_headers(self) -> dict:
+        """Build HTTP request headers for ALTO XML fetching."""
+        return {
+            "User-Agent": "transcribed_search_browser/1.0",
+            "Accept": "application/xml, text/xml, */*",
+        }
+
+    def _parse_xml_content(self, xml_content: bytes) -> Optional[ET.Element]:
+        """Parse XML content into ElementTree."""
+        try:
+            return ET.fromstring(xml_content)
+        except Exception:
+            return None
+
+    def _extract_text_from_alto(self, xml_root: ET.Element) -> Optional[str]:
         """Extract text content from ALTO XML root element."""
-        text_lines = []
+        extracted_text_segments = self._extract_text_with_namespaces(xml_root)
 
-        for ns in ALTO_NAMESPACES:
-            for string_elem in root.findall(".//alto:String", ns):
-                content = string_elem.get("CONTENT", "")
-                if content:
-                    text_lines.append(content)
-            if text_lines:
-                break
+        if not extracted_text_segments:
+            extracted_text_segments = self._extract_text_without_namespace(xml_root)
 
-        if not text_lines:
-            for string_elem in root.findall(".//String"):
-                content = string_elem.get("CONTENT", "")
-                if content:
-                    text_lines.append(content)
+        return self._combine_text_segments(extracted_text_segments)
 
-        full_text = " ".join(text_lines)
-        return full_text.strip() if full_text else None
+    def _extract_text_with_namespaces(self, xml_root: ET.Element) -> list:
+        """Extract text using ALTO namespaces."""
+        collected_text_segments = []
+
+        for namespace_definition in ALTO_NAMESPACES:
+            namespace_text_segments = self._extract_text_for_namespace(
+                xml_root,
+                namespace_definition
+            )
+            if namespace_text_segments:
+                return namespace_text_segments
+
+        return collected_text_segments
+
+    def _extract_text_for_namespace(
+        self,
+        xml_root: ET.Element,
+        namespace: dict
+    ) -> list:
+        """Extract text for a specific namespace."""
+        text_segments = []
+        string_elements = xml_root.findall(".//alto:String", namespace)
+
+        for element in string_elements:
+            text_content = self._extract_content_attribute(element)
+            if text_content:
+                text_segments.append(text_content)
+
+        return text_segments
+
+    def _extract_text_without_namespace(self, xml_root: ET.Element) -> list:
+        """Extract text without namespace qualification."""
+        text_segments = []
+        unqualified_string_elements = xml_root.findall(".//String")
+
+        for element in unqualified_string_elements:
+            text_content = self._extract_content_attribute(element)
+            if text_content:
+                text_segments.append(text_content)
+
+        return text_segments
+
+    def _extract_content_attribute(self, element: ET.Element) -> str:
+        """Extract CONTENT attribute from an element."""
+        return element.get("CONTENT", "")
+
+    def _combine_text_segments(self, text_segments: list) -> Optional[str]:
+        """Combine text segments into a single string."""
+        if not text_segments:
+            return None
+
+        combined_text = " ".join(text_segments)
+        trimmed_text = combined_text.strip()
+
+        return trimmed_text if trimmed_text else None
