@@ -4,6 +4,8 @@ package main
 import (
 	"context"
 	"strings"
+
+	"dagger/ra-mcp/internal/dagger"
 )
 
 type RaMcp struct{}
@@ -12,10 +14,10 @@ type RaMcp struct{}
 func (m *RaMcp) BuildLocal(
 	ctx context.Context,
 	// Local directory to build from
-	// +default="."
-	source *Directory,
+	// +optional
+	source *dagger.Directory,
 	// Image repository name
-	// +default="ra-mcp"
+	// +default="riksarkivet/ra-mcp"
 	imageRepository string,
 	// Environment variables for build customization (KEY=VALUE format)
 	// +default=[]
@@ -26,15 +28,15 @@ func (m *RaMcp) BuildLocal(
 	// Registry URL
 	// +default="docker.io"
 	registry string,
-) (*Container, error) {
+) (*dagger.Container, error) {
 	// Convert environment variables to build args
-	var buildArgs []BuildArg
-	buildArgs = append(buildArgs, BuildArg{Name: "REGISTRY", Value: registry})
+	var buildArgs []dagger.BuildArg
+	buildArgs = append(buildArgs, dagger.BuildArg{Name: "REGISTRY", Value: registry})
 
 	// Parse environment variables and add to build args
 	for _, envVar := range envVars {
 		if parts := strings.Split(envVar, "="); len(parts) == 2 {
-			buildArgs = append(buildArgs, BuildArg{
+			buildArgs = append(buildArgs, dagger.BuildArg{
 				Name:  parts[0],
 				Value: parts[1],
 			})
@@ -43,7 +45,7 @@ func (m *RaMcp) BuildLocal(
 
 	// Build the container using Dockerfile
 	container := dag.Container().
-		Build(source, ContainerBuildOpts{
+		Build(source, dagger.ContainerBuildOpts{
 			Dockerfile: "Dockerfile",
 			BuildArgs:  buildArgs,
 		})
@@ -52,13 +54,24 @@ func (m *RaMcp) BuildLocal(
 }
 
 // Build creates a production-ready container image using default settings
-func (m *RaMcp) Build(ctx context.Context) (*Container, error) {
-	return m.BuildLocal(ctx, dag.Host().Directory("."), "ra-mcp", []string{}, "latest", "docker.io")
+func (m *RaMcp) Build(
+	ctx context.Context,
+	// +optional
+	source *dagger.Directory,
+) (*dagger.Container, error) {
+	if source == nil {
+		source = dag.CurrentModule().Source().Directory("..")
+	}
+	return m.BuildLocal(ctx, source, "riksarkivet/ra-mcp", []string{}, "latest", "docker.io")
 }
 
 // Test runs the test suite using the built container
-func (m *RaMcp) Test(ctx context.Context) (string, error) {
-	container, err := m.Build(ctx)
+func (m *RaMcp) Test(
+	ctx context.Context,
+	// +optional
+	source *dagger.Directory,
+) (string, error) {
+	container, err := m.Build(ctx, source)
 	if err != nil {
 		return "", err
 	}
@@ -68,32 +81,37 @@ func (m *RaMcp) Test(ctx context.Context) (string, error) {
 		Stdout(ctx)
 }
 
-// Lint checks code quality and formatting using the built container
-func (m *RaMcp) Lint(ctx context.Context) (string, error) {
-	container, err := m.Build(ctx)
-	if err != nil {
-		return "", err
-	}
 
-	return container.
-		WithExec([]string{"uv", "run", "ruff", "check", "src/"}).
-		WithExec([]string{"uv", "run", "ruff", "format", "--check", "src/"}).
-		Stdout(ctx)
-}
-
-// Publish builds and publishes container image to registry
+// Publish builds and publishes container image to registry with authentication
 func (m *RaMcp) Publish(ctx context.Context,
-	// +default="ra-mcp"
+	// +default="riksarkivet/ra-mcp"
 	imageRepository string,
 	// +default="latest"
 	tag string,
 	// +default="docker.io"
-	registry string) (string, error) {
-	container, err := m.Build(ctx)
+	registry string,
+	// Docker username for authentication
+	// +default="airiksarkivet"
+	dockerUsername string,
+	// Docker password from environment variable
+	dockerPassword *dagger.Secret,
+	// +optional
+	source *dagger.Directory) (string, error) {
+
+	container, err := m.Build(ctx, source)
 	if err != nil {
 		return "", err
 	}
 
 	imageRef := registry + "/" + imageRepository + ":" + tag
+
+	// Authenticate with Docker registry if credentials provided
+	if dockerPassword != nil && dockerUsername != "" {
+		return container.
+			WithRegistryAuth(registry, dockerUsername, dockerPassword).
+			Publish(ctx, imageRef)
+	}
+
 	return container.Publish(ctx, imageRef)
 }
+

@@ -10,15 +10,12 @@ WORKDIR /app
 # Copy dependency files first for better layer caching
 COPY pyproject.toml uv.lock ./
 
-# Create virtual environment and install dependencies
-RUN uv sync --frozen --no-cache
-
-# Copy source code
+# Copy source code needed for package installation
 COPY src/ ./src/
 COPY README.md LICENSE ./
 
-# Install the package
-RUN uv pip install -e .
+# Create virtual environment and install dependencies + package
+RUN uv sync --frozen --no-cache
 
 # Production stage
 FROM python:3.12-slim as production
