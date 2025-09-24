@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Never write any code that you don't also test! CHECK IT!
 - Prefer change file instead of creating a new one 
+- Always read the whole file don't just read the head
 
 ## Commands
 

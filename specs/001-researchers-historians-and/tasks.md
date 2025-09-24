@@ -37,27 +37,27 @@
 - All file paths shown are absolute from repository root
 
 ## Phase 3.1: Infrastructure Setup
-- [ ] T001 [P] Create Dockerfile with multi-stage Python 3.12+ build at `/home/coder/ra-mcp/Dockerfile`
-- [ ] T002 [P] Create SECURITY.md vulnerability reporting guide at `/home/coder/ra-mcp/SECURITY.md`
-- [ ] T003 [P] Create CONTRIBUTING.md with contribution guidelines at `/home/coder/ra-mcp/CONTRIBUTING.md`
-- [ ] T004 [P] Create CODE_OF_CONDUCT.md community standards at `/home/coder/ra-mcp/CODE_OF_CONDUCT.md`
-- [ ] T005 [P] Create .env.example environment template at `/home/coder/ra-mcp/.env.example`
-- [ ] T006 Create .dagger/main.go and CI pipeline structure at `/home/coder/ra-mcp/.dagger/`
+- [x] T001 [P] Create Dockerfile with multi-stage Python 3.12+ build at `/home/coder/ra-mcp/Dockerfile`
+- [x] T002 [P] Create SECURITY.md vulnerability reporting guide at `/home/coder/ra-mcp/SECURITY.md`
+- [x] T003 [P] Create CONTRIBUTING.md with contribution guidelines at `/home/coder/ra-mcp/CONTRIBUTING.md`
+- [x] T004 [P] Create CODE_OF_CONDUCT.md community standards at `/home/coder/ra-mcp/CODE_OF_CONDUCT.md`
+- [x] T005 [P] Create .env.example environment template at `/home/coder/ra-mcp/.env.example`
+- [x] T006 Create .dagger/main.go and CI pipeline structure at `/home/coder/ra-mcp/.dagger/`
 
 ## Phase 3.2: Design Documents (Phase 1 execution)
-- [ ] T007 [P] Create data-model.md with enhanced pydantic models at `/home/coder/ra-mcp/specs/001-researchers-historians-and/data-model.md`
-- [ ] T008 [P] Create contracts/search_transcribed.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/search_transcribed.yaml`
-- [ ] T009 [P] Create contracts/browse_document.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/browse_document.yaml`
-- [ ] T010 [P] Create contracts/get_document_structure.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/get_document_structure.yaml`
-- [ ] T011 Create quickstart.md with researcher workflow scenarios at `/home/coder/ra-mcp/specs/001-researchers-historians-and/quickstart.md`
+- [x] T007 [P] Create data-model.md with enhanced pydantic models at `/home/coder/ra-mcp/specs/001-researchers-historians-and/data-model.md`
+- [x] T008 [P] Create contracts/search_transcribed.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/search_transcribed.yaml`
+- [x] T009 [P] Create contracts/browse_document.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/browse_document.yaml`
+- [x] T010 [P] Create contracts/get_document_structure.yaml OpenAPI schema at `/home/coder/ra-mcp/specs/001-researchers-historians-and/contracts/get_document_structure.yaml`
+- [x] T011 Create quickstart.md with researcher workflow scenarios at `/home/coder/ra-mcp/specs/001-researchers-historians-and/quickstart.md`
 
 ## Phase 3.3: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.4
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T012 [P] Contract test for search_transcribed MCP tool at `/home/coder/ra-mcp/tests/contract/test_search_transcribed.py`
-- [ ] T013 [P] Contract test for browse_document MCP tool at `/home/coder/ra-mcp/tests/contract/test_browse_document.py`
-- [ ] T014 [P] Contract test for get_document_structure MCP tool at `/home/coder/ra-mcp/tests/contract/test_get_document_structure.py`
-- [ ] T015 [P] Integration test researcher keyword search workflow at `/home/coder/ra-mcp/tests/integration/test_researcher_workflow.py`
-- [ ] T016 [P] Integration test AI assistant integration patterns at `/home/coder/ra-mcp/tests/integration/test_ai_assistant.py`
+- [x] T012 [P] Contract test for search_transcribed MCP tool at `/home/coder/ra-mcp/tests/contract/test_search_transcribed.py`
+- [x] T013 [P] Contract test for browse_document MCP tool at `/home/coder/ra-mcp/tests/contract/test_browse_document.py`
+- [x] T014 [P] Contract test for get_document_structure MCP tool at `/home/coder/ra-mcp/tests/contract/test_get_document_structure.py`
+- [x] T015 [P] Integration test researcher keyword search workflow at `/home/coder/ra-mcp/tests/integration/test_researcher_workflow.py`
+- [x] T016 [P] Integration test AI assistant integration patterns at `/home/coder/ra-mcp/tests/integration/test_ai_assistant.py`
 
 ## Phase 3.4: Core Implementation (ONLY after tests are failing)
 - [ ] T017 Enhance search_transcribed tool with better highlighting in `/home/coder/ra-mcp/src/ra_mcp/mcp_tools.py`
