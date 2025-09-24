@@ -1,5 +1,10 @@
+<div align="center">
+  <img src="img/logo_512.jpg" alt="RA-MCP Logo" width="250">
+</div>
+
 
 # ra-mcp (WIP)
+
 
 ## MCPs for Riksarkivet
 
