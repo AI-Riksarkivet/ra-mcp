@@ -240,6 +240,12 @@ class RichDisplayAdapter:
     is_flag=True,
     help="Show pages individually instead of grouped by document (only with --context)",
 )
+@click.option(
+    "--context-padding",
+    type=int,
+    default=0,
+    help="Number of pages to include before and after each hit for context (only with --context)",
+)
 def search(
     keyword: str,
     max_results: int,
@@ -247,16 +253,19 @@ def search(
     context: bool,
     max_pages: int,
     no_grouping: bool,
+    context_padding: int,
 ):
     """Search for keyword in transcribed materials.
 
     Fast search across all transcribed documents in Riksarkivet.
     Returns reference codes and page numbers containing the keyword.
+    Use --context to see full page transcriptions with optional context padding.
 
     Examples:
-        ra search "Stockholm"
-        ra search "trolldom" --context --max-pages 5
-        ra search "vasa" --context --no-grouping --max-pages 3
+        ra search "Stockholm"                                    # Basic search
+        ra search "trolldom" --context --max-pages 5            # With full context
+        ra search "vasa" --context --context-padding 2          # With surrounding pages
+        ra search "Stockholm" --context --no-grouping           # Individual page display
     """
     # Use shared business logic
     search_ops = SearchOperations()
@@ -271,6 +280,7 @@ def search(
             max_results=max_results,
             show_context=context,
             max_pages_with_context=max_pages if context else 0,
+            context_padding=context_padding if context else 0,
         )
 
         console.print(
@@ -326,33 +336,9 @@ def search(
 
                     for hit in doc_hits:
                         if hit.full_page_text:
-                            # Create a snippet around the keyword if it exists
-                            full_text = hit.full_page_text
-                            keyword_lower = keyword.lower()
-                            text_lower = full_text.lower()
-
-                            # Find keyword position
-                            keyword_pos = text_lower.find(keyword_lower)
-                            if keyword_pos != -1:
-                                # Create snippet around keyword (300 chars total, keyword roughly centered)
-                                start = max(0, keyword_pos - 100)
-                                end = min(len(full_text), start + 300)
-                                # Adjust start if we're near the end of text
-                                if end - start < 300:
-                                    start = max(0, end - 300)
-                                snippet_text = full_text[start:end]
-                                if start > 0:
-                                    snippet_text = "..." + snippet_text
-                                if end < len(full_text):
-                                    snippet_text = snippet_text + "..."
-                            else:
-                                # Fallback to first 300 chars if keyword not found
-                                snippet_text = full_text[:300]
-                                if len(full_text) > 300:
-                                    snippet_text = snippet_text + "..."
-
+                            # Show full page transcription with keyword highlighting
                             display_text = display_adapter.display_service.formatter.highlight_search_keyword(
-                                snippet_text, keyword
+                                hit.full_page_text, keyword
                             )
                             trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
                             content.append(
@@ -490,86 +476,6 @@ def browse(
         console.print(f"[red]Browse failed: {e}[/red]")
         sys.exit(1)
 
-
-@click.command(name="show-pages")
-@click.argument("keyword")
-@click.option(
-    "--max-pages",
-    type=int,
-    default=DEFAULT_MAX_PAGES,
-    help="Maximum pages to display with full context",
-)
-@click.option(
-    "--context-padding",
-    type=int,
-    default=1,
-    help="Number of pages to include before and after each hit for context",
-)
-@click.option(
-    "--no-grouping",
-    is_flag=True,
-    help="Show pages individually instead of grouped by document",
-)
-def show_pages(keyword: str, max_pages: int, context_padding: int, no_grouping: bool):
-    """Search for keyword and show the exact pages containing it with context.
-
-    This combines search and browse - finds pages with the keyword then displays
-    the full page transcriptions with the keyword highlighted, plus surrounding
-    pages for context. Results are grouped by document by default for better context.
-
-    Examples:
-        ra show-pages "Stockholm" --max-pages 5
-        ra show-pages "trolldom" --no-grouping
-        ra show-pages "vasa" --context-padding 2
-    """
-    # Use shared business logic
-    search_ops = SearchOperations()
-    display_adapter = RichDisplayAdapter()
-
-    console.print(f"[blue]Searching for '{keyword}' to find exact pages...[/blue]")
-
-    try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Searching and loading contexts...", total=None)
-
-            # Perform show-pages using shared logic
-            search_op, enriched_hits = search_ops.show_pages_with_context(
-                keyword=keyword,
-                max_pages=max_pages,
-                context_padding=context_padding,
-                search_limit=max(max_pages * 3, 50),
-            )
-
-            progress.update(
-                task, description=f"✓ Found {len(enriched_hits)} pages with context"
-            )
-
-        if not enriched_hits:
-            console.print("[yellow]No pages found containing the keyword.[/yellow]")
-            return
-
-        console.print(
-            f"\n[green]Found {len(search_op.hits)} pages containing '{keyword}'[/green]"
-        )
-        console.print(
-            f"[blue]Showing {len(enriched_hits)} pages including context padding (+/- {context_padding} pages)...[/blue]"
-        )
-
-        # Use the unified display service format but render with Rich
-        result_text = display_adapter.display_service.format_show_pages_results(
-            search_op, enriched_hits, no_grouping
-        )
-
-        # For now, just print the formatted text - we could enhance this further with Rich panels
-        console.print(result_text)
-
-    except Exception as e:
-        console.print(f"[red]Show pages failed: {e}[/red]")
-        sys.exit(1)
 
 
 @click.command()
