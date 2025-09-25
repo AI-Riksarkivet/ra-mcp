@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Prefer change file instead of creating a new one 
 - Always read the whole file don't just read the head
 - Always give multiple reommendations of possible.
+- If think that a comments is important, insert in the docstring not in the code. Instead also if it very important in a specfic line, be very specfik with naming conventions of variables or functions instead.
 
 ## Commands
 

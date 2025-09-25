@@ -97,15 +97,17 @@ class OAIPMHClient:
     def _extract_pid_from_nad_link(self, nad_link_url: str) -> str:
         """Extract PID from NAD link URL."""
         url_segments = nad_link_url.rstrip("/").split("/")
-        return url_segments[-1] if url_segments else ""
+        if url_segments:
+            # Remove query parameters if present
+            pid = url_segments[-1].split("?")[0]
+            return pid
+        return ""
 
     def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
             xml_content = self.http.get_xml(
-                self.base_url,
-                params=request_parameters,
-                timeout=30
+                self.base_url, params=request_parameters, timeout=30
             )
 
             xml_response_root = self._parse_xml_response(xml_content)
@@ -121,7 +123,9 @@ class OAIPMHClient:
         try:
             return etree.fromstring(xml_data)
         except Exception as parse_error:
-            raise Exception(f"Failed to parse XML response: {parse_error}") from parse_error
+            raise Exception(
+                f"Failed to parse XML response: {parse_error}"
+            ) from parse_error
 
     def _check_oai_response_errors(self, xml_root: etree.Element) -> None:
         """Check for OAI-PMH errors in the response."""
@@ -165,7 +169,7 @@ class OAIPMHClient:
     ) -> Optional[etree.Element]:
         """Extract EAD element from record."""
         ead_elements = record_element.xpath(
-            ".//ape_ead:ead", namespaces={"ape_ead": NAMESPACES["ape_ead"]}
+            ".//ead:ead", namespaces={"ead": NAMESPACES["ead"]}
         )
         return ead_elements[0] if ead_elements else None
 
@@ -192,7 +196,9 @@ class OAIPMHClient:
 
     def _extract_nad_link_from_ead(self, ead_element: etree.Element) -> str:
         """Extract NAD link from EAD element."""
-        dao_elements = ead_element.xpath(".//ead:dao", namespaces={"ead": NAMESPACES["ead"]})
+        dao_elements = ead_element.xpath(
+            ".//ead:dao", namespaces={"ead": NAMESPACES["ead"]}
+        )
         if dao_elements:
             return dao_elements[0].get("{http://www.w3.org/1999/xlink}href", "")
         return ""

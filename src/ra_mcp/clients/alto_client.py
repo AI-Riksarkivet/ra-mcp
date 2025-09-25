@@ -31,10 +31,10 @@ class ALTOClient:
         self, document_url: str, timeout_seconds: int
     ) -> Optional[bytes]:
         """Fetch ALTO XML document from URL."""
-        headers = {
-            "Accept": "application/xml, text/xml, */*"
-        }
-        return self.http.get_content(document_url, timeout=timeout_seconds, headers=headers)
+        headers = {"Accept": "application/xml, text/xml, */*"}
+        return self.http.get_content(
+            document_url, timeout=timeout_seconds, headers=headers
+        )
 
     def _parse_xml_content(self, xml_content: bytes) -> Optional[ET.Element]:
         """Parse XML content into ElementTree."""

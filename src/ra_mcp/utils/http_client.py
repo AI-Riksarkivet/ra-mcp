@@ -7,7 +7,7 @@ import json
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import URLError, HTTPError
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any
 
 
 class HTTPClient:
@@ -21,7 +21,7 @@ class HTTPClient:
         url: str,
         params: Optional[Dict[str, Any]] = None,
         timeout: int = 30,
-        headers: Optional[Dict[str, str]] = None
+        headers: Optional[Dict[str, str]] = None,
     ) -> Dict:
         """
         Make a GET request and return JSON response.
@@ -74,7 +74,7 @@ class HTTPClient:
         url: str,
         params: Optional[Dict[str, Any]] = None,
         timeout: int = 30,
-        headers: Optional[Dict[str, str]] = None
+        headers: Optional[Dict[str, str]] = None,
     ) -> bytes:
         """
         Make a GET request and return XML response as bytes.
@@ -120,10 +120,7 @@ class HTTPClient:
             raise Exception(f"URL Error: {e.reason}") from e
 
     def get_content(
-        self,
-        url: str,
-        timeout: int = 30,
-        headers: Optional[Dict[str, str]] = None
+        self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None
     ) -> Optional[bytes]:
         """
         Make a GET request and return raw content.

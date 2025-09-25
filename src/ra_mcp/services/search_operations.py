@@ -352,9 +352,7 @@ class SearchOperations:
     def _execute_pid_search_request(self, parameters: Dict) -> Dict:
         """Execute search request for PID using centralized HTTP client."""
         return self.http.get_json(
-            SEARCH_API_BASE_URL,
-            params=parameters,
-            timeout=REQUEST_TIMEOUT
+            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
         )
 
     def _extract_pid_from_search_response(self, response_data: Dict) -> Optional[str]:

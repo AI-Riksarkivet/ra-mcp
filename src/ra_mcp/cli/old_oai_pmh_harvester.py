@@ -24,6 +24,8 @@ Usage:
     uv run oai_pmh_harvester.py extract-pid "SE/ULA/10012/A I/2"
 """
 
+# Legacy dont use
+
 import sys
 import json
 from datetime import datetime, timedelta

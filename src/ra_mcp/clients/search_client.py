@@ -74,9 +74,7 @@ class SearchAPI:
     def _execute_search_request(self, parameters: Dict) -> Dict:
         """Execute the search API request using centralized HTTP client."""
         return self.http.get_json(
-            SEARCH_API_BASE_URL,
-            params=parameters,
-            timeout=REQUEST_TIMEOUT
+            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
         )
 
     def _extract_documents_from_response(
