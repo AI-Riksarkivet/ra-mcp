@@ -7,24 +7,33 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-class HTTPClient:
-    """HTTP client with optimized settings for Riksarkivet APIs."""
+def create_session() -> requests.Session:
+    """Create HTTP session optimized for Riksarkivet APIs.
 
-    @staticmethod
-    def create_session() -> requests.Session:
-        """Create HTTP session optimized for Riksarkivet APIs."""
-        session = requests.Session()
-        session.headers.update(
-            {"Connection": "close", "User-Agent": "Transcribed-Search-Browser/1.0"}
-        )
+    Returns:
+        Configured requests.Session with retry logic and connection pooling.
+    """
+    session = requests.Session()
+    session.headers.update(
+        {
+            "User-Agent": "Transcribed-Search-Browser/1.0",
+            "Accept-Encoding": "gzip, deflate",
+        }
+    )
 
-        retry_strategy = Retry(
-            total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504]
-        )
-        adapter = HTTPAdapter(
-            max_retries=retry_strategy, pool_connections=1, pool_maxsize=1
-        )
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    )
 
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
+    adapter = HTTPAdapter(
+        max_retries=retry_strategy,
+        pool_connections=10,
+        pool_maxsize=10,
+    )
+
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session

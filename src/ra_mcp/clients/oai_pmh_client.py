@@ -4,10 +4,10 @@ OAI-PMH client for Riksarkivet.
 
 from typing import Dict, Optional, Union, List
 
-import requests
 from lxml import etree
 
 from ..config import OAI_BASE_URL, NAMESPACES
+from ..utils import create_session
 
 
 class OAIPMHClient:
@@ -15,15 +15,7 @@ class OAIPMHClient:
 
     def __init__(self, base_url: str = OAI_BASE_URL):
         self.base_url = base_url
-        self.session = self._create_configured_session()
-
-    def _create_configured_session(self) -> requests.Session:
-        """Create and configure HTTP session for OAI-PMH requests."""
-        configured_session = requests.Session()
-        configured_session.headers.update({
-            "User-Agent": "Transcribed-Search-Browser/1.0"
-        })
-        return configured_session
+        self.session = create_session()
 
     def get_record(
         self, identifier: str, metadata_prefix: str = "oai_ape_ead"
@@ -75,7 +67,9 @@ class OAIPMHClient:
             "metadata_format": metadata_format,
         }
 
-    def _parse_header_information(self, record_element: etree.Element) -> Dict[str, str]:
+    def _parse_header_information(
+        self, record_element: etree.Element
+    ) -> Dict[str, str]:
         """Parse header information from record element."""
         header_elements = record_element.xpath("oai:header", namespaces=NAMESPACES)
         if not header_elements:
@@ -107,9 +101,7 @@ class OAIPMHClient:
 
     def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
         """Make an OAI-PMH request and return parsed XML."""
-        http_response = self.session.get(
-            self.base_url, params=request_parameters
-        )
+        http_response = self.session.get(self.base_url, params=request_parameters)
         http_response.raise_for_status()
 
         xml_response_root = self._parse_xml_response(http_response.content)
@@ -141,7 +133,9 @@ class OAIPMHClient:
         result = element.xpath(xpath, namespaces=NAMESPACES)
         return result[0].text if result and result[0].text else None
 
-    def _extract_ead_metadata(self, record_element) -> Dict[str, Union[str, List, Dict]]:
+    def _extract_ead_metadata(
+        self, record_element
+    ) -> Dict[str, Union[str, List, Dict]]:
         """Extract metadata from EAD format."""
         ead_metadata_element = self._extract_ead_element_from_record(record_element)
 
@@ -206,4 +200,3 @@ class OAIPMHClient:
                 return link_url
 
         return None
-

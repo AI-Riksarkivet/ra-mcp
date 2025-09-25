@@ -60,9 +60,9 @@
 - [x] T016 [P] Integration test AI assistant integration patterns at `/home/coder/ra-mcp/tests/integration/test_ai_assistant.py`
 
 ## Phase 3.4: Core Implementation (ONLY after tests are failing)
-- [ ] T017 Enhance search_transcribed tool with better highlighting in `/home/coder/ra-mcp/src/ra_mcp/mcp_tools.py`
-- [ ] T018 Enhance browse_document tool with improved navigation in `/home/coder/ra-mcp/src/ra_mcp/mcp_tools.py`
-- [ ] T019 Enhance get_document_structure tool with better metadata in `/home/coder/ra-mcp/src/ra_mcp/mcp_tools.py`
+- [ ] T017 Enhance search_transcribed tool with better highlighting in `/home/coder/ra-mcp/src/ra_mcp/search_tools.py`
+- [ ] T018 Enhance browse_document tool with improved navigation in `/home/coder/ra-mcp/src/ra_mcp/search_tools.py`
+- [ ] T019 Enhance get_document_structure tool with better metadata in `/home/coder/ra-mcp/src/ra_mcp/search_tools.py`
 - [ ] T020 [P] Create enhanced pydantic models for better AI integration at `/home/coder/ra-mcp/src/ra_mcp/models.py`
 - [ ] T021 [P] Improve PlainTextFormatter for LLM token efficiency at `/home/coder/ra-mcp/src/ra_mcp/formatters.py`
 
@@ -82,7 +82,7 @@
 - Infrastructure setup (T001-T006) can run in parallel
 - Design documents (T007-T011) can run in parallel after infrastructure
 - Tests (T012-T016) MUST complete before implementation (T017-T024)
-- T017-T019 are sequential (same file: mcp_tools.py)
+- T017-T019 are sequential (same file: search_tools.py)
 - Documentation (T025-T028) can run in parallel after core implementation
 
 **Blocking Relationships**:
@@ -126,7 +126,7 @@ Task: "Contract test for get_document_structure MCP tool at /home/coder/ra-mcp/t
 
 ## Notes
 - **[P] tasks**: Different files, can run in parallel
-- **Sequential tasks**: T017-T019 modify mcp_tools.py sequentially
+- **Sequential tasks**: T017-T019 modify search_tools.py sequentially
 - **TDD Critical**: Tests T012-T016 MUST fail before implementing T017-T024
 - **Performance targets**: <2 second response (T023), 100+ concurrent calls (T024)
 - **Constitutional compliance**: All tasks align with MCP-First Architecture

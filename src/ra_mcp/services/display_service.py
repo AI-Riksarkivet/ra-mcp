@@ -6,14 +6,13 @@ This eliminates formatting code duplication between CLI and MCP tools.
 from typing import Dict, List, Optional, Union
 
 from ..models import SearchHit, SearchOperation, BrowseOperation
-from .search_operations import SearchResultsAnalyzer
+from . import analysis
 from ..formatters import BaseFormatter
 
 
 class DisplayService:
     def __init__(self, formatter: BaseFormatter):
         self.formatter = formatter
-        self.analyzer = SearchResultsAnalyzer()
 
     def format_search_results(
         self,
@@ -24,7 +23,7 @@ class DisplayService:
         if not search_operation.hits:
             return "No search hits found."
 
-        search_summary = self.analyzer.extract_search_summary(search_operation)
+        search_summary = analysis.extract_search_summary(search_operation)
         hits_grouped_by_document = search_summary["grouped_hits"]
 
         lines = []
@@ -189,7 +188,7 @@ class DisplayService:
                     lines.append("")
         else:
             # Group by document
-            grouped = self.analyzer.group_hits_by_document(enriched_hits)
+            grouped = analysis.group_hits_by_document(enriched_hits)
 
             for doc_ref, doc_hits in grouped.items():
                 # Sort by page number

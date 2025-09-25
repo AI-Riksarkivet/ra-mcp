@@ -5,14 +5,14 @@ IIIF client for Riksarkivet.
 from typing import Dict, Optional, Union, List
 
 from ..config import COLLECTION_API_BASE_URL
-from ..utils import HTTPClient
+from ..utils import create_session
 
 
 class IIIFClient:
     """Client for IIIF collections and manifests."""
 
     def __init__(self):
-        self.session = HTTPClient.create_session()
+        self.session = create_session()
 
     def explore_collection(
         self, pid: str, timeout: int = 10
@@ -20,7 +20,9 @@ class IIIFClient:
         """Explore IIIF collection to get manifests."""
         collection_endpoint_url = self._build_collection_url(pid)
 
-        collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
+        collection_response = self._fetch_collection_data(
+            collection_endpoint_url, timeout
+        )
         if not collection_response:
             return None
 
@@ -28,9 +30,7 @@ class IIIFClient:
         available_manifests = self._extract_all_manifests(collection_response)
 
         return self._build_collection_result(
-            collection_title,
-            available_manifests,
-            collection_endpoint_url
+            collection_title, available_manifests, collection_endpoint_url
         )
 
     def _build_collection_url(self, persistent_identifier: str) -> str:
@@ -104,10 +104,7 @@ class IIIFClient:
         return url_segments[-1] if url_segments else ""
 
     def _build_collection_result(
-        self,
-        title: str,
-        manifests: List[Dict[str, str]],
-        collection_url: str
+        self, title: str, manifests: List[Dict[str, str]], collection_url: str
     ) -> Dict[str, Union[str, List[Dict[str, str]]]]:
         """Build the final collection result structure."""
         return {
@@ -127,9 +124,7 @@ class IIIFClient:
             return label_object
 
         if isinstance(label_object, dict):
-            extracted_label = self._extract_label_from_language_map(
-                label_object
-            )
+            extracted_label = self._extract_label_from_language_map(label_object)
             if extracted_label:
                 return extracted_label
 

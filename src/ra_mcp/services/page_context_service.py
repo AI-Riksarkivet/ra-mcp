@@ -6,7 +6,7 @@ from typing import Optional
 
 from ..clients import ALTOClient
 from ..models import PageContext
-from ..utils import URLGenerator
+from ..utils import url_generator
 
 
 class PageContextService:
@@ -23,14 +23,14 @@ class PageContextService:
         search_term: Optional[str] = None,
     ) -> Optional[PageContext]:
         """Get full page context for a specific page."""
-        alto_url = URLGenerator.alto_url(pid, page_number)
-        image_url = URLGenerator.iiif_image_url(pid, page_number)
-        bildvisning_url = URLGenerator.bildvisning_url(pid, page_number, search_term)
+        alto_xml_url = url_generator.alto_url(pid, page_number)
+        image_url_link = url_generator.iiif_image_url(pid, page_number)
+        bildvisning_link = url_generator.bildvisning_url(pid, page_number, search_term)
 
-        if not alto_url:
+        if not alto_xml_url:
             return None
 
-        full_text = self.alto_client.fetch_content(alto_url)
+        full_text = self.alto_client.fetch_content(alto_xml_url)
         if not full_text:
             return None
 
@@ -39,7 +39,7 @@ class PageContextService:
             page_id=page_number,
             reference_code=reference_code,
             full_text=full_text,
-            alto_url=alto_url,
-            image_url=image_url or "",
-            bildvisning_url=bildvisning_url or "",
+            alto_url=alto_xml_url,
+            image_url=image_url_link or "",
+            bildvisning_url=bildvisning_link or "",
         )

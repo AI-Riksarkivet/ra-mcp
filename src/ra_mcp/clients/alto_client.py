@@ -6,14 +6,14 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from ..config import ALTO_NAMESPACES
-from ..utils import HTTPClient
+from ..utils import create_session
 
 
 class ALTOClient:
     """Client for fetching and parsing ALTO XML files."""
 
     def __init__(self):
-        self.session = HTTPClient.create_session()
+        self.session = create_session()
 
     def fetch_content(self, alto_url: str, timeout: int = 10) -> Optional[str]:
         """Fetch and parse ALTO XML file to extract full text content."""
@@ -27,14 +27,14 @@ class ALTOClient:
 
         return self._extract_text_from_alto(parsed_xml_root)
 
-    def _fetch_alto_xml(self, document_url: str, timeout_seconds: int) -> Optional[bytes]:
+    def _fetch_alto_xml(
+        self, document_url: str, timeout_seconds: int
+    ) -> Optional[bytes]:
         """Fetch ALTO XML document from URL."""
         try:
             request_headers = self._build_request_headers()
             http_response = self.session.get(
-                document_url,
-                headers=request_headers,
-                timeout=timeout_seconds
+                document_url, headers=request_headers, timeout=timeout_seconds
             )
 
             if http_response.status_code != 200:
@@ -74,8 +74,7 @@ class ALTOClient:
 
         for namespace_definition in ALTO_NAMESPACES:
             namespace_text_segments = self._extract_text_for_namespace(
-                xml_root,
-                namespace_definition
+                xml_root, namespace_definition
             )
             if namespace_text_segments:
                 return namespace_text_segments
@@ -83,9 +82,7 @@ class ALTOClient:
         return collected_text_segments
 
     def _extract_text_for_namespace(
-        self,
-        xml_root: ET.Element,
-        namespace: dict
+        self, xml_root: ET.Element, namespace: dict
     ) -> list:
         """Extract text for a specific namespace."""
         text_segments = []

@@ -7,14 +7,14 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
 from ..models import SearchHit
-from ..utils import HTTPClient, URLGenerator
+from ..utils import create_session, url_generator
 
 
 class SearchAPI:
     """Client for Riksarkivet Search API."""
 
     def __init__(self):
-        self.session = HTTPClient.create_session()
+        self.session = create_session()
 
     def search_transcribed_text(
         self,
@@ -101,7 +101,9 @@ class SearchAPI:
         return all_hits
 
     def _process_search_item(
-        self, document_item: Dict[str, Union[str, Dict, List]], maximum_hits: Optional[int] = None
+        self,
+        document_item: Dict[str, Union[str, Dict, List]],
+        maximum_hits: Optional[int] = None,
     ) -> List[SearchHit]:
         """Process a single search result item into SearchHit objects."""
         document_info = self._extract_document_information(document_item)
@@ -111,9 +113,7 @@ class SearchAPI:
             return []
 
         return self._process_document_snippets(
-            transcribed_content["snippets"],
-            document_info,
-            maximum_hits
+            transcribed_content["snippets"], document_info, maximum_hits
         )
 
     def _extract_document_information(self, document: Dict) -> Dict:
@@ -129,8 +129,12 @@ class SearchAPI:
             "note": metadata.get("note"),
             "archival_institution": metadata.get("archivalInstitution", []),
             "date": metadata.get("date"),
-            "collection_url": URLGenerator.collection_url(persistent_identifier) if persistent_identifier else None,
-            "manifest_url": URLGenerator.manifest_url(persistent_identifier) if persistent_identifier else None,
+            "collection_url": url_generator.collection_url(persistent_identifier)
+            if persistent_identifier
+            else None,
+            "manifest_url": url_generator.manifest_url(persistent_identifier)
+            if persistent_identifier
+            else None,
         }
 
     def _truncate_title(self, title: str, max_length: int = 100) -> str:
@@ -157,7 +161,11 @@ class SearchAPI:
         return processed_hits
 
     def _process_single_snippet(
-        self, snippet: Dict, document_info: Dict, hit_limit: Optional[int], current_hit_count: int
+        self,
+        snippet: Dict,
+        document_info: Dict,
+        hit_limit: Optional[int],
+        current_hit_count: int,
     ) -> List[SearchHit]:
         """Process a single snippet into search hits."""
         snippet_pages = snippet.get("pages", [])
@@ -171,10 +179,7 @@ class SearchAPI:
             cleaned_text = self._clean_html(snippet.get("text", ""))
 
             hit = self._create_search_hit(
-                document_info,
-                page_number,
-                cleaned_text,
-                snippet.get("score", 0)
+                document_info, page_number, cleaned_text, snippet.get("score", 0)
             )
             snippet_hits.append(hit)
 
@@ -187,7 +192,11 @@ class SearchAPI:
         return str(page_data)
 
     def _create_search_hit(
-        self, document_info: Dict, page_number: str, snippet_text: str, relevance_score: float
+        self,
+        document_info: Dict,
+        page_number: str,
+        snippet_text: str,
+        relevance_score: float,
     ) -> SearchHit:
         """Create a SearchHit object from document and snippet information."""
         return SearchHit(
@@ -205,6 +214,6 @@ class SearchAPI:
             date=document_info["date"],
         )
 
-    def _clean_html(self,html_text: str) -> str:
+    def _clean_html(self, html_text: str) -> str:
         """Remove HTML tags from text."""
         return re.sub(r"<[^>]+>", "", html_text)

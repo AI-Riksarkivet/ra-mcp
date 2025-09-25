@@ -499,7 +499,7 @@ def list_identifiers(client, set_spec, metadata_prefix, from_date, until_date, l
 
         # Create table
         table = Table(
-            title=f"Record Identifiers" + (f" from {set_spec}" if set_spec else "")
+            title="Record Identifiers" + (f" from {set_spec}" if set_spec else "")
         )
         table.add_column("Reference Code", style="cyan")
         table.add_column("Last Modified", style="green")
@@ -693,7 +693,7 @@ def recent(client, set_spec, days, limit, metadata_prefix, output):
                             modified_date.replace("Z", "+00:00")
                         )
                         modified_date = dt.strftime("%Y-%m-%d %H:%M")
-                    except:
+                    except Exception:
                         pass  # Keep original format if parsing fails
 
                 table.add_row(record["identifier"], modified_date, title)

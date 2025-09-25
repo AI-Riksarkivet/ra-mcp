@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple, Dict, Union
 
 from ..clients import SearchAPI, IIIFClient, OAIPMHClient
 from ..models import SearchHit, SearchOperation, BrowseOperation
-from ..utils import HTTPClient, parse_page_range
+from ..utils import create_session, parse_page_range
 from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
@@ -20,6 +20,7 @@ class SearchOperations:
     """
 
     def __init__(self):
+        self.session = create_session()
         self.search_api = SearchAPI()
         self.enrichment_service = SearchEnrichmentService()
         self.page_service = PageContextService()
@@ -42,24 +43,16 @@ class SearchOperations:
         Returns SearchOperation with results and metadata.
         """
         search_results = self._execute_transcribed_search(
-            keyword,
-            max_results,
-            offset,
-            max_hits_per_document
+            keyword, max_results, offset, max_hits_per_document
         )
 
-        search_operation = self._build_search_operation(
-            search_results,
-            keyword,
-            offset
-        )
+        search_operation = self._build_search_operation(search_results, keyword, offset)
 
-        if self._should_enrich_with_context(show_context, search_results[0], max_pages_with_context):
+        if self._should_enrich_with_context(
+            show_context, search_results[0], max_pages_with_context
+        ):
             self._enrich_search_operation_with_context(
-                search_operation,
-                max_pages_with_context,
-                context_padding,
-                keyword
+                search_operation, max_pages_with_context, context_padding, keyword
             )
 
         return search_operation
@@ -69,21 +62,18 @@ class SearchOperations:
         search_keyword: str,
         result_limit: int,
         pagination_offset: int,
-        hits_per_document_limit: Optional[int]
+        hits_per_document_limit: Optional[int],
     ) -> Tuple[List[SearchHit], int]:
         """Execute the transcribed text search."""
         return self.search_api.search_transcribed_text(
-            search_keyword,
-            result_limit,
-            pagination_offset,
-            hits_per_document_limit
+            search_keyword, result_limit, pagination_offset, hits_per_document_limit
         )
 
     def _build_search_operation(
         self,
         search_results: Tuple[List[SearchHit], int],
         search_keyword: str,
-        pagination_offset: int
+        pagination_offset: int,
     ) -> SearchOperation:
         """Build SearchOperation from search results."""
         retrieved_hits, total_hit_count = search_results
@@ -100,7 +90,7 @@ class SearchOperations:
         self,
         context_requested: bool,
         search_hits: List[SearchHit],
-        context_page_limit: int
+        context_page_limit: int,
     ) -> bool:
         """Check if search results should be enriched with context."""
         return context_requested and search_hits and context_page_limit > 0
@@ -110,37 +100,29 @@ class SearchOperations:
         search_operation: SearchOperation,
         page_limit: int,
         padding_size: int,
-        search_keyword: str
+        search_keyword: str,
     ) -> None:
         """Enrich search operation with context information."""
         hits_for_enrichment = self._prepare_hits_for_enrichment(
-            search_operation.hits,
-            page_limit,
-            padding_size
+            search_operation.hits, page_limit, padding_size
         )
 
         enriched_hit_collection = self.enrichment_service.enrich_hits_with_context(
-            hits_for_enrichment,
-            len(hits_for_enrichment),
-            search_keyword
+            hits_for_enrichment, len(hits_for_enrichment), search_keyword
         )
 
         search_operation.hits = enriched_hit_collection
         search_operation.enriched = True
 
     def _prepare_hits_for_enrichment(
-        self,
-        original_hits: List[SearchHit],
-        page_limit: int,
-        padding_size: int
+        self, original_hits: List[SearchHit], page_limit: int, padding_size: int
     ) -> List[SearchHit]:
         """Prepare hits for enrichment by limiting and expanding with padding."""
         limited_hits = original_hits[:page_limit]
 
         if padding_size > 0:
             return self.enrichment_service.expand_hits_with_context_padding(
-                limited_hits,
-                padding_size
+                limited_hits, padding_size
             )
 
         return limited_hits
@@ -160,21 +142,12 @@ class SearchOperations:
         persistent_identifier = self._find_pid_for_reference(reference_code)
 
         if not persistent_identifier:
-            return self._create_empty_browse_operation(
-                reference_code,
-                pages
-            )
+            return self._create_empty_browse_operation(reference_code, pages)
 
-        manifest_identifier = self._resolve_manifest_identifier(
-            persistent_identifier
-        )
+        manifest_identifier = self._resolve_manifest_identifier(persistent_identifier)
 
         page_contexts = self._fetch_page_contexts(
-            manifest_identifier,
-            pages,
-            max_pages,
-            reference_code,
-            highlight_term
+            manifest_identifier, pages, max_pages, reference_code, highlight_term
         )
 
         return self._create_browse_operation(
@@ -182,13 +155,11 @@ class SearchOperations:
             reference_code,
             pages,
             persistent_identifier,
-            manifest_identifier
+            manifest_identifier,
         )
 
     def _create_empty_browse_operation(
-        self,
-        reference_code: str,
-        requested_pages: str
+        self, reference_code: str, requested_pages: str
     ) -> BrowseOperation:
         """Create an empty BrowseOperation when no PID is found."""
         return BrowseOperation(
@@ -198,10 +169,7 @@ class SearchOperations:
             pid=None,
         )
 
-    def _resolve_manifest_identifier(
-        self,
-        persistent_identifier: str
-    ) -> str:
+    def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
         """Resolve manifest identifier from PID."""
         iiif_collection_info = self.iiif_client.explore_collection(
             persistent_identifier
@@ -214,10 +182,7 @@ class SearchOperations:
 
     def _has_manifests(self, collection_info: Optional[Dict]) -> bool:
         """Check if collection info contains manifests."""
-        return bool(
-            collection_info and
-            collection_info.get("manifests")
-        )
+        return bool(collection_info and collection_info.get("manifests"))
 
     def _fetch_page_contexts(
         self,
@@ -225,33 +190,25 @@ class SearchOperations:
         page_specification: str,
         maximum_pages: int,
         reference_code: str,
-        highlight_keyword: Optional[str]
+        highlight_keyword: Optional[str],
     ) -> List:
         """Fetch contexts for specified pages."""
         requested_page_numbers = self._parse_and_limit_pages(
-            page_specification,
-            maximum_pages
+            page_specification, maximum_pages
         )
 
         page_context_collection = []
 
         for page_number in requested_page_numbers:
             page_context = self._fetch_single_page_context(
-                manifest_identifier,
-                page_number,
-                reference_code,
-                highlight_keyword
+                manifest_identifier, page_number, reference_code, highlight_keyword
             )
             if page_context:
                 page_context_collection.append(page_context)
 
         return page_context_collection
 
-    def _parse_and_limit_pages(
-        self,
-        page_specification: str,
-        limit: int
-    ) -> List[int]:
+    def _parse_and_limit_pages(self, page_specification: str, limit: int) -> List[int]:
         """Parse page specification and apply limit."""
         parsed_pages = parse_page_range(page_specification)
         return parsed_pages[:limit]
@@ -261,14 +218,11 @@ class SearchOperations:
         manifest_identifier: str,
         page_number: int,
         reference_code: str,
-        highlight_keyword: Optional[str]
+        highlight_keyword: Optional[str],
     ):
         """Fetch context for a single page."""
         return self.page_service.get_page_context(
-            manifest_identifier,
-            str(page_number),
-            reference_code,
-            highlight_keyword
+            manifest_identifier, str(page_number), reference_code, highlight_keyword
         )
 
     def _create_browse_operation(
@@ -277,7 +231,7 @@ class SearchOperations:
         reference_code: str,
         requested_pages: str,
         persistent_identifier: str,
-        manifest_identifier: str
+        manifest_identifier: str,
     ) -> BrowseOperation:
         """Create BrowseOperation with all data."""
         return BrowseOperation(
@@ -329,10 +283,7 @@ class SearchOperations:
 
         Returns IIIF collection info or None if not found.
         """
-        resolved_pid = self._resolve_document_pid(
-            reference_code,
-            pid
-        )
+        resolved_pid = self._resolve_document_pid(reference_code, pid)
 
         if not resolved_pid:
             return None
@@ -343,9 +294,7 @@ class SearchOperations:
         return iiif_collection_structure
 
     def _resolve_document_pid(
-        self,
-        reference_code: Optional[str],
-        provided_pid: Optional[str]
+        self, reference_code: Optional[str], provided_pid: Optional[str]
     ) -> Optional[str]:
         """Resolve PID from reference code or use provided PID."""
         if not reference_code and not provided_pid:
@@ -361,7 +310,7 @@ class SearchOperations:
         arkis_prefix = "arkis!"
 
         if pid.startswith(arkis_prefix):
-            return pid[len(arkis_prefix):]
+            return pid[len(arkis_prefix) :]
 
         return pid
 
@@ -388,7 +337,9 @@ class SearchOperations:
         except Exception:
             return None
 
-    def _build_pid_search_parameters(self, reference_code: str) -> Dict[str, Union[str, int]]:
+    def _build_pid_search_parameters(
+        self, reference_code: str
+    ) -> Dict[str, Union[str, int]]:
         """Build parameters for PID search."""
         return {
             "reference_code": reference_code,
@@ -398,12 +349,8 @@ class SearchOperations:
 
     def _execute_pid_search_request(self, parameters: Dict) -> Dict:
         """Execute search request for PID."""
-        http_session = HTTPClient.create_session()
-
-        response = http_session.get(
-            SEARCH_API_BASE_URL,
-            params=parameters,
-            timeout=REQUEST_TIMEOUT
+        response = self.session.get(
+            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
         )
         response.raise_for_status()
 
@@ -424,118 +371,3 @@ class SearchOperations:
             return self.oai_client.extract_pid(reference_code)
         except Exception:
             return None
-
-
-class SearchResultsAnalyzer:
-    """
-    Utility class for analyzing search results and generating insights.
-    Used by both CLI and MCP for result analysis.
-    """
-
-    @staticmethod
-    def group_hits_by_document(search_hits: List[SearchHit]) -> Dict[str, List[SearchHit]]:
-        """Group search hits by document (reference code or PID)."""
-        document_grouped_hits = {}
-
-        for hit in search_hits:
-            document_identifier = hit.reference_code or hit.pid
-
-            if document_identifier not in document_grouped_hits:
-                document_grouped_hits[document_identifier] = []
-
-            document_grouped_hits[document_identifier].append(hit)
-
-        return document_grouped_hits
-
-    @staticmethod
-    def get_pagination_info(
-        search_hits: List[SearchHit],
-        total_hit_count: int,
-        pagination_offset: int,
-        result_limit: int
-    ) -> Dict[str, Union[int, bool, Optional[int]]]:
-        """Calculate pagination information for search results."""
-        unique_document_identifiers = SearchResultsAnalyzer._extract_unique_documents(
-            search_hits
-        )
-
-        pagination_metadata = SearchResultsAnalyzer._calculate_pagination_metadata(
-            unique_document_identifiers,
-            search_hits,
-            total_hit_count,
-            pagination_offset,
-            result_limit
-        )
-
-        return pagination_metadata
-
-    @staticmethod
-    def _extract_unique_documents(search_hits: List[SearchHit]) -> set:
-        """Extract unique document identifiers from hits."""
-        unique_documents = set()
-
-        for hit in search_hits:
-            document_id = hit.reference_code or hit.pid
-            unique_documents.add(document_id)
-
-        return unique_documents
-
-    @staticmethod
-    def _calculate_pagination_metadata(
-        unique_documents: set,
-        search_hits: List[SearchHit],
-        total_hits: int,
-        offset: int,
-        limit: int
-    ) -> Dict[str, Union[int, bool, Optional[int]]]:
-        """Calculate pagination metadata."""
-        has_additional_results = (
-            len(unique_documents) == limit and
-            total_hits > len(search_hits)
-        )
-
-        document_range_start = offset // limit * limit + 1
-        document_range_end = document_range_start + len(unique_documents) - 1
-        next_page_offset = offset + limit if has_additional_results else None
-
-        return {
-            "total_hits": total_hits,
-            "total_documents_shown": len(unique_documents),
-            "total_page_hits": len(search_hits),
-            "document_range_start": document_range_start,
-            "document_range_end": document_range_end,
-            "has_more": has_additional_results,
-            "next_offset": next_page_offset,
-        }
-
-    @staticmethod
-    def extract_search_summary(
-        search_operation: SearchOperation,
-    ) -> Dict[str, Union[str, int, bool, Dict[str, List[SearchHit]]]]:
-        """Extract summary information from a search operation."""
-        grouped_by_document = SearchResultsAnalyzer.group_hits_by_document(
-            search_operation.hits
-        )
-
-        search_summary = SearchResultsAnalyzer._build_search_summary(
-            search_operation,
-            grouped_by_document
-        )
-
-        return search_summary
-
-    @staticmethod
-    def _build_search_summary(
-        search_operation: SearchOperation,
-        document_grouped_hits: Dict[str, List[SearchHit]]
-    ) -> Dict[str, Union[str, int, bool, Dict[str, List[SearchHit]]]]:
-        """Build summary dictionary from search operation."""
-        return {
-            "keyword": search_operation.keyword,
-            "total_hits": search_operation.total_hits,
-            "page_hits_returned": len(search_operation.hits),
-            "documents_returned": len(document_grouped_hits),
-            "enriched": search_operation.enriched,
-            "offset": search_operation.offset,
-            "grouped_hits": document_grouped_hits,
-        }

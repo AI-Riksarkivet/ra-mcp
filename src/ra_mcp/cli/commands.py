@@ -15,7 +15,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from ..services import (
     SearchOperations,
     DisplayService,
-    SearchResultsAnalyzer,
+    analysis,
 )
 from ..formatters import RichConsoleFormatter
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
@@ -31,7 +31,6 @@ class RichDisplayAdapter:
 
     def __init__(self):
         self.display_service = DisplayService(RichConsoleFormatter())
-        self.analyzer = SearchResultsAnalyzer()
 
     def display_search_hits_rich(self, operation, max_display: int):
         """Display search hits using Rich tables (specific to CLI)."""
@@ -39,7 +38,7 @@ class RichDisplayAdapter:
             console.print("[yellow]No search hits found.[/yellow]")
             return
 
-        summary = self.analyzer.extract_search_summary(operation)
+        summary = analysis.extract_search_summary(operation)
         grouped_hits = summary["grouped_hits"]
 
         console.print(
@@ -112,7 +111,7 @@ class RichDisplayAdapter:
             if title_text and title_text.strip():
                 content_parts.append(f"[bold blue]{title_text}[/bold blue]")
             else:
-                content_parts.append(f"[bright_black]No title[/bright_black]")
+                content_parts.append("[bright_black]No title[/bright_black]")
 
             # Add snippets with page numbers
             for hit in ref_hits[:3]:  # Show max 3 snippets per reference
@@ -147,7 +146,7 @@ class RichDisplayAdapter:
             pages = sorted(set(h.page_number for h in first_group))
             pages_trimmed = [p.lstrip("0") or "0" for p in pages[:5]]
 
-            console.print(f"\n[dim]💡 Example: To view these hits, run:[/dim]")
+            console.print("\n[dim]💡 Example: To view these hits, run:[/dim]")
             if len(pages_trimmed) == 1:
                 console.print(
                     f'[cyan]   ra browse "{first_ref}" --page {pages_trimmed[0]} --search-term "{operation.keyword}"[/cyan]'
@@ -183,12 +182,12 @@ class RichDisplayAdapter:
                 context.full_text, highlight_term
             )
             page_content.append(
-                f"\n[bold magenta]📜 Full Transcription:[/bold magenta]"
+                "\n[bold magenta]📜 Full Transcription:[/bold magenta]"
             )
             page_content.append(f"[italic]{display_text}[/italic]")
 
             # Links section
-            page_content.append(f"\n[bold cyan]🔗 Links:[/bold cyan]")
+            page_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
             page_content.append(
                 f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
             )
@@ -340,13 +339,13 @@ def search(
                             display_text = display_adapter.display_service.formatter.highlight_search_keyword(
                                 hit.full_page_text, keyword
                             )
-                            trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
+                            trimmed_page_number = (
+                                str(hit.page_number).lstrip("0") or "0"
+                            )
                             content.append(
                                 f"\n[bold cyan]Page {trimmed_page_number}:[/bold cyan]"
                             )
-                            content.append(
-                                f"[italic]{display_text}[/italic]"
-                            )
+                            content.append(f"[italic]{display_text}[/italic]")
 
                     panel_title = (
                         f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
@@ -373,13 +372,11 @@ def search(
                                 f"[bold blue]📅 Date:[/bold blue] {hit.date}"
                             )
 
-                        display_text = (
-                            display_adapter.display_service.formatter.highlight_search_keyword(
-                                hit.full_page_text, keyword
-                            )
+                        display_text = display_adapter.display_service.formatter.highlight_search_keyword(
+                            hit.full_page_text, keyword
                         )
                         content.append(
-                            f"\n[bold magenta]📜 Full Transcription:[/bold magenta]"
+                            "\n[bold magenta]📜 Full Transcription:[/bold magenta]"
                         )
                         content.append(f"[italic]{display_text}[/italic]")
 
@@ -475,7 +472,6 @@ def browse(
     except Exception as e:
         console.print(f"[red]Browse failed: {e}[/red]")
         sys.exit(1)
-
 
 
 @click.command()
