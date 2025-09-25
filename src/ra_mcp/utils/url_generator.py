@@ -8,16 +8,16 @@ from typing import Optional
 from ..config import COLLECTION_API_BASE_URL, IIIF_BASE_URL
 
 
-def clean_id(pid: str) -> str:
-    """Extract clean ID from PID.
+def remove_arkis_prefix(identifier: str) -> str:
+    """Remove arkis! prefix from identifier if present.
 
     Args:
-        pid: PID string, potentially with arkis! prefix
+        identifier: ID string (PID or manifest ID), potentially with arkis! prefix
 
     Returns:
-        Cleaned PID without arkis! prefix
+        Identifier without arkis! prefix
     """
-    return pid[6:] if pid.startswith("arkis!") else pid
+    return identifier[6:] if identifier.startswith("arkis!") else identifier
 
 
 def format_page_number(page_number: str) -> str:
@@ -35,18 +35,17 @@ def format_page_number(page_number: str) -> str:
     return clean_page.zfill(5)
 
 
-def alto_url(pid: str, page_number: str) -> Optional[str]:
-    """Generate ALTO URL from PID and page number.
+def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
+    """Generate ALTO URL from manifest ID and page number.
 
     Args:
-        pid: Document PID
+        manifest_id: Manifest identifier (not PID - should be clean manifest ID)
         page_number: Page number
 
     Returns:
         ALTO XML URL or None if cannot generate
     """
     try:
-        manifest_id = clean_id(pid)
         padded_page = format_page_number(page_number)
 
         if len(manifest_id) >= 4:
@@ -68,7 +67,7 @@ def iiif_image_url(pid: str, page_number: str) -> Optional[str]:
         IIIF image URL or None if cannot generate
     """
     try:
-        clean_pid = clean_id(pid)
+        clean_pid = remove_arkis_prefix(pid)
         padded_page = format_page_number(page_number)
         return f"https://lbiiif.riksarkivet.se/arkis!{clean_pid}_{padded_page}/full/max/0/default.jpg"
     except Exception:
@@ -89,7 +88,7 @@ def bildvisning_url(
         Bildvisning URL or None if cannot generate
     """
     try:
-        clean_pid = clean_id(pid)
+        clean_pid = remove_arkis_prefix(pid)
         padded_page = format_page_number(page_number)
         base_url = f"https://sok.riksarkivet.se/bildvisning/{clean_pid}_{padded_page}"
 
@@ -111,7 +110,7 @@ def collection_url(pid: str) -> Optional[str]:
         IIIF collection URL or None if cannot generate
     """
     try:
-        clean_pid = clean_id(pid)
+        clean_pid = remove_arkis_prefix(pid)
         return f"{COLLECTION_API_BASE_URL}/{clean_pid}"
     except Exception:
         return None
@@ -128,7 +127,7 @@ def manifest_url(pid: str, manifest_id: Optional[str] = None) -> Optional[str]:
         IIIF manifest URL or None if cannot generate
     """
     try:
-        clean_pid = clean_id(pid)
+        clean_pid = remove_arkis_prefix(pid)
         if manifest_id:
             return f"{IIIF_BASE_URL}/{manifest_id}/manifest"
         return f"{IIIF_BASE_URL}/{clean_pid}_001/manifest"

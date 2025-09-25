@@ -137,7 +137,11 @@ class SearchEnrichmentService:
         current_count: int,
         search_keyword: Optional[str],
     ) -> List[SearchHit]:
-        """Process hits when no manifest is available."""
+        """Process hits when no manifest is available.
+
+        Without a manifest, we cannot generate valid ALTO URLs,
+        so we only provide snippet text and basic URLs.
+        """
         processed_results = []
         remaining_capacity = page_limit - current_count
 
@@ -145,7 +149,15 @@ class SearchEnrichmentService:
             if len(processed_results) >= remaining_capacity:
                 break
 
-            self._enrich_single_hit(hit, persistent_identifier, search_keyword)
+            # Without manifest, we can't generate ALTO URLs
+            # Only set image and bildvisning URLs using the PID
+            hit.image_url = url_generator.iiif_image_url(
+                persistent_identifier, hit.page_number
+            )
+            hit.bildvisning_url = url_generator.bildvisning_url(
+                persistent_identifier, hit.page_number, search_keyword
+            )
+            # Use snippet text since we can't fetch ALTO content
             hit.full_page_text = hit.snippet_text
             processed_results.append(hit)
 
@@ -183,8 +195,10 @@ class SearchEnrichmentService:
         search_keyword: Optional[str],
     ):
         """Enrich a single hit with generated URLs."""
+        # Clean the manifest identifier for ALTO URL (remove arkis! prefix if present)
+        clean_manifest_id = url_generator.remove_arkis_prefix(manifest_identifier)
         search_hit.alto_url = url_generator.alto_url(
-            manifest_identifier, search_hit.page_number
+            clean_manifest_id, search_hit.page_number
         )
         search_hit.image_url = url_generator.iiif_image_url(
             manifest_identifier, search_hit.page_number
