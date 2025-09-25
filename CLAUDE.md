@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Never write any code that you don't also test! CHECK IT!
 - Prefer change file instead of creating a new one 
 - Always read the whole file don't just read the head
+- Always give multiple reommendations of possible.
 
 ## Commands
 
@@ -15,6 +16,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Run with SSE/HTTP transport on port 8000**: `cd src/ra_mcp && python server.py --http`
 - **Run with SSE transport (dev mode)**: `cd src/ra_mcp && python server.py --http`
 - **Install dependencies**: `uv sync && uv pip install -e .`
+- **Running Code**: `uv run <>`
+- **Cleaning Code**: `uvx ruff format .` , `uvx ruff check --fix`
+
 
 ### Claude Desktop Integration
 To connect Claude Desktop to a running SSE server, add the following configuration:

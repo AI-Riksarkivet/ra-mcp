@@ -3,7 +3,7 @@ Unified display service that can format output for different interfaces.
 This eliminates formatting code duplication between CLI and MCP tools.
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from ..models import SearchHit, SearchOperation, BrowseOperation
 from . import analysis
@@ -14,12 +14,27 @@ class DisplayService:
     def __init__(self, formatter: BaseFormatter):
         self.formatter = formatter
 
+    def is_rich_formatter(self) -> bool:
+        """Check if the formatter is a RichConsoleFormatter."""
+        return hasattr(self.formatter, "format_search_results_table")
+
     def format_search_results(
         self,
         search_operation: SearchOperation,
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
-    ) -> str:
+    ) -> Union[str, Any]:
+        """
+        Format search results. Returns Rich objects for RichConsoleFormatter,
+        or formatted strings for other formatters.
+        """
+        # Use Rich-specific formatting if available
+        if self.is_rich_formatter() and not show_full_context:
+            return self.formatter.format_search_results_table(
+                search_operation, maximum_documents_to_display
+            )
+
+        # Original string-based formatting for MCP and full context display
         if not search_operation.hits:
             return "No search hits found."
 
@@ -113,8 +128,24 @@ class DisplayService:
 
     def format_browse_results(
         self, operation: BrowseOperation, highlight_term: Optional[str] = None
-    ) -> str:
-        """Format browse results with the configured formatter."""
+    ) -> Union[str, List[Any]]:
+        """
+        Format browse results. Returns Rich Panel objects for RichConsoleFormatter,
+        or formatted strings for other formatters.
+        """
+        # Use Rich-specific formatting if available
+        if self.is_rich_formatter() and hasattr(
+            self.formatter, "format_page_context_panel"
+        ):
+            panels = []
+            for context in operation.contexts:
+                panel = self.formatter.format_page_context_panel(
+                    context, highlight_term
+                )
+                panels.append(panel)
+            return panels
+
+        # Original string-based formatting for MCP
         if not operation.contexts:
             return f"No page contexts found for {operation.reference_code}"
 
@@ -154,11 +185,41 @@ class DisplayService:
         search_op: SearchOperation,
         enriched_hits: List[SearchHit],
         no_grouping: bool = False,
-    ) -> str:
-        """Format show-pages results (search + context)."""
+    ) -> Union[str, List[Any]]:
+        """
+        Format show-pages results (search + context).
+        Returns Rich objects for RichConsoleFormatter, or strings for other formatters.
+        """
         if not enriched_hits:
             return f"No pages found containing '{search_op.keyword}'"
 
+        # Use Rich-specific formatting if available
+        if self.is_rich_formatter() and hasattr(
+            self.formatter, "format_document_panel"
+        ):
+            if no_grouping:
+                # Return individual page panels
+                panels = []
+                for hit in enriched_hits:
+                    if hit.full_page_text:
+                        # Create a single-hit panel
+                        panel = self.formatter.format_document_panel(
+                            hit.reference_code, [hit], search_op.keyword
+                        )
+                        panels.append(panel)
+                return panels
+            else:
+                # Group by document and return document panels
+                grouped = analysis.group_hits_by_document(enriched_hits)
+                panels = []
+                for doc_ref, doc_hits in grouped.items():
+                    panel = self.formatter.format_document_panel(
+                        doc_ref, doc_hits, search_op.keyword
+                    )
+                    panels.append(panel)
+                return panels
+
+        # Original string-based formatting for MCP
         lines = []
         lines.append(f"🔍 Search results for '{search_op.keyword}':")
         lines.append(
@@ -270,3 +331,7 @@ class DisplayService:
                 formatted_lines.append(f"  • {suggestion_text}")
 
         return "\n".join(formatted_lines)
+
+    def get_search_summary(self, search_operation: SearchOperation) -> Dict[str, Any]:
+        """Get search summary for display."""
+        return analysis.extract_search_summary(search_operation)

@@ -100,7 +100,9 @@ async def search_transcribed(
         )
 
         if not search_result.hits:
-            return _generate_no_results_message(keyword, offset, search_result.total_hits)
+            return _generate_no_results_message(
+                keyword, offset, search_result.total_hits
+            )
 
         if show_context and search_result.enriched:
             _truncate_page_texts_if_needed(search_result.hits, truncate_page_text)
@@ -141,7 +143,9 @@ def _generate_no_results_message(keyword, offset, total_hits):
     """Generate appropriate message when no results are found."""
     if offset > 0:
         return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
-    return f"No results found for '{keyword}'. Try different search terms or variations."
+    return (
+        f"No results found for '{keyword}'. Try different search terms or variations."
+    )
 
 
 def _truncate_page_texts_if_needed(hits, max_length):
@@ -163,7 +167,9 @@ def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
     return formatted_results
 
 
-def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results):
+def _append_pagination_info_if_needed(
+    formatted_results, search_result, offset, max_results
+):
     """Append pagination information to results if there are more results available."""
     pagination_info = analysis.get_pagination_info(
         search_result.hits, search_result.total_hits, offset, max_results
@@ -272,9 +278,7 @@ async def get_document_structure(
         display_service = DisplayService(MCPFormatter())
 
         document_structure = await _fetch_document_structure(
-            search_operations,
-            reference_code=reference_code,
-            pid=pid
+            search_operations, reference_code=reference_code, pid=pid
         )
 
         if not document_structure:
@@ -396,6 +400,7 @@ def _generate_invalid_filename_message():
 def _check_file_exists(filename):
     """Check if the markdown file exists."""
     import os
+
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
     markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
@@ -417,6 +422,7 @@ def _generate_file_not_found_message(filename):
 def _load_markdown_file(filename):
     """Load content from a markdown file."""
     import os
+
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
     markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)

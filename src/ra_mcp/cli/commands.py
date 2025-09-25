@@ -3,19 +3,15 @@ Refactored CLI commands using the shared business logic layer.
 This eliminates code duplication with the MCP tools.
 """
 
-import sys
 from typing import Optional, Annotated
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..services import (
     SearchOperations,
     DisplayService,
-    analysis,
 )
 from ..formatters import RichConsoleFormatter
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
@@ -24,204 +20,33 @@ console = Console()
 app = typer.Typer()
 
 
-class RichDisplayAdapter:
-    """
-    Adapter that bridges between DisplayService and Rich console output.
-    Handles the Rich-specific formatting that can't be abstracted.
-    """
-
-    def __init__(self):
-        self.display_service = DisplayService(RichConsoleFormatter())
-
-    def display_search_hits_rich(self, operation, max_display: int):
-        """Display search hits using Rich tables (specific to CLI)."""
-        if not operation.hits:
-            console.print("[yellow]No search hits found.[/yellow]")
-            return
-
-        summary = analysis.extract_search_summary(operation)
-        grouped_hits = summary["grouped_hits"]
-
-        console.print(
-            f"\n✓ Found {summary['page_hits_returned']} page-level hits across {summary['documents_returned']} documents"
-        )
-        console.print(
-            "[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]"
-        )
-
-        table = Table(
-            "Institution & Reference",
-            "Content",
-            title=f"Search Results for '{operation.keyword}'",
-            show_lines=True,
-            expand=True,
-        )
-
-        # Display grouped results
-        displayed_groups = 0
-        for ref_code, ref_hits in grouped_hits.items():
-            if displayed_groups >= max_display:
-                break
-            displayed_groups += 1
-
-            # Take the first hit as representative for metadata
-            first_hit = ref_hits[0]
-
-            # Extract institution
-            institution = ""
-            if first_hit.archival_institution:
-                institution = (
-                    first_hit.archival_institution[0].get("caption", "")
-                    if first_hit.archival_institution
-                    else ""
-                )
-            elif first_hit.hierarchy:
-                institution = (
-                    first_hit.hierarchy[0].get("caption", "")
-                    if first_hit.hierarchy
-                    else ""
-                )
-
-            # Combine institution and reference with pages
-            institution_and_ref = ""
-            if institution:
-                institution_and_ref = f"🏛️  {institution[:30] + '...' if len(institution) > 30 else institution}\n"
-
-            # Format pages - list all pages, comma separated, with leading zeros trimmed
-            pages = sorted(set(h.page_number for h in ref_hits))
-            pages_trimmed = []
-            for p in pages:
-                trimmed = p.lstrip("0") or "0"  # Keep at least one zero if all zeros
-                pages_trimmed.append(trimmed)
-            pages_str = ",".join(pages_trimmed)
-
-            institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"'
-
-            if first_hit.date:
-                institution_and_ref += f"\n📅 [dim]{first_hit.date}[/dim]"
-
-            # Create content column with title and snippets from different pages
-            title_text = (
-                first_hit.title[:50] + "..."
-                if len(first_hit.title) > 50
-                else first_hit.title
-            )
-            content_parts = []
-
-            # Add title
-            if title_text and title_text.strip():
-                content_parts.append(f"[bold blue]{title_text}[/bold blue]")
-            else:
-                content_parts.append("[bright_black]No title[/bright_black]")
-
-            # Add snippets with page numbers
-            for hit in ref_hits[:3]:  # Show max 3 snippets per reference
-                snippet = (
-                    hit.snippet_text[:150] + "..."
-                    if len(hit.snippet_text) > 150
-                    else hit.snippet_text
-                )
-                snippet = self.display_service.formatter.highlight_search_keyword(
-                    snippet, operation.keyword
-                )
-                trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
-                content_parts.append(
-                    f"[dim]Page {trimmed_page_number}:[/dim] [italic]{snippet}[/italic]"
-                )
-
-            if len(ref_hits) > 3:
-                content_parts.append(
-                    f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]"
-                )
-
-            content = "\n".join(content_parts)
-
-            table.add_row(institution_and_ref, content)
-
-        console.print(table)
-
-        # Show example browse command
-        if grouped_hits:
-            first_ref = next(iter(grouped_hits.keys()))
-            first_group = grouped_hits[first_ref]
-            pages = sorted(set(h.page_number for h in first_group))
-            pages_trimmed = [p.lstrip("0") or "0" for p in pages[:5]]
-
-            console.print("\n[dim]💡 Example: To view these hits, run:[/dim]")
-            if len(pages_trimmed) == 1:
-                console.print(
-                    f'[cyan]   ra browse "{first_ref}" --page {pages_trimmed[0]} --search-term "{operation.keyword}"[/cyan]'
-                )
-            else:
-                pages_str = ",".join(pages_trimmed)
-                console.print(
-                    f'[cyan]   ra browse "{first_ref}" --page "{pages_str}" --search-term "{operation.keyword}"[/cyan]'
-                )
-
-        # Count remaining groups
-        total_groups = len(grouped_hits)
-        if total_groups > displayed_groups:
-            remaining_groups = total_groups - displayed_groups
-            console.print(f"\n[dim]... and {remaining_groups} more documents[/dim]")
-
-    def display_page_contexts_rich(self, operation, highlight_term: str = ""):
-        """Display page contexts using Rich panels (specific to CLI)."""
-        if not operation.contexts:
-            console.print("[yellow]No page contexts found.[/yellow]")
-            return
-
-        console.print(
-            f"\n[bold]Full Page Transcriptions ({len(operation.contexts)} pages):[/bold]"
-        )
-
-        for context in operation.contexts:
-            # Build page content
-            page_content = []
-
-            # Full transcribed text with keyword highlighting
-            display_text = self.display_service.formatter.highlight_search_keyword(
-                context.full_text, highlight_term
-            )
-            page_content.append(
-                "\n[bold magenta]📜 Full Transcription:[/bold magenta]"
-            )
-            page_content.append(f"[italic]{display_text}[/italic]")
-
-            # Links section
-            page_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-            page_content.append(
-                f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
-            )
-            if context.image_url:
-                page_content.append(
-                    f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]"
-                )
-            if context.bildvisning_url:
-                page_content.append(
-                    f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
-                )
-
-            trimmed_page_number = str(context.page_number).lstrip("0") or "0"
-            panel_title = f"[cyan]Page {trimmed_page_number}: {context.reference_code or 'Unknown Reference'}[/cyan]"
-            console.print(
-                Panel(
-                    "\n".join(page_content),
-                    title=panel_title,
-                    border_style="green",
-                    padding=(0, 1),
-                )
-            )
-
-
 @app.command()
 def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
-    max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
-    max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
-    context: Annotated[bool, typer.Option(help="Show full page context for search hits")] = False,
-    max_pages: Annotated[int, typer.Option(help="Maximum pages to load context for")] = DEFAULT_MAX_PAGES,
-    no_grouping: Annotated[bool, typer.Option(help="Show pages individually instead of grouped by document (only with --context)")] = False,
-    context_padding: Annotated[int, typer.Option(help="Number of pages to include before and after each hit for context (only with --context)")] = 0,
+    max_results: Annotated[
+        int, typer.Option("--max", help="Maximum search results")
+    ] = DEFAULT_MAX_RESULTS,
+    max_display: Annotated[
+        int, typer.Option(help="Maximum results to display")
+    ] = DEFAULT_MAX_DISPLAY,
+    context: Annotated[
+        bool, typer.Option(help="Show full page context for search hits")
+    ] = False,
+    max_pages: Annotated[
+        int, typer.Option(help="Maximum pages to load context for")
+    ] = DEFAULT_MAX_PAGES,
+    no_grouping: Annotated[
+        bool,
+        typer.Option(
+            help="Show pages individually instead of grouped by document (only with --context)"
+        ),
+    ] = False,
+    context_padding: Annotated[
+        int,
+        typer.Option(
+            help="Number of pages to include before and after each hit for context (only with --context)"
+        ),
+    ] = 0,
 ):
     """Search for keyword in transcribed materials.
 
@@ -235,9 +60,10 @@ def search(
         ra search "vasa" --context --context-padding 2          # With surrounding pages
         ra search "Stockholm" --context --no-grouping           # Individual page display
     """
-    # Use shared business logic
+    # Initialize services
     search_ops = SearchOperations()
-    display_adapter = RichDisplayAdapter()
+    rich_formatter = RichConsoleFormatter(console)
+    display_service = DisplayService(rich_formatter)
 
     console.print(f"[blue]Searching for '{keyword}' in transcribed materials...[/blue]")
 
@@ -256,112 +82,62 @@ def search(
         )
 
         if context and operation.hits:
-            # For context display, use the unified display service with Rich panels
+            # Show context with full page transcriptions
             console.print(
                 f"[green]Successfully loaded context for {len(operation.hits)} pages[/green]"
             )
 
-            if not no_grouping:
-                # Group display
-                grouped_hits = display_adapter.analyzer.group_hits_by_document(
-                    operation.hits
-                )
+            # Use display service for formatted output
+            result = display_service.format_show_pages_results(
+                operation, operation.hits, no_grouping
+            )
+
+            # Handle Rich objects (panels)
+            if isinstance(result, list):
                 console.print(
-                    f"\n[bold]Search Results Grouped by Document ({len(grouped_hits)} documents, {len(operation.hits)} pages):[/bold]"
+                    f"\n[bold]Search Results {'with Full Page Context' if no_grouping else 'Grouped by Document'} ({len(operation.hits)} pages):[/bold]"
                 )
-
-                for doc_ref, doc_hits in grouped_hits.items():
-                    doc_hits.sort(
-                        key=lambda h: int(h.page_number)
-                        if h.page_number.isdigit()
-                        else 0
-                    )
-
-                    # Create document panel content
-                    content = []
-                    first_hit = doc_hits[0]
-                    content.append(
-                        f"[bold blue]📄 Title:[/bold blue] {first_hit.title}"
-                    )
-                    # Get unique page numbers while preserving order and remove leading zeros
-                    unique_pages = []
-                    seen_pages = set()
-                    for hit in doc_hits:
-                        if hit.page_number not in seen_pages:
-                            # Remove leading zeros but keep at least one digit
-                            trimmed_page = hit.page_number.lstrip("0") or "0"
-                            unique_pages.append(trimmed_page)
-                            seen_pages.add(hit.page_number)
-
-                    content.append(
-                        f"[bold green]📄 Pages with hits:[/bold green] {', '.join(unique_pages)}"
-                    )
-
-                    if first_hit.date:
-                        content.append(
-                            f"[bold blue]📅 Date:[/bold blue] {first_hit.date}"
-                        )
-
-                    for hit in doc_hits:
-                        if hit.full_page_text:
-                            # Show full page transcription with keyword highlighting
-                            display_text = display_adapter.display_service.formatter.highlight_search_keyword(
-                                hit.full_page_text, keyword
-                            )
-                            trimmed_page_number = (
-                                str(hit.page_number).lstrip("0") or "0"
-                            )
-                            content.append(
-                                f"\n[bold cyan]Page {trimmed_page_number}:[/bold cyan]"
-                            )
-                            content.append(f"[italic]{display_text}[/italic]")
-
-                    panel_title = (
-                        f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
-                    )
-                    console.print(
-                        Panel(
-                            "\n".join(content),
-                            title=panel_title,
-                            border_style="green",
-                            padding=(0, 1),
-                        )
-                    )
+                for panel in result:
+                    console.print(panel)
             else:
-                # Individual page display
-                console.print(
-                    f"\n[bold]Search Results with Full Page Context ({len(operation.hits)} pages):[/bold]"
-                )
-                for hit in operation.hits:
-                    if hit.full_page_text:
-                        content = []
-                        content.append(f"[bold blue]📄 Title:[/bold blue] {hit.title}")
-                        if hit.date:
-                            content.append(
-                                f"[bold blue]📅 Date:[/bold blue] {hit.date}"
-                            )
+                # String output (shouldn't happen with RichConsoleFormatter)
+                console.print(result)
 
-                        display_text = display_adapter.display_service.formatter.highlight_search_keyword(
-                            hit.full_page_text, keyword
-                        )
-                        content.append(
-                            "\n[bold magenta]📜 Full Transcription:[/bold magenta]"
-                        )
-                        content.append(f"[italic]{display_text}[/italic]")
-
-                        trimmed_page_number = str(hit.page_number).lstrip("0") or "0"
-                        panel_title = f"[cyan]Hit: {hit.reference_code} - Page {trimmed_page_number}[/cyan]"
-                        console.print(
-                            Panel(
-                                "\n".join(content),
-                                title=panel_title,
-                                border_style="blue",
-                                padding=(0, 1),
-                            )
-                        )
         else:
-            # Use Rich table display for non-context results
-            display_adapter.display_search_hits_rich(operation, max_display)
+            # Use display service for table display
+            result = display_service.format_search_results(
+                operation, max_display, False
+            )
+
+            if result:
+                # Get and display summary
+                summary = display_service.get_search_summary(operation)
+                summary_lines = rich_formatter.format_search_summary(summary)
+                for line in summary_lines:
+                    console.print(line)
+
+                # Display the table or message
+                if isinstance(result, str):
+                    console.print(result)
+                else:
+                    # Rich Table object
+                    console.print(result)
+
+                    # Show example browse command
+                    grouped_hits = summary.get("grouped_hits", {})
+                    example_lines = rich_formatter.format_browse_example(
+                        grouped_hits, keyword
+                    )
+                    for line in example_lines:
+                        console.print(line)
+
+                    # Show remaining documents message
+                    total_groups = len(grouped_hits)
+                    remaining_msg = rich_formatter.format_remaining_documents(
+                        total_groups, max_display
+                    )
+                    if remaining_msg:
+                        console.print(remaining_msg)
 
     except Exception as e:
         console.print(f"[red]Search failed: {e}[/red]")
@@ -370,11 +146,23 @@ def search(
 
 @app.command()
 def browse(
-    reference_code: Annotated[str, typer.Argument(help="Reference code of the document")],
-    pages: Annotated[Optional[str], typer.Option(help='Page range to display (e.g., "1-10" or "5,7,9")')] = None,
-    page: Annotated[Optional[str], typer.Option(help="Single page or page range to display (alias for --pages)")] = None,
-    search_term: Annotated[Optional[str], typer.Option(help="Highlight this term in the text")] = None,
-    max_display: Annotated[int, typer.Option(help="Maximum pages to display")] = DEFAULT_MAX_DISPLAY,
+    reference_code: Annotated[
+        str, typer.Argument(help="Reference code of the document")
+    ],
+    pages: Annotated[
+        Optional[str],
+        typer.Option(help='Page range to display (e.g., "1-10" or "5,7,9")'),
+    ] = None,
+    page: Annotated[
+        Optional[str],
+        typer.Option(help="Single page or page range to display (alias for --pages)"),
+    ] = None,
+    search_term: Annotated[
+        Optional[str], typer.Option(help="Highlight this term in the text")
+    ] = None,
+    max_display: Annotated[
+        int, typer.Option(help="Maximum pages to display")
+    ] = DEFAULT_MAX_DISPLAY,
 ):
     """Browse pages by reference code.
 
@@ -386,9 +174,10 @@ def browse(
         ra browse "SE/RA/123" --pages "1-10"
         ra browse "SE/RA/123" --page "5,7,9"
     """
-    # Use shared business logic
+    # Initialize services
     search_ops = SearchOperations()
-    display_adapter = RichDisplayAdapter()
+    rich_formatter = RichConsoleFormatter(console)
+    display_service = DisplayService(rich_formatter)
 
     console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")
 
@@ -425,8 +214,20 @@ def browse(
             f"[green]Successfully loaded {len(operation.contexts)} pages[/green]"
         )
 
-        # Use Rich panel display
-        display_adapter.display_page_contexts_rich(operation, search_term or "")
+        # Use display service for formatted output
+        console.print(
+            f"\n[bold]Full Page Transcriptions ({len(operation.contexts)} pages):[/bold]"
+        )
+
+        result = display_service.format_browse_results(operation, search_term)
+
+        # Handle Rich panels
+        if isinstance(result, list):
+            for panel in result:
+                console.print(panel)
+        else:
+            # String output (shouldn't happen with RichConsoleFormatter)
+            console.print(result)
 
     except Exception as e:
         console.print(f"[red]Browse failed: {e}[/red]")
@@ -435,7 +236,10 @@ def browse(
 
 @app.command()
 def serve(
-    port: Annotated[Optional[int], typer.Option(help="Port for HTTP/SSE transport (enables HTTP mode)")] = None,
+    port: Annotated[
+        Optional[int],
+        typer.Option(help="Port for HTTP/SSE transport (enables HTTP mode)"),
+    ] = None,
     host: Annotated[str, typer.Option(help="Host for HTTP transport")] = "localhost",
 ):
     """Start the MCP server.

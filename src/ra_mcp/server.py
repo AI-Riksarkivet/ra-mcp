@@ -15,8 +15,7 @@ from fastmcp import FastMCP
 from ra_mcp.search_tools import search_mcp
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("ra-mcp")
 
@@ -31,7 +30,7 @@ main_server = FastMCP(
     Available tool categories:
     - Search Tools: Search and browse transcribed historical documents
     - (More tool categories can be added here)
-    """
+    """,
 )
 
 
@@ -66,9 +65,7 @@ def main():
         help="Host for HTTP transport (default: localhost)",
     )
     parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
+        "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
 
     args = parser.parse_args()
@@ -82,8 +79,12 @@ def main():
     asyncio.run(setup_server())
 
     if args.http:
-        logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{args.host}:{args.port}")
-        logger.info(f"Connect with: claude mcp add --transport sse ra-mcp http://{args.host}:{args.port}/sse")
+        logger.info(
+            f"Starting Riksarkivet MCP HTTP/SSE server on http://{args.host}:{args.port}"
+        )
+        logger.info(
+            f"Connect with: claude mcp add --transport sse ra-mcp http://{args.host}:{args.port}/sse"
+        )
         main_server.run(transport="http", host=args.host, port=args.port)
     else:
         logger.info("Starting Riksarkivet MCP stdio server")
