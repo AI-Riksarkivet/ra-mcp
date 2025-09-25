@@ -5,11 +5,11 @@ from fastmcp import FastMCP
 from .services import SearchOperations, analysis
 from .services.mcp_display_service import MCPDisplayService
 from .formatters import format_error_message
+from .utils.http_client import default_http_client
 
 
 search_mcp = FastMCP(
     name="ra-search-mcp",
-    description="Riksarkivet search server providing access to transcribed historical documents with 3 tools (search_transcribed, browse_document, get_document_structure) and 2 resources (table_of_contents, guide sections)",
     instructions="""
     🏛️ Riksarkivet (RA) Search and Browse MCP Server
 
@@ -86,7 +86,7 @@ async def search_transcribed(
     truncate_page_text: int = 800,
 ) -> str:
     try:
-        search_operations = SearchOperations()
+        search_operations = SearchOperations(http_client=default_http_client)
         display_service = MCPDisplayService()
 
         search_result = await _execute_search_query(
@@ -127,7 +127,7 @@ async def search_transcribed(
     except Exception as e:
         return format_error_message(
             f"Search failed: {str(e)}",
-            suggestions=[
+            error_suggestions=[
                 "Try a simpler search term",
                 "Check if the service is available",
                 "Reduce max_results or max_pages_with_context",
@@ -207,7 +207,7 @@ async def browse_document(
     - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
     """
     try:
-        search_operations = SearchOperations()
+        search_operations = SearchOperations(http_client=default_http_client)
         display_service = MCPDisplayService()
 
         browse_result = await _fetch_document_pages(
@@ -221,12 +221,14 @@ async def browse_document(
         if not browse_result.contexts:
             return _generate_no_pages_found_message(reference_code)
 
-        return display_service.format_browse_results(browse_result, highlight_term)
+        result = display_service.format_browse_results(browse_result, highlight_term)
+        # MCPFormatter always returns string, but type hints include List for RichConsoleFormatter
+        return result if isinstance(result, str) else str(result)
 
     except Exception as e:
         return format_error_message(
             f"Browse failed: {str(e)}",
-            suggestions=[
+            error_suggestions=[
                 "Check the reference code format",
                 "Verify page numbers are valid",
                 "Try with fewer pages",
@@ -243,7 +245,7 @@ def _generate_no_pages_found_message(reference_code):
     """Generate error message when no pages are found."""
     return format_error_message(
         f"Could not load pages for {reference_code}",
-        suggestions=[
+        error_suggestions=[
             "The pages might not have transcriptions",
             "Try different page numbers",
             "Check if the document is fully digitized",
@@ -275,7 +277,7 @@ async def get_document_structure(
         if not _validate_document_identifiers(reference_code, pid):
             return _generate_missing_identifier_message()
 
-        search_operations = SearchOperations()
+        search_operations = SearchOperations(http_client=default_http_client)
         display_service = MCPDisplayService()
 
         document_structure = await _fetch_document_structure(
@@ -290,7 +292,7 @@ async def get_document_structure(
     except Exception as e:
         return format_error_message(
             f"Failed to get document structure: {str(e)}",
-            suggestions=[
+            error_suggestions=[
                 "Check the reference code or PID",
                 "Try searching for the document first",
             ],
@@ -311,7 +313,7 @@ def _generate_missing_identifier_message():
     """Generate error message for missing document identifiers."""
     return format_error_message(
         "Either reference_code or pid must be provided",
-        suggestions=[
+        error_suggestions=[
             "Provide a reference code like 'SE/RA/420422/01'",
             "Or provide a PID from search results",
         ],
@@ -322,7 +324,7 @@ def _generate_structure_not_found_message():
     """Generate error message when document structure cannot be retrieved."""
     return format_error_message(
         "Could not get structure for the document",
-        suggestions=[
+        error_suggestions=[
             "The document might not have IIIF manifests",
             "Try browsing specific pages instead",
         ],
@@ -341,7 +343,7 @@ def get_table_of_contents() -> str:
     except FileNotFoundError:
         return format_error_message(
             "Table of contents file not found",
-            suggestions=[
+            error_suggestions=[
                 "Check if the markdown/00_Innehallsforteckning.md file exists",
                 "Verify the file path is correct",
             ],
@@ -349,7 +351,10 @@ def get_table_of_contents() -> str:
     except Exception as e:
         return format_error_message(
             f"Failed to load table of contents: {str(e)}",
-            suggestions=["Check file permissions", "Verify file encoding is UTF-8"],
+            error_suggestions=[
+                "Check file permissions",
+                "Verify file encoding is UTF-8",
+            ],
         )
 
 
@@ -377,7 +382,7 @@ def get_guide_content(filename: str) -> str:
     except Exception as e:
         return format_error_message(
             f"Failed to load guide content '{filename}': {str(e)}",
-            suggestions=[
+            error_suggestions=[
                 "Check file permissions",
                 "Verify file encoding is UTF-8",
                 "Ensure the filename is valid",
@@ -394,7 +399,7 @@ def _generate_invalid_filename_message():
     """Generate error message for invalid filename format."""
     return format_error_message(
         "Invalid filename format",
-        suggestions=["Filename must end with .md extension"],
+        error_suggestions=["Filename must end with .md extension"],
     )
 
 
@@ -412,7 +417,7 @@ def _generate_file_not_found_message(filename):
     """Generate error message when file is not found."""
     return format_error_message(
         f"Guide section '{filename}' not found",
-        suggestions=[
+        error_suggestions=[
             "Check the filename spelling",
             "Use get_table_of_contents resource to see available sections",
             "Ensure the filename includes .md extension",

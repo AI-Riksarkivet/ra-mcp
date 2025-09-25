@@ -7,14 +7,15 @@ from typing import Optional
 from ..clients import ALTOClient, OAIPMHClient
 from ..models import PageContext
 from ..utils import url_generator
+from ..utils.http_client import HTTPClient
 
 
 class PageContextService:
     """Service for getting full page context."""
 
-    def __init__(self):
-        self.alto_client = ALTOClient()
-        self.oai_client = OAIPMHClient()
+    def __init__(self, http_client: HTTPClient):
+        self.alto_client = ALTOClient(http_client=http_client)
+        self.oai_client = OAIPMHClient(http_client=http_client)
 
     def get_page_context(
         self,

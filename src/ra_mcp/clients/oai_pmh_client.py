@@ -13,9 +13,9 @@ from ..utils.http_client import HTTPClient
 class OAIPMHClient:
     """Client for interacting with OAI-PMH repositories."""
 
-    def __init__(self, base_url: str = OAI_BASE_URL):
+    def __init__(self, http_client: HTTPClient, base_url: str = OAI_BASE_URL):
+        self.http_client = http_client
         self.base_url = base_url
-        self.http = HTTPClient()
 
     def get_record(
         self, identifier: str, metadata_prefix: str = "oai_ape_ead"
@@ -106,7 +106,7 @@ class OAIPMHClient:
     def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
-            xml_content = self.http.get_xml(
+            xml_content = self.http_client.get_xml(
                 self.base_url, params=request_parameters, timeout=30
             )
 

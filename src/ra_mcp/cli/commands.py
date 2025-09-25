@@ -11,6 +11,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..services import SearchOperations
 from ..services.cli_display_service import CLIDisplayService
+from ..utils.http_client import default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
 console = Console()
@@ -58,7 +59,7 @@ def search(
         ra search "Stockholm" --context --no-grouping           # Individual page display
     """
     # Initialize services
-    search_ops = SearchOperations()
+    search_ops = SearchOperations(http_client=default_http_client)
     display_service = CLIDisplayService(console)
 
     console.print(f"[blue]Searching for '{keyword}' in transcribed materials...[/blue]")
@@ -173,7 +174,7 @@ def browse(
         ra browse "SE/RA/123" --page "5,7,9"
     """
     # Initialize services
-    search_ops = SearchOperations()
+    search_ops = SearchOperations(http_client=default_http_client)
     display_service = CLIDisplayService(console)
 
     console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")

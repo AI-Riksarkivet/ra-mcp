@@ -4,12 +4,13 @@ Creates actual Rich objects (Tables, Panels) for console display.
 """
 
 import re
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Union, Optional
 from rich.table import Table
 from rich.panel import Panel
 from rich.console import Console
 
 from .base_formatter import BaseFormatter
+from ..models import SearchOperation, PageContext, SearchHit, SearchSummary
 from .utils import (
     trim_page_number,
     trim_page_numbers,
@@ -115,7 +116,7 @@ class RichConsoleFormatter(BaseFormatter):
         )
 
     def format_search_results_table(
-        self, search_operation: Any, max_display: int = 20
+        self, search_operation: SearchOperation, max_display: int = 20
     ) -> Union[Table, str]:
         """
         Create a Rich Table for search results.
@@ -133,7 +134,7 @@ class RichConsoleFormatter(BaseFormatter):
         from ..services import analysis
 
         summary = analysis.extract_search_summary(search_operation)
-        grouped_hits = summary["grouped_hits"]
+        grouped_hits = summary.grouped_hits
 
         table = Table(
             "Institution & Reference",
@@ -196,7 +197,7 @@ class RichConsoleFormatter(BaseFormatter):
         return table
 
     def format_page_context_panel(
-        self, context: Any, highlight_term: str = ""
+        self, context: PageContext, highlight_term: str = ""
     ) -> Panel:
         """
         Create a Rich Panel for a single page context.
@@ -237,7 +238,7 @@ class RichConsoleFormatter(BaseFormatter):
         )
 
     def format_document_panel(
-        self, doc_ref: str, doc_hits: List[Any], keyword: str
+        self, doc_ref: str, doc_hits: List[SearchHit], keyword: str
     ) -> Panel:
         """
         Create a Rich Panel for a document with multiple hits.
@@ -282,19 +283,19 @@ class RichConsoleFormatter(BaseFormatter):
             "\n".join(content), panel_title=panel_title, panel_border_style="green"
         )
 
-    def format_search_summary(self, summary: Dict[str, Any]) -> List[str]:
+    def format_search_summary(self, summary: SearchSummary) -> List[str]:
         """
         Format search summary information.
 
         Args:
-            summary: Search summary dictionary
+            summary: Search summary object
 
         Returns:
             List of formatted summary lines
         """
         lines = []
         lines.append(
-            f"\n✓ Found {summary['page_hits_returned']} page-level hits across {summary['documents_returned']} documents"
+            f"\n✓ Found {summary.page_hits_returned} page-level hits across {summary.documents_returned} documents"
         )
         lines.append(
             "[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]"
@@ -302,7 +303,7 @@ class RichConsoleFormatter(BaseFormatter):
         return lines
 
     def format_browse_example(
-        self, grouped_hits: Dict[str, List[Any]], keyword: str
+        self, grouped_hits: Dict[str, List[SearchHit]], keyword: str
     ) -> List[str]:
         """
         Format an example browse command.

@@ -12,8 +12,8 @@ from ..utils.http_client import HTTPClient
 class ALTOClient:
     """Client for fetching and parsing ALTO XML files."""
 
-    def __init__(self):
-        self.http = HTTPClient(user_agent="transcribed_search_browser/1.0")
+    def __init__(self, http_client: HTTPClient):
+        self.http_client = http_client
 
     def fetch_content(self, alto_url: str, timeout: int = 10) -> Optional[str]:
         """Fetch and parse ALTO XML file to extract full text content."""
@@ -32,7 +32,7 @@ class ALTOClient:
     ) -> Optional[bytes]:
         """Fetch ALTO XML document from URL."""
         headers = {"Accept": "application/xml, text/xml, */*"}
-        return self.http.get_content(
+        return self.http_client.get_content(
             document_url, timeout=timeout_seconds, headers=headers
         )
 

@@ -157,5 +157,4 @@ class HTTPClient:
             return None
 
 
-# Global instance for convenience
-http_client = HTTPClient()
+default_http_client = HTTPClient()

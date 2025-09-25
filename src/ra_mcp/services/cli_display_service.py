@@ -36,11 +36,11 @@ class CLIDisplayService(BaseDisplayService):
             return "No search hits found."
 
         search_summary = analysis.extract_search_summary(search_operation)
-        hits_grouped_by_document = search_summary["grouped_hits"]
+        hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
         lines.append(
-            f"Found {search_summary['page_hits_returned']} page-level hits across {search_summary['documents_returned']} documents"
+            f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents"
         )
 
         if not show_full_context:
@@ -291,7 +291,7 @@ class CLIDisplayService(BaseDisplayService):
         return "\n".join(lines)
 
     def format_error_message(
-        self, error_message: str, error_suggestions: List[str] = None
+        self, error_message: str, error_suggestions: Optional[List[str]] = None
     ) -> str:
         """Format error messages as string."""
         formatted_lines = [f"❌ Error: {error_message}"]
