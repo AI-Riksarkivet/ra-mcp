@@ -20,6 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Cleaning Code**: `uvx ruff format .` , `uvx ruff check --fix`
 
 
+
 ### Claude Desktop Integration
 To connect Claude Desktop to a running SSE server, add the following configuration:
 
@@ -34,24 +35,6 @@ To connect the MCP server to Claude Code:
 
 The server tools will be available with the `mcp__ra-mcp__` prefix.
 
-
-### HTR Gradio Application
-- **Install HTR dependencies**: `cd htr_gradio && uv sync`
-- **Run HTR Gradio app**: `cd htr_gradio && uv run python gradio_htrflow.py`
-
-### Langflow Installation and Setup
-**Prerequisites:**
-- Python 3.10-3.13 (macOS/Linux) or 3.10-3.12 (Windows)
-- uv package manager
-- Minimum: Dual-core CPU, 2 GB RAM
-- Recommended: Multi-core CPU, 4+ GB RAM
-
-**Installation:**
-1. Create and activate virtual environment with uv
-2. Install Langflow: `uv pip install langflow`
-3. Install specific version (optional): `uv pip install langflow==1.4.22`
-4. Start Langflow: `uv run langflow run`
-5. Access at http://127.0.0.1:7860
 
 ### Claude Code as MCP Server
 **Start Claude Code as MCP server:**
@@ -133,9 +116,12 @@ The `htr_gradio/` directory contains:
 - Simple MCP server example (`simple_mcp_server.py`)
 
 ## API Endpoints
-- **Search API**: `https://data-acc.riksarkivet.se/api/records`
-- **IIIF Base**: `https://data-acc.riksarkivet.se/iiif/`
-- **HTRflow Space**: `https://huggingface.co/spaces/Gabriel/htrflow_mcp`
+- SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api/records"
+- COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
+- IIIF_BASE_URL = "https://lbiiif.riksarkivet.se"
+- OAI_BASE_URL = "https://oai-pmh.riksarkivet.se/OAI"
+
+When using our endpoints opt to use httx or urllib instead of requests, since there is a bug (timeout) when using requests agaisnt RA's APIs
 
 ## Key Features
 - Search records with transcribed text across Riksarkivet collections

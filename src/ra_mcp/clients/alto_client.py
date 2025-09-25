@@ -6,14 +6,14 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from ..config import ALTO_NAMESPACES
-from ..utils import create_session
+from ..utils.http_client import HTTPClient
 
 
 class ALTOClient:
     """Client for fetching and parsing ALTO XML files."""
 
     def __init__(self):
-        self.session = create_session()
+        self.http = HTTPClient(user_agent="transcribed_search_browser/1.0")
 
     def fetch_content(self, alto_url: str, timeout: int = 10) -> Optional[str]:
         """Fetch and parse ALTO XML file to extract full text content."""
@@ -31,26 +31,10 @@ class ALTOClient:
         self, document_url: str, timeout_seconds: int
     ) -> Optional[bytes]:
         """Fetch ALTO XML document from URL."""
-        try:
-            request_headers = self._build_request_headers()
-            http_response = self.session.get(
-                document_url, headers=request_headers, timeout=timeout_seconds
-            )
-
-            if http_response.status_code != 200:
-                return None
-
-            return http_response.content
-
-        except Exception:
-            return None
-
-    def _build_request_headers(self) -> dict:
-        """Build HTTP request headers for ALTO XML fetching."""
-        return {
-            "User-Agent": "transcribed_search_browser/1.0",
-            "Accept": "application/xml, text/xml, */*",
+        headers = {
+            "Accept": "application/xml, text/xml, */*"
         }
+        return self.http.get_content(document_url, timeout=timeout_seconds, headers=headers)
 
     def _parse_xml_content(self, xml_content: bytes) -> Optional[ET.Element]:
         """Parse XML content into ElementTree."""

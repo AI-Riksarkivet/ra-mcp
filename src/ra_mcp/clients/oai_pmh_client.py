@@ -7,7 +7,7 @@ from typing import Dict, Optional, Union, List
 from lxml import etree
 
 from ..config import OAI_BASE_URL, NAMESPACES
-from ..utils import create_session
+from ..utils.http_client import HTTPClient
 
 
 class OAIPMHClient:
@@ -15,7 +15,7 @@ class OAIPMHClient:
 
     def __init__(self, base_url: str = OAI_BASE_URL):
         self.base_url = base_url
-        self.session = create_session()
+        self.http = HTTPClient()
 
     def get_record(
         self, identifier: str, metadata_prefix: str = "oai_ape_ead"
@@ -100,46 +100,44 @@ class OAIPMHClient:
         return url_segments[-1] if url_segments else ""
 
     def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
-        """Make an OAI-PMH request and return parsed XML."""
-        http_response = self.session.get(self.base_url, params=request_parameters)
-        http_response.raise_for_status()
+        """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
+        try:
+            xml_content = self.http.get_xml(
+                self.base_url,
+                params=request_parameters,
+                timeout=30
+            )
 
-        xml_response_root = self._parse_xml_response(http_response.content)
-        self._check_oai_response_errors(xml_response_root)
+            xml_response_root = self._parse_xml_response(xml_content)
+            self._check_oai_response_errors(xml_response_root)
 
-        return xml_response_root
+            return xml_response_root
 
-    def _parse_xml_response(self, response_content: bytes) -> etree.Element:
+        except Exception as e:
+            raise Exception(f"OAI-PMH request failed: {e}") from e
+
+    def _parse_xml_response(self, xml_data: bytes) -> etree.Element:
         """Parse XML response content."""
-        xml_parser = etree.XMLParser(remove_blank_text=True)
-        return etree.fromstring(response_content, xml_parser)
+        try:
+            return etree.fromstring(xml_data)
+        except Exception as parse_error:
+            raise Exception(f"Failed to parse XML response: {parse_error}") from parse_error
 
     def _check_oai_response_errors(self, xml_root: etree.Element) -> None:
-        """Check for OAI-PMH errors in response."""
+        """Check for OAI-PMH errors in the response."""
         error_elements = xml_root.xpath("//oai:error", namespaces=NAMESPACES)
-
         if error_elements:
-            error_message = self._build_error_message(error_elements[0])
-            raise Exception(error_message)
-
-    def _build_error_message(self, error_element: etree.Element) -> str:
-        """Build error message from OAI-PMH error element."""
-        error_code = error_element.get("code", "unknown")
-        error_text = error_element.text or "Unknown error"
-        return f"OAI-PMH Error [{error_code}]: {error_text}"
-
-    def _get_text(self, element, xpath: str) -> Optional[str]:
-        """Safely extract text from an XML element."""
-        result = element.xpath(xpath, namespaces=NAMESPACES)
-        return result[0].text if result and result[0].text else None
+            error_code = error_elements[0].get("code", "unknown")
+            error_message = error_elements[0].text or "No error message"
+            raise Exception(f"OAI-PMH Error [{error_code}]: {error_message}")
 
     def _extract_ead_metadata(
-        self, record_element
+        self, record_element: etree.Element
     ) -> Dict[str, Union[str, List, Dict]]:
         """Extract metadata from EAD format."""
         ead_metadata_element = self._extract_ead_element_from_record(record_element)
 
-        if not ead_metadata_element:
+        if ead_metadata_element is None:
             return {}
 
         extracted_metadata = {}
@@ -148,9 +146,13 @@ class OAIPMHClient:
         if document_title:
             extracted_metadata["title"] = document_title
 
-        document_date = self._extract_date_from_ead(ead_metadata_element)
-        if document_date:
-            extracted_metadata["date"] = document_date
+        unitid_value = self._extract_unitid_from_ead(ead_metadata_element)
+        if unitid_value:
+            extracted_metadata["unitid"] = unitid_value
+
+        repository_info = self._extract_repository_from_ead(ead_metadata_element)
+        if repository_info:
+            extracted_metadata["repository"] = repository_info
 
         nad_link_url = self._extract_nad_link_from_ead(ead_metadata_element)
         if nad_link_url:
@@ -162,41 +164,52 @@ class OAIPMHClient:
         self, record_element: etree.Element
     ) -> Optional[etree.Element]:
         """Extract EAD element from record."""
-        ead_elements = record_element.xpath(".//ead:ead", namespaces=NAMESPACES)
+        ead_elements = record_element.xpath(
+            ".//ape_ead:ead", namespaces={"ape_ead": NAMESPACES["ape_ead"]}
+        )
         return ead_elements[0] if ead_elements else None
 
-    def _extract_title_from_ead(self, ead_element: etree.Element) -> Optional[str]:
+    def _extract_title_from_ead(self, ead_element: etree.Element) -> str:
         """Extract title from EAD element."""
-        title_elements = ead_element.xpath(".//ead:unittitle", namespaces=NAMESPACES)
-
-        if title_elements and title_elements[0].text:
-            return title_elements[0].text
-
-        return None
-
-    def _extract_date_from_ead(self, ead_element: etree.Element) -> Optional[str]:
-        """Extract date from EAD element."""
-        date_elements = ead_element.xpath(".//ead:unitdate", namespaces=NAMESPACES)
-
-        if date_elements and date_elements[0].text:
-            return date_elements[0].text
-
-        return None
-
-    def _extract_nad_link_from_ead(self, ead_element: etree.Element) -> Optional[str]:
-        """Extract NAD link from EAD element."""
-        nad_reference_links = ead_element.xpath(
-            ".//ead:extref/@xlink:href", namespaces=NAMESPACES
+        return (
+            self._get_text(ead_element, ".//ead:unittitle", {"ead": NAMESPACES["ead"]})
+            or ""
         )
 
-        return self._find_valid_nad_link(nad_reference_links)
+    def _extract_unitid_from_ead(self, ead_element: etree.Element) -> str:
+        """Extract unit ID from EAD element."""
+        return (
+            self._get_text(ead_element, ".//ead:unitid", {"ead": NAMESPACES["ead"]})
+            or ""
+        )
 
-    def _find_valid_nad_link(self, reference_links: List[str]) -> Optional[str]:
-        """Find valid NAD link from list of references."""
-        valid_domains = ["sok.riksarkivet.se", "sok-acc.riksarkivet.se"]
+    def _extract_repository_from_ead(self, ead_element: etree.Element) -> str:
+        """Extract repository information from EAD element."""
+        return (
+            self._get_text(ead_element, ".//ead:repository", {"ead": NAMESPACES["ead"]})
+            or ""
+        )
 
-        for link_url in reference_links:
-            if any(domain in link_url for domain in valid_domains):
-                return link_url
+    def _extract_nad_link_from_ead(self, ead_element: etree.Element) -> str:
+        """Extract NAD link from EAD element."""
+        dao_elements = ead_element.xpath(".//ead:dao", namespaces={"ead": NAMESPACES["ead"]})
+        if dao_elements:
+            return dao_elements[0].get("{http://www.w3.org/1999/xlink}href", "")
+        return ""
 
+    def _get_text(
+        self,
+        element: etree.Element,
+        xpath: str,
+        namespaces: Optional[Dict[str, str]] = None,
+    ) -> Optional[str]:
+        """Get text from element using XPath."""
+        if namespaces is None:
+            namespaces = NAMESPACES
+
+        matches = element.xpath(xpath, namespaces=namespaces)
+        if matches:
+            if hasattr(matches[0], "text"):
+                return matches[0].text
+            return str(matches[0])
         return None

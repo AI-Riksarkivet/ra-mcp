@@ -2,20 +2,22 @@
 IIIF client for Riksarkivet.
 """
 
+import json
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 from typing import Dict, Optional, Union, List
 
 from ..config import COLLECTION_API_BASE_URL
-from ..utils import create_session
 
 
 class IIIFClient:
     """Client for IIIF collections and manifests."""
 
     def __init__(self):
-        self.session = create_session()
+        pass  # No session needed for urllib
 
     def explore_collection(
-        self, pid: str, timeout: int = 10
+        self, pid: str, timeout: int = 30
     ) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """Explore IIIF collection to get manifests."""
         collection_endpoint_url = self._build_collection_url(pid)
@@ -40,15 +42,33 @@ class IIIFClient:
     def _fetch_collection_data(
         self, collection_url: str, timeout_seconds: int
     ) -> Optional[Dict]:
-        """Fetch collection data from IIIF endpoint."""
+        """Fetch collection data from IIIF endpoint using urllib directly.
+
+        Note: We use urllib directly here instead of the centralized HTTPClient
+        because the IIIF server at lbiiif.riksarkivet.se has special behavior
+        that works with urllib but not with requests.
+        """
         try:
-            api_response = self.session.get(collection_url, timeout=timeout_seconds)
-            if api_response.status_code == 404:
+            # Create request with headers
+            request = Request(collection_url)
+            request.add_header("User-Agent", "Transcribed-Search-Browser/1.0")
+            request.add_header("Accept", "application/json")
+
+            # Fetch with timeout
+            with urlopen(request, timeout=timeout_seconds) as response:
+                if response.status == 404:
+                    return None
+
+                # Read and decode response
+                content = response.read()
+                return json.loads(content)
+
+        except HTTPError as e:
+            if e.code == 404:
                 return None
-
-            api_response.raise_for_status()
-            return api_response.json()
-
+            return None
+        except (URLError, TimeoutError, json.JSONDecodeError):
+            return None
         except Exception:
             return None
 

@@ -31,9 +31,9 @@ class PageContextService:
             return None
 
         full_text = self.alto_client.fetch_content(alto_xml_url)
+
         if not full_text:
             return None
-
         return PageContext(
             page_number=int(page_number) if page_number.isdigit() else 0,
             page_id=page_number,

@@ -7,7 +7,8 @@ from typing import List, Optional, Tuple, Dict, Union
 
 from ..clients import SearchAPI, IIIFClient, OAIPMHClient
 from ..models import SearchHit, SearchOperation, BrowseOperation
-from ..utils import create_session, parse_page_range
+from ..utils import parse_page_range
+from ..utils.http_client import HTTPClient
 from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
@@ -20,7 +21,7 @@ class SearchOperations:
     """
 
     def __init__(self):
-        self.session = create_session()
+        self.http = HTTPClient()
         self.search_api = SearchAPI()
         self.enrichment_service = SearchEnrichmentService()
         self.page_service = PageContextService()
@@ -176,7 +177,8 @@ class SearchOperations:
         )
 
         if self._has_manifests(iiif_collection_info):
-            return iiif_collection_info["manifests"][0]["id"]
+            manifest_id = iiif_collection_info["manifests"][0]["id"]
+            return manifest_id
 
         return persistent_identifier
 
@@ -348,13 +350,12 @@ class SearchOperations:
         }
 
     def _execute_pid_search_request(self, parameters: Dict) -> Dict:
-        """Execute search request for PID."""
-        response = self.session.get(
-            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
+        """Execute search request for PID using centralized HTTP client."""
+        return self.http.get_json(
+            SEARCH_API_BASE_URL,
+            params=parameters,
+            timeout=REQUEST_TIMEOUT
         )
-        response.raise_for_status()
-
-        return response.json()
 
     def _extract_pid_from_search_response(self, response_data: Dict) -> Optional[str]:
         """Extract PID from search API response."""
