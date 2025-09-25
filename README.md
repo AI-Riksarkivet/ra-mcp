@@ -104,15 +104,17 @@ When you run a search, results are presented with:
 
 **Example output:**
 ```
-Document: SE/RA/12345 - Stockholms stads tänkeböcker (1520-1550)
-Institution: Stockholms stadsarkiv | Date: 1545
-├─ Page 42: "...angående **Stockholm** rådstuga och dess underhåll..."
-├─ Page 98: "...borgmästaren i **Stockholm** beslutade att..."
-└─ Page 156: "...handlare från **Stockholm** begärde tillstånd..."
+Document: SE/RA/310187/1 - Kommissorialrätt i Stockholm ang. trolldom
+Institution: Riksarkivet i Stockholm/Täby | Date: 1676 - 1677
+├─ Page 2: "...Kommissorialrätt i Stockholm ang. **trolldom** 1676..."
+├─ Page 7: "...som sig medh någon klagomåhl öfwer detta **Trolldoms** wäsende..."
+├─ Page 8: "...till hemmande af denne **Trolldoms** Sundh på åthskillige orter..."
+├─ Page 52: "...hustru Anna förklarades skyldig till **trolldom** och förde..."
+└─ Page 72: "...bekände han sig hafwa brukat **trolldom** emot sina fiender..."
 
 Browse commands:
-  uv run ra browse "SE/RA/12345" --page 42 --search-term "Stockholm"
-  uv run ra browse "SE/RA/12345" --pages "42,98,156" --search-term "Stockholm"
+  uv run ra browse "SE/RA/310187/1" --page 7 --search-term "trolldom"
+  uv run ra browse "SE/RA/310187/1" --pages "2,7,8,52,72" --search-term "trolldom"
 ```
 
 ### 📄 Full Page Display
@@ -126,20 +128,23 @@ With the `--context` flag, you get complete page transcriptions featuring:
 
 **Example output:**
 ```
-═══ SE/RA/12345 - Page 42 ═══
-Title: Stockholms stads tänkeböcker
-Date: 1545-03-15 | Institution: Stockholms stadsarkiv
+═══ SE/RA/310187/1 - Page 7 ═══
+Title: Kommissorialrätt i Stockholm ang. trolldom
+Date: 1676-1677 | Institution: Riksarkivet i Stockholm/Täby
 
-Anno domini 1545 den 15 martii blef föredraget angående 🟡Stockholm🟡
-rådstuga och dess underhåll. Borgmästaren förklarade att byggnaden
-behöfde reparationer och att medel måste anskaffas för detta ändamål.
-Flera borgare från 🟡Stockholm🟡 stad deltog i diskussionen om hur
-kostnaderna skulle fördelas...
+skäligt sin emillan förafskeda, och det eftter Kongl. Senarens
+förordning, att alla dhe, som sig medh någon klagomåhl öfwer
+detta **Trolldoms** wäsende angifwa wela, ther medh skola
+inställa sigh för höga öfwerheten, huilket alt Högwälborne Herr
+General Leutnanten och Gouverneuren medh dhe brefwen han oss
+tillsändt hafwer, jämwäl och i muntel samptahl medh oss sigh
+förklarat, som wij och nu wid thetta tillfället Commissionen
+till hemmande af denne **Trolldoms** Sundh på åthskillige orter...
 
 Links:
-📄 ALTO XML: https://sok.riksarkivet.se/dokument/alto/SE_RA_12345_042.xml
-🖼️  Image: https://lbiiif.riksarkivet.se/arkiv/SE_RA_12345_042.jpg
-🔍 Bildvisning: https://sok.riksarkivet.se/bildvisning/SE_RA_12345#042
+📄 ALTO XML: https://sok.riksarkivet.se/dokument/alto/SE_RA_310187_1_007.xml
+🖼️  Image: https://lbiiif.riksarkivet.se/arkiv/SE_RA_310187_1_007.jpg
+🔍 Bildvisning: https://sok.riksarkivet.se/bildvisning/SE_RA_310187_1#007
 ```
 
 ### 🔗 Available Resources
