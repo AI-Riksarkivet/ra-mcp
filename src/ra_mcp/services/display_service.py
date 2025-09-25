@@ -3,9 +3,12 @@ Unified display service that can format output for different interfaces.
 This eliminates formatting code duplication between CLI and MCP tools.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, List, Optional, Union
 
-from ..models import SearchHit, SearchOperation, BrowseOperation
+from rich.table import Table
+from rich.panel import Panel
+
+from ..models import SearchHit, SearchOperation, BrowseOperation, SearchSummary
 from . import analysis
 from ..formatters import BaseFormatter
 
@@ -23,7 +26,7 @@ class DisplayService:
         search_operation: SearchOperation,
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
-    ) -> Union[str, Any]:
+    ) -> Union[str, Table]:
         """
         Format search results. Returns Rich objects for RichConsoleFormatter,
         or formatted strings for other formatters.
@@ -39,11 +42,11 @@ class DisplayService:
             return "No search hits found."
 
         search_summary = analysis.extract_search_summary(search_operation)
-        hits_grouped_by_document = search_summary["grouped_hits"]
+        hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
         lines.append(
-            f"Found {search_summary['page_hits_returned']} page-level hits across {search_summary['documents_returned']} documents"
+            f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents"
         )
 
         if not show_full_context:
@@ -128,7 +131,7 @@ class DisplayService:
 
     def format_browse_results(
         self, operation: BrowseOperation, highlight_term: Optional[str] = None
-    ) -> Union[str, List[Any]]:
+    ) -> Union[str, List[Panel]]:
         """
         Format browse results. Returns Rich Panel objects for RichConsoleFormatter,
         or formatted strings for other formatters.
@@ -185,7 +188,7 @@ class DisplayService:
         search_op: SearchOperation,
         enriched_hits: List[SearchHit],
         no_grouping: bool = False,
-    ) -> Union[str, List[Any]]:
+    ) -> Union[str, List[Panel]]:
         """
         Format show-pages results (search + context).
         Returns Rich objects for RichConsoleFormatter, or strings for other formatters.
@@ -320,7 +323,7 @@ class DisplayService:
         return "\n".join(lines)
 
     def format_error_message(
-        self, error_message: str, error_suggestions: List[str] = None
+        self, error_message: str, error_suggestions: Optional[List[str]] = None
     ) -> str:
         formatted_lines = [f"❌ Error: {error_message}"]
 
@@ -332,6 +335,6 @@ class DisplayService:
 
         return "\n".join(formatted_lines)
 
-    def get_search_summary(self, search_operation: SearchOperation) -> Dict[str, Any]:
+    def get_search_summary(self, search_operation: SearchOperation) -> SearchSummary:
         """Get search summary for display."""
         return analysis.extract_search_summary(search_operation)

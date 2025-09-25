@@ -51,3 +51,15 @@ class BrowseOperation(BaseModel):
     pages_requested: str
     pid: Optional[str] = None
     manifest_id: Optional[str] = None
+
+
+class SearchSummary(BaseModel):
+    """Summary information from a search operation."""
+
+    keyword: str
+    total_hits: int
+    page_hits_returned: int
+    documents_returned: int
+    enriched: bool
+    offset: int
+    grouped_hits: Dict[str, List[SearchHit]]

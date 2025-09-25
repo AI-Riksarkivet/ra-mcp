@@ -125,7 +125,7 @@ def search(
                     console.print(result)
 
                     # Show example browse command
-                    grouped_hits = summary.get("grouped_hits", {})
+                    grouped_hits = summary.grouped_hits
                     example_lines = rich_formatter.format_browse_example(
                         grouped_hits, keyword
                     )

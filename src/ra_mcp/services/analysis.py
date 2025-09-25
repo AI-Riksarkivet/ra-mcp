@@ -4,7 +4,7 @@ Analysis functions for search results.
 
 from typing import Dict, List, Optional, Union
 
-from ..models import SearchHit, SearchOperation
+from ..models import SearchHit, SearchOperation, SearchSummary
 
 
 def group_hits_by_document(search_hits: List[SearchHit]) -> Dict[str, List[SearchHit]]:
@@ -99,7 +99,7 @@ def _calculate_pagination_metadata(
 
 def extract_search_summary(
     search_operation: SearchOperation,
-) -> Dict[str, Union[str, int, bool, Dict[str, List[SearchHit]]]]:
+) -> SearchSummary:
     """Extract summary information from a search operation.
 
     Args:
@@ -117,14 +117,14 @@ def extract_search_summary(
 
 def _build_search_summary(
     search_operation: SearchOperation, document_grouped_hits: Dict[str, List[SearchHit]]
-) -> Dict[str, Union[str, int, bool, Dict[str, List[SearchHit]]]]:
-    """Build summary dictionary from search operation."""
-    return {
-        "keyword": search_operation.keyword,
-        "total_hits": search_operation.total_hits,
-        "page_hits_returned": len(search_operation.hits),
-        "documents_returned": len(document_grouped_hits),
-        "enriched": search_operation.enriched,
-        "offset": search_operation.offset,
-        "grouped_hits": document_grouped_hits,
-    }
+) -> SearchSummary:
+    """Build summary from search operation."""
+    return SearchSummary(
+        keyword=search_operation.keyword,
+        total_hits=search_operation.total_hits,
+        page_hits_returned=len(search_operation.hits),
+        documents_returned=len(document_grouped_hits),
+        enriched=search_operation.enriched,
+        offset=search_operation.offset,
+        grouped_hits=document_grouped_hits,
+    )
