@@ -2,19 +2,17 @@
 IIIF client for Riksarkivet.
 """
 
-import json
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
 from typing import Dict, Optional, Union, List
 
 from ..config import COLLECTION_API_BASE_URL
+from ..utils.http_client import HTTPClient
 
 
 class IIIFClient:
     """Client for IIIF collections and manifests."""
 
     def __init__(self):
-        pass  # No session needed for urllib
+        self.http = HTTPClient()
 
     def explore_collection(
         self, pid: str, timeout: int = 30
@@ -42,34 +40,11 @@ class IIIFClient:
     def _fetch_collection_data(
         self, collection_url: str, timeout_seconds: int
     ) -> Optional[Dict]:
-        """Fetch collection data from IIIF endpoint using urllib directly.
-
-        Note: We use urllib directly here instead of the centralized HTTPClient
-        because the IIIF server at lbiiif.riksarkivet.se has special behavior
-        that works with urllib but not with requests.
-        """
+        """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
-            # Create request with headers
-            request = Request(collection_url)
-            request.add_header("User-Agent", "Transcribed-Search-Browser/1.0")
-            request.add_header("Accept", "application/json")
-
-            # Fetch with timeout
-            with urlopen(request, timeout=timeout_seconds) as response:
-                if response.status == 404:
-                    return None
-
-                # Read and decode response
-                content = response.read()
-                return json.loads(content)
-
-        except HTTPError as e:
-            if e.code == 404:
-                return None
-            return None
-        except (URLError, TimeoutError, json.JSONDecodeError):
-            return None
+            return self.http.get_json(collection_url, timeout=timeout_seconds)
         except Exception:
+            # HTTPClient already handles 404s and other errors gracefully
             return None
 
     def _extract_collection_title(self, collection_data: Dict) -> str:
