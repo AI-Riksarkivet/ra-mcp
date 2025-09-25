@@ -2,35 +2,38 @@
 
 **Feature Branch**: `001-researchers-historians-and`
 **Created**: 2025-09-23
-**Status**: Draft
-**Input**: User description: "Researchers, historians, and AI assistants need a way to search and access millions of transcribed historical documents from the Swedish National Archives (Riksarkivet). Users should be able to search by keywords to find relevant documents, view complete transcriptions with highlighted search terms, browse specific documents by reference codes, and access high-resolution images of original manuscripts. The system should integrate with AI tools through standard protocols so that AI assistants can help users discover and analyze historical content. Users need both a command-line interface for direct access and an API interface that AI systems can use to provide historical research capabilities."
+**Updated**: 2025-09-25
+**Status**: Implemented âœ…
+**Original Input**: "Researchers, historians, and AI assistants need a way to search and access millions of transcribed historical documents from the Swedish National Archives (Riksarkivet). Users should be able to search by keywords to find relevant documents, view complete transcriptions with highlighted search terms, browse specific documents by reference codes, and access high-resolution images of original manuscripts. The system should integrate with AI tools through standard protocols so that AI assistants can help users discover and analyze historical content. Users need both a command-line interface for direct access and an API interface that AI systems can use to provide historical research capabilities."
+
+**Implementation Summary**: The system has been fully implemented with MCP server (`search_transcribed`, `browse_document`, `get_document_structure` tools), CLI interface (`ra search`, `ra browse`, `ra serve` commands), and comprehensive API integrations including Riksarkivet Search API, IIIF, ALTO XML, and historical guide resources.
 
 ## Execution Flow (main)
 ```
 1. Parse user description from Input
-   ’ Completed: Feature description parsed successfully
+   ï¿½ Completed: Feature description parsed successfully
 2. Extract key concepts from description
-   ’ Identified: researchers, historians, AI assistants as actors
-   ’ Actions: search, view transcriptions, browse documents, access images
-   ’ Data: transcribed documents, reference codes, manuscripts
-   ’ Constraints: integration with AI tools, multiple interface types
+   ï¿½ Identified: researchers, historians, AI assistants as actors
+   ï¿½ Actions: search, view transcriptions, browse documents, access images
+   ï¿½ Data: transcribed documents, reference codes, manuscripts
+   ï¿½ Constraints: integration with AI tools, multiple interface types
 3. For each unclear aspect:
-   ’ All key aspects are clearly defined in the description
+   ï¿½ All key aspects are clearly defined in the description
 4. Fill User Scenarios & Testing section
-   ’ User flows are clear from the description
+   ï¿½ User flows are clear from the description
 5. Generate Functional Requirements
-   ’ Each requirement derived from user needs
+   ï¿½ Each requirement derived from user needs
 6. Identify Key Entities
-   ’ Documents, transcriptions, images, reference codes
+   ï¿½ Documents, transcriptions, images, reference codes
 7. Run Review Checklist
-   ’ No [NEEDS CLARIFICATION] markers
-   ’ Implementation details avoided
+   ï¿½ No [NEEDS CLARIFICATION] markers
+   ï¿½ Implementation details avoided
 8. Return: SUCCESS (spec ready for planning)
 ```
 
 ---
 
-## ¡ Quick Guidelines
+## ï¿½ Quick Guidelines
 -  Focus on WHAT users need and WHY
 - L Avoid HOW to implement (no tech stack, APIs, code structure)
 - =e Written for business stakeholders, not developers
@@ -40,43 +43,47 @@
 ## User Scenarios & Testing *(mandatory)*
 
 ### Primary User Story
-Researchers and historians need to efficiently search through millions of historical documents from the Swedish National Archives to find relevant content for their research. They want to search by keywords, view complete transcriptions with highlighted search terms, browse documents using reference codes, and access high-resolution images of original manuscripts. AI assistants should be able to help users by accessing the same capabilities through standard protocols.
+Researchers and historians need to efficiently search through millions of transcribed historical documents from the Swedish National Archives to find relevant content for their research. The implemented system allows users to search by keywords with pagination support, browse specific document pages using reference codes, and access document structure information. Both command-line and AI assistants can access these capabilities through implemented interfaces.
 
 ### Acceptance Scenarios
-1. **Given** a researcher has specific keywords, **When** they search the document collection, **Then** they receive a list of relevant documents with search terms highlighted in context
-2. **Given** a user has a document reference code, **When** they browse that document, **Then** they can view the complete transcription and navigate through pages
-3. **Given** a historian needs to see original manuscripts, **When** they request high-resolution images, **Then** they receive quality images suitable for detailed analysis
-4. **Given** an AI assistant receives a research query, **When** it accesses the system through the API, **Then** it can search documents and provide historical research assistance
-5. **Given** a user prefers command-line tools, **When** they use the CLI interface, **Then** they can perform all search and access functions without a graphical interface
+1. **Given** a researcher has specific keywords, **When** they use `search_transcribed` with pagination, **Then** they receive structured results with document references and page numbers
+2. **Given** a user has a document reference code and page numbers, **When** they use `browse_document`, **Then** they can view complete transcriptions with optional keyword highlighting
+3. **Given** a user wants to understand document organization, **When** they use `get_document_structure`, **Then** they receive metadata and manifest information without full content
+4. **Given** an AI assistant needs historical research, **When** it accesses the MCP server tools, **Then** it can search, browse, and analyze documents programmatically
+5. **Given** a user prefers command-line access, **When** they use `ra search`, `ra browse`, or `ra serve` commands, **Then** they can perform research tasks directly from terminal
 
-### Edge Cases
-- What happens when search terms yield no results?
-- How does the system handle requests for documents that don't exist or have restricted access?
-- What occurs when high-resolution images are too large to display efficiently?
-- How does the system respond when AI tools make rapid successive requests?
+### Implemented Edge Cases
+- Search pagination handles no results with appropriate offset messaging
+- Browse function provides error handling for non-existent pages or reference codes
+- Document structure requests validate identifiers and provide helpful error messages
+- MCP server includes comprehensive error formatting with actionable suggestions
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: System MUST allow keyword-based search across millions of transcribed historical documents
-- **FR-002**: System MUST highlight search terms within document transcriptions and provide contextual snippets
-- **FR-003**: System MUST allow browsing of specific documents using reference codes
-- **FR-004**: System MUST provide access to complete transcriptions of historical documents
-- **FR-005**: System MUST provide access to high-resolution images of original manuscripts
-- **FR-006**: System MUST integrate with AI tools through standard protocols for automated research assistance
-- **FR-007**: System MUST provide a command-line interface for direct user access
-- **FR-008**: System MUST provide an API interface for AI system integration
-- **FR-009**: System MUST return search results with relevant metadata including reference codes and page numbers
-- **FR-010**: System MUST support navigation through multi-page documents
-- **FR-011**: System MUST handle requests from both human users and AI assistants efficiently
+- **FR-001**: âœ… System MUST allow keyword-based search across millions of transcribed historical documents
+- **FR-002**: âœ… System MUST highlight search terms within document transcriptions and provide contextual snippets
+- **FR-003**: âœ… System MUST allow browsing of specific documents using reference codes
+- **FR-004**: âœ… System MUST provide access to complete transcriptions of historical documents
+- **FR-005**: âœ… System MUST provide access to high-resolution images through IIIF integration and direct links
+- **FR-006**: âœ… System MUST integrate with AI tools through MCP protocol for automated research assistance
+- **FR-007**: âœ… System MUST provide a command-line interface (`ra` CLI) for direct user access
+- **FR-008**: âœ… System MUST provide MCP server interface for AI system integration
+- **FR-009**: âœ… System MUST return search results with metadata including reference codes and page numbers
+- **FR-010**: âœ… System MUST support navigation through multi-page documents with page ranges
+- **FR-011**: âœ… System MUST handle requests from both CLI users and MCP clients efficiently
+- **FR-012**: âœ… System MUST provide pagination support for comprehensive result discovery
+- **FR-013**: âœ… System MUST provide document structure access without full content loading
+- **FR-014**: âœ… System MUST include historical guide resources for contextual research
 
 ### Key Entities *(include if feature involves data)*
-- **Historical Document**: Represents a document in the Swedish National Archives with unique reference code, transcribed text content, and associated metadata
-- **Transcription**: Text content extracted from historical documents, searchable and displayable with highlighting capabilities
-- **Manuscript Image**: High-resolution digital image of original historical document pages, linked to transcriptions
-- **Reference Code**: Unique identifier system used by Riksarkivet to catalog and locate specific documents
-- **Search Result**: Collection of matching documents with highlighted terms, metadata, and relevance ranking
-- **User Session**: Represents interaction context for both human users and AI assistants accessing the system
+- **Historical Document**: Document in the Swedish National Archives with unique reference code, transcribed text, and metadata
+- **Search Hit**: Individual page result from keyword search with highlighted snippets and document context
+- **Document Page**: Specific page within a document containing full transcription text and IIIF image links
+- **Reference Code**: Riksarkivet identifier for documents (format: SE/RA/123456/01)
+- **IIIF Manifest**: Metadata structure providing document organization and image access via IIIF protocol
+- **MCP Tool Response**: Structured data returned by server tools including search results, browse results, or document structure
+- **Historical Guide Content**: Markdown documentation providing research context and archival information
 
 ---
 
@@ -90,7 +97,6 @@ Researchers and historians need to efficiently search through millions of histor
 - [x] All mandatory sections completed
 
 ### Requirement Completeness
-- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Scope is clearly bounded
@@ -98,9 +104,10 @@ Researchers and historians need to efficiently search through millions of histor
 
 ---
 
-## Execution Status
-*Updated by main() during processing*
+## Implementation Status
+*Updated to reflect current system state as of 2025-09-25*
 
+### Specification Phase âœ…
 - [x] User description parsed
 - [x] Key concepts extracted
 - [x] Ambiguities marked
@@ -108,3 +115,13 @@ Researchers and historians need to efficiently search through millions of histor
 - [x] Requirements generated
 - [x] Entities identified
 - [x] Review checklist passed
+
+### Implementation Phase âœ…
+- [x] **MCP Server**: 3 tools implemented (`search_transcribed`, `browse_document`, `get_document_structure`)
+- [x] **CLI Interface**: Commands implemented (`ra search`, `ra browse`, `ra serve`)
+- [x] **API Integrations**: Riksarkivet Search API, IIIF, ALTO XML, OAI-PMH connected
+- [x] **Resource Access**: Historical guide content system implemented
+- [x] **Error Handling**: Comprehensive error formatting and user guidance
+- [x] **Documentation**: README with usage examples and API documentation
+- [x] **Testing**: Test suites in place for core functionality
+- [x] **Containerization**: Docker support with Dagger build system
