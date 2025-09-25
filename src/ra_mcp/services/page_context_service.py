@@ -23,8 +23,7 @@ class PageContextService:
         reference_code: str = "",
         search_term: Optional[str] = None,
     ) -> Optional[PageContext]:
-        """Get full page context for a specific page. Convert PID to manifest ID format for ALTO URL generation
-"""
+        """Get full page context for a specific page. Convert PID to manifest ID format for ALTO URL generation"""
         manifest_id = url_generator.remove_arkis_prefix(pid)
         alto_xml_url = url_generator.alto_url(manifest_id, page_number)
         image_url_link = url_generator.iiif_image_url(pid, page_number)
