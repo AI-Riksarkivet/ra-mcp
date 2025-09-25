@@ -4,7 +4,7 @@ Service for getting full page context.
 
 from typing import Optional
 
-from ..clients import ALTOClient
+from ..clients import ALTOClient, OAIPMHClient
 from ..models import PageContext
 from ..utils import url_generator
 
@@ -14,6 +14,7 @@ class PageContextService:
 
     def __init__(self):
         self.alto_client = ALTOClient()
+        self.oai_client = OAIPMHClient()
 
     def get_page_context(
         self,

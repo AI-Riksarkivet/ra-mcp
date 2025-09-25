@@ -80,7 +80,6 @@ graph TB
     SEARCH_OPS --> SEARCH_CLIENT
     SEARCH_OPS --> ENRICHMENT
     SEARCH_OPS --> PAGE_CONTEXT
-    SEARCH_OPS --> OAI_CLIENT
 
     %% Interface layer to display
     TOOLS --> DISPLAY

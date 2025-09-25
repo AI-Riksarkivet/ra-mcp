@@ -5,11 +5,9 @@ This eliminates code duplication between CLI commands and MCP tools.
 
 from typing import List, Optional, Tuple, Dict, Union
 
-from ..clients import SearchAPI, IIIFClient, OAIPMHClient
+from ..clients import SearchAPI, IIIFClient
 from ..models import SearchHit, SearchOperation, BrowseOperation
 from ..utils import parse_page_range
-from ..utils.http_client import HTTPClient
-from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
 
@@ -21,12 +19,10 @@ class SearchOperations:
     """
 
     def __init__(self):
-        self.http = HTTPClient()
         self.search_api = SearchAPI()
         self.enrichment_service = SearchEnrichmentService()
         self.page_service = PageContextService()
         self.iiif_client = IIIFClient()
-        self.oai_client = OAIPMHClient()
 
     def search_transcribed(
         self,
@@ -140,7 +136,7 @@ class SearchOperations:
 
         Returns BrowseOperation with page contexts and metadata.
         """
-        persistent_identifier = self._find_pid_for_reference(reference_code)
+        persistent_identifier = self.page_service.oai_client.extract_pid(reference_code)
 
         if not persistent_identifier:
             return self._create_empty_browse_operation(reference_code, pages)
@@ -316,57 +312,4 @@ class SearchOperations:
 
         return pid
 
-    def _find_pid_for_reference(self, reference_code: str) -> Optional[str]:
-        """
-        Find PID for a reference code using multiple strategies.
 
-        Returns PID or None if not found.
-        """
-        persistent_identifier = self._search_pid_via_api(reference_code)
-
-        if not persistent_identifier:
-            persistent_identifier = self._search_pid_via_oai_pmh(reference_code)
-
-        return persistent_identifier
-
-    def _search_pid_via_api(self, reference_code: str) -> Optional[str]:
-        """Search for PID using the search API."""
-        try:
-            search_parameters = self._build_pid_search_parameters(reference_code)
-            api_response = self._execute_pid_search_request(search_parameters)
-
-            return self._extract_pid_from_search_response(api_response)
-        except Exception:
-            return None
-
-    def _build_pid_search_parameters(
-        self, reference_code: str
-    ) -> Dict[str, Union[str, int]]:
-        """Build parameters for PID search."""
-        return {
-            "reference_code": reference_code,
-            "only_digitised_materials": "true",
-            "max": 1,
-        }
-
-    def _execute_pid_search_request(self, parameters: Dict) -> Dict:
-        """Execute search request for PID using centralized HTTP client."""
-        return self.http.get_json(
-            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
-        )
-
-    def _extract_pid_from_search_response(self, response_data: Dict) -> Optional[str]:
-        """Extract PID from search API response."""
-        search_items = response_data.get("items", [])
-
-        if search_items:
-            return search_items[0].get("id")
-
-        return None
-
-    def _search_pid_via_oai_pmh(self, reference_code: str) -> Optional[str]:
-        """Search for PID using OAI-PMH client."""
-        try:
-            return self.oai_client.extract_pid(reference_code)
-        except Exception:
-            return None
