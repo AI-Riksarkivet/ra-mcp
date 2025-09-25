@@ -10,6 +10,7 @@ from ..models import SearchHit, SearchOperation, BrowseOperation
 from ..utils import parse_page_range
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
+from ..utils.http_client import HTTPClient
 
 
 class SearchOperations:
@@ -18,11 +19,11 @@ class SearchOperations:
     Contains all the business logic for search, browse, and context operations.
     """
 
-    def __init__(self):
-        self.search_api = SearchAPI()
-        self.enrichment_service = SearchEnrichmentService()
-        self.page_service = PageContextService()
-        self.iiif_client = IIIFClient()
+    def __init__(self, http_client: HTTPClient):
+        self.search_api = SearchAPI(http_client=http_client)
+        self.enrichment_service = SearchEnrichmentService(http_client=http_client)
+        self.page_service = PageContextService(http_client=http_client)
+        self.iiif_client = IIIFClient(http_client=http_client)
 
     def search_transcribed(
         self,
