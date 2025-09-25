@@ -14,8 +14,8 @@ from ..utils.http_client import HTTPClient
 class SearchAPI:
     """Client for Riksarkivet Search API."""
 
-    def __init__(self):
-        self.http = HTTPClient()
+    def __init__(self, http_client: HTTPClient):
+        self.http_client = http_client
 
     def search_transcribed_text(
         self,
@@ -73,7 +73,7 @@ class SearchAPI:
 
     def _execute_search_request(self, parameters: Dict) -> Dict:
         """Execute the search API request using centralized HTTP client."""
-        return self.http.get_json(
+        return self.http_client.get_json(
             SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
         )
 

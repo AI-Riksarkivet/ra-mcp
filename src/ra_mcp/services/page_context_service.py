@@ -5,6 +5,7 @@ Service for getting full page context.
 from typing import Optional
 
 from ..clients import ALTOClient
+from ..utils.http_client import HTTPClient
 from ..models import PageContext
 from ..utils import url_generator
 
@@ -12,8 +13,8 @@ from ..utils import url_generator
 class PageContextService:
     """Service for getting full page context."""
 
-    def __init__(self):
-        self.alto_client = ALTOClient()
+    def __init__(self, http_client: HTTPClient):
+        self.alto_client = ALTOClient(http_client=http_client)
 
     def get_page_context(
         self,

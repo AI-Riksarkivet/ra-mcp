@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import List, Optional, Union
 
 from ..clients import IIIFClient, ALTOClient
+from ..utils.http_client import HTTPClient
 from ..config import DEFAULT_MAX_PAGES
 from ..models import SearchHit
 from ..utils import url_generator
@@ -14,9 +15,9 @@ from ..utils import url_generator
 class SearchEnrichmentService:
     """Service for enriching search hits with full page context."""
 
-    def __init__(self):
-        self.iiif_client = IIIFClient()
-        self.alto_client = ALTOClient()
+    def __init__(self, http_client: HTTPClient):
+        self.iiif_client = IIIFClient(http_client=http_client)
+        self.alto_client = ALTOClient(http_client=http_client)
 
     def enrich_hits_with_context(
         self,

@@ -11,8 +11,8 @@ from ..utils.http_client import HTTPClient
 class IIIFClient:
     """Client for IIIF collections and manifests."""
 
-    def __init__(self):
-        self.http = HTTPClient()
+    def __init__(self, http_client: HTTPClient):
+        self.http_client = http_client
 
     def explore_collection(
         self, pid: str, timeout: int = 30
@@ -42,7 +42,7 @@ class IIIFClient:
     ) -> Optional[Dict]:
         """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
-            return self.http.get_json(collection_url, timeout=timeout_seconds)
+            return self.http_client.get_json(collection_url, timeout=timeout_seconds)
         except Exception:
             # HTTPClient already handles 404s and other errors gracefully
             return None

@@ -13,6 +13,7 @@ from ..services import (
     SearchOperations,
     DisplayService,
 )
+from ..utils.http_client import default_http_client
 from ..formatters import RichConsoleFormatter
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
@@ -61,7 +62,7 @@ def search(
         ra search "Stockholm" --context --no-grouping           # Individual page display
     """
     # Initialize services
-    search_ops = SearchOperations()
+    search_ops = SearchOperations(http_client=default_http_client)
     rich_formatter = RichConsoleFormatter(console)
     display_service = DisplayService(rich_formatter)
 
@@ -175,7 +176,7 @@ def browse(
         ra browse "SE/RA/123" --page "5,7,9"
     """
     # Initialize services
-    search_ops = SearchOperations()
+    search_ops = SearchOperations(http_client=default_http_client)
     rich_formatter = RichConsoleFormatter(console)
     display_service = DisplayService(rich_formatter)
 

@@ -20,13 +20,13 @@ class SearchOperations:
     Contains all the business logic for search, browse, and context operations.
     """
 
-    def __init__(self):
-        self.http = HTTPClient()
-        self.search_api = SearchAPI()
-        self.enrichment_service = SearchEnrichmentService()
-        self.page_service = PageContextService()
-        self.iiif_client = IIIFClient()
-        self.oai_client = OAIPMHClient()
+    def __init__(self, http_client: HTTPClient):
+        self.http = http_client
+        self.search_api = SearchAPI(http_client=http_client)
+        self.enrichment_service = SearchEnrichmentService(http_client=http_client)
+        self.page_service = PageContextService(http_client=http_client)
+        self.iiif_client = IIIFClient(http_client=http_client)
+        self.oai_client = OAIPMHClient(http_client=http_client)
 
     def search_transcribed(
         self,
@@ -49,9 +49,7 @@ class SearchOperations:
 
         search_operation = self._build_search_operation(search_results, keyword, offset)
 
-        if self._should_enrich_with_context(
-            show_context, search_results[0], max_pages_with_context
-        ):
+        if show_context and search_results[0] and max_pages_with_context > 0:
             self._enrich_search_operation_with_context(
                 search_operation, max_pages_with_context, context_padding, keyword
             )
@@ -87,14 +85,6 @@ class SearchOperations:
             enriched=False,
         )
 
-    def _should_enrich_with_context(
-        self,
-        context_requested: bool,
-        search_hits: List[SearchHit],
-        context_page_limit: int,
-    ) -> bool:
-        """Check if search results should be enriched with context."""
-        return context_requested and search_hits and context_page_limit > 0
 
     def _enrich_search_operation_with_context(
         self,
