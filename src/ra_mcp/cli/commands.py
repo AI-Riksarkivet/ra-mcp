@@ -4,9 +4,9 @@ This eliminates code duplication with the MCP tools.
 """
 
 import sys
-from typing import Optional
+from typing import Optional, Annotated
 
-import click
+import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -21,6 +21,7 @@ from ..formatters import RichConsoleFormatter
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
 console = Console()
+app = typer.Typer()
 
 
 class RichDisplayAdapter:
@@ -212,47 +213,15 @@ class RichDisplayAdapter:
             )
 
 
-@click.command()
-@click.argument("keyword")
-@click.option(
-    "--max",
-    "max_results",
-    type=int,
-    default=DEFAULT_MAX_RESULTS,
-    help="Maximum search results",
-)
-@click.option(
-    "--max-display",
-    type=int,
-    default=DEFAULT_MAX_DISPLAY,
-    help="Maximum results to display",
-)
-@click.option("--context", is_flag=True, help="Show full page context for search hits")
-@click.option(
-    "--max-pages",
-    type=int,
-    default=DEFAULT_MAX_PAGES,
-    help="Maximum pages to load context for",
-)
-@click.option(
-    "--no-grouping",
-    is_flag=True,
-    help="Show pages individually instead of grouped by document (only with --context)",
-)
-@click.option(
-    "--context-padding",
-    type=int,
-    default=0,
-    help="Number of pages to include before and after each hit for context (only with --context)",
-)
+@app.command()
 def search(
-    keyword: str,
-    max_results: int,
-    max_display: int,
-    context: bool,
-    max_pages: int,
-    no_grouping: bool,
-    context_padding: int,
+    keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
+    max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
+    max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
+    context: Annotated[bool, typer.Option(help="Show full page context for search hits")] = False,
+    max_pages: Annotated[int, typer.Option(help="Maximum pages to load context for")] = DEFAULT_MAX_PAGES,
+    no_grouping: Annotated[bool, typer.Option(help="Show pages individually instead of grouped by document (only with --context)")] = False,
+    context_padding: Annotated[int, typer.Option(help="Number of pages to include before and after each hit for context (only with --context)")] = 0,
 ):
     """Search for keyword in transcribed materials.
 
@@ -396,26 +365,16 @@ def search(
 
     except Exception as e:
         console.print(f"[red]Search failed: {e}[/red]")
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
 
-@click.command()
-@click.argument("reference_code")
-@click.option("--pages", help='Page range to display (e.g., "1-10" or "5,7,9")')
-@click.option("--page", help="Single page or page range to display (alias for --pages)")
-@click.option("--search-term", help="Highlight this term in the text")
-@click.option(
-    "--max-display",
-    type=int,
-    default=DEFAULT_MAX_DISPLAY,
-    help="Maximum pages to display",
-)
+@app.command()
 def browse(
-    reference_code: str,
-    pages: Optional[str],
-    page: Optional[str],
-    search_term: Optional[str],
-    max_display: int,
+    reference_code: Annotated[str, typer.Argument(help="Reference code of the document")],
+    pages: Annotated[Optional[str], typer.Option(help='Page range to display (e.g., "1-10" or "5,7,9")')] = None,
+    page: Annotated[Optional[str], typer.Option(help="Single page or page range to display (alias for --pages)")] = None,
+    search_term: Annotated[Optional[str], typer.Option(help="Highlight this term in the text")] = None,
+    max_display: Annotated[int, typer.Option(help="Maximum pages to display")] = DEFAULT_MAX_DISPLAY,
 ):
     """Browse pages by reference code.
 
@@ -460,7 +419,7 @@ def browse(
             console.print("• Check the reference code format")
             console.print("• Try different page numbers")
             console.print("• The document might not have transcriptions")
-            sys.exit(1)
+            raise typer.Exit(code=1)
 
         console.print(
             f"[green]Successfully loaded {len(operation.contexts)} pages[/green]"
@@ -471,18 +430,14 @@ def browse(
 
     except Exception as e:
         console.print(f"[red]Browse failed: {e}[/red]")
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
 
-@click.command()
-@click.option(
-    "--port",
-    type=int,
-    default=None,
-    help="Port for HTTP/SSE transport (enables HTTP mode)",
-)
-@click.option("--host", default="localhost", help="Host for HTTP transport")
-def serve(port: Optional[int], host: str):
+@app.command()
+def serve(
+    port: Annotated[Optional[int], typer.Option(help="Port for HTTP/SSE transport (enables HTTP mode)")] = None,
+    host: Annotated[str, typer.Option(help="Host for HTTP transport")] = "localhost",
+):
     """Start the MCP server.
 
     Examples:
@@ -519,3 +474,14 @@ def serve(port: Optional[int], host: str):
             server_main()
         finally:
             sys.argv = original_argv
+
+
+# Create a callback for the app to handle errors gracefully
+@app.callback()
+def main_callback():
+    """
+    Riksarkivet MCP Server and CLI Tools.
+
+    Search and browse transcribed historical documents from the Swedish National Archives.
+    """
+    pass
