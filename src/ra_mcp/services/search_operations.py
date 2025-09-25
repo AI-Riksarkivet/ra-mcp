@@ -311,5 +311,3 @@ class SearchOperations:
             return pid[len(arkis_prefix) :]
 
         return pid
-
-

@@ -9,11 +9,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ..services import (
-    SearchOperations,
-    DisplayService,
-)
-from ..formatters import RichConsoleFormatter
+from ..services import SearchOperations
+from ..services.cli_display_service import CLIDisplayService
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 
 console = Console()
@@ -62,8 +59,7 @@ def search(
     """
     # Initialize services
     search_ops = SearchOperations()
-    rich_formatter = RichConsoleFormatter(console)
-    display_service = DisplayService(rich_formatter)
+    display_service = CLIDisplayService(console)
 
     console.print(f"[blue]Searching for '{keyword}' in transcribed materials...[/blue]")
 
@@ -112,7 +108,7 @@ def search(
             if result:
                 # Get and display summary
                 summary = display_service.get_search_summary(operation)
-                summary_lines = rich_formatter.format_search_summary(summary)
+                summary_lines = display_service.formatter.format_search_summary(summary)
                 for line in summary_lines:
                     console.print(line)
 
@@ -125,7 +121,7 @@ def search(
 
                     # Show example browse command
                     grouped_hits = summary.get("grouped_hits", {})
-                    example_lines = rich_formatter.format_browse_example(
+                    example_lines = display_service.formatter.format_browse_example(
                         grouped_hits, keyword
                     )
                     for line in example_lines:
@@ -133,8 +129,10 @@ def search(
 
                     # Show remaining documents message
                     total_groups = len(grouped_hits)
-                    remaining_msg = rich_formatter.format_remaining_documents(
-                        total_groups, max_display
+                    remaining_msg = (
+                        display_service.formatter.format_remaining_documents(
+                            total_groups, max_display
+                        )
                     )
                     if remaining_msg:
                         console.print(remaining_msg)
@@ -176,8 +174,7 @@ def browse(
     """
     # Initialize services
     search_ops = SearchOperations()
-    rich_formatter = RichConsoleFormatter(console)
-    display_service = DisplayService(rich_formatter)
+    display_service = CLIDisplayService(console)
 
     console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")
 

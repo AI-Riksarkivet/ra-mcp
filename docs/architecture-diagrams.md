@@ -38,7 +38,8 @@ graph TB
 
    
     subgraph "Presentation Layer"
-        DISPLAY[🎨 DisplayService<br/>Response Formatting]
+        MCP_DISPLAY[🎨 MCPDisplayService<br/>MCP String Formatting]
+        CLI_DISPLAY[🎭 CLIDisplayService<br/>CLI Rich Formatting]
     end
 
     subgraph "Data Access Layer"
@@ -82,8 +83,8 @@ graph TB
     SEARCH_OPS --> PAGE_CONTEXT
 
     %% Interface layer to display
-    TOOLS --> DISPLAY
-    CLIMAIN --> DISPLAY
+    TOOLS --> MCP_DISPLAY
+    CLIMAIN --> CLI_DISPLAY
 
     %% Data access
     SEARCH_CLIENT --> RA_API
@@ -97,7 +98,8 @@ graph TB
 
     %% Support dependencies
     SEARCH_OPS -.-> MODELS
-    DISPLAY -.-> FORMATTERS
+    MCP_DISPLAY -.-> FORMATTERS
+    CLI_DISPLAY -.-> FORMATTERS
     SEARCH_CLIENT -.-> UTILS
     SEARCH_CLIENT -.-> CONFIG
 
@@ -114,7 +116,7 @@ graph TB
     class SERVER,CLIMAIN entryClass
     class SEARCH_MCP,TOOLS,RESOURCES mcpClass
     class SEARCH_OPS,ENRICHMENT,PAGE_CONTEXT businessClass
-    class DISPLAY presentationClass
+    class MCP_DISPLAY,CLI_DISPLAY presentationClass
     class SEARCH_CLIENT,IIIF_CLIENT,ALTO_CLIENT,OAI_CLIENT dataClass
     class RA_API,IIIF_API,ALTO_API,OAI_API apiClass
     class MODELS,FORMATTERS,UTILS,CONFIG supportClass
@@ -136,7 +138,7 @@ graph TB
         end
 
         subgraph "services/"
-            SERVICES[📋 Services:<br/>• search_operations.py<br/>• display_service.py<br/>• search_enrichment_service.py<br/>• page_context_service.py<br/>• analysis.py]
+            SERVICES[📋 Services:<br/>• search_operations.py<br/>• mcp_display_service.py<br/>• cli_display_service.py<br/>• base_display_service.py<br/>• search_enrichment_service.py<br/>• page_context_service.py<br/>• analysis.py]
         end
 
         subgraph "clients/"
@@ -189,7 +191,7 @@ sequenceDiagram
     participant API as 🏛️ Riksarkivet API
     participant Enrichment as ✨ EnrichmentService
     participant IIIF as 🖼️ IIIF Client
-    participant Display as 🎨 DisplayService
+    participant MCPDisplay as 🎨 MCPDisplayService
     participant Formatter as 🎭 MCPFormatter
 
     Note over User,Formatter: Search Transcribed Documents Flow
@@ -209,10 +211,10 @@ sequenceDiagram
         Enrichment-->>-SearchOps: enriched hits with IIIF links
     end
 
-    SearchOps->>+Display: format_search_results(hits, params)
-    Display->>+Formatter: format_search_response(data)
-    Formatter-->>-Display: formatted response
-    Display-->>-SearchOps: formatted results
+    SearchOps->>+MCPDisplay: format_search_results(hits, params)
+    MCPDisplay->>+Formatter: format_search_response(data)
+    Formatter-->>-MCPDisplay: formatted response
+    MCPDisplay-->>-SearchOps: formatted results
 
     SearchOps-->>-MCP: SearchOperation result
     MCP-->>-User: Formatted search results
@@ -231,10 +233,10 @@ sequenceDiagram
 
     SearchClient-->>-SearchOps: List[DocumentPage]
 
-    SearchOps->>+Display: format_document_pages(pages, highlight_term)
-    Display->>+Formatter: format_browse_response(pages)
-    Formatter-->>-Display: formatted pages
-    Display-->>-SearchOps: formatted results
+    SearchOps->>+MCPDisplay: format_document_pages(pages, highlight_term)
+    MCPDisplay->>+Formatter: format_browse_response(pages)
+    Formatter-->>-MCPDisplay: formatted pages
+    MCPDisplay-->>-SearchOps: formatted results
 
     SearchOps-->>-MCP: BrowseOperation result
     MCP-->>-User: Formatted document pages
@@ -249,10 +251,10 @@ sequenceDiagram
     API-->>-IIIF: IIIF manifest JSON
     IIIF-->>-SearchOps: DocumentStructure
 
-    SearchOps->>+Display: format_document_structure(structure)
-    Display->>+Formatter: format_structure_response(structure)
-    Formatter-->>-Display: formatted structure
-    Display-->>-SearchOps: formatted results
+    SearchOps->>+MCPDisplay: format_document_structure(structure)
+    MCPDisplay->>+Formatter: format_structure_response(structure)
+    Formatter-->>-MCPDisplay: formatted structure
+    MCPDisplay-->>-SearchOps: formatted results
 
     SearchOps-->>-MCP: DocumentStructure result
     MCP-->>-User: Document structure info
@@ -359,7 +361,9 @@ graph LR
 
     subgraph "Services"
         SEARCH_SVC[⚙️ search_operations.py]
-        DISPLAY_SVC[🎨 display_service.py]
+        MCP_DISPLAY_SVC[🎨 mcp_display_service.py]
+        CLI_DISPLAY_SVC[🎭 cli_display_service.py]
+        BASE_DISPLAY_SVC[📋 base_display_service.py]
         ENRICH_SVC[✨ search_enrichment_service.py]
         PAGE_SVC[📄 page_context_service.py]
     end
@@ -392,7 +396,8 @@ graph LR
 
     MODELS --> SEARCH_CLI
     MODELS --> SEARCH_SVC
-    MODELS --> DISPLAY_SVC
+    MODELS --> MCP_DISPLAY_SVC
+    MODELS --> CLI_DISPLAY_SVC
 
     SEARCH_CLI --> SEARCH_SVC
     IIIF_CLI --> ENRICH_SVC
@@ -406,12 +411,13 @@ graph LR
     BASE_FMT --> MCP_FMT
     BASE_FMT --> RICH_FMT
 
-    MCP_FMT --> DISPLAY_SVC
-    RICH_FMT --> CLI
+    MCP_FMT --> MCP_DISPLAY_SVC
+    RICH_FMT --> CLI_DISPLAY_SVC
 
     SEARCH_SVC --> MCP_TOOLS
     SEARCH_SVC --> CLI
-    DISPLAY_SVC --> MCP_TOOLS
+    MCP_DISPLAY_SVC --> MCP_TOOLS
+    CLI_DISPLAY_SVC --> CLI
 
     MCP_TOOLS --> SERVER
 
@@ -427,7 +433,7 @@ graph LR
     class CONFIG configClass
     class HTTP,PAGES,URLS utilClass
     class SEARCH_CLI,IIIF_CLI,ALTO_CLI,OAI_CLI clientClass
-    class SEARCH_SVC,DISPLAY_SVC,ENRICH_SVC,PAGE_SVC serviceClass
+    class SEARCH_SVC,MCP_DISPLAY_SVC,CLI_DISPLAY_SVC,BASE_DISPLAY_SVC,ENRICH_SVC,PAGE_SVC serviceClass
     class BASE_FMT,MCP_FMT,RICH_FMT formatClass
     class MCP_TOOLS,CLI,SERVER interfaceClass
 ```
@@ -454,6 +460,7 @@ The diagrams reveal several important architectural patterns used in ra-mcp:
 ### 4. Single Responsibility Principle
 - **Focused Modules**: Each module has a clear, single purpose (clients handle API communication, formatters handle presentation, etc.)
 - **Service Specialization**: SearchEnrichmentService handles enrichment, PageContextService handles page context, etc.
+- **Interface-Specific Display Services**: MCPDisplayService handles string formatting for MCP tools, CLIDisplayService handles Rich object formatting for CLI
 - **Clear Boundaries**: Each layer has well-defined responsibilities
 
 ### 5. Dependency Injection

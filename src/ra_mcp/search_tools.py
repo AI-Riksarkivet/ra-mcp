@@ -2,8 +2,9 @@ from typing import Optional
 from fastmcp import FastMCP
 
 
-from .services import SearchOperations, analysis, DisplayService
-from .formatters import MCPFormatter, format_error_message
+from .services import SearchOperations, analysis
+from .services.mcp_display_service import MCPDisplayService
+from .formatters import format_error_message
 
 
 search_mcp = FastMCP(
@@ -86,7 +87,7 @@ async def search_transcribed(
 ) -> str:
     try:
         search_operations = SearchOperations()
-        display_service = DisplayService(MCPFormatter())
+        display_service = MCPDisplayService()
 
         search_result = await _execute_search_query(
             search_operations,
@@ -207,7 +208,7 @@ async def browse_document(
     """
     try:
         search_operations = SearchOperations()
-        display_service = DisplayService(MCPFormatter())
+        display_service = MCPDisplayService()
 
         browse_result = await _fetch_document_pages(
             search_operations,
@@ -275,7 +276,7 @@ async def get_document_structure(
             return _generate_missing_identifier_message()
 
         search_operations = SearchOperations()
-        display_service = DisplayService(MCPFormatter())
+        display_service = MCPDisplayService()
 
         document_structure = await _fetch_document_structure(
             search_operations, reference_code=reference_code, pid=pid

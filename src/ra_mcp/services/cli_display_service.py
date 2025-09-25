@@ -1,22 +1,21 @@
 """
-Unified display service that can format output for different interfaces.
-This eliminates formatting code duplication between CLI and MCP tools.
+CLI-specific display service that formats output using Rich objects for CLI commands.
 """
 
 from typing import Dict, List, Optional, Union, Any
+from rich.console import Console
 
 from ..models import SearchHit, SearchOperation, BrowseOperation
+from ..formatters import RichConsoleFormatter
 from . import analysis
-from ..formatters import BaseFormatter
+from .base_display_service import BaseDisplayService
 
 
-class DisplayService:
-    def __init__(self, formatter: BaseFormatter):
-        self.formatter = formatter
+class CLIDisplayService(BaseDisplayService):
+    """Display service specifically for CLI commands that returns Rich objects."""
 
-    def is_rich_formatter(self) -> bool:
-        """Check if the formatter is a RichConsoleFormatter."""
-        return hasattr(self.formatter, "format_search_results_table")
+    def __init__(self, console: Console):
+        self.formatter = RichConsoleFormatter(console)
 
     def format_search_results(
         self,
@@ -24,17 +23,15 @@ class DisplayService:
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
     ) -> Union[str, Any]:
-        """
-        Format search results. Returns Rich objects for RichConsoleFormatter,
-        or formatted strings for other formatters.
-        """
-        # Use Rich-specific formatting if available
-        if self.is_rich_formatter() and not show_full_context:
+        """Format search results using Rich table or fallback to string."""
+        if not show_full_context and hasattr(
+            self.formatter, "format_search_results_table"
+        ):
             return self.formatter.format_search_results_table(
                 search_operation, maximum_documents_to_display
             )
 
-        # Original string-based formatting for MCP and full context display
+        # Fallback to string formatting for full context display
         if not search_operation.hits:
             return "No search hits found."
 
@@ -128,15 +125,9 @@ class DisplayService:
 
     def format_browse_results(
         self, operation: BrowseOperation, highlight_term: Optional[str] = None
-    ) -> Union[str, List[Any]]:
-        """
-        Format browse results. Returns Rich Panel objects for RichConsoleFormatter,
-        or formatted strings for other formatters.
-        """
-        # Use Rich-specific formatting if available
-        if self.is_rich_formatter() and hasattr(
-            self.formatter, "format_page_context_panel"
-        ):
+    ) -> List[Any]:
+        """Format browse results as Rich Panel objects."""
+        if hasattr(self.formatter, "format_page_context_panel"):
             panels = []
             for context in operation.contexts:
                 panel = self.formatter.format_page_context_panel(
@@ -145,20 +136,16 @@ class DisplayService:
                 panels.append(panel)
             return panels
 
-        # Original string-based formatting for MCP
+        # Fallback to string if Rich formatter not available
         if not operation.contexts:
-            return f"No page contexts found for {operation.reference_code}"
+            return [f"No page contexts found for {operation.reference_code}"]
 
-        lines = []
-        lines.append(f"📚 Document: {operation.reference_code}")
-        lines.append(f"📖 Pages loaded: {len(operation.contexts)}")
-        lines.append("")
-
+        panels = []
         for context in operation.contexts:
+            lines = []
             lines.append(f"📄 Page {context.page_number}")
             lines.append("─" * 40)
 
-            # Format the text content
             display_text = context.full_text
             if highlight_term:
                 display_text = self.formatter.highlight_search_keyword(
@@ -167,8 +154,6 @@ class DisplayService:
 
             lines.append(display_text)
             lines.append("")
-
-            # Add links
             lines.append("🔗 Links:")
             lines.append(f"  📝 ALTO XML: {context.alto_url}")
             if context.image_url:
@@ -176,40 +161,31 @@ class DisplayService:
             if context.bildvisning_url:
                 lines.append(f"  👁️  Bildvisning: {context.bildvisning_url}")
 
-            lines.append("")
+            panels.append("\n".join(lines))
 
-        return "\n".join(lines)
+        return panels
 
     def format_show_pages_results(
         self,
         search_op: SearchOperation,
         enriched_hits: List[SearchHit],
         no_grouping: bool = False,
-    ) -> Union[str, List[Any]]:
-        """
-        Format show-pages results (search + context).
-        Returns Rich objects for RichConsoleFormatter, or strings for other formatters.
-        """
+    ) -> List[Any]:
+        """Format show-pages results as Rich Panel objects."""
         if not enriched_hits:
-            return f"No pages found containing '{search_op.keyword}'"
+            return [f"No pages found containing '{search_op.keyword}'"]
 
-        # Use Rich-specific formatting if available
-        if self.is_rich_formatter() and hasattr(
-            self.formatter, "format_document_panel"
-        ):
+        if hasattr(self.formatter, "format_document_panel"):
             if no_grouping:
-                # Return individual page panels
                 panels = []
                 for hit in enriched_hits:
                     if hit.full_page_text:
-                        # Create a single-hit panel
                         panel = self.formatter.format_document_panel(
                             hit.reference_code, [hit], search_op.keyword
                         )
                         panels.append(panel)
                 return panels
             else:
-                # Group by document and return document panels
                 grouped = analysis.group_hits_by_document(enriched_hits)
                 panels = []
                 for doc_ref, doc_hits in grouped.items():
@@ -219,7 +195,7 @@ class DisplayService:
                     panels.append(panel)
                 return panels
 
-        # Original string-based formatting for MCP
+        # Fallback to string formatting if Rich formatter not available
         lines = []
         lines.append(f"🔍 Search results for '{search_op.keyword}':")
         lines.append(
@@ -228,7 +204,6 @@ class DisplayService:
         lines.append("")
 
         if no_grouping:
-            # Show individual pages
             for hit in enriched_hits:
                 if hit.full_page_text:
                     is_search_hit = hit.snippet_text != "[Context page - no search hit]"
@@ -248,11 +223,9 @@ class DisplayService:
                     lines.append(display_text)
                     lines.append("")
         else:
-            # Group by document
             grouped = analysis.group_hits_by_document(enriched_hits)
 
             for doc_ref, doc_hits in grouped.items():
-                # Sort by page number
                 doc_hits.sort(
                     key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0
                 )
@@ -260,7 +233,6 @@ class DisplayService:
                 lines.append(f"📚 Document: {doc_ref} ({len(doc_hits)} pages)")
                 lines.append("=" * 60)
 
-                # Add document metadata
                 first_hit = doc_hits[0]
                 if first_hit.title:
                     lines.append(f"📄 Title: {first_hit.title}")
@@ -269,7 +241,6 @@ class DisplayService:
 
                 lines.append("")
 
-                # Show each page
                 for hit in doc_hits:
                     is_search_hit = hit.snippet_text != "[Context page - no search hit]"
                     page_marker = "🎯" if is_search_hit else "📄"
@@ -292,12 +263,12 @@ class DisplayService:
 
                 lines.append("")
 
-        return "\n".join(lines)
+        return ["\n".join(lines)]
 
     def format_document_structure(
         self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]
     ) -> str:
-        """Format document structure information."""
+        """Format document structure information as string."""
         if not collection_info:
             return "No document structure information available"
 
@@ -322,6 +293,7 @@ class DisplayService:
     def format_error_message(
         self, error_message: str, error_suggestions: List[str] = None
     ) -> str:
+        """Format error messages as string."""
         formatted_lines = [f"❌ Error: {error_message}"]
 
         if error_suggestions:
@@ -331,7 +303,3 @@ class DisplayService:
                 formatted_lines.append(f"  • {suggestion_text}")
 
         return "\n".join(formatted_lines)
-
-    def get_search_summary(self, search_operation: SearchOperation) -> Dict[str, Any]:
-        """Get search summary for display."""
-        return analysis.extract_search_summary(search_operation)
