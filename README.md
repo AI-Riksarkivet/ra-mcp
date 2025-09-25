@@ -309,26 +309,61 @@ ___
 
 ## Current MCP Server Implementation
 
+The MCP server provides access to transcribed historical documents from the Swedish National Archives (Riksarkivet) through three primary tools and two resources:
+
+### 🔧 Available Tools
+
+#### 1. **search_transcribed**
+Search for keywords in transcribed materials with pagination support.
+```python
+search_transcribed(
+    keyword="trolldom",          # Search term
+    offset=0,                    # Pagination offset (required)
+    show_context=False,          # Full page text (default: False for more results)
+    max_results=10,              # Maximum results to return
+    max_hits_per_document=3      # Max hits per document
+)
 ```
-This server provides access to the Swedish National Archives (Riksarkivet) through multiple APIs.
-    SEARCH-BASED WORKFLOW (start here):
-    - search_records: Search for content by keywords (e.g., "coffee", "medical records")
-    - get_collection_info: Explore what's available in a collection
-    - get_all_manifests_from_pid: Get all image batches from a collection
-    - get_manifest_info: Get details about a specific image batch
-    - get_manifest_image: Download specific images from a batch
-    - get_all_images_from_pid: Download all images from a collection
-    URL BUILDING TOOLS:
-    - build_image_url: Build IIIF Image URLs with custom parameters
-    - get_image_urls_from_manifest: Get all URLs from an image batch
-    - get_image_urls_from_pid: Get all URLs from a collection
-    TYPICAL WORKFLOW:
-    1. search_records("your keywords") → find PIDs
-    2. get_collection_info(pid) → see what's available
-    3. get_manifest_info(manifest_id) → explore specific image batch
-    4. get_manifest_image(manifest_id, image_index) → download specific image
-    Example PID: LmOmKigRrH6xqG3GjpvwY3
+
+#### 2. **browse_document**
+Browse specific pages of a document by reference code.
+```python
+browse_document(
+    reference_code="SE/RA/310187/1",  # Document reference
+    pages="7,8,52",                   # Page numbers or ranges
+    highlight_term="trolldom",        # Optional keyword highlighting
+    max_pages=20                       # Maximum pages to display
+)
 ```
+
+#### 3. **get_document_structure**
+Get document structure and metadata without fetching content.
+```python
+get_document_structure(
+    reference_code="SE/RA/310187/1",  # Document reference (or use pid)
+    include_manifest_info=True         # Include IIIF manifest details
+)
+```
+
+### 📚 Available Resources
+
+- **riksarkivet://contents/table_of_contents** - Complete guide index (Innehållsförteckning)
+- **riksarkivet://guide/{filename}** - Specific guide sections (e.g., '01_Domstolar.md', '02_Fangelse.md')
+
+### 🔄 Typical Workflow
+
+1. **Search** → `search_transcribed("trolldom", offset=0)` to find relevant documents
+2. **Paginate** → Continue with `offset=50, 100, 150...` for comprehensive discovery
+3. **Browse** → Use `browse_document()` to view specific pages with full transcriptions
+4. **Structure** → Use `get_document_structure()` to understand document organization
+
+### 💡 Search Strategy Tips
+
+- Start with `show_context=False` to maximize hit coverage
+- Use pagination (increasing offsets) to find all matches
+- Enable `show_context=True` only when you need full page text for specific hits
+- Browse specific pages for detailed examination with keyword highlighting
+
 ___
 
 
