@@ -20,19 +20,29 @@ graph TB
     end
 
     subgraph "MCP Layer"
-        SEARCH_MCP[🔍 search_tools.py<br/>FastMCP Search Server]
-        TOOLS[MCP Tools:<br/>• search_transcribed<br/>• browse_document<br/>• get_document_structure]
-    end
+        SEARCH_MCP[🔍 search_tools.py<br/>ra-search-mcp FastMCP Server]
 
+        subgraph "MCP Components"
+            TOOLS[🛠️ MCP Tools:<br/>• search_transcribed<br/>• browse_document<br/>• get_document_structure]
+            RESOURCES[📚 MCP Resources:<br/>• table_of_contents<br/>• guide sections]
+        end
+    end
     subgraph "Business Logic"
         SEARCH_OPS[⚙️ SearchOperations<br/>Unified Business Logic]
+
+        subgraph "Business Services"
+            ENRICHMENT[✨ SearchEnrichmentService]
+            PAGE_CONTEXT[📄 PageContextService]
+        end
+    end
+
+   
+    subgraph "Presentation Layer"
         DISPLAY[🎨 DisplayService<br/>Response Formatting]
-        ENRICHMENT[✨ SearchEnrichmentService]
-        PAGE_CONTEXT[📄 PageContextService]
     end
 
     subgraph "Data Access Layer"
-        SEARCH_CLIENT[🔗 SearchClient<br/>Riksarkivet API]
+        SEARCH_CLIENT[🔗 SearchAPI<br/>Riksarkivet API]
         IIIF_CLIENT[🖼️ IIIFClient<br/>Image Manifests]
         ALTO_CLIENT[📝 ALTOClient<br/>OCR Data]
         OAI_CLIENT[📚 OAI-PMH Client<br/>Metadata]
@@ -41,13 +51,13 @@ graph TB
     subgraph "External APIs"
         RA_API[🏛️ Riksarkivet<br/>Search API]
         IIIF_API[🖼️ IIIF<br/>Image API]
-        ALTO_API[📝 ALTO<br/>XML API]
+        ALTO_API[📝 IIIF-based<br/>ALTO XML]
         OAI_API[📚 OAI-PMH<br/>Metadata API]
     end
 
     subgraph "Support Modules"
         MODELS[📊 models.py<br/>Pydantic Models]
-        FORMATTERS[🎭 formatters/<br/>• MCPFormatter<br/>• RichFormatter]
+        FORMATTERS[🎭 formatters/<br/>• MCPFormatter<br/>• RichConsoleFormatter]
         UTILS[🛠️ utils/<br/>• http_client<br/>• page_utils<br/>• url_generator]
         CONFIG[⚙️ config.py<br/>Settings]
     end
@@ -63,13 +73,18 @@ graph TB
 
     %% MCP layer
     SEARCH_MCP --> TOOLS
+    SEARCH_MCP --> RESOURCES
     TOOLS --> SEARCH_OPS
 
     %% Business logic flow
     SEARCH_OPS --> SEARCH_CLIENT
-    SEARCH_OPS --> DISPLAY
     SEARCH_OPS --> ENRICHMENT
     SEARCH_OPS --> PAGE_CONTEXT
+    SEARCH_OPS --> OAI_CLIENT
+
+    %% Interface layer to display
+    TOOLS --> DISPLAY
+    CLIMAIN --> DISPLAY
 
     %% Data access
     SEARCH_CLIENT --> RA_API
@@ -91,14 +106,16 @@ graph TB
     classDef entryClass fill:#f3e5f5
     classDef mcpClass fill:#e8f5e8
     classDef businessClass fill:#fff3e0
+    classDef presentationClass fill:#e8f5e8
     classDef dataClass fill:#fce4ec
     classDef apiClass fill:#f1f8e9
     classDef supportClass fill:#f5f5f5
 
     class CLI,AI,CLAUDE userClass
     class SERVER,CLIMAIN entryClass
-    class SEARCH_MCP,TOOLS mcpClass
-    class SEARCH_OPS,DISPLAY,ENRICHMENT,PAGE_CONTEXT businessClass
+    class SEARCH_MCP,TOOLS,RESOURCES mcpClass
+    class SEARCH_OPS,ENRICHMENT,PAGE_CONTEXT businessClass
+    class DISPLAY presentationClass
     class SEARCH_CLIENT,IIIF_CLIENT,ALTO_CLIENT,OAI_CLIENT dataClass
     class RA_API,IIIF_API,ALTO_API,OAI_API apiClass
     class MODELS,FORMATTERS,UTILS,CONFIG supportClass
@@ -381,7 +398,8 @@ graph LR
     SEARCH_CLI --> SEARCH_SVC
     IIIF_CLI --> ENRICH_SVC
     ALTO_CLI --> ENRICH_SVC
-    OAI_CLI --> PAGE_SVC
+    ALTO_CLI --> PAGE_SVC
+    OAI_CLI --> SEARCH_SVC
 
     ENRICH_SVC --> SEARCH_SVC
     PAGE_SVC --> SEARCH_SVC
@@ -428,10 +446,11 @@ The diagrams reveal several important architectural patterns used in ra-mcp:
 - **Dependency Direction**: Dependencies flow inward, with interfaces depending on business logic, not the reverse
 - **Business Logic Isolation**: Core domain logic in SearchOperations is independent of transport mechanisms
 
-### 3. Unified Business Logic
+### 3. Unified Business Logic with Service Separation
 - **Single Source of Truth**: SearchOperations provides the same functionality to both CLI and MCP interfaces
 - **No Duplication**: Business logic is centralized, preventing code duplication between interfaces
 - **Consistent Behavior**: All clients get identical functionality and error handling
+- **Service Orchestration**: SearchOperations orchestrates specialized services (enrichment, page context) rather than doing everything itself
 
 ### 4. Single Responsibility Principle
 - **Focused Modules**: Each module has a clear, single purpose (clients handle API communication, formatters handle presentation, etc.)
