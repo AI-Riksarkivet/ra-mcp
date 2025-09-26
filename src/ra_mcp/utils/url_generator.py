@@ -8,21 +8,22 @@ from typing import Optional
 from ..config import (
     ALTO_BASE_URL,
     BILDVISNING_BASE_URL,
-    IIIF_COLLECTION_API_BASE_URL,
-    IIIF_BASE_URL,
     IIIF_IMAGE_BASE_URL,
 )
 
 
-def prepare_manifest_id_for_alto(manifest_id: str) -> str:
-    """Prepare manifest ID for ALTO URL generation by removing arkis! prefix.
+def remove_arkis_prefix(manifest_id: str) -> str:
+    """Remove arkis! prefix from manifest ID if present.
 
     Args:
-        manifest_id: Manifest/batch ID (NOT a PID), potentially with arkis! prefix
+        manifest_id: Manifest ID string, potentially with arkis! prefix
 
     Returns:
-        Clean manifest ID without arkis! prefix for ALTO URL construction
+        Manifest ID without arkis! prefix
     """
+
+    print('remove_arkis_prefix_manifestid:', manifest_id)
+
     return manifest_id[6:] if manifest_id.startswith("arkis!") else manifest_id
 
 
@@ -62,31 +63,33 @@ def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
         return None
 
 
-def iiif_image_url(pid: str, page_number: str) -> Optional[str]:
-    """Generate IIIF image URL from PID and page number.
+def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
+    """Generate IIIF image URL from manifest ID and page number.
 
     Args:
-        pid: Document PID
+        manifest_id: Manifest ID
         page_number: Page number
 
     Returns:
         IIIF image URL or None if cannot generate
     """
     try:
-        # For image URLs, use PID directly with arkis! prefix
+        print('iiif_image_url_manifestid:', manifest_id)
+
+        clean_manifest_id = remove_arkis_prefix(manifest_id)
         padded_page = format_page_number(page_number)
-        return f"{IIIF_IMAGE_BASE_URL}!{clean_pid}_{padded_page}/full/max/0/default.jpg"
+        return f"{IIIF_IMAGE_BASE_URL}!{clean_manifest_id}_{padded_page}/full/max/0/default.jpg"
     except Exception:
         return None
 
 
 def bildvisning_url(
-    clean_pid: str, page_number: str, search_term: Optional[str] = None
+    manifest_id: str, page_number: str, search_term: Optional[str] = None
 ) -> Optional[str]:
     """Generate bildvisning URL with optional search highlighting.
 
     Args:
-        clean_pid: Document PID
+        manifest_id: Manifest ID
         page_number: Page number
         search_term: Optional search term to highlight
 
@@ -94,50 +97,13 @@ def bildvisning_url(
         Bildvisning URL or None if cannot generate
     """
     try:
-        # Bildvisning URLs use clean PID without arkis! prefix
+        clean_manifest_id = remove_arkis_prefix(manifest_id)
         padded_page = format_page_number(page_number)
-        base_url = f"{BILDVISNING_BASE_URL}/{clean_pid}_{padded_page}"
+        base_url = f"{BILDVISNING_BASE_URL}/{clean_manifest_id}_{padded_page}"
 
         if search_term and search_term.strip():
             encoded_term = urllib.parse.quote(search_term.strip())
             return f"{base_url}#?q={encoded_term}"
         return base_url
-    except Exception:
-        return None
-
-
-def collection_url(pid: str) -> Optional[str]:
-    """Generate IIIF collection URL from PID.
-
-    Args:
-        pid: Document PID
-
-    Returns:
-        IIIF collection URL or None if cannot generate
-    """
-    try:
-        # Collection URLs use PID directly without modification
-        return f"{IIIF_COLLECTION_API_BASE_URL}/{pid}"
-    except Exception:
-        return None
-
-
-def manifest_url(pid: str, manifest_id: Optional[str] = None) -> Optional[str]:
-    """Generate IIIF manifest URL from PID and optional manifest ID.
-
-    Args:
-        pid: Document PID
-        manifest_id: Optional specific manifest ID
-
-    Returns:
-        IIIF manifest URL or None if cannot generate
-    """
-    try:
-        if manifest_id:
-            # If manifest_id is provided, use it with arkis! prefix
-            clean_manifest = prepare_manifest_id_for_alto(manifest_id)
-            return f"{IIIF_MANIFEST_API_BASE_URL}{clean_manifest}/manifest"
-        # Default: derive manifest from PID by adding _001
-        return f"{IIIF_MANIFEST_API_BASE_URL}{pid}_001/manifest"
     except Exception:
         return None

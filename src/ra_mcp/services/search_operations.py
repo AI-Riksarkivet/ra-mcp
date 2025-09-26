@@ -81,7 +81,6 @@ class SearchOperations:
 
         return search_operation
 
-
     def _enrich_search_operation_with_context(
         self,
         search_operation: SearchOperation,
@@ -104,7 +103,9 @@ class SearchOperations:
         limited_hits = search_operation.hits[:page_limit]
 
         hits_for_enrichment = (
-            self.enrichment_service.expand_hits_with_context_padding(limited_hits, padding_size)
+            self.enrichment_service.expand_hits_with_context_padding(
+                limited_hits, padding_size
+            )
             if padding_size > 0
             else limited_hits
         )
@@ -175,7 +176,9 @@ class SearchOperations:
         Returns:
             IIIF manifest identifier or original PID if no manifest found.
         """
-        iiif_collection_info = self.iiif_client.explore_collection(persistent_identifier)
+        iiif_collection_info = self.iiif_client.explore_collection(
+            persistent_identifier
+        )
 
         # Return first manifest ID if available, otherwise use PID
         if iiif_collection_info and iiif_collection_info.get("manifests"):
@@ -285,11 +288,13 @@ class SearchOperations:
         if not reference_code and not pid:
             return None
 
-        resolved_pid = pid if pid else self.page_service.oai_client.extract_pid(reference_code)
+        resolved_pid = (
+            pid if pid else self.page_service.oai_client.extract_pid(reference_code)
+        )
 
+       
         if not resolved_pid:
             return None
 
         cleaned_pid = remove_arkis_prefix(resolved_pid)
         return self.iiif_client.explore_collection(cleaned_pid)
-

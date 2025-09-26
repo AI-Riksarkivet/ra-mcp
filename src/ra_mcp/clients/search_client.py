@@ -5,9 +5,8 @@ Search API client for Riksarkivet.
 import re
 from typing import Dict, List, Optional, Tuple, Union
 
-from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
+from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS, COLLECTION_API_BASE_URL
 from ..models import SearchHit
-from ..utils import url_generator
 from ..utils.http_client import HTTPClient
 
 
@@ -105,6 +104,13 @@ class SearchAPI:
     ) -> List[SearchHit]:
         """Process a single search result item into SearchHit objects."""
         document_info = self._extract_document_information(document_item)
+
+
+
+        #print('document_info', document_info)
+
+        #quit()
+
         transcribed_content = document_item.get("transcribedText", {})
 
         if not transcribed_content or "snippets" not in transcribed_content:
@@ -119,6 +125,21 @@ class SearchAPI:
         metadata = document.get("metadata", {})
         persistent_identifier = document.get("id", "Unknown")
 
+        # Extract manifest URL from _links.image field
+        links = document.get("_links", {})
+        image_links = links.get("image", [])
+        manifest_url = image_links[0] if image_links else None
+
+        # Save document to JSON file
+        #import json
+        #with open('/home/coder/ra-mcp/document_debug.json', 'w') as f:
+        #    json.dump(document, f, indent=2)
+        #print(f'Document saved to /home/coder/ra-mcp/document_debug.json')
+#
+        #print('document:', document)
+#
+        #quit()
+
         return {
             "pid": persistent_identifier,
             "title": self._truncate_title(document.get("caption", "(No title)")),
@@ -127,12 +148,10 @@ class SearchAPI:
             "note": metadata.get("note"),
             "archival_institution": metadata.get("archivalInstitution", []),
             "date": metadata.get("date"),
-            "collection_url": url_generator.collection_url(persistent_identifier)
+            "collection_url": f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
             if persistent_identifier
             else None,
-            "manifest_url": url_generator.manifest_url(persistent_identifier)
-            if persistent_identifier
-            else None,
+            "manifest_url": manifest_url,
         }
 
     def _truncate_title(self, title: str, max_length: int = 100) -> str:

@@ -19,16 +19,19 @@ class PageContextService:
 
     def get_page_context(
         self,
-        pid: str,
+        manifest_id: str,
         page_number: str,
         reference_code: str = "",
         search_term: Optional[str] = None,
     ) -> Optional[PageContext]:
-        """Get full page context for a specific page. Convert PID to manifest ID format for ALTO URL generation"""
-        manifest_id = url_generator.prepare_manifest_id_for_alto(pid)
-        alto_xml_url = url_generator.alto_url(manifest_id, page_number)
-        image_url_link = url_generator.iiif_image_url(pid, page_number)
-        bildvisning_link = url_generator.bildvisning_url(pid, page_number, search_term)
+        """Get full page context for a specific page using manifest ID for ALTO URL generation"""
+
+        cleaned_manifest_id = url_generator.remove_arkis_prefix(manifest_id)
+        alto_xml_url = url_generator.alto_url(cleaned_manifest_id, page_number)
+        image_url_link = url_generator.iiif_image_url(manifest_id, page_number)
+        bildvisning_link = url_generator.bildvisning_url(
+            manifest_id, page_number, search_term
+        )
 
         if not alto_xml_url:
             return None
@@ -37,6 +40,7 @@ class PageContextService:
 
         if not full_text:
             return None
+
         return PageContext(
             page_number=int(page_number) if page_number.isdigit() else 0,
             page_id=page_number,
