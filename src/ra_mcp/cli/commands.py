@@ -13,7 +13,7 @@ from ..services import SearchOperations
 from ..services.cli_display_service import CLIDisplayService
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
-from ..models import SearchOperation
+from ..models import SearchOperation, SearchSummary
 
 console = Console()
 app = typer.Typer()
@@ -83,9 +83,9 @@ def display_table_results(search_result: SearchOperation, display_service: CLIDi
         display_remaining_documents(summary, display_service, max_display)
 
 
-def display_browse_examples(summary: dict, display_service: CLIDisplayService, keyword: str) -> None:
+def display_browse_examples(summary: SearchSummary, display_service: CLIDisplayService, keyword: str) -> None:
     """Display example browse commands."""
-    grouped_hits = summary.get("grouped_hits", {})
+    grouped_hits = summary.grouped_hits
     example_lines = display_service.formatter.format_browse_example(
         grouped_hits, keyword
     )
@@ -93,9 +93,9 @@ def display_browse_examples(summary: dict, display_service: CLIDisplayService, k
         console.print(line)
 
 
-def display_remaining_documents(summary: dict, display_service: CLIDisplayService, max_display: int) -> None:
+def display_remaining_documents(summary: SearchSummary, display_service: CLIDisplayService, max_display: int) -> None:
     """Display message about remaining documents."""
-    grouped_hits = summary.get("grouped_hits", {})
+    grouped_hits = summary.grouped_hits
     total_groups = len(grouped_hits)
     remaining_message = display_service.formatter.format_remaining_documents(
         total_groups, max_display

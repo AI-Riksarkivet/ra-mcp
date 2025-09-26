@@ -4,6 +4,7 @@ Configuration constants for Riksarkivet MCP server.
 
 # API Base URLs
 SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api/records"
+COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
 IIIF_MANIFEST_API_BASE_URL = "https://lbiiif.riksarkivet.se/arkis!"
 OAI_BASE_URL = "https://oai-pmh.riksarkivet.se/OAI"
 
