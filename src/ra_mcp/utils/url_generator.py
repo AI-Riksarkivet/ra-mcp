@@ -5,7 +5,13 @@ URL generation utilities for Riksarkivet resources.
 import urllib.parse
 from typing import Optional
 
-from ..config import COLLECTION_API_BASE_URL, IIIF_BASE_URL
+from ..config import (
+    ALTO_BASE_URL,
+    BILDVISNING_BASE_URL,
+    COLLECTION_API_BASE_URL,
+    IIIF_BASE_URL,
+    IIIF_IMAGE_BASE_URL,
+)
 
 
 def remove_arkis_prefix(identifier: str) -> str:
@@ -50,7 +56,7 @@ def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
 
         if len(manifest_id) >= 4:
             first_4_chars = manifest_id[:4]
-            return f"https://sok.riksarkivet.se/dokument/alto/{first_4_chars}/{manifest_id}/{manifest_id}_{padded_page}.xml"
+            return f"{ALTO_BASE_URL}/{first_4_chars}/{manifest_id}/{manifest_id}_{padded_page}.xml"
         return None
     except Exception:
         return None
@@ -69,7 +75,7 @@ def iiif_image_url(pid: str, page_number: str) -> Optional[str]:
     try:
         clean_pid = remove_arkis_prefix(pid)
         padded_page = format_page_number(page_number)
-        return f"https://lbiiif.riksarkivet.se/arkis!{clean_pid}_{padded_page}/full/max/0/default.jpg"
+        return f"{IIIF_IMAGE_BASE_URL}!{clean_pid}_{padded_page}/full/max/0/default.jpg"
     except Exception:
         return None
 
@@ -90,7 +96,7 @@ def bildvisning_url(
     try:
         clean_pid = remove_arkis_prefix(pid)
         padded_page = format_page_number(page_number)
-        base_url = f"https://sok.riksarkivet.se/bildvisning/{clean_pid}_{padded_page}"
+        base_url = f"{BILDVISNING_BASE_URL}/{clean_pid}_{padded_page}"
 
         if search_term and search_term.strip():
             encoded_term = urllib.parse.quote(search_term.strip())
