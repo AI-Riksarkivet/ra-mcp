@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.11.9",
     "rich>=14.1.0",
     "typer>=0.19.2",
+    "types-lxml>=2025.8.25",
 ]
 
 [project.scripts]

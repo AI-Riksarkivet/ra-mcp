@@ -4,10 +4,13 @@ Centralizes urllib boilerplate code to avoid duplication.
 """
 
 import json
+import logging
+import os
+import time
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import URLError, HTTPError
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Union
 
 
 class HTTPClient:
@@ -15,11 +18,24 @@ class HTTPClient:
 
     def __init__(self, user_agent: str = "Transcribed-Search-Browser/1.0"):
         self.user_agent = user_agent
+        self.logger = None
+
+        if os.getenv("RA_MCP_LOG_API"):
+            self.logger = logging.getLogger("ra_mcp.api")
+            self.logger.setLevel(logging.INFO)
+            if not self.logger.handlers:
+                handler = logging.FileHandler("ra_mcp_api.log")
+                handler.setFormatter(
+                    logging.Formatter(
+                        "%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+                    )
+                )
+                self.logger.addHandler(handler)
 
     def get_json(
         self,
         url: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Union[str, int]]] = None,
         timeout: int = 30,
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict:
@@ -54,25 +70,50 @@ class HTTPClient:
             for key, value in headers.items():
                 request.add_header(key, value)
 
+        start_time = time.perf_counter() if self.logger else 0
+
         try:
             with urlopen(request, timeout=timeout) as response:
                 if response.status != 200:
                     raise Exception(f"HTTP {response.status}")
 
                 content = response.read()
-                return json.loads(content)
+                result = json.loads(content)
 
-        except HTTPError as e:
-            raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
-        except URLError as e:
-            raise Exception(f"URL Error: {e.reason}") from e
-        except json.JSONDecodeError as e:
-            raise Exception(f"Invalid JSON response: {e}") from e
+                if self.logger and start_time:
+                    duration = time.perf_counter() - start_time
+                    self.logger.info(f"GET JSON {full_url} - {duration:.3f}s - 200 OK")
+
+                return result
+
+        except (HTTPError, URLError, json.JSONDecodeError) as e:
+            if self.logger and start_time:
+                duration = time.perf_counter() - start_time
+                error_msg = str(e.code) if hasattr(e, "code") else str(e)
+                error_body = ""
+                if isinstance(e, HTTPError):
+                    try:
+                        # Get first 500 chars of error body
+                        error_body = e.read().decode("utf-8")[:500]
+                        error_body = f" - Body: {error_body}"
+                    except Exception:
+                        pass
+                self.logger.error(
+                    f"GET JSON {full_url} - {duration:.3f}s - "
+                    f"ERROR: {error_msg}{error_body}"
+                )
+
+            if isinstance(e, HTTPError):
+                raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
+            elif isinstance(e, URLError):
+                raise Exception(f"URL Error: {e.reason}") from e
+            else:
+                raise Exception(f"Invalid JSON response: {e}") from e
 
     def get_xml(
         self,
         url: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Union[str, int]]] = None,
         timeout: int = 30,
         headers: Optional[Dict[str, str]] = None,
     ) -> bytes:
@@ -107,17 +148,42 @@ class HTTPClient:
             for key, value in headers.items():
                 request.add_header(key, value)
 
+        start_time = time.perf_counter() if self.logger else 0
+
         try:
             with urlopen(request, timeout=timeout) as response:
                 if response.status != 200:
                     raise Exception(f"HTTP {response.status}")
 
-                return response.read()
+                content = response.read()
 
-        except HTTPError as e:
-            raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
-        except URLError as e:
-            raise Exception(f"URL Error: {e.reason}") from e
+                if self.logger and start_time:
+                    duration = time.perf_counter() - start_time
+                    self.logger.info(f"GET XML {full_url} - {duration:.3f}s - 200 OK")
+
+                return content
+
+        except (HTTPError, URLError) as e:
+            if self.logger and start_time:
+                duration = time.perf_counter() - start_time
+                error_msg = str(e.code) if hasattr(e, "code") else str(e)
+                error_body = ""
+                if isinstance(e, HTTPError):
+                    try:
+                        # Get first 500 chars of error body
+                        error_body = e.read().decode("utf-8")[:500]
+                        error_body = f" - Body: {error_body}"
+                    except Exception:
+                        pass
+                self.logger.error(
+                    f"GET XML {full_url} - {duration:.3f}s - "
+                    f"ERROR: {error_msg}{error_body}"
+                )
+
+            if isinstance(e, HTTPError):
+                raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
+            else:
+                raise Exception(f"URL Error: {e.reason}") from e
 
     def get_content(
         self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None
@@ -142,18 +208,38 @@ class HTTPClient:
             for key, value in headers.items():
                 request.add_header(key, value)
 
+        start_time = time.perf_counter() if self.logger else 0
+
         try:
             with urlopen(request, timeout=timeout) as response:
                 if response.status == 404:
+                    if self.logger and start_time:
+                        duration = time.perf_counter() - start_time
+                        self.logger.info(f"GET {url} - {duration:.3f}s - 404 NOT FOUND")
                     return None
                 if response.status != 200:
+                    if self.logger and start_time:
+                        duration = time.perf_counter() - start_time
+                        self.logger.warning(
+                            f"GET {url} - {duration:.3f}s - {response.status}"
+                        )
                     return None
 
-                return response.read()
+                content = response.read()
+                if self.logger and start_time:
+                    duration = time.perf_counter() - start_time
+                    self.logger.info(f"GET {url} - {duration:.3f}s - 200 OK")
+                return content
 
-        except (HTTPError, URLError, TimeoutError):
+        except (HTTPError, URLError, TimeoutError) as e:
+            if self.logger and start_time:
+                duration = time.perf_counter() - start_time
+                error_msg = str(e.code) if hasattr(e, "code") else str(e)
+                self.logger.error(f"GET {url} - {duration:.3f}s - ERROR: {error_msg}")
             return None
-        except Exception:
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"GET {url} - ERROR: {str(e)}")
             return None
 
 

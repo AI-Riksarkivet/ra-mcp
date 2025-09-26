@@ -5,19 +5,19 @@ URL generation utilities for Riksarkivet resources.
 import urllib.parse
 from typing import Optional
 
-from ..config import COLLECTION_API_BASE_URL, IIIF_BASE_URL
+from ..config import IIIF_COLLECTION_API_BASE_URL, IIIF_MANIFEST_API_BASE_URL
 
 
-def remove_arkis_prefix(identifier: str) -> str:
-    """Remove arkis! prefix from identifier if present.
+def prepare_manifest_id_for_alto(manifest_id: str) -> str:
+    """Prepare manifest ID for ALTO URL generation by removing arkis! prefix.
 
     Args:
-        identifier: ID string (PID or manifest ID), potentially with arkis! prefix
+        manifest_id: Manifest/batch ID (NOT a PID), potentially with arkis! prefix
 
     Returns:
-        Identifier without arkis! prefix
+        Clean manifest ID without arkis! prefix for ALTO URL construction
     """
-    return identifier[6:] if identifier.startswith("arkis!") else identifier
+    return manifest_id[6:] if manifest_id.startswith("arkis!") else manifest_id
 
 
 def format_page_number(page_number: str) -> str:
@@ -67,9 +67,9 @@ def iiif_image_url(pid: str, page_number: str) -> Optional[str]:
         IIIF image URL or None if cannot generate
     """
     try:
-        clean_pid = remove_arkis_prefix(pid)
+        # For image URLs, use PID directly with arkis! prefix
         padded_page = format_page_number(page_number)
-        return f"https://lbiiif.riksarkivet.se/arkis!{clean_pid}_{padded_page}/full/max/0/default.jpg"
+        return f"{IIIF_MANIFEST_API_BASE_URL}{pid}_{padded_page}/full/max/0/default.jpg"
     except Exception:
         return None
 
@@ -88,9 +88,9 @@ def bildvisning_url(
         Bildvisning URL or None if cannot generate
     """
     try:
-        clean_pid = remove_arkis_prefix(pid)
+        # Bildvisning URLs use clean PID without arkis! prefix
         padded_page = format_page_number(page_number)
-        base_url = f"https://sok.riksarkivet.se/bildvisning/{clean_pid}_{padded_page}"
+        base_url = f"https://sok.riksarkivet.se/bildvisning/{pid}_{padded_page}"
 
         if search_term and search_term.strip():
             encoded_term = urllib.parse.quote(search_term.strip())
@@ -110,8 +110,8 @@ def collection_url(pid: str) -> Optional[str]:
         IIIF collection URL or None if cannot generate
     """
     try:
-        clean_pid = remove_arkis_prefix(pid)
-        return f"{COLLECTION_API_BASE_URL}/{clean_pid}"
+        # Collection URLs use PID directly without modification
+        return f"{IIIF_COLLECTION_API_BASE_URL}/{pid}"
     except Exception:
         return None
 
@@ -127,9 +127,11 @@ def manifest_url(pid: str, manifest_id: Optional[str] = None) -> Optional[str]:
         IIIF manifest URL or None if cannot generate
     """
     try:
-        clean_pid = remove_arkis_prefix(pid)
         if manifest_id:
-            return f"{IIIF_BASE_URL}/{manifest_id}/manifest"
-        return f"{IIIF_BASE_URL}/{clean_pid}_001/manifest"
+            # If manifest_id is provided, use it with arkis! prefix
+            clean_manifest = prepare_manifest_id_for_alto(manifest_id)
+            return f"{IIIF_MANIFEST_API_BASE_URL}{clean_manifest}/manifest"
+        # Default: derive manifest from PID by adding _001
+        return f"{IIIF_MANIFEST_API_BASE_URL}{pid}_001/manifest"
     except Exception:
         return None

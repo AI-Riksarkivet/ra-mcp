@@ -197,7 +197,7 @@ class SearchEnrichmentService:
     ):
         """Enrich a single hit with generated URLs."""
         # Clean the manifest identifier for ALTO URL (remove arkis! prefix if present)
-        clean_manifest_id = url_generator.remove_arkis_prefix(manifest_identifier)
+        clean_manifest_id = url_generator.prepare_manifest_id_for_alto(manifest_identifier)
         search_hit.alto_url = url_generator.alto_url(
             clean_manifest_id, search_hit.page_number
         )

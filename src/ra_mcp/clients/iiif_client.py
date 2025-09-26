@@ -43,8 +43,10 @@ class IIIFClient:
         """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
             return self.http_client.get_json(collection_url, timeout=timeout_seconds)
-        except Exception:
-            # HTTPClient already handles 404s and other errors gracefully
+        except Exception as e:
+            # Log the error before returning None
+            if hasattr(self.http_client, 'logger') and self.http_client.logger:
+                self.http_client.logger.error(f"Failed to fetch IIIF collection data from {collection_url}: {str(e)}")
             return None
 
     def _extract_collection_title(self, collection_data: Dict) -> str:
