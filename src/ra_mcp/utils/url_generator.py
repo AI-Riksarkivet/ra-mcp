@@ -5,7 +5,13 @@ URL generation utilities for Riksarkivet resources.
 import urllib.parse
 from typing import Optional
 
-from ..config import IIIF_COLLECTION_API_BASE_URL, IIIF_MANIFEST_API_BASE_URL
+from ..config import (
+    ALTO_BASE_URL,
+    BILDVISNING_BASE_URL,
+    IIIF_COLLECTION_API_BASE_URL,
+    IIIF_BASE_URL,
+    IIIF_IMAGE_BASE_URL,
+)
 
 
 def prepare_manifest_id_for_alto(manifest_id: str) -> str:
@@ -50,7 +56,7 @@ def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
 
         if len(manifest_id) >= 4:
             first_4_chars = manifest_id[:4]
-            return f"https://sok.riksarkivet.se/dokument/alto/{first_4_chars}/{manifest_id}/{manifest_id}_{padded_page}.xml"
+            return f"{ALTO_BASE_URL}/{first_4_chars}/{manifest_id}/{manifest_id}_{padded_page}.xml"
         return None
     except Exception:
         return None
@@ -69,18 +75,18 @@ def iiif_image_url(pid: str, page_number: str) -> Optional[str]:
     try:
         # For image URLs, use PID directly with arkis! prefix
         padded_page = format_page_number(page_number)
-        return f"{IIIF_MANIFEST_API_BASE_URL}{pid}_{padded_page}/full/max/0/default.jpg"
+        return f"{IIIF_IMAGE_BASE_URL}!{clean_pid}_{padded_page}/full/max/0/default.jpg"
     except Exception:
         return None
 
 
 def bildvisning_url(
-    pid: str, page_number: str, search_term: Optional[str] = None
+    clean_pid: str, page_number: str, search_term: Optional[str] = None
 ) -> Optional[str]:
     """Generate bildvisning URL with optional search highlighting.
 
     Args:
-        pid: Document PID
+        clean_pid: Document PID
         page_number: Page number
         search_term: Optional search term to highlight
 
@@ -90,7 +96,7 @@ def bildvisning_url(
     try:
         # Bildvisning URLs use clean PID without arkis! prefix
         padded_page = format_page_number(page_number)
-        base_url = f"https://sok.riksarkivet.se/bildvisning/{pid}_{padded_page}"
+        base_url = f"{BILDVISNING_BASE_URL}/{clean_pid}_{padded_page}"
 
         if search_term and search_term.strip():
             encoded_term = urllib.parse.quote(search_term.strip())

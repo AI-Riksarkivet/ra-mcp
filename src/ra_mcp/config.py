@@ -7,6 +7,12 @@ SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api/records"
 IIIF_MANIFEST_API_BASE_URL = "https://lbiiif.riksarkivet.se/arkis!"
 OAI_BASE_URL = "https://oai-pmh.riksarkivet.se/OAI"
 
+# Document viewing URLs
+SOK_BASE_URL = "https://sok.riksarkivet.se"
+ALTO_BASE_URL = "https://sok.riksarkivet.se/dokument/alto"
+BILDVISNING_BASE_URL = "https://sok.riksarkivet.se/bildvisning"
+IIIF_IMAGE_BASE_URL = "https://lbiiif.riksarkivet.se/arkis"
+
 # Request settings
 REQUEST_TIMEOUT = 60
 
