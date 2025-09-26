@@ -40,47 +40,26 @@ class SearchOperations:
 
         Returns SearchOperation with results and metadata.
         """
-        search_results = self._execute_transcribed_search(
+        # Execute search and build operation in one step
+        hits, total_hits = self.search_api.search_transcribed_text(
             keyword, max_results, offset, max_hits_per_document
         )
 
-        search_operation = self._build_search_operation(search_results, keyword, offset)
+        search_operation = SearchOperation(
+            hits=hits,
+            total_hits=total_hits,
+            keyword=keyword,
+            offset=offset,
+            enriched=False,
+        )
 
-        if show_context and search_results[0] and max_pages_with_context > 0:
+        # Enrich with context if requested
+        if show_context and hits and max_pages_with_context > 0:
             self._enrich_search_operation_with_context(
                 search_operation, max_pages_with_context, context_padding, keyword
             )
 
         return search_operation
-
-    def _execute_transcribed_search(
-        self,
-        search_keyword: str,
-        result_limit: int,
-        pagination_offset: int,
-        hits_per_document_limit: Optional[int],
-    ) -> Tuple[List[SearchHit], int]:
-        """Execute the transcribed text search."""
-        return self.search_api.search_transcribed_text(
-            search_keyword, result_limit, pagination_offset, hits_per_document_limit
-        )
-
-    def _build_search_operation(
-        self,
-        search_results: Tuple[List[SearchHit], int],
-        search_keyword: str,
-        pagination_offset: int,
-    ) -> SearchOperation:
-        """Build SearchOperation from search results."""
-        retrieved_hits, total_hit_count = search_results
-
-        return SearchOperation(
-            hits=retrieved_hits,
-            total_hits=total_hit_count,
-            keyword=search_keyword,
-            offset=pagination_offset,
-            enriched=False,
-        )
 
 
     def _enrich_search_operation_with_context(
@@ -91,29 +70,19 @@ class SearchOperations:
         search_keyword: str,
     ) -> None:
         """Enrich search operation with context information."""
-        hits_for_enrichment = self._prepare_hits_for_enrichment(
-            search_operation.hits, page_limit, padding_size
+        # Limit hits and optionally expand with padding
+        limited_hits = search_operation.hits[:page_limit]
+
+        hits_for_enrichment = (
+            self.enrichment_service.expand_hits_with_context_padding(limited_hits, padding_size)
+            if padding_size > 0
+            else limited_hits
         )
 
-        enriched_hit_collection = self.enrichment_service.enrich_hits_with_context(
+        search_operation.hits = self.enrichment_service.enrich_hits_with_context(
             hits_for_enrichment, len(hits_for_enrichment), search_keyword
         )
-
-        search_operation.hits = enriched_hit_collection
         search_operation.enriched = True
-
-    def _prepare_hits_for_enrichment(
-        self, original_hits: List[SearchHit], page_limit: int, padding_size: int
-    ) -> List[SearchHit]:
-        """Prepare hits for enrichment by limiting and expanding with padding."""
-        limited_hits = original_hits[:page_limit]
-
-        if padding_size > 0:
-            return self.enrichment_service.expand_hits_with_context_padding(
-                limited_hits, padding_size
-            )
-
-        return limited_hits
 
     def browse_document(
         self,
@@ -130,7 +99,12 @@ class SearchOperations:
         persistent_identifier = self.page_service.oai_client.extract_pid(reference_code)
 
         if not persistent_identifier:
-            return self._create_empty_browse_operation(reference_code, pages)
+            return BrowseOperation(
+                contexts=[],
+                reference_code=reference_code,
+                pages_requested=pages,
+                pid=None,
+            )
 
         manifest_identifier = self._resolve_manifest_identifier(persistent_identifier)
 
@@ -138,40 +112,23 @@ class SearchOperations:
             manifest_identifier, pages, max_pages, reference_code, highlight_term
         )
 
-        return self._create_browse_operation(
-            page_contexts,
-            reference_code,
-            pages,
-            persistent_identifier,
-            manifest_identifier,
-        )
-
-    def _create_empty_browse_operation(
-        self, reference_code: str, requested_pages: str
-    ) -> BrowseOperation:
-        """Create an empty BrowseOperation when no PID is found."""
         return BrowseOperation(
-            contexts=[],
+            contexts=page_contexts,
             reference_code=reference_code,
-            pages_requested=requested_pages,
-            pid=None,
+            pages_requested=pages,
+            pid=persistent_identifier,
+            manifest_id=manifest_identifier,
         )
 
     def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
         """Resolve manifest identifier from PID."""
-        iiif_collection_info = self.iiif_client.explore_collection(
-            persistent_identifier
-        )
+        iiif_collection_info = self.iiif_client.explore_collection(persistent_identifier)
 
-        if self._has_manifests(iiif_collection_info):
-            manifest_id = iiif_collection_info["manifests"][0]["id"]
-            return manifest_id
+        # Return first manifest ID if available, otherwise use PID
+        if iiif_collection_info and iiif_collection_info.get("manifests"):
+            return iiif_collection_info["manifests"][0]["id"]
 
         return persistent_identifier
-
-    def _has_manifests(self, collection_info: Optional[Dict]) -> bool:
-        """Check if collection info contains manifests."""
-        return bool(collection_info and collection_info.get("manifests"))
 
     def _fetch_page_contexts(
         self,
@@ -182,54 +139,19 @@ class SearchOperations:
         highlight_keyword: Optional[str],
     ) -> List:
         """Fetch contexts for specified pages."""
-        requested_page_numbers = self._parse_and_limit_pages(
-            page_specification, maximum_pages
-        )
+        # Parse and limit page numbers
+        page_numbers = parse_page_range(page_specification)[:maximum_pages]
 
-        page_context_collection = []
-
-        for page_number in requested_page_numbers:
-            page_context = self._fetch_single_page_context(
-                manifest_identifier, page_number, reference_code, highlight_keyword
+        # Fetch context for each page
+        page_contexts = []
+        for page_number in page_numbers:
+            page_context = self.page_service.get_page_context(
+                manifest_identifier, str(page_number), reference_code, highlight_keyword
             )
             if page_context:
-                page_context_collection.append(page_context)
+                page_contexts.append(page_context)
 
-        return page_context_collection
-
-    def _parse_and_limit_pages(self, page_specification: str, limit: int) -> List[int]:
-        """Parse page specification and apply limit."""
-        parsed_pages = parse_page_range(page_specification)
-        return parsed_pages[:limit]
-
-    def _fetch_single_page_context(
-        self,
-        manifest_identifier: str,
-        page_number: int,
-        reference_code: str,
-        highlight_keyword: Optional[str],
-    ):
-        """Fetch context for a single page."""
-        return self.page_service.get_page_context(
-            manifest_identifier, str(page_number), reference_code, highlight_keyword
-        )
-
-    def _create_browse_operation(
-        self,
-        contexts: List,
-        reference_code: str,
-        requested_pages: str,
-        persistent_identifier: str,
-        manifest_identifier: str,
-    ) -> BrowseOperation:
-        """Create BrowseOperation with all data."""
-        return BrowseOperation(
-            contexts=contexts,
-            reference_code=reference_code,
-            pages_requested=requested_pages,
-            pid=persistent_identifier,
-            manifest_id=manifest_identifier,
-        )
+        return page_contexts
 
     def show_pages_with_context(
         self,
@@ -272,25 +194,15 @@ class SearchOperations:
 
         Returns IIIF collection info or None if not found.
         """
-        resolved_pid = self._resolve_document_pid(reference_code, pid)
+        # Resolve PID from either provided PID or reference code
+        if not reference_code and not pid:
+            return None
+
+        resolved_pid = pid if pid else self.page_service.oai_client.extract_pid(reference_code)
 
         if not resolved_pid:
             return None
 
         cleaned_pid = remove_arkis_prefix(resolved_pid)
-        iiif_collection_structure = self.iiif_client.explore_collection(cleaned_pid)
-
-        return iiif_collection_structure
-
-    def _resolve_document_pid(
-        self, reference_code: Optional[str], provided_pid: Optional[str]
-    ) -> Optional[str]:
-        """Resolve PID from reference code or use provided PID."""
-        if not reference_code and not provided_pid:
-            return None
-
-        if provided_pid:
-            return provided_pid
-
-        return self._find_pid_for_reference(reference_code)
+        return self.iiif_client.explore_collection(cleaned_pid)
 
