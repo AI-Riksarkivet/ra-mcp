@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple, Dict, Union
 
 from ..clients import SearchAPI, IIIFClient
 from ..models import SearchHit, SearchOperation, BrowseOperation
-from ..utils import parse_page_range
+from ..utils import parse_page_range, remove_arkis_prefix
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
 from ..utils.http_client import HTTPClient
@@ -277,7 +277,7 @@ class SearchOperations:
         if not resolved_pid:
             return None
 
-        cleaned_pid = self._clean_pid_identifier(resolved_pid)
+        cleaned_pid = remove_arkis_prefix(resolved_pid)
         iiif_collection_structure = self.iiif_client.explore_collection(cleaned_pid)
 
         return iiif_collection_structure
@@ -294,11 +294,3 @@ class SearchOperations:
 
         return self._find_pid_for_reference(reference_code)
 
-    def _clean_pid_identifier(self, pid: str) -> str:
-        """Clean PID identifier by removing arkis! prefix if present."""
-        arkis_prefix = "arkis!"
-
-        if pid.startswith(arkis_prefix):
-            return pid[len(arkis_prefix) :]
-
-        return pid
