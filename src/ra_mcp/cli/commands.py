@@ -55,16 +55,27 @@ def display_context_results(
     )
 
     # Convert SearchHits to PageContext format and group by reference code
+    # Use a set to track seen pages and avoid duplicates
     grouped_contexts = {}
+    seen_pages = set()
+
     for hit in sorted_hits:
         if hit.full_page_text:
             ref_code = hit.reference_code
+            page_key = f"{ref_code}_{hit.page_number}"
+
+            # Skip if we've already seen this exact page
+            if page_key in seen_pages:
+                continue
+
+            seen_pages.add(page_key)
+
             if ref_code not in grouped_contexts:
                 grouped_contexts[ref_code] = []
 
             page_context = PageContext(
                 page_number=int(hit.page_number),
-                page_id=f"{hit.reference_code}_{hit.page_number}",
+                page_id=page_key,
                 reference_code=hit.reference_code,
                 full_text=hit.full_page_text,
                 alto_url=hit.alto_url or "",
@@ -73,39 +84,35 @@ def display_context_results(
             )
             grouped_contexts[ref_code].append(page_context)
 
-    # Create mock BrowseOperation with document metadata for the first reference code
-    first_ref_code = next(iter(grouped_contexts.keys())) if grouped_contexts else None
-    document_metadata = None
-    if first_ref_code:
-        # Use the metadata from the first hit as representative
-        first_hit = next(
-            hit for hit in sorted_hits if hit.reference_code == first_ref_code
+    # Display each document separately with its own metadata
+    for ref_code, contexts in grouped_contexts.items():
+        # Get metadata for this specific document
+        representative_hit = next(
+            hit for hit in sorted_hits
+            if hit.reference_code == ref_code and hit.full_page_text
         )
+
         document_metadata = DocumentMetadata(
-            title=first_hit.title,
-            hierarchy=first_hit.hierarchy,
-            archival_institution=first_hit.archival_institution,
-            date=first_hit.date,
-            note=first_hit.note,
-            collection_url=first_hit.collection_url,
-            manifest_url=first_hit.manifest_url,
+            title=representative_hit.title,
+            hierarchy=representative_hit.hierarchy,
+            archival_institution=representative_hit.archival_institution,
+            date=representative_hit.date,
+            note=representative_hit.note,
+            collection_url=representative_hit.collection_url,
+            manifest_url=representative_hit.manifest_url,
         )
 
-    # Create a mock browse result to use the same display logic
-    all_contexts = []
-    for contexts_list in grouped_contexts.values():
-        all_contexts.extend(contexts_list)
+        # Create a mock browse result for this document
+        mock_browse = BrowseOperation(
+            contexts=contexts,
+            reference_code=ref_code,
+            pages_requested="context",
+            pid=None,
+            document_metadata=document_metadata,
+        )
 
-    mock_browse = BrowseOperation(
-        contexts=all_contexts,
-        reference_code=first_ref_code or "",
-        pages_requested="context",
-        pid=None,
-        document_metadata=document_metadata,
-    )
-
-    # Use the same display function as browse
-    display_browse_results(mock_browse, display_service, keyword)
+        # Display this document
+        display_browse_results(mock_browse, display_service, keyword, False)  # Don't show links by default
 
 
 def display_table_results(
@@ -310,7 +317,7 @@ def display_browse_results(
         if browse_result.document_metadata:
             metadata = browse_result.document_metadata
 
-            panel_content.append(f"[bold blue]📄 Document:[/bold blue] {ref_code} ({len(contexts)} pages)")
+            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code} ({len(contexts)} pages)")
 
             # Display title
             if metadata.title and metadata.title != "(No title)":
@@ -349,7 +356,7 @@ def display_browse_results(
             panel_content.append("")
         else:
             # If no metadata available, just show the document header
-            panel_content.append(f"[bold blue]📄 Document:[/bold blue] {ref_code} ({len(contexts)} pages)")
+            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code} ({len(contexts)} pages)")
             panel_content.append("")
 
         for context in sorted_contexts:
