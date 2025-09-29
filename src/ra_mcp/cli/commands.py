@@ -281,7 +281,7 @@ def display_browse_error(reference_code: str) -> None:
 
 
 def display_browse_results(
-    browse_result, display_service, search_term: Optional[str]
+    browse_result, display_service, search_term: Optional[str], show_links: bool = False
 ) -> None:
     """Display successful browse results grouped by reference code."""
     console.print(
@@ -364,13 +364,14 @@ def display_browse_results(
                 )
             panel_content.append(f"[italic]{display_text}[/italic]")
 
-            # Add links
-            panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-            panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
-            if context.image_url:
-                panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
-            if context.bildvisning_url:
-                panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+            # Add links if requested
+            if show_links:
+                panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
+                panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+                if context.image_url:
+                    panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+                if context.bildvisning_url:
+                    panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
 
             # Add spacing between pages (except for the last one)
             if context != sorted_contexts[-1]:
@@ -409,6 +410,9 @@ def browse(
     log: Annotated[
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
+    show_links: Annotated[
+        bool, typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links")
+    ] = False,
 ):
     """Browse pages by reference code.
 
@@ -443,7 +447,7 @@ def browse(
             display_browse_error(reference_code)
             raise typer.Exit(code=1)
 
-        display_browse_results(browse_result, display_service, search_term)
+        display_browse_results(browse_result, display_service, search_term, show_links)
 
     except Exception as error:
         console.print(f"[red]Browse failed: {error}[/red]")
