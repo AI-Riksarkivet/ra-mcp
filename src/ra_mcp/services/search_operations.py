@@ -302,7 +302,9 @@ class SearchOperations:
         cleaned_pid = remove_arkis_prefix(resolved_pid)
         return self.iiif_client.explore_collection(cleaned_pid)
 
-    def _fetch_document_metadata(self, reference_code: str) -> Optional[DocumentMetadata]:
+    def _fetch_document_metadata(
+        self, reference_code: str
+    ) -> Optional[DocumentMetadata]:
         """Fetch document metadata by searching for the reference code.
 
         Args:

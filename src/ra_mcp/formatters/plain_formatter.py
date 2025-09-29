@@ -99,6 +99,4 @@ class PlainTextFormatter(BaseFormatter):
         if not search_keyword:
             return text_content
         keyword_pattern = re.compile(re.escape(search_keyword), re.IGNORECASE)
-        return keyword_pattern.sub(
-            lambda match: f"**{match.group()}**", text_content
-        )
+        return keyword_pattern.sub(lambda match: f"**{match.group()}**", text_content)

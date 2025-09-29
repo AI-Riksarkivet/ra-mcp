@@ -1,6 +1,6 @@
 """
-Unified display service that works for both MCP and CLI contexts.
-Combines all display logic with conditional formatting based on mode.
+Display service that works for both MCP and CLI contexts.
+Combines all display logic with conditional formatting based on border visibility.
 """
 
 from typing import Dict, List, Optional, Union, Any
@@ -10,20 +10,25 @@ from ..formatters import PlainTextFormatter
 from . import analysis
 
 
-class UnifiedDisplayService:
-    """Unified display service for both MCP and CLI contexts."""
+class DisplayService:
+    """Display service for both MCP and CLI contexts."""
 
-    def __init__(self, formatter=None):
+    def __init__(self, formatter=None, show_border=None):
         """
-        Initialize the unified display service.
+        Initialize the display service.
 
         Args:
             formatter: Formatter instance to use (PlainTextFormatter or RichConsoleFormatter)
                       If None, defaults to PlainTextFormatter
+            show_border: Whether to show borders/separators in output. If None, determines based on formatter type
         """
         self.formatter = formatter or PlainTextFormatter()
-        # Determine mode based on formatter type
-        self.is_mcp_mode = isinstance(self.formatter, PlainTextFormatter)
+        # Determine border visibility - PlainTextFormatter (MCP mode) typically doesn't show borders
+        self.show_border = (
+            show_border
+            if show_border is not None
+            else not isinstance(self.formatter, PlainTextFormatter)
+        )
 
     def format_search_results(
         self,
@@ -33,8 +38,10 @@ class UnifiedDisplayService:
     ) -> Union[str, Any]:
         """Format search results using Rich table for CLI or plain text for MCP."""
         # For CLI mode without full context, use Rich table
-        if not self.is_mcp_mode and not show_full_context and hasattr(
-            self.formatter, "format_search_results_table"
+        if (
+            self.show_border
+            and not show_full_context
+            and hasattr(self.formatter, "format_search_results_table")
         ):
             return self.formatter.format_search_results_table(
                 search_operation, maximum_documents_to_display
@@ -51,11 +58,6 @@ class UnifiedDisplayService:
         lines.append(
             f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents"
         )
-
-        if not show_full_context and not self.is_mcp_mode:
-            lines.append(
-                "💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes"
-            )
 
         lines.append("")
 
@@ -137,7 +139,7 @@ class UnifiedDisplayService:
     ) -> Union[List[Any], str]:
         """Format browse results as Rich Panel objects for CLI or string for MCP."""
         # For CLI mode, use Rich panels
-        if not self.is_mcp_mode and hasattr(self.formatter, "format_page_context_panel"):
+        if self.show_border and hasattr(self.formatter, "format_page_context_panel"):
             panels = []
             for context in operation.contexts:
                 panel = self.formatter.format_page_context_panel(
@@ -203,8 +205,8 @@ class UnifiedDisplayService:
         for context in operation.contexts:
             lines.append(f"📄 Page {context.page_number}")
 
-            # Only add separator line if not in MCP mode
-            if not self.is_mcp_mode:
+            # Only add separator line if showing borders
+            if self.show_border:
                 lines.append("─" * 40)
 
             display_text = context.full_text
@@ -224,120 +226,8 @@ class UnifiedDisplayService:
 
             lines.append("")
 
-        # Return string for MCP, list for CLI fallback
-        return "\n".join(lines) if self.is_mcp_mode else ["\n".join(lines)]
-
-    def format_show_pages_results(
-        self,
-        search_op: SearchOperation,
-        enriched_hits: List[SearchHit],
-        no_grouping: bool = False,
-    ) -> Union[List[Any], str]:
-        """Format show-pages results as Rich Panel objects for CLI or string for MCP."""
-        if not enriched_hits:
-            result = f"No pages found containing '{search_op.keyword}'"
-            return result if self.is_mcp_mode else [result]
-
-        # For CLI mode, use Rich panels
-        if not self.is_mcp_mode and hasattr(self.formatter, "format_document_panel"):
-            if no_grouping:
-                panels = []
-                for hit in enriched_hits:
-                    if hit.full_page_text:
-                        panel = self.formatter.format_document_panel(
-                            hit.reference_code, [hit], search_op.keyword
-                        )
-                        panels.append(panel)
-                return panels
-            else:
-                grouped = analysis.group_hits_by_document(enriched_hits)
-                panels = []
-                for doc_ref, doc_hits in grouped.items():
-                    panel = self.formatter.format_document_panel(
-                        doc_ref, doc_hits, search_op.keyword
-                    )
-                    panels.append(panel)
-                return panels
-
-        # For MCP mode or fallback, use string formatting
-        lines = []
-        lines.append(f"🔍 Search results for '{search_op.keyword}':")
-        lines.append(
-            f"Found {len(search_op.hits)} initial hits, showing {len(enriched_hits)} pages with context"
-        )
-        lines.append("")
-
-        if no_grouping:
-            for hit in enriched_hits:
-                if hit.full_page_text:
-                    is_search_hit = hit.snippet_text != "[Context page - no search hit]"
-                    page_type = "🎯 SEARCH HIT" if is_search_hit else "📄 context"
-
-                    lines.append(
-                        f"{page_type}: {hit.reference_code} - Page {hit.page_number}"
-                    )
-
-                    # Only add separator line if not in MCP mode
-                    if not self.is_mcp_mode:
-                        lines.append("─" * 60)
-
-                    display_text = hit.full_page_text
-                    if is_search_hit:
-                        display_text = self.formatter.highlight_search_keyword(
-                            display_text, search_op.keyword
-                        )
-
-                    lines.append(display_text)
-                    lines.append("")
-        else:
-            grouped = analysis.group_hits_by_document(enriched_hits)
-
-            for doc_ref, doc_hits in grouped.items():
-                doc_hits.sort(
-                    key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0
-                )
-
-                lines.append(f"📚 Document: {doc_ref} ({len(doc_hits)} pages)")
-
-                # Only add separator line if not in MCP mode
-                if not self.is_mcp_mode:
-                    lines.append("=" * 60)
-
-                first_hit = doc_hits[0]
-                if first_hit.title:
-                    lines.append(f"📄 Title: {first_hit.title}")
-                if first_hit.date:
-                    lines.append(f"📅 Date: {first_hit.date}")
-
-                lines.append("")
-
-                for hit in doc_hits:
-                    is_search_hit = hit.snippet_text != "[Context page - no search hit]"
-                    page_marker = "🎯" if is_search_hit else "📄"
-                    page_type = "SEARCH HIT" if is_search_hit else "context"
-
-                    lines.append(f"{page_marker} Page {hit.page_number} ({page_type})")
-
-                    # Only add separator line if not in MCP mode
-                    if not self.is_mcp_mode:
-                        lines.append("─" * 40)
-
-                    if hit.full_page_text:
-                        display_text = hit.full_page_text
-                        if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(
-                                display_text, search_op.keyword
-                            )
-                        lines.append(display_text)
-                    else:
-                        lines.append("No text content available")
-
-                    lines.append("")
-
-                lines.append("")
-
-        result = "\n".join(lines)
-        return result if self.is_mcp_mode else [result]
+        # Return string for MCP (no borders), list for CLI fallback
+        return "\n".join(lines) if not self.show_border else ["\n".join(lines)]
 
     def format_document_structure(
         self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]

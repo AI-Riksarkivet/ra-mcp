@@ -11,8 +11,8 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from ..services import SearchOperations
-from ..services.unified_display_service import UnifiedDisplayService
+from ..services import SearchOperations, analysis
+from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
@@ -44,7 +44,10 @@ def display_search_summary(search_result: SearchOperation, keyword: str) -> None
 
 
 def display_context_results(
-    search_result: SearchOperation, display_service: UnifiedDisplayService, keyword: str, show_links: bool = False
+    search_result: SearchOperation,
+    display_service: DisplayService,
+    keyword: str,
+    show_links: bool = False,
 ) -> None:
     """Display search results with full context using unified page display."""
 
@@ -85,15 +88,14 @@ def display_context_results(
 
     # Calculate total unique pages after deduplication
     total_unique_pages = sum(len(contexts) for contexts in grouped_contexts.values())
-    console.print(
-        f"[green]Successfully loaded {total_unique_pages} pages[/green]"
-    )
+    console.print(f"[green]Successfully loaded {total_unique_pages} pages[/green]")
 
     # Display each document separately with its own metadata
     for ref_code, contexts in grouped_contexts.items():
         # Get metadata for this specific document
         representative_hit = next(
-            hit for hit in sorted_hits
+            hit
+            for hit in sorted_hits
             if hit.reference_code == ref_code and hit.full_page_text
         )
 
@@ -117,12 +119,14 @@ def display_context_results(
         )
 
         # Display this document
-        display_browse_results(mock_browse, display_service, keyword, show_links, False)  # Don't show success message
+        display_browse_results(
+            mock_browse, display_service, keyword, show_links, False
+        )  # Don't show success message
 
 
 def display_table_results(
     search_result: SearchOperation,
-    display_service: UnifiedDisplayService,
+    display_service: DisplayService,
     max_display: int,
     keyword: str,
 ) -> None:
@@ -135,7 +139,7 @@ def display_table_results(
         return
 
     # Get search summary and display it
-    summary = display_service.get_search_summary(search_result)
+    summary = analysis.extract_search_summary(search_result)
     summary_lines = display_service.formatter.format_search_summary(summary)
     for line in summary_lines:
         console.print(line)
@@ -177,7 +181,9 @@ def perform_search_with_progress(
         console=console,
     ) as progress:
         # Phase 1: Initial search across all volumes
-        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
+        search_task = progress.add_task(
+            f"Searching for '{keyword}' across all transcribed volumes...", total=None
+        )
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
@@ -191,7 +197,10 @@ def perform_search_with_progress(
         # Update with detailed results
         hits_count = len(search_result.hits)
         docs_count = search_result.total_hits
-        progress.update(search_task, description=f"✓ Found {hits_count} page hits across {docs_count} volumes")
+        progress.update(
+            search_task,
+            description=f"✓ Found {hits_count} page hits across {docs_count} volumes",
+        )
 
         # Phase 2: Load full page content if in browse mode
         if browse and search_result.hits and max_pages > 0:
@@ -199,22 +208,34 @@ def perform_search_with_progress(
 
             # Group hits by volume to show more specific progress
             from collections import defaultdict
+
             hits_by_volume = defaultdict(list)
             for hit in search_result.hits[:max_pages]:
                 hits_by_volume[hit.reference_code].append(hit)
 
             volume_count = len(hits_by_volume)
-            context_task = progress.add_task(f"Loading ALTO transcriptions from {volume_count} volumes ({limited_hits} pages)...", total=None)
+            context_task = progress.add_task(
+                f"Loading ALTO transcriptions from {volume_count} volumes ({limited_hits} pages)...",
+                total=None,
+            )
 
             # Show which volumes are being processed
             volume_names = list(hits_by_volume.keys())[:3]  # Show first 3 volumes
             if len(volume_names) > 1:
                 if volume_count > 3:
-                    progress.update(context_task, description=f"Loading from: {volume_names[0]}, {volume_names[1]}, and {volume_count-2} more...")
+                    progress.update(
+                        context_task,
+                        description=f"Loading from: {volume_names[0]}, {volume_names[1]}, and {volume_count - 2} more...",
+                    )
                 else:
-                    progress.update(context_task, description=f"Loading from: {', '.join(volume_names)}")
+                    progress.update(
+                        context_task,
+                        description=f"Loading from: {', '.join(volume_names)}",
+                    )
             elif volume_names:
-                progress.update(context_task, description=f"Loading ALTO from: {volume_names[0]}")
+                progress.update(
+                    context_task, description=f"Loading ALTO from: {volume_names[0]}"
+                )
 
             # Re-run with context loading
             search_result = search_operations.search_transcribed(
@@ -229,9 +250,15 @@ def perform_search_with_progress(
             # Count successfully loaded pages with context
             enriched_count = sum(1 for hit in search_result.hits if hit.full_page_text)
             if context_padding > 0:
-                progress.update(context_task, description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {volume_count} volumes")
+                progress.update(
+                    context_task,
+                    description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {volume_count} volumes",
+                )
             else:
-                progress.update(context_task, description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes")
+                progress.update(
+                    context_task,
+                    description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes",
+                )
 
     return search_result
 
@@ -246,7 +273,11 @@ def search(
         int, typer.Option(help="Maximum results to display")
     ] = DEFAULT_MAX_DISPLAY,
     browse: Annotated[
-        bool, typer.Option("--browse", help="Show full page content for search hits (browse-style display)")
+        bool,
+        typer.Option(
+            "--browse",
+            help="Show full page content for search hits (browse-style display)",
+        ),
     ] = False,
     max_pages: Annotated[
         int, typer.Option(help="Maximum pages to load context for")
@@ -261,14 +292,18 @@ def search(
         Optional[int],
         typer.Option(
             "--max-hits-per-vol",
-            help="Maximum number of hits to return per volume (useful for searching across many volumes)"
+            help="Maximum number of hits to return per volume (useful for searching across many volumes)",
         ),
     ] = 3,
     log: Annotated[
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
     show_links: Annotated[
-        bool, typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links (only with --browse)")
+        bool,
+        typer.Option(
+            "--show-links",
+            help="Display ALTO XML, Image, and Bildvisning links (only with --browse)",
+        ),
     ] = False,
 ):
     """Search for keyword in transcribed materials.
@@ -290,7 +325,7 @@ def search(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = UnifiedDisplayService(formatter=RichConsoleFormatter(console))
+    display_service = DisplayService(formatter=RichConsoleFormatter(console))
 
     show_logging_status(log)
 
@@ -299,7 +334,13 @@ def search(
         effective_max_hits_per_doc = max_hits_per_document
 
         search_result = perform_search_with_progress(
-            search_operations, keyword, max_results, browse, max_pages, context_padding, effective_max_hits_per_doc
+            search_operations,
+            keyword,
+            max_results,
+            browse,
+            max_pages,
+            context_padding,
+            effective_max_hits_per_doc,
         )
 
         if browse and search_result.hits:
@@ -354,7 +395,11 @@ def display_browse_error(reference_code: str) -> None:
 
 
 def display_browse_results(
-    browse_result, display_service, search_term: Optional[str], show_links: bool = False, show_success_message: bool = True
+    browse_result,
+    display_service,
+    search_term: Optional[str],
+    show_links: bool = False,
+    show_success_message: bool = True,
 ) -> None:
     """Display successful browse results grouped by reference code."""
     if show_success_message:
@@ -429,9 +474,15 @@ def display_browse_results(
             # Create clean two-column layout using Rich Table
             if right_content:
                 # Create table with two columns
-                metadata_table = Table.grid(padding=(0, 2))  # Add some padding between columns
-                metadata_table.add_column(justify="left", ratio=1)  # Left column for basic info
-                metadata_table.add_column(justify="left", ratio=1)  # Right column for hierarchy
+                metadata_table = Table.grid(
+                    padding=(0, 2)
+                )  # Add some padding between columns
+                metadata_table.add_column(
+                    justify="left", ratio=1
+                )  # Left column for basic info
+                metadata_table.add_column(
+                    justify="left", ratio=1
+                )  # Right column for hierarchy
 
                 left_text = "\n".join(left_content)
                 right_text = "\n".join(right_content)
@@ -459,29 +510,43 @@ def display_browse_results(
             # Add page separator with optional bildvisning link
             if show_links:
                 # When showing all links below, keep simple separator
-                panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+                panel_content.append(
+                    f"[dim]────── Page {context.page_number} ──────[/dim]"
+                )
             else:
                 # When not showing links section, include bildvisning link in separator
                 if context.bildvisning_url:
-                    panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
+                    panel_content.append(
+                        f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]"
+                    )
                 else:
-                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+                    panel_content.append(
+                        f"[dim]────── Page {context.page_number} ──────[/dim]"
+                    )
 
             # Add page content with highlighting
             display_text = context.full_text
             if search_term:
                 # Use the proper highlighting method which handles case-insensitive matching
-                display_text = display_service.formatter.highlight_search_keyword(display_text, search_term)
+                display_text = display_service.formatter.highlight_search_keyword(
+                    display_text, search_term
+                )
             panel_content.append(f"[italic]{display_text}[/italic]")
 
             # Add links if requested
             if show_links:
                 panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-                panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+                panel_content.append(
+                    f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
+                )
                 if context.image_url:
-                    panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+                    panel_content.append(
+                        f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]"
+                    )
                 if context.bildvisning_url:
-                    panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+                    panel_content.append(
+                        f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
+                    )
 
             # Add spacing between pages (except for the last one)
             if context != sorted_contexts[-1]:
@@ -493,6 +558,7 @@ def display_browse_results(
 
         # Create the grouped panel using Rich Group to combine metadata and page content
         from rich.console import Group
+
         panel_group = Group(*renderables)
 
         grouped_panel = Panel(
@@ -528,7 +594,10 @@ def browse(
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
     show_links: Annotated[
-        bool, typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links")
+        bool,
+        typer.Option(
+            "--show-links", help="Display ALTO XML, Image, and Bildvisning links"
+        ),
     ] = False,
 ):
     """Browse pages by reference code.
@@ -544,7 +613,7 @@ def browse(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = UnifiedDisplayService(formatter=RichConsoleFormatter(console))
+    display_service = DisplayService(formatter=RichConsoleFormatter(console))
 
     display_browse_header(reference_code)
     show_logging_status(log)

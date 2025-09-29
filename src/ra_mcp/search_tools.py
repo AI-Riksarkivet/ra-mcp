@@ -1,11 +1,10 @@
 import os
-import asyncio
 from typing import Optional
 from fastmcp import FastMCP
 
 
 from .services import SearchOperations, analysis
-from .services.unified_display_service import UnifiedDisplayService
+from .services.display_service import DisplayService
 from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
 
@@ -89,7 +88,7 @@ async def search_transcribed(
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
+        display_service = DisplayService(formatter=PlainTextFormatter())
 
         search_result = _execute_search_query(
             search_operations,
@@ -210,7 +209,7 @@ async def browse_document(
     """
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
+        display_service = DisplayService(formatter=PlainTextFormatter())
 
         browse_result = _fetch_document_pages(
             search_operations,
@@ -280,7 +279,7 @@ async def get_document_structure(
             return _generate_missing_identifier_message()
 
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
+        display_service = DisplayService(formatter=PlainTextFormatter())
 
         document_structure = _fetch_document_structure(
             search_operations, reference_code=reference_code, pid=pid
