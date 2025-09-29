@@ -379,54 +379,85 @@ def display_browse_results(
 
         # Create a single grouped panel for all pages in this document
         from rich.panel import Panel
+        from rich.table import Table
 
-        panel_content = []
+        renderables = []
 
         # Add document metadata at the top of the panel if available
         if browse_result.document_metadata:
             metadata = browse_result.document_metadata
 
-            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
+            # Create left column content (basic info)
+            left_content = []
+            left_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
 
             # Display title
             if metadata.title and metadata.title != "(No title)":
-                panel_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+                left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
 
             # Display date range
             if metadata.date:
-                panel_content.append(f"[blue]📅 Date:[/blue] {metadata.date}")
+                left_content.append(f"[blue]📅 Date:[/blue] {metadata.date}")
 
             # Display archival institution
             if metadata.archival_institution:
                 institutions = metadata.archival_institution
                 if institutions:
                     inst_names = [inst.get("caption", "") for inst in institutions]
-                    panel_content.append(
+                    left_content.append(
                         f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}"
                     )
 
-            # Display hierarchy
+            # Create right column content (hierarchy)
+            right_content = []
             if metadata.hierarchy:
                 hierarchy = metadata.hierarchy
                 if hierarchy:
-                    panel_content.append("[blue]📂 Archival Hierarchy:[/blue]")
                     for i, level in enumerate(hierarchy):
-                        indent = "  " * (i + 1)
                         caption = level.get("caption", "")
                         # Replace newlines with spaces to keep hierarchy on single lines
                         caption = caption.replace("\n", " ").strip()
-                        panel_content.append(f"{indent}• {caption}")
 
-            # Display note if available
+                        if i == 0:
+                            # Root level
+                            right_content.append(f"📁 {caption}")
+                        elif i == len(hierarchy) - 1:
+                            # Last item
+                            indent = "  " * i
+                            right_content.append(f"{indent}└── 📄 {caption}")
+                        else:
+                            # Middle items
+                            indent = "  " * i
+                            right_content.append(f"{indent}├── 📁 {caption}")
+
+            # Create clean two-column layout using Rich Table
+            if right_content:
+                # Create table with two columns
+                metadata_table = Table.grid(padding=(0, 2))  # Add some padding between columns
+                metadata_table.add_column(justify="left", ratio=1)  # Left column for basic info
+                metadata_table.add_column(justify="left", ratio=1)  # Right column for hierarchy
+
+                left_text = "\n".join(left_content)
+                right_text = "\n".join(right_content)
+
+                metadata_table.add_row(left_text, right_text)
+                renderables.append(metadata_table)
+            else:
+                # Fall back to single column if no hierarchy
+                renderables.append("\n".join(left_content))
+
+            # Display note on its own row if available
             if metadata.note:
-                panel_content.append(f"[blue]📝 Note:[/blue] {metadata.note}")
+                renderables.append(f"[blue]📝 Note:[/blue] {metadata.note}")
 
             # Add spacing after metadata
-            panel_content.append("")
+            renderables.append("")
         else:
             # If no metadata available, just show the document header
-            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
-            panel_content.append("")
+            renderables.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
+            renderables.append("")
+
+        panel_content = []
 
         for context in sorted_contexts:
             # Add page separator with optional bildvisning link
@@ -460,9 +491,16 @@ def display_browse_results(
             if context != sorted_contexts[-1]:
                 panel_content.append("")
 
-        # Create the grouped panel
+        # Add page content to renderables
+        for line in panel_content:
+            renderables.append(line)
+
+        # Create the grouped panel using Rich Group to combine metadata and page content
+        from rich.console import Group
+        panel_group = Group(*renderables)
+
         grouped_panel = Panel(
-            "\n".join(panel_content),
+            panel_group,
             title=None,
             border_style="green",
             padding=(1, 1),
