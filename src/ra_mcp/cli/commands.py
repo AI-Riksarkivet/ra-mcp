@@ -202,8 +202,8 @@ def search(
     max_hits_per_document: Annotated[
         Optional[int],
         typer.Option(
-            "--max-hits-per-doc",
-            help="Maximum number of hits to return per document (useful for searching across many documents)"
+            "--max-hits-per-vol",
+            help="Maximum number of hits to return per volume (useful for searching across many volumes)"
         ),
     ] = None,
     log: Annotated[
@@ -216,12 +216,16 @@ def search(
     Returns reference codes and page numbers containing the keyword.
     Use --browse to see full page transcriptions with optional context padding.
 
+    When using --browse, the search automatically limits to 1 hit per volume to show
+    more volumes instead of many hits within fewer volumes. Override with --max-hits-per-vol.
+
     Examples:
         ra search "Stockholm"                                    # Basic search
-        ra search "trolldom" --browse --max-pages 5             # With full page content
+        ra search "trolldom" --browse --max-pages 5             # Browse many volumes (1 hit each)
         ra search "vasa" --browse --context-padding 2           # With surrounding pages
-        ra search "Stockholm" --max-hits-per-doc 2              # Max 2 hits per document
-        ra search "Stockholm" --max 100 --max-hits-per-doc 1    # Many docs, 1 hit each
+        ra search "Stockholm" --max-hits-per-vol 2              # Max 2 hits per volume
+        ra search "Stockholm" --browse --max-hits-per-vol 3     # Browse with 3 hits per volume
+        ra search "Stockholm" --max 100 --max-hits-per-vol 1    # Many volumes, 1 hit each
         ra search "Stockholm" --log                             # With API logging
     """
     http_client = get_http_client(log)
@@ -232,8 +236,15 @@ def search(
     show_logging_status(log)
 
     try:
+        # When using --browse, default to 1 hit per volume to show more volumes
+        # unless user explicitly specified a different value
+        effective_max_hits_per_doc = max_hits_per_document
+        if browse and max_hits_per_document is None:
+            effective_max_hits_per_doc = 1
+            console.print("[dim]Browse mode: limiting to 1 hit per volume to show more volumes[/dim]")
+
         search_result = perform_search(
-            search_operations, keyword, max_results, browse, max_pages, context_padding, max_hits_per_document
+            search_operations, keyword, max_results, browse, max_pages, context_padding, effective_max_hits_per_doc
         )
 
         display_search_summary(search_result, keyword)
