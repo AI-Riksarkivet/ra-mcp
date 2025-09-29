@@ -85,7 +85,7 @@ def main():
         logger.info(
             f"Connect with: claude mcp add --transport sse ra-mcp http://{args.host}:{args.port}/sse"
         )
-        main_server.run(transport="http", host=args.host, port=args.port)
+        main_server.run(transport="sse", host=args.host, port=args.port)
     else:
         logger.info("Starting Riksarkivet MCP stdio server")
         logger.info("Mode: Direct integration with Claude Desktop")
