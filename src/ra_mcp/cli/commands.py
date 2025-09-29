@@ -12,7 +12,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from ..services import SearchOperations
-from ..services.cli_display_service import CLIDisplayService
+from ..services.unified_display_service import UnifiedDisplayService
+from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
 from ..models import SearchOperation, BrowseOperation, PageContext, DocumentMetadata
@@ -43,7 +44,7 @@ def display_search_summary(search_result: SearchOperation, keyword: str) -> None
 
 
 def display_context_results(
-    search_result: SearchOperation, display_service: CLIDisplayService, keyword: str, show_links: bool = False
+    search_result: SearchOperation, display_service: UnifiedDisplayService, keyword: str, show_links: bool = False
 ) -> None:
     """Display search results with full context using unified page display."""
 
@@ -121,7 +122,7 @@ def display_context_results(
 
 def display_table_results(
     search_result: SearchOperation,
-    display_service: CLIDisplayService,
+    display_service: UnifiedDisplayService,
     max_display: int,
     keyword: str,
 ) -> None:
@@ -289,7 +290,7 @@ def search(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = CLIDisplayService(console)
+    display_service = UnifiedDisplayService(formatter=RichConsoleFormatter(console))
 
     show_logging_status(log)
 
@@ -543,7 +544,7 @@ def browse(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = CLIDisplayService(console)
+    display_service = UnifiedDisplayService(formatter=RichConsoleFormatter(console))
 
     display_browse_header(reference_code)
     show_logging_status(log)

@@ -1,28 +1,46 @@
 """
-MCP-specific display service that formats output as strings for MCP tools.
+Unified display service that works for both MCP and CLI contexts.
+Combines all display logic with conditional formatting based on mode.
 """
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from ..models import SearchHit, SearchOperation, BrowseOperation
-from ..formatters import MCPFormatter
+from ..formatters import PlainTextFormatter
 from . import analysis
-from .base_display_service import BaseDisplayService
 
 
-class MCPDisplayService(BaseDisplayService):
-    """Display service specifically for MCP tools that returns formatted strings."""
+class UnifiedDisplayService:
+    """Unified display service for both MCP and CLI contexts."""
 
-    def __init__(self):
-        self.formatter = MCPFormatter()
+    def __init__(self, formatter=None):
+        """
+        Initialize the unified display service.
+
+        Args:
+            formatter: Formatter instance to use (PlainTextFormatter or RichConsoleFormatter)
+                      If None, defaults to PlainTextFormatter
+        """
+        self.formatter = formatter or PlainTextFormatter()
+        # Determine mode based on formatter type
+        self.is_mcp_mode = isinstance(self.formatter, PlainTextFormatter)
 
     def format_search_results(
         self,
         search_operation: SearchOperation,
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
-    ) -> str:
-        """Format search results as string for MCP tools."""
+    ) -> Union[str, Any]:
+        """Format search results using Rich table for CLI or plain text for MCP."""
+        # For CLI mode without full context, use Rich table
+        if not self.is_mcp_mode and not show_full_context and hasattr(
+            self.formatter, "format_search_results_table"
+        ):
+            return self.formatter.format_search_results_table(
+                search_operation, maximum_documents_to_display
+            )
+
+        # For MCP mode or full context display, use string formatting
         if not search_operation.hits:
             return "No search hits found."
 
@@ -34,7 +52,7 @@ class MCPDisplayService(BaseDisplayService):
             f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents"
         )
 
-        if not show_full_context:
+        if not show_full_context and not self.is_mcp_mode:
             lines.append(
                 "💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes"
             )
@@ -116,19 +134,78 @@ class MCPDisplayService(BaseDisplayService):
 
     def format_browse_results(
         self, operation: BrowseOperation, highlight_term: Optional[str] = None
-    ) -> str:
-        """Format browse results as string for MCP tools."""
+    ) -> Union[List[Any], str]:
+        """Format browse results as Rich Panel objects for CLI or string for MCP."""
+        # For CLI mode, use Rich panels
+        if not self.is_mcp_mode and hasattr(self.formatter, "format_page_context_panel"):
+            panels = []
+            for context in operation.contexts:
+                panel = self.formatter.format_page_context_panel(
+                    context, highlight_term
+                )
+                panels.append(panel)
+            return panels
+
+        # For MCP mode or fallback, use string formatting without borders
         if not operation.contexts:
             return f"No page contexts found for {operation.reference_code}"
 
         lines = []
         lines.append(f"📚 Document: {operation.reference_code}")
+
+        # Add rich metadata if available (same as CLI mode)
+        if operation.document_metadata:
+            metadata = operation.document_metadata
+
+            # Display title
+            if metadata.title and metadata.title != "(No title)":
+                lines.append(f"📋 Title: {metadata.title}")
+
+            # Display date range
+            if metadata.date:
+                lines.append(f"📅 Date: {metadata.date}")
+
+            # Display archival institution
+            if metadata.archival_institution:
+                institutions = metadata.archival_institution
+                if institutions:
+                    inst_names = [inst.get("caption", "") for inst in institutions]
+                    lines.append(f"🏛️  Institution: {', '.join(inst_names)}")
+
+            # Display hierarchy
+            if metadata.hierarchy:
+                hierarchy = metadata.hierarchy
+                if hierarchy:
+                    for i, level in enumerate(hierarchy):
+                        caption = level.get("caption", "")
+                        # Replace newlines with spaces to keep hierarchy on single lines
+                        caption = caption.replace("\n", " ").strip()
+
+                        if i == 0:
+                            # Root level
+                            lines.append(f"📁 {caption}")
+                        elif i == len(hierarchy) - 1:
+                            # Last item
+                            indent = "  " * i
+                            lines.append(f"{indent}└── 📄 {caption}")
+                        else:
+                            # Middle items
+                            indent = "  " * i
+                            lines.append(f"{indent}├── 📁 {caption}")
+
+            # Display note if available
+            if metadata.note:
+                lines.append(f"📝 Note: {metadata.note}")
+
         lines.append(f"📖 Pages loaded: {len(operation.contexts)}")
         lines.append("")
 
         for context in operation.contexts:
             lines.append(f"📄 Page {context.page_number}")
-            lines.append("─" * 40)
+
+            # Only add separator line if not in MCP mode
+            if not self.is_mcp_mode:
+                lines.append("─" * 40)
 
             display_text = context.full_text
             if highlight_term:
@@ -138,7 +215,6 @@ class MCPDisplayService(BaseDisplayService):
 
             lines.append(display_text)
             lines.append("")
-
             lines.append("🔗 Links:")
             lines.append(f"  📝 ALTO XML: {context.alto_url}")
             if context.image_url:
@@ -148,18 +224,42 @@ class MCPDisplayService(BaseDisplayService):
 
             lines.append("")
 
-        return "\n".join(lines)
+        # Return string for MCP, list for CLI fallback
+        return "\n".join(lines) if self.is_mcp_mode else ["\n".join(lines)]
 
     def format_show_pages_results(
         self,
         search_op: SearchOperation,
         enriched_hits: List[SearchHit],
         no_grouping: bool = False,
-    ) -> str:
-        """Format show-pages results as string for MCP tools."""
+    ) -> Union[List[Any], str]:
+        """Format show-pages results as Rich Panel objects for CLI or string for MCP."""
         if not enriched_hits:
-            return f"No pages found containing '{search_op.keyword}'"
+            result = f"No pages found containing '{search_op.keyword}'"
+            return result if self.is_mcp_mode else [result]
 
+        # For CLI mode, use Rich panels
+        if not self.is_mcp_mode and hasattr(self.formatter, "format_document_panel"):
+            if no_grouping:
+                panels = []
+                for hit in enriched_hits:
+                    if hit.full_page_text:
+                        panel = self.formatter.format_document_panel(
+                            hit.reference_code, [hit], search_op.keyword
+                        )
+                        panels.append(panel)
+                return panels
+            else:
+                grouped = analysis.group_hits_by_document(enriched_hits)
+                panels = []
+                for doc_ref, doc_hits in grouped.items():
+                    panel = self.formatter.format_document_panel(
+                        doc_ref, doc_hits, search_op.keyword
+                    )
+                    panels.append(panel)
+                return panels
+
+        # For MCP mode or fallback, use string formatting
         lines = []
         lines.append(f"🔍 Search results for '{search_op.keyword}':")
         lines.append(
@@ -176,7 +276,10 @@ class MCPDisplayService(BaseDisplayService):
                     lines.append(
                         f"{page_type}: {hit.reference_code} - Page {hit.page_number}"
                     )
-                    lines.append("─" * 60)
+
+                    # Only add separator line if not in MCP mode
+                    if not self.is_mcp_mode:
+                        lines.append("─" * 60)
 
                     display_text = hit.full_page_text
                     if is_search_hit:
@@ -195,7 +298,10 @@ class MCPDisplayService(BaseDisplayService):
                 )
 
                 lines.append(f"📚 Document: {doc_ref} ({len(doc_hits)} pages)")
-                lines.append("=" * 60)
+
+                # Only add separator line if not in MCP mode
+                if not self.is_mcp_mode:
+                    lines.append("=" * 60)
 
                 first_hit = doc_hits[0]
                 if first_hit.title:
@@ -211,7 +317,10 @@ class MCPDisplayService(BaseDisplayService):
                     page_type = "SEARCH HIT" if is_search_hit else "context"
 
                     lines.append(f"{page_marker} Page {hit.page_number} ({page_type})")
-                    lines.append("─" * 40)
+
+                    # Only add separator line if not in MCP mode
+                    if not self.is_mcp_mode:
+                        lines.append("─" * 40)
 
                     if hit.full_page_text:
                         display_text = hit.full_page_text
@@ -227,7 +336,8 @@ class MCPDisplayService(BaseDisplayService):
 
                 lines.append("")
 
-        return "\n".join(lines)
+        result = "\n".join(lines)
+        return result if self.is_mcp_mode else [result]
 
     def format_document_structure(
         self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]
@@ -255,7 +365,7 @@ class MCPDisplayService(BaseDisplayService):
         return "\n".join(lines)
 
     def format_error_message(
-        self, error_message: str, error_suggestions: List[str] = None
+        self, error_message: str, error_suggestions: Optional[List[str]] = None
     ) -> str:
         """Format error messages as string."""
         formatted_lines = [f"❌ Error: {error_message}"]

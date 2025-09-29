@@ -1,11 +1,12 @@
 import os
+import asyncio
 from typing import Optional
 from fastmcp import FastMCP
 
 
 from .services import SearchOperations, analysis
-from .services.mcp_display_service import MCPDisplayService
-from .formatters import format_error_message
+from .services.unified_display_service import UnifiedDisplayService
+from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
 
 
@@ -88,9 +89,9 @@ async def search_transcribed(
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = MCPDisplayService()
+        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
 
-        search_result = await _execute_search_query(
+        search_result = _execute_search_query(
             search_operations,
             keyword=keyword,
             offset=offset,
@@ -136,7 +137,7 @@ async def search_transcribed(
         )
 
 
-async def _execute_search_query(search_operations, **search_params):
+def _execute_search_query(search_operations, **search_params):
     """Execute the search query with the given parameters."""
     return search_operations.search_transcribed(**search_params)
 
@@ -209,9 +210,9 @@ async def browse_document(
     """
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = MCPDisplayService()
+        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
 
-        browse_result = await _fetch_document_pages(
+        browse_result = _fetch_document_pages(
             search_operations,
             reference_code=reference_code,
             pages=pages,
@@ -237,7 +238,7 @@ async def browse_document(
         )
 
 
-async def _fetch_document_pages(search_operations, **browse_params):
+def _fetch_document_pages(search_operations, **browse_params):
     """Fetch document pages with the given parameters."""
     return search_operations.browse_document(**browse_params)
 
@@ -279,9 +280,9 @@ async def get_document_structure(
             return _generate_missing_identifier_message()
 
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = MCPDisplayService()
+        display_service = UnifiedDisplayService(formatter=PlainTextFormatter())
 
-        document_structure = await _fetch_document_structure(
+        document_structure = _fetch_document_structure(
             search_operations, reference_code=reference_code, pid=pid
         )
 
@@ -305,7 +306,7 @@ def _validate_document_identifiers(reference_code, pid):
     return reference_code or pid
 
 
-async def _fetch_document_structure(search_operations, **params):
+def _fetch_document_structure(search_operations, **params):
     """Fetch the document structure with the given parameters."""
     return search_operations.get_document_structure(**params)
 
