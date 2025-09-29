@@ -41,7 +41,7 @@ def display_search_summary(search_result: SearchOperation, keyword: str) -> None
 
 
 def display_context_results(
-    search_result: SearchOperation, display_service: CLIDisplayService, keyword: str
+    search_result: SearchOperation, display_service: CLIDisplayService, keyword: str, show_links: bool = False
 ) -> None:
     """Display search results with full context using unified page display."""
 
@@ -114,7 +114,7 @@ def display_context_results(
         )
 
         # Display this document
-        display_browse_results(mock_browse, display_service, keyword, False, False)  # Don't show links or success message
+        display_browse_results(mock_browse, display_service, keyword, show_links, False)  # Don't show success message
 
 
 def display_table_results(
@@ -209,6 +209,9 @@ def search(
     log: Annotated[
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
+    show_links: Annotated[
+        bool, typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links (only with --browse)")
+    ] = False,
 ):
     """Search for keyword in transcribed materials.
 
@@ -250,7 +253,7 @@ def search(
         display_search_summary(search_result, keyword)
 
         if browse and search_result.hits:
-            display_context_results(search_result, display_service, keyword)
+            display_context_results(search_result, display_service, keyword, show_links)
         else:
             display_table_results(search_result, display_service, max_display, keyword)
 
