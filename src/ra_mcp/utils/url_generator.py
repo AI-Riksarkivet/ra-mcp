@@ -22,8 +22,6 @@ def remove_arkis_prefix(manifest_id: str) -> str:
         Manifest ID without arkis! prefix
     """
 
-    print('remove_arkis_prefix_manifestid:', manifest_id)
-
     return manifest_id[6:] if manifest_id.startswith("arkis!") else manifest_id
 
 
@@ -74,8 +72,6 @@ def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
         IIIF image URL or None if cannot generate
     """
     try:
-        print('iiif_image_url_manifestid:', manifest_id)
-
         clean_manifest_id = remove_arkis_prefix(manifest_id)
         padded_page = format_page_number(page_number)
         return f"{IIIF_IMAGE_BASE_URL}!{clean_manifest_id}_{padded_page}/full/max/0/default.jpg"

@@ -292,7 +292,6 @@ class SearchOperations:
             pid if pid else self.page_service.oai_client.extract_pid(reference_code)
         )
 
-       
         if not resolved_pid:
             return None
 

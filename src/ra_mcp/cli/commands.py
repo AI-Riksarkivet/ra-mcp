@@ -13,7 +13,7 @@ from ..services import SearchOperations
 from ..services.cli_display_service import CLIDisplayService
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
-from ..models import SearchOperation, SearchSummary
+from ..models import SearchOperation
 
 console = Console()
 app = typer.Typer()
@@ -41,27 +41,62 @@ def display_search_summary(search_result: SearchOperation, keyword: str) -> None
     )
 
 
-def display_context_results(search_result: SearchOperation, display_service: CLIDisplayService, no_grouping: bool) -> None:
-    """Display search results with full context."""
+def display_context_results(
+    search_result: SearchOperation, display_service: CLIDisplayService, keyword: str
+) -> None:
+    """Display search results with full context using browse-style display."""
     console.print(
         f"[green]Successfully loaded context for {len(search_result.hits)} pages[/green]"
     )
 
-    formatted_results = display_service.format_show_pages_results(
-        search_result, search_result.hits, no_grouping
+    # Sort hits by reference code and page number for better organization
+    sorted_hits = sorted(
+        search_result.hits, key=lambda hit: (hit.reference_code, int(hit.page_number))
     )
 
-    if isinstance(formatted_results, list):
-        console.print(
-            f"\n[bold]Search Results {'with Full Page Context' if no_grouping else 'Grouped by Document'} ({len(search_result.hits)} pages):[/bold]"
-        )
-        for panel in formatted_results:
-            console.print(panel)
-    else:
-        console.print(formatted_results)
+    # Convert search hits to browse-style display by creating a mock BrowseOperation for each hit
+    console.print(
+        f"\n[bold]Search Results with Full Page Context ({len(sorted_hits)} pages):[/bold]"
+    )
+
+    for hit in sorted_hits:
+        if hit.full_page_text:
+            # Create a PageContext from the SearchHit
+            from ..models import BrowseOperation, PageContext
+
+            page_context = PageContext(
+                page_number=int(hit.page_number),
+                page_id=f"{hit.reference_code}_{hit.page_number}",
+                reference_code=hit.reference_code,
+                full_text=hit.full_page_text,
+                alto_url=hit.alto_url or "",
+                image_url=hit.image_url or "",
+                bildvisning_url=hit.bildvisning_url or "",
+            )
+
+            mock_browse = BrowseOperation(
+                contexts=[page_context],
+                reference_code=hit.reference_code,
+                pages_requested=str(hit.page_number),
+                pid=hit.pid,
+            )
+
+            formatted_pages = display_service.format_browse_results(
+                mock_browse, keyword
+            )
+            if isinstance(formatted_pages, list):
+                for panel in formatted_pages:
+                    console.print(panel)
+            else:
+                console.print(formatted_pages)
 
 
-def display_table_results(search_result: SearchOperation, display_service: CLIDisplayService, max_display: int, keyword: str) -> None:
+def display_table_results(
+    search_result: SearchOperation,
+    display_service: CLIDisplayService,
+    max_display: int,
+    keyword: str,
+) -> None:
     """Display search results in table format."""
     formatted_table = display_service.format_search_results(
         search_result, max_display, False
@@ -70,42 +105,41 @@ def display_table_results(search_result: SearchOperation, display_service: CLIDi
     if not formatted_table:
         return
 
+    # Get search summary and display it
     summary = display_service.get_search_summary(search_result)
     summary_lines = display_service.formatter.format_search_summary(summary)
     for line in summary_lines:
         console.print(line)
 
+    # Display the table
     if isinstance(formatted_table, str):
         console.print(formatted_table)
     else:
         console.print(formatted_table)
-        display_browse_examples(summary, display_service, keyword)
-        display_remaining_documents(summary, display_service, max_display)
+        # Display browse examples and remaining documents inline
+        grouped_hits = summary.grouped_hits
+        example_lines = display_service.formatter.format_browse_example(
+            grouped_hits, keyword
+        )
+        for line in example_lines:
+            console.print(line)
+
+        total_groups = len(grouped_hits)
+        remaining_message = display_service.formatter.format_remaining_documents(
+            total_groups, max_display
+        )
+        if remaining_message:
+            console.print(remaining_message)
 
 
-def display_browse_examples(summary: SearchSummary, display_service: CLIDisplayService, keyword: str) -> None:
-    """Display example browse commands."""
-    grouped_hits = summary.grouped_hits
-    example_lines = display_service.formatter.format_browse_example(
-        grouped_hits, keyword
-    )
-    for line in example_lines:
-        console.print(line)
-
-
-def display_remaining_documents(summary: SearchSummary, display_service: CLIDisplayService, max_display: int) -> None:
-    """Display message about remaining documents."""
-    grouped_hits = summary.grouped_hits
-    total_groups = len(grouped_hits)
-    remaining_message = display_service.formatter.format_remaining_documents(
-        total_groups, max_display
-    )
-    if remaining_message:
-        console.print(remaining_message)
-
-
-def perform_search(search_operations, keyword: str, max_results: int,
-                  context: bool, max_pages: int, context_padding: int):
+def perform_search(
+    search_operations,
+    keyword: str,
+    max_results: int,
+    context: bool,
+    max_pages: int,
+    context_padding: int,
+):
     """Execute the search operation."""
     return search_operations.search_transcribed(
         keyword=keyword,
@@ -131,12 +165,6 @@ def search(
     max_pages: Annotated[
         int, typer.Option(help="Maximum pages to load context for")
     ] = DEFAULT_MAX_PAGES,
-    no_grouping: Annotated[
-        bool,
-        typer.Option(
-            help="Show pages individually instead of grouped by document (only with --context)"
-        ),
-    ] = False,
     context_padding: Annotated[
         int,
         typer.Option(
@@ -157,7 +185,6 @@ def search(
         ra search "Stockholm"                                    # Basic search
         ra search "trolldom" --context --max-pages 5            # With full context
         ra search "vasa" --context --context-padding 2          # With surrounding pages
-        ra search "Stockholm" --context --no-grouping           # Individual page display
         ra search "Stockholm" --log                             # With API logging
     """
     http_client = get_http_client(log)
@@ -169,14 +196,13 @@ def search(
 
     try:
         search_result = perform_search(
-            search_operations, keyword, max_results,
-            context, max_pages, context_padding
+            search_operations, keyword, max_results, context, max_pages, context_padding
         )
 
         display_search_summary(search_result, keyword)
 
         if context and search_result.hits:
-            display_context_results(search_result, display_service, no_grouping)
+            display_context_results(search_result, display_service, keyword)
         else:
             display_table_results(search_result, display_service, max_display, keyword)
 
@@ -190,8 +216,13 @@ def display_browse_header(reference_code: str) -> None:
     console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")
 
 
-def load_document_with_progress(search_operations, reference_code: str,
-                               pages: str, search_term: str, max_display: int):
+def load_document_with_progress(
+    search_operations,
+    reference_code: str,
+    pages: str,
+    search_term: Optional[str],
+    max_display: int,
+):
     """Load document with progress indicator."""
     with Progress(
         SpinnerColumn(),
@@ -221,7 +252,9 @@ def display_browse_error(reference_code: str) -> None:
     console.print("• The document might not have transcriptions")
 
 
-def display_browse_results(browse_result, display_service, search_term: str) -> None:
+def display_browse_results(
+    browse_result, display_service, search_term: Optional[str]
+) -> None:
     """Display successful browse results."""
     console.print(
         f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]"
@@ -288,7 +321,7 @@ def browse(
             reference_code,
             requested_pages or "1-20",
             search_term,
-            max_display
+            max_display,
         )
 
         if not browse_result.contexts:

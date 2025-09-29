@@ -5,7 +5,12 @@ Search API client for Riksarkivet.
 import re
 from typing import Dict, List, Optional, Tuple, Union
 
-from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS, COLLECTION_API_BASE_URL
+from ..config import (
+    SEARCH_API_BASE_URL,
+    REQUEST_TIMEOUT,
+    DEFAULT_MAX_RESULTS,
+    COLLECTION_API_BASE_URL,
+)
 from ..models import SearchHit
 from ..utils.http_client import HTTPClient
 
@@ -105,11 +110,9 @@ class SearchAPI:
         """Process a single search result item into SearchHit objects."""
         document_info = self._extract_document_information(document_item)
 
+        # print('document_info', document_info)
 
-
-        #print('document_info', document_info)
-
-        #quit()
+        # quit()
 
         transcribed_content = document_item.get("transcribedText", {})
 
@@ -131,14 +134,14 @@ class SearchAPI:
         manifest_url = image_links[0] if image_links else None
 
         # Save document to JSON file
-        #import json
-        #with open('/home/coder/ra-mcp/document_debug.json', 'w') as f:
+        # import json
+        # with open('/home/coder/ra-mcp/document_debug.json', 'w') as f:
         #    json.dump(document, f, indent=2)
-        #print(f'Document saved to /home/coder/ra-mcp/document_debug.json')
-#
-        #print('document:', document)
-#
-        #quit()
+        # print(f'Document saved to /home/coder/ra-mcp/document_debug.json')
+        #
+        # print('document:', document)
+        #
+        # quit()
 
         return {
             "pid": persistent_identifier,

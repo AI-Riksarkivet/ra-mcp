@@ -47,12 +47,12 @@ class BaseDisplayService(ABC):
 
     @abstractmethod
     def format_error_message(
-        self, error_message: str, error_suggestions: List[str] = None
+        self, error_message: str, error_suggestions: Optional[List[str]] = None
     ) -> Any:
         """Format error messages for the specific interface."""
         pass
 
-    def get_search_summary(self, search_operation: SearchOperation) -> Dict[str, Any]:
+    def get_search_summary(self, search_operation: SearchOperation):
         """Get search summary for display - common implementation."""
         from . import analysis
 
