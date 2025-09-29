@@ -162,7 +162,7 @@ def perform_search(
     search_operations,
     keyword: str,
     max_results: int,
-    context: bool,
+    browse: bool,
     max_pages: int,
     context_padding: int,
     max_hits_per_document: Optional[int],
@@ -171,9 +171,9 @@ def perform_search(
     return search_operations.search_transcribed(
         keyword=keyword,
         max_results=max_results,
-        show_context=context,
-        max_pages_with_context=max_pages if context else 0,
-        context_padding=context_padding if context else 0,
+        show_context=browse,
+        max_pages_with_context=max_pages if browse else 0,
+        context_padding=context_padding if browse else 0,
         max_hits_per_document=max_hits_per_document,
     )
 
@@ -187,8 +187,8 @@ def search(
     max_display: Annotated[
         int, typer.Option(help="Maximum results to display")
     ] = DEFAULT_MAX_DISPLAY,
-    context: Annotated[
-        bool, typer.Option(help="Show full page context for search hits")
+    browse: Annotated[
+        bool, typer.Option("--browse", help="Show full page content for search hits (browse-style display)")
     ] = False,
     max_pages: Annotated[
         int, typer.Option(help="Maximum pages to load context for")
@@ -196,7 +196,7 @@ def search(
     context_padding: Annotated[
         int,
         typer.Option(
-            help="Number of pages to include before and after each hit for context (only with --context)"
+            help="Number of pages to include before and after each hit for context (only with --browse)"
         ),
     ] = 0,
     max_hits_per_document: Annotated[
@@ -214,12 +214,12 @@ def search(
 
     Fast search across all transcribed documents in Riksarkivet.
     Returns reference codes and page numbers containing the keyword.
-    Use --context to see full page transcriptions with optional context padding.
+    Use --browse to see full page transcriptions with optional context padding.
 
     Examples:
         ra search "Stockholm"                                    # Basic search
-        ra search "trolldom" --context --max-pages 5            # With full context
-        ra search "vasa" --context --context-padding 2          # With surrounding pages
+        ra search "trolldom" --browse --max-pages 5             # With full page content
+        ra search "vasa" --browse --context-padding 2           # With surrounding pages
         ra search "Stockholm" --max-hits-per-doc 2              # Max 2 hits per document
         ra search "Stockholm" --max 100 --max-hits-per-doc 1    # Many docs, 1 hit each
         ra search "Stockholm" --log                             # With API logging
@@ -233,12 +233,12 @@ def search(
 
     try:
         search_result = perform_search(
-            search_operations, keyword, max_results, context, max_pages, context_padding, max_hits_per_document
+            search_operations, keyword, max_results, browse, max_pages, context_padding, max_hits_per_document
         )
 
         display_search_summary(search_result, keyword)
 
-        if context and search_result.hits:
+        if browse and search_result.hits:
             display_context_results(search_result, display_service, keyword)
         else:
             display_table_results(search_result, display_service, max_display, keyword)
