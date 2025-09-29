@@ -110,10 +110,6 @@ class SearchAPI:
         """Process a single search result item into SearchHit objects."""
         document_info = self._extract_document_information(document_item)
 
-        # print('document_info', document_info)
-
-        # quit()
-
         transcribed_content = document_item.get("transcribedText", {})
 
         if not transcribed_content or "snippets" not in transcribed_content:
@@ -132,16 +128,6 @@ class SearchAPI:
         links = document.get("_links", {})
         image_links = links.get("image", [])
         manifest_url = image_links[0] if image_links else None
-
-        # Save document to JSON file
-        # import json
-        # with open('/home/coder/ra-mcp/document_debug.json', 'w') as f:
-        #    json.dump(document, f, indent=2)
-        # print(f'Document saved to /home/coder/ra-mcp/document_debug.json')
-        #
-        # print('document:', document)
-        #
-        # quit()
 
         return {
             "pid": persistent_identifier,

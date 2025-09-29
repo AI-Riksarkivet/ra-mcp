@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from fastmcp import FastMCP
 
@@ -405,8 +406,6 @@ def _generate_invalid_filename_message():
 
 def _check_file_exists(filename):
     """Check if the markdown file exists."""
-    import os
-
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
     markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
@@ -427,8 +426,6 @@ def _generate_file_not_found_message(filename):
 
 def _load_markdown_file(filename):
     """Load content from a markdown file."""
-    import os
-
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
     markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
