@@ -158,7 +158,7 @@ def display_table_results(
             console.print(remaining_message)
 
 
-def perform_search(
+def perform_search_with_progress(
     search_operations,
     keyword: str,
     max_results: int,
@@ -167,15 +167,70 @@ def perform_search(
     context_padding: int,
     max_hits_per_document: Optional[int],
 ):
-    """Execute the search operation."""
-    return search_operations.search_transcribed(
-        keyword=keyword,
-        max_results=max_results,
-        show_context=browse,
-        max_pages_with_context=max_pages if browse else 0,
-        context_padding=context_padding if browse else 0,
-        max_hits_per_document=max_hits_per_document,
-    )
+    """Execute the search operation with enhanced progress indicators."""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        # Phase 1: Initial search across all documents
+        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed documents...", total=None)
+
+        search_result = search_operations.search_transcribed(
+            keyword=keyword,
+            max_results=max_results,
+            show_context=False,  # First get basic results
+            max_pages_with_context=0,
+            context_padding=0,
+            max_hits_per_document=max_hits_per_document,
+        )
+
+        # Update with detailed results
+        hits_count = len(search_result.hits)
+        docs_count = search_result.total_hits
+        progress.update(search_task, description=f"✓ Found {hits_count} page hits across {docs_count} documents")
+
+        # Phase 2: Load full page content if in browse mode
+        if browse and search_result.hits and max_pages > 0:
+            limited_hits = min(hits_count, max_pages)
+
+            # Group hits by document to show more specific progress
+            from collections import defaultdict
+            hits_by_doc = defaultdict(list)
+            for hit in search_result.hits[:max_pages]:
+                hits_by_doc[hit.reference_code].append(hit)
+
+            doc_count = len(hits_by_doc)
+            context_task = progress.add_task(f"Loading ALTO transcriptions from {doc_count} documents ({limited_hits} pages)...", total=None)
+
+            # Show which documents are being processed
+            doc_names = list(hits_by_doc.keys())[:3]  # Show first 3 documents
+            if len(doc_names) > 1:
+                if doc_count > 3:
+                    progress.update(context_task, description=f"Loading from: {doc_names[0]}, {doc_names[1]}, and {doc_count-2} more...")
+                else:
+                    progress.update(context_task, description=f"Loading from: {', '.join(doc_names)}")
+            elif doc_names:
+                progress.update(context_task, description=f"Loading ALTO from: {doc_names[0]}")
+
+            # Re-run with context loading
+            search_result = search_operations.search_transcribed(
+                keyword=keyword,
+                max_results=max_results,
+                show_context=True,
+                max_pages_with_context=max_pages,
+                context_padding=context_padding,
+                max_hits_per_document=max_hits_per_document,
+            )
+
+            # Count successfully loaded pages with context
+            enriched_count = sum(1 for hit in search_result.hits if hit.full_page_text)
+            if context_padding > 0:
+                progress.update(context_task, description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {doc_count} documents")
+            else:
+                progress.update(context_task, description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {doc_count} documents")
+
+    return search_result
 
 
 @app.command()
@@ -235,7 +290,6 @@ def search(
     search_operations = SearchOperations(http_client=http_client)
     display_service = CLIDisplayService(console)
 
-    console.print(f"[blue]Searching for '{keyword}' in transcribed materials...[/blue]")
     show_logging_status(log)
 
     try:
@@ -246,11 +300,9 @@ def search(
             effective_max_hits_per_doc = 1
             console.print("[dim]Browse mode: limiting to 1 hit per volume to show more volumes[/dim]")
 
-        search_result = perform_search(
+        search_result = perform_search_with_progress(
             search_operations, keyword, max_results, browse, max_pages, context_padding, effective_max_hits_per_doc
         )
-
-        display_search_summary(search_result, keyword)
 
         if browse and search_result.hits:
             display_context_results(search_result, display_service, keyword, show_links)
