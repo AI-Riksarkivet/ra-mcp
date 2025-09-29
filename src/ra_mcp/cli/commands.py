@@ -35,7 +35,6 @@ def show_logging_status(enabled: bool) -> None:
 
 def display_search_summary(search_result: SearchOperation, keyword: str) -> None:
     """Display search result summary."""
-    console.print(f"[blue]Searching for '{keyword}' in transcribed materials...[/blue]")
     console.print(
         f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]"
     )
@@ -45,9 +44,6 @@ def display_context_results(
     search_result: SearchOperation, display_service: CLIDisplayService, keyword: str
 ) -> None:
     """Display search results with full context using unified page display."""
-    console.print(
-        f"[green]Successfully loaded context for {len(search_result.hits)} pages[/green]"
-    )
 
     # Sort hits by reference code and page number for better organization
     sorted_hits = sorted(
@@ -84,6 +80,12 @@ def display_context_results(
             )
             grouped_contexts[ref_code].append(page_context)
 
+    # Calculate total unique pages after deduplication
+    total_unique_pages = sum(len(contexts) for contexts in grouped_contexts.values())
+    console.print(
+        f"[green]Successfully loaded {total_unique_pages} pages[/green]"
+    )
+
     # Display each document separately with its own metadata
     for ref_code, contexts in grouped_contexts.items():
         # Get metadata for this specific document
@@ -112,7 +114,7 @@ def display_context_results(
         )
 
         # Display this document
-        display_browse_results(mock_browse, display_service, keyword, False)  # Don't show links by default
+        display_browse_results(mock_browse, display_service, keyword, False, False)  # Don't show links or success message
 
 
 def display_table_results(
@@ -288,12 +290,13 @@ def display_browse_error(reference_code: str) -> None:
 
 
 def display_browse_results(
-    browse_result, display_service, search_term: Optional[str], show_links: bool = False
+    browse_result, display_service, search_term: Optional[str], show_links: bool = False, show_success_message: bool = True
 ) -> None:
     """Display successful browse results grouped by reference code."""
-    console.print(
-        f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]"
-    )
+    if show_success_message:
+        console.print(
+            f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]"
+        )
 
     # Group page contexts by reference code
     grouped_contexts = {}
