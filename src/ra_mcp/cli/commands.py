@@ -173,8 +173,8 @@ def perform_search_with_progress(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        # Phase 1: Initial search across all documents
-        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed documents...", total=None)
+        # Phase 1: Initial search across all volumes
+        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
@@ -188,30 +188,30 @@ def perform_search_with_progress(
         # Update with detailed results
         hits_count = len(search_result.hits)
         docs_count = search_result.total_hits
-        progress.update(search_task, description=f"✓ Found {hits_count} page hits across {docs_count} documents")
+        progress.update(search_task, description=f"✓ Found {hits_count} page hits across {docs_count} volumes")
 
         # Phase 2: Load full page content if in browse mode
         if browse and search_result.hits and max_pages > 0:
             limited_hits = min(hits_count, max_pages)
 
-            # Group hits by document to show more specific progress
+            # Group hits by volume to show more specific progress
             from collections import defaultdict
-            hits_by_doc = defaultdict(list)
+            hits_by_volume = defaultdict(list)
             for hit in search_result.hits[:max_pages]:
-                hits_by_doc[hit.reference_code].append(hit)
+                hits_by_volume[hit.reference_code].append(hit)
 
-            doc_count = len(hits_by_doc)
-            context_task = progress.add_task(f"Loading ALTO transcriptions from {doc_count} documents ({limited_hits} pages)...", total=None)
+            volume_count = len(hits_by_volume)
+            context_task = progress.add_task(f"Loading ALTO transcriptions from {volume_count} volumes ({limited_hits} pages)...", total=None)
 
-            # Show which documents are being processed
-            doc_names = list(hits_by_doc.keys())[:3]  # Show first 3 documents
-            if len(doc_names) > 1:
-                if doc_count > 3:
-                    progress.update(context_task, description=f"Loading from: {doc_names[0]}, {doc_names[1]}, and {doc_count-2} more...")
+            # Show which volumes are being processed
+            volume_names = list(hits_by_volume.keys())[:3]  # Show first 3 volumes
+            if len(volume_names) > 1:
+                if volume_count > 3:
+                    progress.update(context_task, description=f"Loading from: {volume_names[0]}, {volume_names[1]}, and {volume_count-2} more...")
                 else:
-                    progress.update(context_task, description=f"Loading from: {', '.join(doc_names)}")
-            elif doc_names:
-                progress.update(context_task, description=f"Loading ALTO from: {doc_names[0]}")
+                    progress.update(context_task, description=f"Loading from: {', '.join(volume_names)}")
+            elif volume_names:
+                progress.update(context_task, description=f"Loading ALTO from: {volume_names[0]}")
 
             # Re-run with context loading
             search_result = search_operations.search_transcribed(
@@ -226,9 +226,9 @@ def perform_search_with_progress(
             # Count successfully loaded pages with context
             enriched_count = sum(1 for hit in search_result.hits if hit.full_page_text)
             if context_padding > 0:
-                progress.update(context_task, description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {doc_count} documents")
+                progress.update(context_task, description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {volume_count} volumes")
             else:
-                progress.update(context_task, description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {doc_count} documents")
+                progress.update(context_task, description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes")
 
     return search_result
 
