@@ -13,7 +13,7 @@ from ..services import SearchOperations
 from ..services.cli_display_service import CLIDisplayService
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
-from ..models import SearchOperation
+from ..models import SearchOperation, BrowseOperation, PageContext, DocumentMetadata
 
 console = Console()
 app = typer.Typer()
@@ -44,7 +44,7 @@ def display_search_summary(search_result: SearchOperation, keyword: str) -> None
 def display_context_results(
     search_result: SearchOperation, display_service: CLIDisplayService, keyword: str
 ) -> None:
-    """Display search results with full context using browse-style display."""
+    """Display search results with full context using unified page display."""
     console.print(
         f"[green]Successfully loaded context for {len(search_result.hits)} pages[/green]"
     )
@@ -54,15 +54,13 @@ def display_context_results(
         search_result.hits, key=lambda hit: (hit.reference_code, int(hit.page_number))
     )
 
-    # Convert search hits to browse-style display by creating a mock BrowseOperation for each hit
-    console.print(
-        f"\n[bold]Search Results with Full Page Context ({len(sorted_hits)} pages):[/bold]"
-    )
-
+    # Convert SearchHits to PageContext format and group by reference code
+    grouped_contexts = {}
     for hit in sorted_hits:
         if hit.full_page_text:
-            # Create a PageContext from the SearchHit
-            from ..models import BrowseOperation, PageContext
+            ref_code = hit.reference_code
+            if ref_code not in grouped_contexts:
+                grouped_contexts[ref_code] = []
 
             page_context = PageContext(
                 page_number=int(hit.page_number),
@@ -73,22 +71,41 @@ def display_context_results(
                 image_url=hit.image_url or "",
                 bildvisning_url=hit.bildvisning_url or "",
             )
+            grouped_contexts[ref_code].append(page_context)
 
-            mock_browse = BrowseOperation(
-                contexts=[page_context],
-                reference_code=hit.reference_code,
-                pages_requested=str(hit.page_number),
-                pid=hit.pid,
-            )
+    # Create mock BrowseOperation with document metadata for the first reference code
+    first_ref_code = next(iter(grouped_contexts.keys())) if grouped_contexts else None
+    document_metadata = None
+    if first_ref_code:
+        # Use the metadata from the first hit as representative
+        first_hit = next(
+            hit for hit in sorted_hits if hit.reference_code == first_ref_code
+        )
+        document_metadata = DocumentMetadata(
+            title=first_hit.title,
+            hierarchy=first_hit.hierarchy,
+            archival_institution=first_hit.archival_institution,
+            date=first_hit.date,
+            note=first_hit.note,
+            collection_url=first_hit.collection_url,
+            manifest_url=first_hit.manifest_url,
+        )
 
-            formatted_pages = display_service.format_browse_results(
-                mock_browse, keyword
-            )
-            if isinstance(formatted_pages, list):
-                for panel in formatted_pages:
-                    console.print(panel)
-            else:
-                console.print(formatted_pages)
+    # Create a mock browse result to use the same display logic
+    all_contexts = []
+    for contexts_list in grouped_contexts.values():
+        all_contexts.extend(contexts_list)
+
+    mock_browse = BrowseOperation(
+        contexts=all_contexts,
+        reference_code=first_ref_code or "",
+        pages_requested="context",
+        pid=None,
+        document_metadata=document_metadata,
+    )
+
+    # Use the same display function as browse
+    display_browse_results(mock_browse, display_service, keyword)
 
 
 def display_table_results(
@@ -139,6 +156,7 @@ def perform_search(
     context: bool,
     max_pages: int,
     context_padding: int,
+    max_hits_per_document: Optional[int],
 ):
     """Execute the search operation."""
     return search_operations.search_transcribed(
@@ -147,6 +165,7 @@ def perform_search(
         show_context=context,
         max_pages_with_context=max_pages if context else 0,
         context_padding=context_padding if context else 0,
+        max_hits_per_document=max_hits_per_document,
     )
 
 
@@ -171,6 +190,13 @@ def search(
             help="Number of pages to include before and after each hit for context (only with --context)"
         ),
     ] = 0,
+    max_hits_per_document: Annotated[
+        Optional[int],
+        typer.Option(
+            "--max-hits-per-doc",
+            help="Maximum number of hits to return per document (useful for searching across many documents)"
+        ),
+    ] = None,
     log: Annotated[
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
@@ -185,6 +211,8 @@ def search(
         ra search "Stockholm"                                    # Basic search
         ra search "trolldom" --context --max-pages 5            # With full context
         ra search "vasa" --context --context-padding 2          # With surrounding pages
+        ra search "Stockholm" --max-hits-per-doc 2              # Max 2 hits per document
+        ra search "Stockholm" --max 100 --max-hits-per-doc 1    # Many docs, 1 hit each
         ra search "Stockholm" --log                             # With API logging
     """
     http_client = get_http_client(log)
@@ -196,7 +224,7 @@ def search(
 
     try:
         search_result = perform_search(
-            search_operations, keyword, max_results, context, max_pages, context_padding
+            search_operations, keyword, max_results, context, max_pages, context_padding, max_hits_per_document
         )
 
         display_search_summary(search_result, keyword)
@@ -255,21 +283,108 @@ def display_browse_error(reference_code: str) -> None:
 def display_browse_results(
     browse_result, display_service, search_term: Optional[str]
 ) -> None:
-    """Display successful browse results."""
+    """Display successful browse results grouped by reference code."""
     console.print(
         f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]"
     )
-    console.print(
-        f"\n[bold]Full Page Transcriptions ({len(browse_result.contexts)} pages):[/bold]"
-    )
 
-    formatted_pages = display_service.format_browse_results(browse_result, search_term)
+    # Group page contexts by reference code
+    grouped_contexts = {}
+    for context in browse_result.contexts:
+        ref_code = context.reference_code
+        if ref_code not in grouped_contexts:
+            grouped_contexts[ref_code] = []
+        grouped_contexts[ref_code].append(context)
 
-    if isinstance(formatted_pages, list):
-        for panel in formatted_pages:
-            console.print(panel)
-    else:
-        console.print(formatted_pages)
+    # Display results grouped by document
+    for ref_code, contexts in grouped_contexts.items():
+        # Sort pages by page number
+        sorted_contexts = sorted(contexts, key=lambda c: c.page_number)
+
+        # Create a single grouped panel for all pages in this document
+        from rich.panel import Panel
+
+        panel_content = []
+
+        # Add document metadata at the top of the panel if available
+        if browse_result.document_metadata:
+            metadata = browse_result.document_metadata
+
+            panel_content.append(f"[bold blue]📄 Document:[/bold blue] {ref_code} ({len(contexts)} pages)")
+
+            # Display title
+            if metadata.title and metadata.title != "(No title)":
+                panel_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+
+            # Display date range
+            if metadata.date:
+                panel_content.append(f"[blue]📅 Date:[/blue] {metadata.date}")
+
+            # Display archival institution
+            if metadata.archival_institution:
+                institutions = metadata.archival_institution
+                if institutions:
+                    inst_names = [inst.get("caption", "") for inst in institutions]
+                    panel_content.append(
+                        f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}"
+                    )
+
+            # Display hierarchy
+            if metadata.hierarchy:
+                hierarchy = metadata.hierarchy
+                if hierarchy:
+                    panel_content.append("[blue]📂 Archival Hierarchy:[/blue]")
+                    for i, level in enumerate(hierarchy):
+                        indent = "  " * (i + 1)
+                        caption = level.get("caption", "")
+                        # Replace newlines with spaces to keep hierarchy on single lines
+                        caption = caption.replace("\n", " ").strip()
+                        panel_content.append(f"{indent}• {caption}")
+
+            # Display note if available
+            if metadata.note:
+                panel_content.append(f"[blue]📝 Note:[/blue] {metadata.note}")
+
+            # Add spacing after metadata
+            panel_content.append("")
+        else:
+            # If no metadata available, just show the document header
+            panel_content.append(f"[bold blue]📄 Document:[/bold blue] {ref_code} ({len(contexts)} pages)")
+            panel_content.append("")
+
+        for context in sorted_contexts:
+            # Add page separator
+            panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+
+            # Add page content with highlighting
+            display_text = context.full_text
+            if search_term:
+                display_text = display_text.replace(
+                    search_term, f"[yellow on black]{search_term}[/yellow on black]"
+                )
+            panel_content.append(f"[italic]{display_text}[/italic]")
+
+            # Add links
+            panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
+            panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+            if context.image_url:
+                panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+            if context.bildvisning_url:
+                panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+
+            # Add spacing between pages (except for the last one)
+            if context != sorted_contexts[-1]:
+                panel_content.append("")
+
+        # Create the grouped panel
+        grouped_panel = Panel(
+            "\n".join(panel_content),
+            title=None,
+            border_style="green",
+            padding=(1, 1),
+        )
+        console.print("")  # Add spacing before the panel
+        console.print(grouped_panel)
 
 
 @app.command()
