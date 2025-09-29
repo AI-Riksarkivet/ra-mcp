@@ -380,9 +380,8 @@ def display_browse_results(
             # Add page content with highlighting
             display_text = context.full_text
             if search_term:
-                display_text = display_text.replace(
-                    search_term, f"[yellow on black]{search_term}[/yellow on black]"
-                )
+                # Use the proper highlighting method which handles case-insensitive matching
+                display_text = display_service.formatter.highlight_search_keyword(display_text, search_term)
             panel_content.append(f"[italic]{display_text}[/italic]")
 
             # Add links if requested
