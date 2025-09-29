@@ -7,7 +7,9 @@ import os
 
 import typer
 from rich.console import Console
+from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 from ..services import SearchOperations
 from ..services.cli_display_service import CLIDisplayService
@@ -260,7 +262,7 @@ def search(
             "--max-hits-per-vol",
             help="Maximum number of hits to return per volume (useful for searching across many volumes)"
         ),
-    ] = None,
+    ] = 3,
     log: Annotated[
         bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
     ] = False,
@@ -274,15 +276,14 @@ def search(
     Returns reference codes and page numbers containing the keyword.
     Use --browse to see full page transcriptions with optional context padding.
 
-    When using --browse, the search automatically limits to 1 hit per volume to show
-    more volumes instead of many hits within fewer volumes. Override with --max-hits-per-vol.
+    By default, returns up to 3 hits per volume. Use --max-hits-per-vol to adjust.
 
     Examples:
-        ra search "Stockholm"                                    # Basic search
-        ra search "trolldom" --browse --max-pages 5             # Browse many volumes (1 hit each)
+        ra search "Stockholm"                                    # Basic search (3 hits per volume)
+        ra search "trolldom" --browse --max-pages 5             # Browse with 3 hits per volume
         ra search "vasa" --browse --context-padding 2           # With surrounding pages
         ra search "Stockholm" --max-hits-per-vol 2              # Max 2 hits per volume
-        ra search "Stockholm" --browse --max-hits-per-vol 3     # Browse with 3 hits per volume
+        ra search "Stockholm" --browse --max-hits-per-vol 5     # Browse with 5 hits per volume
         ra search "Stockholm" --max 100 --max-hits-per-vol 1    # Many volumes, 1 hit each
         ra search "Stockholm" --log                             # With API logging
     """
@@ -293,12 +294,8 @@ def search(
     show_logging_status(log)
 
     try:
-        # When using --browse, default to 1 hit per volume to show more volumes
-        # unless user explicitly specified a different value
+        # Use the specified max_hits_per_document value (defaults to 3)
         effective_max_hits_per_doc = max_hits_per_document
-        if browse and max_hits_per_document is None:
-            effective_max_hits_per_doc = 1
-            console.print("[dim]Browse mode: limiting to 1 hit per volume to show more volumes[/dim]")
 
         search_result = perform_search_with_progress(
             search_operations, keyword, max_results, browse, max_pages, context_padding, effective_max_hits_per_doc
@@ -378,8 +375,6 @@ def display_browse_results(
         sorted_contexts = sorted(contexts, key=lambda c: c.page_number)
 
         # Create a single grouped panel for all pages in this document
-        from rich.panel import Panel
-        from rich.table import Table
 
         renderables = []
 
