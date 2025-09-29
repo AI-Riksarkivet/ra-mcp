@@ -155,12 +155,16 @@ class SearchOperations:
             manifest_identifier, pages, max_pages, reference_code, highlight_term
         )
 
+        # Fetch document metadata by searching for the reference code
+        document_metadata = self._fetch_document_metadata(reference_code)
+
         return BrowseOperation(
             contexts=page_contexts,
             reference_code=reference_code,
             pages_requested=pages,
             pid=persistent_identifier,
             manifest_id=manifest_identifier,
+            document_metadata=document_metadata,
         )
 
     def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
@@ -297,3 +301,61 @@ class SearchOperations:
 
         cleaned_pid = remove_arkis_prefix(resolved_pid)
         return self.iiif_client.explore_collection(cleaned_pid)
+
+    def _fetch_document_metadata(self, reference_code: str) -> Optional[Dict]:
+        """Fetch document metadata by searching for the reference code.
+
+        Args:
+            reference_code: Document reference code to get metadata for.
+
+        Returns:
+            Dictionary containing document metadata (hierarchy, institution, etc.)
+            or None if not found.
+        """
+        try:
+            # Search for the reference code to get document metadata
+            # Try multiple search strategies to find the document
+            search_strategies = [
+                f'"{reference_code}"',  # Exact match with quotes
+                reference_code,  # Without quotes
+                reference_code.split("/")[-1],  # Just the last part
+            ]
+
+            search_hits = []
+            for search_term in search_strategies:
+                search_hits, _ = self.search_api.search_transcribed_text(
+                    search_term, maximum_documents=5, pagination_offset=0
+                )
+                if search_hits:
+                    break
+
+            if search_hits:
+                # Find the hit that matches our reference code exactly
+                matching_hit = None
+                for hit in search_hits:
+                    if hit.reference_code == reference_code:
+                        matching_hit = hit
+                        break
+
+                # If no exact match, use the first hit as fallback
+                if not matching_hit:
+                    matching_hit = search_hits[0]
+
+                hit = matching_hit
+                from ..models import DocumentMetadata
+
+                metadata = DocumentMetadata(
+                    title=hit.title,
+                    hierarchy=hit.hierarchy,
+                    archival_institution=hit.archival_institution,
+                    date=hit.date,
+                    note=hit.note,
+                    collection_url=hit.collection_url,
+                    manifest_url=hit.manifest_url,
+                )
+                return metadata
+
+            return None
+        except Exception:
+            # If metadata fetch fails, return None - browse will still work
+            return None

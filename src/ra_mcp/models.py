@@ -37,6 +37,18 @@ class PageContext(BaseModel):
     bildvisning_url: str = ""
 
 
+class DocumentMetadata(BaseModel):
+    """Document metadata containing archival information."""
+
+    title: Optional[str] = None
+    hierarchy: Optional[List[Dict[str, str]]] = None
+    archival_institution: Optional[List[Dict[str, str]]] = None
+    date: Optional[str] = None
+    note: Optional[str] = None
+    collection_url: Optional[str] = None
+    manifest_url: Optional[str] = None
+
+
 class SearchOperation(BaseModel):
     hits: List[SearchHit]
     total_hits: int
@@ -51,6 +63,7 @@ class BrowseOperation(BaseModel):
     pages_requested: str
     pid: Optional[str] = None
     manifest_id: Optional[str] = None
+    document_metadata: Optional[DocumentMetadata] = None
 
 
 class SearchSummary(BaseModel):

@@ -213,7 +213,6 @@ class RichConsoleFormatter(BaseFormatter):
 
         # Full transcribed text with highlighting
         display_text = self.highlight_search_keyword(context.full_text, highlight_term)
-        page_content.append("\n[bold magenta]📜 Full Transcription:[/bold magenta]")
         page_content.append(f"[italic]{display_text}[/italic]")
 
         # Links section
