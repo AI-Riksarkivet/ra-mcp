@@ -6,7 +6,7 @@ This eliminates code duplication between CLI commands and MCP tools.
 from typing import List, Optional, Tuple, Dict, Union
 
 from ..clients import SearchAPI, IIIFClient
-from ..models import SearchHit, SearchOperation, BrowseOperation
+from ..models import SearchHit, SearchOperation, BrowseOperation, DocumentMetadata
 from ..utils import parse_page_range, remove_arkis_prefix
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
@@ -302,7 +302,7 @@ class SearchOperations:
         cleaned_pid = remove_arkis_prefix(resolved_pid)
         return self.iiif_client.explore_collection(cleaned_pid)
 
-    def _fetch_document_metadata(self, reference_code: str) -> Optional[Dict]:
+    def _fetch_document_metadata(self, reference_code: str) -> Optional[DocumentMetadata]:
         """Fetch document metadata by searching for the reference code.
 
         Args:
@@ -342,7 +342,6 @@ class SearchOperations:
                     matching_hit = search_hits[0]
 
                 hit = matching_hit
-                from ..models import DocumentMetadata
 
                 metadata = DocumentMetadata(
                     title=hit.title,

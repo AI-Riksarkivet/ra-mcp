@@ -331,7 +331,7 @@ def display_browse_results(
         if browse_result.document_metadata:
             metadata = browse_result.document_metadata
 
-            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code} ({len(contexts)} pages)")
+            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
 
             # Display title
             if metadata.title and metadata.title != "(No title)":
@@ -370,12 +370,20 @@ def display_browse_results(
             panel_content.append("")
         else:
             # If no metadata available, just show the document header
-            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code} ({len(contexts)} pages)")
+            panel_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
             panel_content.append("")
 
         for context in sorted_contexts:
-            # Add page separator
-            panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+            # Add page separator with optional bildvisning link
+            if show_links:
+                # When showing all links below, keep simple separator
+                panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+            else:
+                # When not showing links section, include bildvisning link in separator
+                if context.bildvisning_url:
+                    panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
+                else:
+                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
 
             # Add page content with highlighting
             display_text = context.full_text
