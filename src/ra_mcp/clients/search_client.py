@@ -221,5 +221,11 @@ class SearchAPI:
         )
 
     def _clean_html(self, html_text: str) -> str:
-        """Remove HTML tags from text."""
-        return re.sub(r"<[^>]+>", "", html_text)
+        """
+        Remove HTML tags from text, but preserve <em> highlighting.
+        Converts <em>text</em> to **text** for later highlighting.
+        """
+        text = html_text
+        text = re.sub(r"<em>(.*?)</em>", r"**\1**", text)
+        text = re.sub(r"<[^>]+>", "", text)
+        return text

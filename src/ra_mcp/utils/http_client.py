@@ -6,6 +6,7 @@ Centralizes urllib boilerplate code to avoid duplication.
 import json
 import logging
 import os
+import sys
 import time
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
@@ -19,8 +20,9 @@ class HTTPClient:
     def __init__(self, user_agent: str = "Transcribed-Search-Browser/1.0"):
         self.user_agent = user_agent
         self.logger = None
+        self.debug_console = os.getenv("RA_MCP_LOG_API")
 
-        if os.getenv("RA_MCP_LOG_API"):
+        if self.debug_console:
             self.logger = logging.getLogger("ra_mcp.api")
             self.logger.setLevel(logging.INFO)
             if not self.logger.handlers:
@@ -60,6 +62,10 @@ class HTTPClient:
             full_url = f"{url}?{query_string}"
         else:
             full_url = url
+
+        # Debug: Print URL to console
+        if self.debug_console:
+            print(f"[DEBUG] GET JSON: {full_url}", file=sys.stderr)
 
         # Create request with headers
         request = Request(full_url)
@@ -139,6 +145,10 @@ class HTTPClient:
         else:
             full_url = url
 
+        # Debug: Print URL to console
+        if self.debug_console:
+            print(f"[DEBUG] GET XML: {full_url}", file=sys.stderr)
+
         # Create request with headers
         request = Request(full_url)
         request.add_header("User-Agent", self.user_agent)
@@ -200,6 +210,10 @@ class HTTPClient:
         Returns:
             Response content as bytes or None
         """
+        # Debug: Print URL to console
+        if self.debug_console:
+            print(f"[DEBUG] GET CONTENT: {url}", file=sys.stderr)
+
         # Create request with headers
         request = Request(url)
         request.add_header("User-Agent", self.user_agent)

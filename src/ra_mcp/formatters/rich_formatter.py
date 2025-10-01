@@ -99,6 +99,8 @@ class RichConsoleFormatter(BaseFormatter):
     def highlight_search_keyword(self, text_content: str, search_keyword: str) -> str:
         """
         Highlight search keywords using Rich markup.
+        First converts **text** markers from API to Rich highlighting.
+        Then highlights the search keyword if no markers present.
 
         Args:
             text_content: Text to search in
@@ -107,6 +109,13 @@ class RichConsoleFormatter(BaseFormatter):
         Returns:
             Text with highlighted keywords
         """
+        if "**" in text_content:
+            return re.sub(
+                r"\*\*(.*?)\*\*",
+                r"[bold yellow underline]\1[/bold yellow underline]",
+                text_content,
+            )
+
         if not search_keyword:
             return text_content
         keyword_pattern = re.compile(re.escape(search_keyword), re.IGNORECASE)

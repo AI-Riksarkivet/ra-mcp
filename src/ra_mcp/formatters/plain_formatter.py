@@ -88,14 +88,19 @@ class PlainTextFormatter(BaseFormatter):
     def highlight_search_keyword(self, text_content: str, search_keyword: str) -> str:
         """
         Highlight search keywords using markdown-style bold.
+        The **text** markers from the API are already in the correct format.
+        If no markers present, fallback to manual keyword highlighting.
 
         Args:
-            text_content: Text to search in
+            text_content: Text to search in (may already contain **text** markers)
             search_keyword: Keyword to highlight
 
         Returns:
             Text with keywords wrapped in **bold**
         """
+        if "**" in text_content:
+            return text_content
+
         if not search_keyword:
             return text_content
         keyword_pattern = re.compile(re.escape(search_keyword), re.IGNORECASE)
