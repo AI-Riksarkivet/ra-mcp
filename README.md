@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo/logo_512.jpg" alt="RA-MCP Logo" width="250">
+  <img src="docs/assets/logo/logo_512.jpg" alt="RA-MCP Logo" width="250">
 </div>
 
 
