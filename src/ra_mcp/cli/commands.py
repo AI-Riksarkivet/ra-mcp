@@ -251,11 +251,6 @@ def search(
     max_pages: Annotated[
         int, typer.Option(help="Maximum pages to load context for")
     ] = DEFAULT_MAX_PAGES,
-    max_pages: Annotated[int, typer.Option(help="Maximum pages to load context for")] = DEFAULT_MAX_PAGES,
-    context_padding: Annotated[
-        int,
-        typer.Option(help="Number of pages to include before and after each hit for context (only with --browse)"),
-    ] = 0,
     max_hits_per_document: Annotated[
         Optional[int],
         typer.Option(
