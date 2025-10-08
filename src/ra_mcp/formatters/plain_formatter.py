@@ -98,7 +98,7 @@ class PlainTextFormatter(BaseFormatter):
         Returns:
             Text with keywords wrapped in **bold**
         """
-        if "**" in text_content:
+        if re.search(r"\*\*[^*]+\*\*", text_content):
             return text_content
 
         if not search_keyword:
