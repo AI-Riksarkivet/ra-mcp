@@ -60,6 +60,10 @@ uv run ra search "Stockholm~1"  # Matches "Stockholm", "Stokholm" (max edit dist
 
 # Proximity search - find words within distance
 uv run ra search '"Stockholm trolldom"~10'  # "Stockholm" and "trolldom" within 10 words
+
+# Boosting terms - increase relevance of specific terms
+uv run ra search "Stockholm^4 trol*"  # Boost "Stockholm" relevance with wildcard
+uv run ra search '"Stockholm dom*"^4 Reg*'  # Boost entire phrase with wildcard
 ```
 
 **Search Options:**
@@ -78,6 +82,8 @@ uv run ra search '"Stockholm trolldom"~10'  # "Stockholm" and "trolldom" within 
 | **Wildcard (multiple)** | `*` | `"Stock*"` | Matches zero or more characters |
 | **Fuzzy** | `~` | `"Stockholm~"` | Finds similar terms based on edit distance (default: 2) |
 | **Fuzzy (custom)** | `~N` | `"Stockholm~1"` | Finds similar terms with max edit distance N (0-2) |
+| **Proximity** | `"word1 word2"~N` | `"Stockholm trolldom"~10` | Finds terms within N words of each other |
+| **Boosting** | `^N` | `"Stockholm^4 trol*"` | Increases relevance of boosted term (default: 1) |
 
 ### 2. Browse Specific Documents
 
