@@ -109,7 +109,7 @@ class RichConsoleFormatter(BaseFormatter):
         Returns:
             Text with highlighted keywords
         """
-        if "**" in text_content:
+        if re.search(r"\*\*[^*]+\*\*", text_content):
             return re.sub(
                 r"\*\*(.*?)\*\*",
                 r"[bold yellow underline]\1[/bold yellow underline]",

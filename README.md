@@ -39,22 +39,41 @@ Find documents containing specific words or phrases:
 uv run ra search "Stockholm"
 
 # Search with full page transcriptions
-uv run ra search "trolldom" --context --max-pages 5
+uv run ra search "trolldom" --browse --max-pages 5
 
 # Search with surrounding pages for context
-uv run ra search "trolldom" --context --context-padding 1 --max-pages 3
+uv run ra search "trolldom" --browse --context-padding 1 --max-pages 3
 
-# Search without document grouping
-uv run ra search "vasa" --context --no-grouping --max-pages 3
+# Wildcard search - single character (?)
+uv run ra search "St?ckholm"  # Matches "Stockholm", "Stäckholm", etc.
+
+# Wildcard search - multiple characters (*)
+uv run ra search "Stock*"     # Matches "Stockholm", "Stocksund", "Stocken", etc.
+uv run ra search "St*holm"    # Matches "Stockholm", "Strömholm", etc.
+uv run ra search "*holm"      # Matches "Stockholm", "Söderholm", etc.
+
+# Fuzzy search - find similar words
+uv run ra search "Stockholm~"   # Matches "Stockholm", "Stokholm", "Stokholms", etc.
+uv run ra search "Stockholm~1"  # Matches "Stockholm", "Stokholm" (max edit distance: 1)
 ```
 
-**Options:**
+**Search Options:**
 - `--max N` - Maximum search results (default: 50)
 - `--max-display N` - Maximum results to display (default: 20)
-- `--context` - Show full page transcriptions
+- `--browse` - Show full page transcriptions
 - `--max-pages N` - Maximum pages to load context for (default: 10)
-- `--context-padding N` - Include N pages before/after each hit for context (default: 0)
-- `--no-grouping` - Show pages individually instead of grouped by document
+- `--context-padding N` - Include N pages before/after each hit for context (only with --browse, default: 0)
+- `--max-hits-per-vol N` - Maximum hits to return per volume (default: 3)
+
+**Search Types:**
+
+| Type | Syntax | Example | Description |
+|------|--------|---------|-------------|
+| **Exact** | `"word"` | `"Stockholm"` | Find exact matches |
+| **Wildcard (single)** | `?` | `"St?ckholm"` | Matches any single character |
+| **Wildcard (multiple)** | `*` | `"Stock*"` | Matches zero or more characters |
+| **Fuzzy** | `~` | `"Stockholm~"` | Finds similar terms based on edit distance (default: 2) |
+| **Fuzzy (custom)** | `~N` | `"Stockholm~1"` | Finds similar terms with max edit distance N (0-2) |
 
 ### 2. Browse Specific Documents
 
@@ -78,17 +97,14 @@ uv run ra browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
 
 ### 3. Search with Full Context
 
-The `--context` flag shows complete page transcriptions instead of just snippets:
+The `--browse` flag shows complete page transcriptions instead of just snippets:
 
 ```bash
 # Search with full page transcriptions
-uv run ra search "Stockholm" --context --max-pages 5
+uv run ra search "Stockholm" --browse --max-pages 5
 
 # Include surrounding pages for additional context
-uv run ra search "trolldom" --context --context-padding 2
-
-# Show pages individually instead of grouped by document
-uv run ra search "vasa" --context --no-grouping
+uv run ra search "trolldom" --browse --context-padding 2
 ```
 
 ## Output Features
@@ -118,7 +134,7 @@ Browse commands:
 ```
 
 ### 📄 Full Page Display
-With the `--context` flag, you get complete page transcriptions featuring:
+With the `--browse` flag, you get complete page transcriptions featuring:
 
 - **Full text transcriptions** - Complete page content from ALTO XML
 - **Keyword highlighting** - Your search terms highlighted in yellow
@@ -168,12 +184,12 @@ Each result provides direct access to:
 
 2. **Get full context for interesting hits:**
    ```bash
-   uv run ra search "Stockholm" --context --max-pages 3
+   uv run ra search "Stockholm" --browse --max-pages 3
    ```
 
 3. **Include surrounding pages for additional context:**
    ```bash
-   uv run ra search "Stockholm" --context --context-padding 1 --max-pages 3
+   uv run ra search "Stockholm" --browse --context-padding 1 --max-pages 3
    ```
 
 4. **Browse specific documents:**
@@ -185,7 +201,7 @@ Each result provides direct access to:
 
 ```bash
 # Comprehensive search with context and surrounding pages
-uv run ra search "trolldom" --context --context-padding 2 --max-pages 8
+uv run ra search "trolldom" --browse --context-padding 2 --max-pages 8
 
 # Targeted document browsing
 uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "trolldom"
