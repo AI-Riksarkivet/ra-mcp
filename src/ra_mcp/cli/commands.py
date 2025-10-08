@@ -171,7 +171,6 @@ def perform_search_with_progress(
     max_results: int,
     browse: bool,
     max_pages: int,
-    context_padding: int,
     max_hits_per_document: Optional[int],
 ):
     """Execute the search operation with enhanced progress indicators."""
@@ -243,22 +242,16 @@ def perform_search_with_progress(
                 max_results=max_results,
                 show_context=True,
                 max_pages_with_context=max_pages,
-                context_padding=context_padding,
+                context_padding=0,
                 max_hits_per_document=max_hits_per_document,
             )
 
             # Count successfully loaded pages with context
             enriched_count = sum(1 for hit in search_result.hits if hit.full_page_text)
-            if context_padding > 0:
-                progress.update(
-                    context_task,
-                    description=f"✓ Loaded {enriched_count} pages with {context_padding}-page context padding from {volume_count} volumes",
-                )
-            else:
-                progress.update(
-                    context_task,
-                    description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes",
-                )
+            progress.update(
+                context_task,
+                description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes",
+            )
 
     return search_result
 
@@ -282,12 +275,6 @@ def search(
     max_pages: Annotated[
         int, typer.Option(help="Maximum pages to load context for")
     ] = DEFAULT_MAX_PAGES,
-    context_padding: Annotated[
-        int,
-        typer.Option(
-            help="Number of pages to include before and after each hit for context (only with --browse)"
-        ),
-    ] = 0,
     max_hits_per_document: Annotated[
         Optional[int],
         typer.Option(
@@ -310,14 +297,13 @@ def search(
 
     Fast search across all transcribed documents in Riksarkivet.
     Returns reference codes and page numbers containing the keyword.
-    Use --browse to see full page transcriptions with optional context padding.
+    Use --browse to see full page transcriptions.
 
     By default, returns up to 3 hits per volume. Use --max-hits-per-vol to adjust.
 
     Examples:
         ra search "Stockholm"                                    # Basic search (3 hits per volume)
         ra search "trolldom" --browse --max-pages 5             # Browse with 3 hits per volume
-        ra search "vasa" --browse --context-padding 2           # With surrounding pages
         ra search "Stockholm" --max-hits-per-vol 2              # Max 2 hits per volume
         ra search "Stockholm" --browse --max-hits-per-vol 5     # Browse with 5 hits per volume
         ra search "Stockholm" --max 100 --max-hits-per-vol 1    # Many volumes, 1 hit each
@@ -339,7 +325,6 @@ def search(
             max_results,
             browse,
             max_pages,
-            context_padding,
             effective_max_hits_per_doc,
         )
 
