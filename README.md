@@ -41,9 +41,6 @@ uv run ra search "Stockholm"
 # Search with full page transcriptions
 uv run ra search "trolldom" --browse --max-pages 5
 
-# Search with surrounding pages for context
-uv run ra search "trolldom" --browse --context-padding 1 --max-pages 3
-
 # Wildcard search - single character (?)
 uv run ra search "St?ckholm"  # Matches "Stockholm", "Stäckholm", etc.
 
@@ -62,7 +59,6 @@ uv run ra search "Stockholm~1"  # Matches "Stockholm", "Stokholm" (max edit dist
 - `--max-display N` - Maximum results to display (default: 20)
 - `--browse` - Show full page transcriptions
 - `--max-pages N` - Maximum pages to load context for (default: 10)
-- `--context-padding N` - Include N pages before/after each hit for context (only with --browse, default: 0)
 - `--max-hits-per-vol N` - Maximum hits to return per volume (default: 3)
 
 **Search Types:**
@@ -102,9 +98,6 @@ The `--browse` flag shows complete page transcriptions instead of just snippets:
 ```bash
 # Search with full page transcriptions
 uv run ra search "Stockholm" --browse --max-pages 5
-
-# Include surrounding pages for additional context
-uv run ra search "trolldom" --browse --context-padding 2
 ```
 
 ## Output Features
@@ -140,7 +133,6 @@ With the `--browse` flag, you get complete page transcriptions featuring:
 - **Keyword highlighting** - Your search terms highlighted in yellow
 - **Rich metadata** - Document titles, dates, and archive hierarchy
 - **Direct access links** - Quick links to images, XML, and interactive viewer
-- **Context indicators** - Clear marking of surrounding pages when using `--context-padding`
 
 **Example output:**
 ```
@@ -148,14 +140,7 @@ With the `--browse` flag, you get complete page transcriptions featuring:
 Title: Kommissorialrätt i Stockholm ang. trolldom
 Date: 1676-1677 | Institution: Riksarkivet i Stockholm/Täby
 
-skäligt sin emillan förafskeda, och det eftter Kongl. Senarens
-förordning, att alla dhe, som sig medh någon klagomåhl öfwer
-detta **Trolldoms** wäsende angifwa wela, ther medh skola
-inställa sigh för höga öfwerheten, huilket alt Högwälborne Herr
-General Leutnanten och Gouverneuren medh dhe brefwen han oss
-tillsändt hafwer, jämwäl och i muntel samptahl medh oss sigh
-förklarat, som wij och nu wid thetta tillfället Commissionen
-till hemmande af denne **Trolldoms** Sundh på åthskillige orter...
+....
 
 Links:
 📄 ALTO XML: https://sok.riksarkivet.se/dokument/alto/SE_RA_310187_1_007.xml
@@ -187,12 +172,7 @@ Each result provides direct access to:
    uv run ra search "Stockholm" --browse --max-pages 3
    ```
 
-3. **Include surrounding pages for additional context:**
-   ```bash
-   uv run ra search "Stockholm" --browse --context-padding 1 --max-pages 3
-   ```
-
-4. **Browse specific documents:**
+3. **Browse specific documents:**
    ```bash
    uv run ra browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
    ```
@@ -200,8 +180,8 @@ Each result provides direct access to:
 ### Advanced Usage
 
 ```bash
-# Comprehensive search with context and surrounding pages
-uv run ra search "trolldom" --browse --context-padding 2 --max-pages 8
+# Comprehensive search with full page content
+uv run ra search "trolldom" --browse --max-pages 8
 
 # Targeted document browsing
 uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "trolldom"
