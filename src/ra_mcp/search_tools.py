@@ -23,6 +23,7 @@ search_mcp = FastMCP(
        - Offset parameter required to encourage comprehensive discovery
        - Context disabled by default for maximum hit coverage
        - Provides direct links to images and ALTO XML
+       - Supports advanced Solr search syntax (see SEARCH SYNTAX below)
 
     2. 📖 browse_document - Browse specific pages by reference code
        - View full transcriptions of specific pages
@@ -58,13 +59,37 @@ search_mcp = FastMCP(
     6. Note reference codes and page numbers for detailed browsing
     7. Use browse_document() to view full transcriptions of interesting pages
 
+    SEARCH SYNTAX (Solr Query Syntax):
+
+    Basic Search:
+    - "Stockholm" - Exact term search
+    - "Stock*" - Wildcard (multiple characters)
+    - "St?ckholm" - Wildcard (single character)
+
+    Fuzzy & Proximity:
+    - "Stockholm~" - Fuzzy search (edit distance 2)
+    - "Stockholm~1" - Fuzzy with custom edit distance
+    - '"Stockholm trolldom"~10' - Proximity (within 10 words)
+
+    Boolean Operators:
+    - "(Stockholm AND trolldom)" - Both terms required
+    - "(Stockholm OR Göteborg)" - Either term (or both)
+    - "(Stockholm NOT trolldom)" - First without second
+    - "+Stockholm -trolldom" - Require/exclude terms
+
+    Boosting & Grouping:
+    - "Stockholm^4 troll*" - Boost term relevance (4x)
+    - '("Stockholm dom*"^4 Reg*)' - Boost phrase with wildcards
+    - "((Stockholm OR Göteborg) AND troll*)" - Complex grouping
+
     TYPICAL WORKFLOW:
     1. Comprehensive search: search_transcribed(term, 0), then search_transcribed(term, 50), etc.
     2. Search related terms in parallel to build complete context
-    3. Review hit summaries to identify most relevant documents across all searches
-    4. Use browse_document() for detailed examination of specific pages
-    5. Use get_document_structure() to understand document organization
-    6. Access guide resources for historical context and documentation
+    3. Use advanced syntax for precise queries (Boolean, wildcards, fuzzy, proximity)
+    4. Review hit summaries to identify most relevant documents across all searches
+    5. Use browse_document() for detailed examination of specific pages
+    6. Use get_document_structure() to understand document organization
+    7. Access guide resources for historical context and documentation
 
     All tools return rich, formatted text optimized for LLM understanding.
     """,

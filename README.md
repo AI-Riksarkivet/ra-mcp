@@ -69,6 +69,11 @@ uv run ra search '("Stockholm dom*"^4 Reg*)'  # Boost entire phrase with wildcar
 uv run ra search "(Stockholm AND trolldom)"  # Both terms required
 uv run ra search "(Stockholm OR Göteborg)"  # Either term (or both)
 uv run ra search "(Stockholm NOT trolldom)"  # Stockholm but not trolldom
+uv run ra search "+Stockholm -trolldom"  # Require Stockholm, exclude trolldom
+
+# Grouping - create complex queries with sub-queries
+uv run ra search "((Stockholm OR Göteborg) AND troll*)"  # Either city + häxprocess
+uv run ra search "((troll* OR häx*) AND (Stockholm OR Göteborg))"  # Complex grouping
 ```
 
 **Search Options:**
@@ -92,6 +97,8 @@ uv run ra search "(Stockholm NOT trolldom)"  # Stockholm but not trolldom
 | **Boolean AND** | `AND` or `&&` | `(Stockholm AND trolldom)` | Both terms must be present |
 | **Boolean OR** | `OR` or `\|\|` | `(Stockholm OR Göteborg)` | Either term (or both) must be present |
 | **Boolean NOT** | `NOT` or `!` | `(Stockholm NOT trolldom)` | First term without second term |
+| **Required/Exclude** | `+` / `-` | `+Stockholm -trolldom` | Require term (+) or exclude term (-) |
+| **Grouping** | `(...)` | `((Stockholm OR Göteborg) AND troll*)` | Group clauses to form sub-queries |
 
 ### 2. Browse Specific Documents
 
