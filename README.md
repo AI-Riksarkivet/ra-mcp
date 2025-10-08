@@ -57,6 +57,9 @@ uv run ra search "*holm"      # Matches "Stockholm", "Söderholm", etc.
 # Fuzzy search - find similar words
 uv run ra search "Stockholm~"   # Matches "Stockholm", "Stokholm", "Stokholms", etc.
 uv run ra search "Stockholm~1"  # Matches "Stockholm", "Stokholm" (max edit distance: 1)
+
+# Proximity search - find words within distance
+uv run ra search '"Stockholm trolldom"~10'  # "Stockholm" and "trolldom" within 10 words
 ```
 
 **Search Options:**
