@@ -3,9 +3,8 @@ package main
 
 import (
 	"context"
-	"strings"
-
 	"dagger/ra-mcp/internal/dagger"
+	"strings"
 )
 
 type RaMcp struct{}
@@ -80,7 +79,6 @@ func (m *RaMcp) Test(
 		WithExec([]string{"uv", "run", "pytest", "--cov=src/ra_mcp", "--cov-report=term"}).
 		Stdout(ctx)
 }
-
 
 // Publish builds and publishes container image to registry with authentication
 func (m *RaMcp) Publish(ctx context.Context,

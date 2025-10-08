@@ -27,14 +27,10 @@ class ALTOClient:
 
         return self._extract_text_from_alto(parsed_xml_root)
 
-    def _fetch_alto_xml(
-        self, document_url: str, timeout_seconds: int
-    ) -> Optional[bytes]:
+    def _fetch_alto_xml(self, document_url: str, timeout_seconds: int) -> Optional[bytes]:
         """Fetch ALTO XML document from URL."""
         headers = {"Accept": "application/xml, text/xml, */*"}
-        return self.http_client.get_content(
-            document_url, timeout=timeout_seconds, headers=headers
-        )
+        return self.http_client.get_content(document_url, timeout=timeout_seconds, headers=headers)
 
     def _parse_xml_content(self, xml_content: bytes) -> Optional[ET.Element]:
         """Parse XML content into ElementTree."""
@@ -57,17 +53,13 @@ class ALTOClient:
         collected_text_segments = []
 
         for namespace_definition in ALTO_NAMESPACES:
-            namespace_text_segments = self._extract_text_for_namespace(
-                xml_root, namespace_definition
-            )
+            namespace_text_segments = self._extract_text_for_namespace(xml_root, namespace_definition)
             if namespace_text_segments:
                 return namespace_text_segments
 
         return collected_text_segments
 
-    def _extract_text_for_namespace(
-        self, xml_root: ET.Element, namespace: dict
-    ) -> list:
+    def _extract_text_for_namespace(self, xml_root: ET.Element, namespace: dict) -> list:
         """Extract text for a specific namespace."""
         text_segments = []
         string_elements = xml_root.findall(".//alto:String", namespace)

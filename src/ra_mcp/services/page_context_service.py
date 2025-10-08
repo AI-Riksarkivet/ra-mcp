@@ -29,9 +29,7 @@ class PageContextService:
         cleaned_manifest_id = url_generator.remove_arkis_prefix(manifest_id)
         alto_xml_url = url_generator.alto_url(cleaned_manifest_id, page_number)
         image_url_link = url_generator.iiif_image_url(manifest_id, page_number)
-        bildvisning_link = url_generator.bildvisning_url(
-            manifest_id, page_number, search_term
-        )
+        bildvisning_link = url_generator.bildvisning_url(manifest_id, page_number, search_term)
 
         if not alto_xml_url:
             return None

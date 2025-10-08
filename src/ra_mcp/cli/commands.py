@@ -38,9 +38,7 @@ def show_logging_status(enabled: bool) -> None:
 
 def display_search_summary(search_result: SearchOperation, keyword: str) -> None:
     """Display search result summary."""
-    console.print(
-        f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]"
-    )
+    console.print(f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]")
 
 
 def display_context_results(
@@ -52,9 +50,7 @@ def display_context_results(
     """Display search results with full context using unified page display."""
 
     # Sort hits by reference code and page number for better organization
-    sorted_hits = sorted(
-        search_result.hits, key=lambda hit: (hit.reference_code, int(hit.page_number))
-    )
+    sorted_hits = sorted(search_result.hits, key=lambda hit: (hit.reference_code, int(hit.page_number)))
 
     # Convert SearchHits to PageContext format and group by reference code
     # Use a set to track seen pages and avoid duplicates
@@ -93,11 +89,7 @@ def display_context_results(
     # Display each document separately with its own metadata
     for ref_code, contexts in grouped_contexts.items():
         # Get metadata for this specific document
-        representative_hit = next(
-            hit
-            for hit in sorted_hits
-            if hit.reference_code == ref_code and hit.full_page_text
-        )
+        representative_hit = next(hit for hit in sorted_hits if hit.reference_code == ref_code and hit.full_page_text)
 
         document_metadata = DocumentMetadata(
             title=representative_hit.title,
@@ -119,9 +111,7 @@ def display_context_results(
         )
 
         # Display this document
-        display_browse_results(
-            mock_browse, display_service, keyword, show_links, False
-        )  # Don't show success message
+        display_browse_results(mock_browse, display_service, keyword, show_links, False)  # Don't show success message
 
 
 def display_table_results(
@@ -131,9 +121,7 @@ def display_table_results(
     keyword: str,
 ) -> None:
     """Display search results in table format."""
-    formatted_table = display_service.format_search_results(
-        search_result, max_display, False
-    )
+    formatted_table = display_service.format_search_results(search_result, max_display, False)
 
     if not formatted_table:
         return
@@ -151,16 +139,12 @@ def display_table_results(
         console.print(formatted_table)
         # Display browse examples and remaining documents inline
         grouped_hits = summary.grouped_hits
-        example_lines = display_service.formatter.format_browse_example(
-            grouped_hits, keyword
-        )
+        example_lines = display_service.formatter.format_browse_example(grouped_hits, keyword)
         for line in example_lines:
             console.print(line)
 
         total_groups = len(grouped_hits)
-        remaining_message = display_service.formatter.format_remaining_documents(
-            total_groups, max_display
-        )
+        remaining_message = display_service.formatter.format_remaining_documents(total_groups, max_display)
         if remaining_message:
             console.print(remaining_message)
 
@@ -181,9 +165,7 @@ def perform_search_with_progress(
         console=console,
     ) as progress:
         # Phase 1: Initial search across all volumes
-        search_task = progress.add_task(
-            f"Searching for '{keyword}' across all transcribed volumes...", total=None
-        )
+        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
@@ -233,9 +215,7 @@ def perform_search_with_progress(
                         description=f"Loading from: {', '.join(volume_names)}",
                     )
             elif volume_names:
-                progress.update(
-                    context_task, description=f"Loading ALTO from: {volume_names[0]}"
-                )
+                progress.update(context_task, description=f"Loading ALTO from: {volume_names[0]}")
 
             # Re-run with context loading
             search_result = search_operations.search_transcribed(
@@ -266,12 +246,8 @@ def perform_search_with_progress(
 @app.command()
 def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
-    max_results: Annotated[
-        int, typer.Option("--max", help="Maximum search results")
-    ] = DEFAULT_MAX_RESULTS,
-    max_display: Annotated[
-        int, typer.Option(help="Maximum results to display")
-    ] = DEFAULT_MAX_DISPLAY,
+    max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
+    max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
     browse: Annotated[
         bool,
         typer.Option(
@@ -279,14 +255,10 @@ def search(
             help="Show full page content for search hits (browse-style display)",
         ),
     ] = False,
-    max_pages: Annotated[
-        int, typer.Option(help="Maximum pages to load context for")
-    ] = DEFAULT_MAX_PAGES,
+    max_pages: Annotated[int, typer.Option(help="Maximum pages to load context for")] = DEFAULT_MAX_PAGES,
     context_padding: Annotated[
         int,
-        typer.Option(
-            help="Number of pages to include before and after each hit for context (only with --browse)"
-        ),
+        typer.Option(help="Number of pages to include before and after each hit for context (only with --browse)"),
     ] = 0,
     max_hits_per_document: Annotated[
         Optional[int],
@@ -295,9 +267,7 @@ def search(
             help="Maximum number of hits to return per volume (useful for searching across many volumes)",
         ),
     ] = 3,
-    log: Annotated[
-        bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
-    ] = False,
+    log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
     show_links: Annotated[
         bool,
         typer.Option(
@@ -403,9 +373,7 @@ def display_browse_results(
 ) -> None:
     """Display successful browse results grouped by reference code."""
     if show_success_message:
-        console.print(
-            f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]"
-        )
+        console.print(f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]")
 
     # Group page contexts by reference code
     grouped_contexts = {}
@@ -445,9 +413,7 @@ def display_browse_results(
                 institutions = metadata.archival_institution
                 if institutions:
                     inst_names = [inst.get("caption", "") for inst in institutions]
-                    left_content.append(
-                        f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}"
-                    )
+                    left_content.append(f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}")
 
             # Create right column content (hierarchy)
             right_content = []
@@ -474,15 +440,9 @@ def display_browse_results(
             # Create clean two-column layout using Rich Table
             if right_content:
                 # Create table with two columns
-                metadata_table = Table.grid(
-                    padding=(0, 2)
-                )  # Add some padding between columns
-                metadata_table.add_column(
-                    justify="left", ratio=1
-                )  # Left column for basic info
-                metadata_table.add_column(
-                    justify="left", ratio=1
-                )  # Right column for hierarchy
+                metadata_table = Table.grid(padding=(0, 2))  # Add some padding between columns
+                metadata_table.add_column(justify="left", ratio=1)  # Left column for basic info
+                metadata_table.add_column(justify="left", ratio=1)  # Right column for hierarchy
 
                 left_text = "\n".join(left_content)
                 right_text = "\n".join(right_content)
@@ -510,43 +470,29 @@ def display_browse_results(
             # Add page separator with optional bildvisning link
             if show_links:
                 # When showing all links below, keep simple separator
-                panel_content.append(
-                    f"[dim]────── Page {context.page_number} ──────[/dim]"
-                )
+                panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
             else:
                 # When not showing links section, include bildvisning link in separator
                 if context.bildvisning_url:
-                    panel_content.append(
-                        f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]"
-                    )
+                    panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
                 else:
-                    panel_content.append(
-                        f"[dim]────── Page {context.page_number} ──────[/dim]"
-                    )
+                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
 
             # Add page content with highlighting
             display_text = context.full_text
             if search_term:
                 # Use the proper highlighting method which handles case-insensitive matching
-                display_text = display_service.formatter.highlight_search_keyword(
-                    display_text, search_term
-                )
+                display_text = display_service.formatter.highlight_search_keyword(display_text, search_term)
             panel_content.append(f"[italic]{display_text}[/italic]")
 
             # Add links if requested
             if show_links:
                 panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-                panel_content.append(
-                    f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
-                )
+                panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
                 if context.image_url:
-                    panel_content.append(
-                        f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]"
-                    )
+                    panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
                 if context.bildvisning_url:
-                    panel_content.append(
-                        f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
-                    )
+                    panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
 
             # Add spacing between pages (except for the last one)
             if context != sorted_contexts[-1]:
@@ -573,9 +519,7 @@ def display_browse_results(
 
 @app.command()
 def browse(
-    reference_code: Annotated[
-        str, typer.Argument(help="Reference code of the document")
-    ],
+    reference_code: Annotated[str, typer.Argument(help="Reference code of the document")],
     pages: Annotated[
         Optional[str],
         typer.Option(help='Page range to display (e.g., "1-10" or "5,7,9")'),
@@ -584,20 +528,12 @@ def browse(
         Optional[str],
         typer.Option(help="Single page or page range to display (alias for --pages)"),
     ] = None,
-    search_term: Annotated[
-        Optional[str], typer.Option(help="Highlight this term in the text")
-    ] = None,
-    max_display: Annotated[
-        int, typer.Option(help="Maximum pages to display")
-    ] = DEFAULT_MAX_DISPLAY,
-    log: Annotated[
-        bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
-    ] = False,
+    search_term: Annotated[Optional[str], typer.Option(help="Highlight this term in the text")] = None,
+    max_display: Annotated[int, typer.Option(help="Maximum pages to display")] = DEFAULT_MAX_DISPLAY,
+    log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
     show_links: Annotated[
         bool,
-        typer.Option(
-            "--show-links", help="Display ALTO XML, Image, and Bildvisning links"
-        ),
+        typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links"),
     ] = False,
 ):
     """Browse pages by reference code.
@@ -657,9 +593,7 @@ def start_stdio_server() -> None:
 
 def start_http_server(host: str, port: int) -> None:
     """Start MCP server with HTTP/SSE transport."""
-    console.print(
-        f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]"
-    )
+    console.print(f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]")
     from ..server import main as server_main
     import sys
 
@@ -679,9 +613,7 @@ def serve(
         typer.Option(help="Port for HTTP/SSE transport (enables HTTP mode)"),
     ] = None,
     host: Annotated[str, typer.Option(help="Host for HTTP transport")] = "localhost",
-    log: Annotated[
-        bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")
-    ] = False,
+    log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
 ):
     """Start the MCP server.
 

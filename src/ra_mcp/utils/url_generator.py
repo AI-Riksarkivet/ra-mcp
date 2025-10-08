@@ -79,9 +79,7 @@ def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
         return None
 
 
-def bildvisning_url(
-    manifest_id: str, page_number: str, search_term: Optional[str] = None
-) -> Optional[str]:
+def bildvisning_url(manifest_id: str, page_number: str, search_term: Optional[str] = None) -> Optional[str]:
     """Generate bildvisning URL with optional search highlighting.
 
     Args:

@@ -61,9 +61,7 @@ class SearchOperations:
             If show_context is True, hits will include enriched page content.
         """
         # Execute search and build operation in one step
-        hits, total_hits = self.search_api.search_transcribed_text(
-            keyword, max_results, offset, max_hits_per_document
-        )
+        hits, total_hits = self.search_api.search_transcribed_text(keyword, max_results, offset, max_hits_per_document)
 
         search_operation = SearchOperation(
             hits=hits,
@@ -75,9 +73,7 @@ class SearchOperations:
 
         # Enrich with context if requested
         if show_context and hits and max_pages_with_context > 0:
-            self._enrich_search_operation_with_context(
-                search_operation, max_pages_with_context, context_padding, keyword
-            )
+            self._enrich_search_operation_with_context(search_operation, max_pages_with_context, context_padding, keyword)
 
         return search_operation
 
@@ -102,17 +98,9 @@ class SearchOperations:
         # Limit hits and optionally expand with padding
         limited_hits = search_operation.hits[:page_limit]
 
-        hits_for_enrichment = (
-            self.enrichment_service.expand_hits_with_context_padding(
-                limited_hits, padding_size
-            )
-            if padding_size > 0
-            else limited_hits
-        )
+        hits_for_enrichment = self.enrichment_service.expand_hits_with_context_padding(limited_hits, padding_size) if padding_size > 0 else limited_hits
 
-        search_operation.hits = self.enrichment_service.enrich_hits_with_context(
-            hits_for_enrichment, len(hits_for_enrichment), search_keyword
-        )
+        search_operation.hits = self.enrichment_service.enrich_hits_with_context(hits_for_enrichment, len(hits_for_enrichment), search_keyword)
         search_operation.enriched = True
 
     def browse_document(
@@ -151,9 +139,7 @@ class SearchOperations:
 
         manifest_identifier = self._resolve_manifest_identifier(persistent_identifier)
 
-        page_contexts = self._fetch_page_contexts(
-            manifest_identifier, pages, max_pages, reference_code, highlight_term
-        )
+        page_contexts = self._fetch_page_contexts(manifest_identifier, pages, max_pages, reference_code, highlight_term)
 
         # Fetch document metadata by searching for the reference code
         document_metadata = self._fetch_document_metadata(reference_code)
@@ -180,9 +166,7 @@ class SearchOperations:
         Returns:
             IIIF manifest identifier or original PID if no manifest found.
         """
-        iiif_collection_info = self.iiif_client.explore_collection(
-            persistent_identifier
-        )
+        iiif_collection_info = self.iiif_client.explore_collection(persistent_identifier)
 
         # Return first manifest ID if available, otherwise use PID
         if iiif_collection_info and iiif_collection_info.get("manifests"):
@@ -219,9 +203,7 @@ class SearchOperations:
         # Fetch context for each page
         page_contexts = []
         for page_number in page_numbers:
-            page_context = self.page_service.get_page_context(
-                manifest_identifier, str(page_number), reference_code, highlight_keyword
-            )
+            page_context = self.page_service.get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
             if page_context:
                 page_contexts.append(page_context)
 
@@ -251,28 +233,20 @@ class SearchOperations:
             - List[SearchHit]: Enriched hits with full page content
               and padding pages included.
         """
-        search_op = self.search_transcribed(
-            keyword=keyword, max_results=search_limit, show_context=False
-        )
+        search_op = self.search_transcribed(keyword=keyword, max_results=search_limit, show_context=False)
 
         if not search_op.hits:
             return search_op, []
 
         display_hits = search_op.hits[:max_pages]
 
-        expanded_hits = self.enrichment_service.expand_hits_with_context_padding(
-            display_hits, context_padding
-        )
+        expanded_hits = self.enrichment_service.expand_hits_with_context_padding(display_hits, context_padding)
 
-        enriched_hits = self.enrichment_service.enrich_hits_with_context(
-            expanded_hits, len(expanded_hits), keyword
-        )
+        enriched_hits = self.enrichment_service.enrich_hits_with_context(expanded_hits, len(expanded_hits), keyword)
 
         return search_op, enriched_hits
 
-    def get_document_structure(
-        self, reference_code: Optional[str] = None, pid: Optional[str] = None
-    ) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    def get_document_structure(self, reference_code: Optional[str] = None, pid: Optional[str] = None) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """Retrieve document structure and IIIF collection information.
 
         Fetches structural metadata about a document including available
@@ -292,9 +266,7 @@ class SearchOperations:
         if not reference_code and not pid:
             return None
 
-        resolved_pid = (
-            pid if pid else self.page_service.oai_client.extract_pid(reference_code)
-        )
+        resolved_pid = pid if pid else self.page_service.oai_client.extract_pid(reference_code)
 
         if not resolved_pid:
             return None
@@ -302,9 +274,7 @@ class SearchOperations:
         cleaned_pid = remove_arkis_prefix(resolved_pid)
         return self.iiif_client.explore_collection(cleaned_pid)
 
-    def _fetch_document_metadata(
-        self, reference_code: str
-    ) -> Optional[DocumentMetadata]:
+    def _fetch_document_metadata(self, reference_code: str) -> Optional[DocumentMetadata]:
         """Fetch document metadata by searching for the reference code.
 
         Args:
@@ -325,9 +295,7 @@ class SearchOperations:
 
             search_hits = []
             for search_term in search_strategies:
-                search_hits, _ = self.search_api.search_transcribed_text(
-                    search_term, maximum_documents=5, pagination_offset=0
-                )
+                search_hits, _ = self.search_api.search_transcribed_text(search_term, maximum_documents=5, pagination_offset=0)
                 if search_hits:
                     break
 

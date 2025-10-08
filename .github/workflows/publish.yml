@@ -1,0 +1,30 @@
+name: Publish
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Publish Docker Image
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          verb: call
+          args: |
+            publish 
+            --image-repository riksarkivet/ra-mcp 
+            --tag ${{ github.event.release.tag_name }} 
+            --registry docker.io 
+            --docker-username ${{ secrets.DOCKERHUB_USER }} 
+            --docker-password env:DOCKERHUB_TOKEN
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: "latest"
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+## add pypi aswell

@@ -124,9 +124,7 @@ class RichConsoleFormatter(BaseFormatter):
             text_content,
         )
 
-    def format_search_results_table(
-        self, search_operation: SearchOperation, max_display: int = 20
-    ) -> Union[Table, str]:
+    def format_search_results_table(self, search_operation: SearchOperation, max_display: int = 20) -> Union[Table, str]:
         """
         Create a Rich Table for search results.
 
@@ -188,26 +186,18 @@ class RichConsoleFormatter(BaseFormatter):
             # Add snippets
             for hit in ref_hits[:3]:
                 snippet = truncate_text(hit.snippet_text, 150)
-                snippet = self.highlight_search_keyword(
-                    snippet, search_operation.keyword
-                )
+                snippet = self.highlight_search_keyword(snippet, search_operation.keyword)
                 trimmed_page = trim_page_number(hit.page_number)
-                content_parts.append(
-                    f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet}[/italic]"
-                )
+                content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet}[/italic]")
 
             if len(ref_hits) > 3:
-                content_parts.append(
-                    f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]"
-                )
+                content_parts.append(f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]")
 
             table.add_row(institution_and_ref, "\n".join(content_parts))
 
         return table
 
-    def format_page_context_panel(
-        self, context: PageContext, highlight_term: str = ""
-    ) -> Panel:
+    def format_page_context_panel(self, context: PageContext, highlight_term: str = "") -> Panel:
         """
         Create a Rich Panel for a single page context.
 
@@ -226,28 +216,18 @@ class RichConsoleFormatter(BaseFormatter):
 
         # Links section
         page_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-        page_content.append(
-            f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]"
-        )
+        page_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
         if context.image_url:
-            page_content.append(
-                f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]"
-            )
+            page_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
         if context.bildvisning_url:
-            page_content.append(
-                f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]"
-            )
+            page_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
 
         trimmed_page = trim_page_number(str(context.page_number))
         panel_title = f"[cyan]Page {trimmed_page}: {context.reference_code or 'Unknown Reference'}[/cyan]"
 
-        return self.format_panel(
-            "\n".join(page_content), panel_title=panel_title, panel_border_style="green"
-        )
+        return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-    def format_document_panel(
-        self, doc_ref: str, doc_hits: List[SearchHit], keyword: str
-    ) -> Panel:
+    def format_document_panel(self, doc_ref: str, doc_hits: List[SearchHit], keyword: str) -> Panel:
         """
         Create a Rich Panel for a document with multiple hits.
 
@@ -268,9 +248,7 @@ class RichConsoleFormatter(BaseFormatter):
 
         # Get unique page numbers
         unique_pages = get_unique_page_numbers(doc_hits)
-        content.append(
-            f"[bold green]📄 Pages with hits:[/bold green] {', '.join(unique_pages)}"
-        )
+        content.append(f"[bold green]📄 Pages with hits:[/bold green] {', '.join(unique_pages)}")
 
         if first_hit.date:
             content.append(f"[bold blue]📅 Date:[/bold blue] {first_hit.date}")
@@ -278,18 +256,14 @@ class RichConsoleFormatter(BaseFormatter):
         # Add full page texts if available
         for hit in doc_hits:
             if hit.full_page_text:
-                display_text = self.highlight_search_keyword(
-                    hit.full_page_text, keyword
-                )
+                display_text = self.highlight_search_keyword(hit.full_page_text, keyword)
                 trimmed_page = trim_page_number(str(hit.page_number))
                 content.append(f"\n[bold cyan]Page {trimmed_page}:[/bold cyan]")
                 content.append(f"[italic]{display_text}[/italic]")
 
         panel_title = f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
 
-        return self.format_panel(
-            "\n".join(content), panel_title=panel_title, panel_border_style="green"
-        )
+        return self.format_panel("\n".join(content), panel_title=panel_title, panel_border_style="green")
 
     def format_search_summary(self, summary: SearchSummary) -> List[str]:
         """
@@ -302,17 +276,11 @@ class RichConsoleFormatter(BaseFormatter):
             List of formatted summary lines
         """
         lines = []
-        lines.append(
-            f"\n✓ Found {summary.page_hits_returned} page-level hits across {summary.documents_returned} documents"
-        )
-        lines.append(
-            "[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]"
-        )
+        lines.append(f"\n✓ Found {summary.page_hits_returned} page-level hits across {summary.documents_returned} documents")
+        lines.append("[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]")
         return lines
 
-    def format_browse_example(
-        self, grouped_hits: Dict[str, List[SearchHit]], keyword: str
-    ) -> List[str]:
+    def format_browse_example(self, grouped_hits: Dict[str, List[SearchHit]], keyword: str) -> List[str]:
         """
         Format an example browse command.
 

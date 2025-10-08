@@ -14,41 +14,31 @@ class IIIFClient:
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
 
-    def explore_collection(
-        self, pid: str, timeout: int = 30
-    ) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    def explore_collection(self, pid: str, timeout: int = 30) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """Explore IIIF collection to get manifests."""
         collection_endpoint_url = self._build_collection_url(pid)
 
-        collection_response = self._fetch_collection_data(
-            collection_endpoint_url, timeout
-        )
+        collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
         if not collection_response:
             return None
 
         collection_title = self._extract_collection_title(collection_response)
         available_manifests = self._extract_all_manifests(collection_response)
 
-        return self._build_collection_result(
-            collection_title, available_manifests, collection_endpoint_url
-        )
+        return self._build_collection_result(collection_title, available_manifests, collection_endpoint_url)
 
     def _build_collection_url(self, persistent_identifier: str) -> str:
         """Build the collection API URL."""
         return f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
 
-    def _fetch_collection_data(
-        self, collection_url: str, timeout_seconds: int
-    ) -> Optional[Dict]:
+    def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> Optional[Dict]:
         """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
             return self.http_client.get_json(collection_url, timeout=timeout_seconds)
         except Exception as e:
             # Log the error before returning None
             if hasattr(self.http_client, "logger") and self.http_client.logger:
-                self.http_client.logger.error(
-                    f"Failed to fetch IIIF collection data from {collection_url}: {str(e)}"
-                )
+                self.http_client.logger.error(f"Failed to fetch IIIF collection data from {collection_url}: {str(e)}")
             return None
 
     def _extract_collection_title(self, collection_data: Dict) -> str:
@@ -102,9 +92,7 @@ class IIIFClient:
 
         return url_segments[-1] if url_segments else ""
 
-    def _build_collection_result(
-        self, title: str, manifests: List[Dict[str, str]], collection_url: str
-    ) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    def _build_collection_result(self, title: str, manifests: List[Dict[str, str]], collection_url: str) -> Dict[str, Union[str, List[Dict[str, str]]]]:
         """Build the final collection result structure."""
         return {
             "title": title,
@@ -112,9 +100,7 @@ class IIIFClient:
             "collection_url": collection_url,
         }
 
-    def _extract_iiif_label(
-        self, label_object: Union[str, Dict, List], default_value: str = "Unknown"
-    ) -> str:
+    def _extract_iiif_label(self, label_object: Union[str, Dict, List], default_value: str = "Unknown") -> str:
         """Smart IIIF label extraction supporting all language map formats."""
         if not label_object:
             return default_value
@@ -145,9 +131,7 @@ class IIIFClient:
 
         return None
 
-    def _extract_value_from_language_entry(
-        self, language_entry: Union[str, List]
-    ) -> str:
+    def _extract_value_from_language_entry(self, language_entry: Union[str, List]) -> str:
         """Extract string value from language entry."""
         if isinstance(language_entry, list) and language_entry:
             return str(language_entry[0])

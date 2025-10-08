@@ -39,33 +39,23 @@ class SearchAPI:
         Returns:
             tuple: (list of SearchHit objects, total number of results)
         """
-        search_parameters = self._build_search_parameters(
-            search_keyword, maximum_documents, pagination_offset
-        )
+        search_parameters = self._build_search_parameters(search_keyword, maximum_documents, pagination_offset)
 
         try:
             search_result_data = self._execute_search_request(search_parameters)
 
-            retrieved_documents = self._extract_documents_from_response(
-                search_result_data, maximum_documents
-            )
+            retrieved_documents = self._extract_documents_from_response(search_result_data, maximum_documents)
 
-            collected_search_hits = self._collect_hits_from_documents(
-                retrieved_documents, maximum_hits_per_document
-            )
+            collected_search_hits = self._collect_hits_from_documents(retrieved_documents, maximum_hits_per_document)
 
-            total_available_results = search_result_data.get(
-                "totalHits", len(collected_search_hits)
-            )
+            total_available_results = search_result_data.get("totalHits", len(collected_search_hits))
 
             return collected_search_hits, total_available_results
 
         except Exception as error:
             raise Exception(f"Search failed: {error}") from error
 
-    def _build_search_parameters(
-        self, keyword: str, result_limit: int, offset: int
-    ) -> Dict[str, Union[str, int]]:
+    def _build_search_parameters(self, keyword: str, result_limit: int, offset: int) -> Dict[str, Union[str, int]]:
         """Build search API parameters."""
         return {
             "transcribed_text": keyword,
@@ -77,13 +67,9 @@ class SearchAPI:
 
     def _execute_search_request(self, parameters: Dict) -> Dict:
         """Execute the search API request using centralized HTTP client."""
-        return self.http_client.get_json(
-            SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT
-        )
+        return self.http_client.get_json(SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT)
 
-    def _extract_documents_from_response(
-        self, response_data: Dict, document_limit: Optional[int]
-    ) -> List[Dict]:
+    def _extract_documents_from_response(self, response_data: Dict, document_limit: Optional[int]) -> List[Dict]:
         """Extract and limit documents from API response."""
         available_documents = response_data.get("items", [])
 
@@ -92,9 +78,7 @@ class SearchAPI:
 
         return available_documents
 
-    def _collect_hits_from_documents(
-        self, documents: List[Dict], hits_per_document_limit: Optional[int]
-    ) -> List[SearchHit]:
+    def _collect_hits_from_documents(self, documents: List[Dict], hits_per_document_limit: Optional[int]) -> List[SearchHit]:
         """Collect all search hits from documents."""
         all_hits = []
         for document in documents:
@@ -115,9 +99,7 @@ class SearchAPI:
         if not transcribed_content or "snippets" not in transcribed_content:
             return []
 
-        return self._process_document_snippets(
-            transcribed_content["snippets"], document_info, maximum_hits
-        )
+        return self._process_document_snippets(transcribed_content["snippets"], document_info, maximum_hits)
 
     def _extract_document_information(self, document: Dict) -> Dict:
         """Extract all document information and metadata."""
@@ -137,9 +119,7 @@ class SearchAPI:
             "note": metadata.get("note"),
             "archival_institution": metadata.get("archivalInstitution", []),
             "date": metadata.get("date"),
-            "collection_url": f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
-            if persistent_identifier
-            else None,
+            "collection_url": f"{COLLECTION_API_BASE_URL}/{persistent_identifier}" if persistent_identifier else None,
             "manifest_url": manifest_url,
         }
 
@@ -149,16 +129,12 @@ class SearchAPI:
             return f"{title[:max_length]}..."
         return title
 
-    def _process_document_snippets(
-        self, snippets: List[Dict], document_info: Dict, hit_limit: Optional[int]
-    ) -> List[SearchHit]:
+    def _process_document_snippets(self, snippets: List[Dict], document_info: Dict, hit_limit: Optional[int]) -> List[SearchHit]:
         """Process all snippets from a document into search hits."""
         processed_hits = []
 
         for snippet in snippets:
-            snippet_hits = self._process_single_snippet(
-                snippet, document_info, hit_limit, len(processed_hits)
-            )
+            snippet_hits = self._process_single_snippet(snippet, document_info, hit_limit, len(processed_hits))
             processed_hits.extend(snippet_hits)
 
             if hit_limit and len(processed_hits) >= hit_limit:
@@ -184,9 +160,7 @@ class SearchAPI:
             page_number = self._extract_page_number(page_data)
             cleaned_text = self._clean_html(snippet.get("text", ""))
 
-            hit = self._create_search_hit(
-                document_info, page_number, cleaned_text, snippet.get("score", 0)
-            )
+            hit = self._create_search_hit(document_info, page_number, cleaned_text, snippet.get("score", 0))
             snippet_hits.append(hit)
 
         return snippet_hits

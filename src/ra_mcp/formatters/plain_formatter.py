@@ -39,16 +39,10 @@ class PlainTextFormatter(BaseFormatter):
 
         # Calculate column widths
         all_table_rows = [column_headers] + table_rows
-        column_widths = [
-            max(len(str(row[column_index])) for row in all_table_rows)
-            for column_index in range(len(column_headers))
-        ]
+        column_widths = [max(len(str(row[column_index])) for row in all_table_rows) for column_index in range(len(column_headers))]
 
         # Format header
-        formatted_header = " | ".join(
-            column_headers[column_index].ljust(column_widths[column_index])
-            for column_index in range(len(column_headers))
-        )
+        formatted_header = " | ".join(column_headers[column_index].ljust(column_widths[column_index]) for column_index in range(len(column_headers)))
         formatted_lines.append(formatted_header)
 
         # Add simple separator
@@ -56,17 +50,12 @@ class PlainTextFormatter(BaseFormatter):
 
         # Format rows
         for data_row in table_rows:
-            formatted_row = " | ".join(
-                str(data_row[column_index]).ljust(column_widths[column_index])
-                for column_index in range(len(data_row))
-            )
+            formatted_row = " | ".join(str(data_row[column_index]).ljust(column_widths[column_index]) for column_index in range(len(data_row)))
             formatted_lines.append(formatted_row)
 
         return "\n".join(formatted_lines)
 
-    def format_panel(
-        self, panel_content: str, panel_title: str = "", panel_border_style: str = ""
-    ) -> str:
+    def format_panel(self, panel_content: str, panel_title: str = "", panel_border_style: str = "") -> str:
         """
         Format content as plain text without panels or borders.
 

@@ -27,11 +27,7 @@ class HTTPClient:
             self.logger.setLevel(logging.INFO)
             if not self.logger.handlers:
                 handler = logging.FileHandler("ra_mcp_api.log")
-                handler.setFormatter(
-                    logging.Formatter(
-                        "%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-                    )
-                )
+                handler.setFormatter(logging.Formatter("%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
                 self.logger.addHandler(handler)
 
     def get_json(
@@ -104,10 +100,7 @@ class HTTPClient:
                         error_body = f" - Body: {error_body}"
                     except Exception:
                         pass
-                self.logger.error(
-                    f"GET JSON {full_url} - {duration:.3f}s - "
-                    f"ERROR: {error_msg}{error_body}"
-                )
+                self.logger.error(f"GET JSON {full_url} - {duration:.3f}s - ERROR: {error_msg}{error_body}")
 
             if isinstance(e, HTTPError):
                 raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
@@ -185,19 +178,14 @@ class HTTPClient:
                         error_body = f" - Body: {error_body}"
                     except Exception:
                         pass
-                self.logger.error(
-                    f"GET XML {full_url} - {duration:.3f}s - "
-                    f"ERROR: {error_msg}{error_body}"
-                )
+                self.logger.error(f"GET XML {full_url} - {duration:.3f}s - ERROR: {error_msg}{error_body}")
 
             if isinstance(e, HTTPError):
                 raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
             else:
                 raise Exception(f"URL Error: {e.reason}") from e
 
-    def get_content(
-        self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None
-    ) -> Optional[bytes]:
+    def get_content(self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> Optional[bytes]:
         """
         Make a GET request and return raw content.
         Returns None on 404 or errors.
@@ -234,9 +222,7 @@ class HTTPClient:
                 if response.status != 200:
                     if self.logger and start_time:
                         duration = time.perf_counter() - start_time
-                        self.logger.warning(
-                            f"GET {url} - {duration:.3f}s - {response.status}"
-                        )
+                        self.logger.warning(f"GET {url} - {duration:.3f}s - {response.status}")
                     return None
 
                 content = response.read()

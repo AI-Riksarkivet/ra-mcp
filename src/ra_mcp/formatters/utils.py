@@ -135,14 +135,10 @@ def sort_hits_by_page(hits: List[SearchHit]) -> List[SearchHit]:
     Returns:
         Sorted list of hits
     """
-    return sorted(
-        hits, key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0
-    )
+    return sorted(hits, key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0)
 
 
-def format_example_browse_command(
-    reference_code: str, page_numbers: List[str], search_term: str = ""
-) -> str:
+def format_example_browse_command(reference_code: str, page_numbers: List[str], search_term: str = "") -> str:
     """
     Format an example browse command for display.
 

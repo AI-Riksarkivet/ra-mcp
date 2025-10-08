@@ -21,9 +21,7 @@ class BaseFormatter(ABC):
         pass
 
     @abstractmethod
-    def format_panel(
-        self, panel_content: str, panel_title: str = "", panel_border_style: str = ""
-    ) -> str:
+    def format_panel(self, panel_content: str, panel_title: str = "", panel_border_style: str = "") -> str:
         pass
 
     @abstractmethod
@@ -31,9 +29,7 @@ class BaseFormatter(ABC):
         pass
 
 
-def format_error_message(
-    error_message: str, error_suggestions: Optional[List[str]] = None
-) -> str:
+def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
     formatted_lines = []
     formatted_lines.append(f"⚠️ **Error**: {error_message}")
 

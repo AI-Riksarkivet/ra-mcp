@@ -5,7 +5,7 @@ Combines all display logic with conditional formatting based on border visibilit
 
 from typing import Dict, List, Optional, Union, Any
 
-from ..models import SearchHit, SearchOperation, BrowseOperation
+from ..models import SearchOperation, BrowseOperation
 from ..formatters import PlainTextFormatter
 from . import analysis
 
@@ -24,11 +24,7 @@ class DisplayService:
         """
         self.formatter = formatter or PlainTextFormatter()
         # Determine border visibility - PlainTextFormatter (MCP mode) typically doesn't show borders
-        self.show_border = (
-            show_border
-            if show_border is not None
-            else not isinstance(self.formatter, PlainTextFormatter)
-        )
+        self.show_border = show_border if show_border is not None else not isinstance(self.formatter, PlainTextFormatter)
 
     def format_search_results(
         self,
@@ -38,14 +34,8 @@ class DisplayService:
     ) -> Union[str, Any]:
         """Format search results using Rich table for CLI or plain text for MCP."""
         # For CLI mode without full context, use Rich table
-        if (
-            self.show_border
-            and not show_full_context
-            and hasattr(self.formatter, "format_search_results_table")
-        ):
-            return self.formatter.format_search_results_table(
-                search_operation, maximum_documents_to_display
-            )
+        if self.show_border and not show_full_context and hasattr(self.formatter, "format_search_results_table"):
+            return self.formatter.format_search_results_table(search_operation, maximum_documents_to_display)
 
         # For MCP mode or full context display, use string formatting
         if not search_operation.hits:
@@ -55,9 +45,7 @@ class DisplayService:
         hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
-        lines.append(
-            f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents"
-        )
+        lines.append(f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents")
 
         lines.append("")
 
@@ -77,34 +65,24 @@ class DisplayService:
             if first_hit.date:
                 lines.append(f"📅 Date: {first_hit.date}")
 
-            title = (
-                first_hit.title[:100] + "..."
-                if len(first_hit.title) > 100
-                else first_hit.title
-            )
+            title = first_hit.title[:100] + "..." if len(first_hit.title) > 100 else first_hit.title
             lines.append(f"📄 Title: {title}")
 
             page_numbers = sorted(set(hit.page_number for hit in document_hits))
-            trimmed_page_numbers = [
-                page_num.lstrip("0") or "0" for page_num in page_numbers
-            ]
+            trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
 
             if show_full_context and search_operation.enriched:
                 for hit in document_hits[:3]:
                     if hit.full_page_text:
-                        is_search_hit = (
-                            hit.snippet_text != "[Context page - no search hit]"
-                        )
+                        is_search_hit = hit.snippet_text != "[Context page - no search hit]"
                         page_type = "SEARCH HIT" if is_search_hit else "context"
 
                         lines.append(f"\n   📄 Page {hit.page_number} ({page_type}):")
 
                         display_text = hit.full_page_text
                         if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(
-                                display_text, search_operation.keyword
-                            )
+                            display_text = self.formatter.highlight_search_keyword(display_text, search_operation.keyword)
 
                         if len(display_text) > 500:
                             display_text = display_text[:500] + "..."
@@ -112,14 +90,8 @@ class DisplayService:
                         lines.append(f"   {display_text}")
             else:
                 for hit in document_hits[:3]:
-                    snippet = (
-                        hit.snippet_text[:150] + "..."
-                        if len(hit.snippet_text) > 150
-                        else hit.snippet_text
-                    )
-                    snippet = self.formatter.highlight_search_keyword(
-                        snippet, search_operation.keyword
-                    )
+                    snippet = hit.snippet_text[:150] + "..." if len(hit.snippet_text) > 150 else hit.snippet_text
+                    snippet = self.formatter.highlight_search_keyword(snippet, search_operation.keyword)
                     lines.append(f"   Page {hit.page_number}: {snippet}")
 
             if len(document_hits) > 3:
@@ -134,17 +106,13 @@ class DisplayService:
 
         return "\n".join(lines)
 
-    def format_browse_results(
-        self, operation: BrowseOperation, highlight_term: Optional[str] = None
-    ) -> Union[List[Any], str]:
+    def format_browse_results(self, operation: BrowseOperation, highlight_term: Optional[str] = None) -> Union[List[Any], str]:
         """Format browse results as Rich Panel objects for CLI or string for MCP."""
         # For CLI mode, use Rich panels
         if self.show_border and hasattr(self.formatter, "format_page_context_panel"):
             panels = []
             for context in operation.contexts:
-                panel = self.formatter.format_page_context_panel(
-                    context, highlight_term
-                )
+                panel = self.formatter.format_page_context_panel(context, highlight_term)
                 panels.append(panel)
             return panels
 
@@ -211,9 +179,7 @@ class DisplayService:
 
             display_text = context.full_text
             if highlight_term:
-                display_text = self.formatter.highlight_search_keyword(
-                    display_text, highlight_term
-                )
+                display_text = self.formatter.highlight_search_keyword(display_text, highlight_term)
 
             lines.append(display_text)
             lines.append("")
@@ -229,9 +195,7 @@ class DisplayService:
         # Return string for MCP (no borders), list for CLI fallback
         return "\n".join(lines) if not self.show_border else ["\n".join(lines)]
 
-    def format_document_structure(
-        self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]
-    ) -> str:
+    def format_document_structure(self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
         """Format document structure information as string."""
         if not collection_info:
             return "No document structure information available"
@@ -245,18 +209,14 @@ class DisplayService:
         if manifests:
             lines.append(f"📖 Available manifests ({len(manifests)}):")
             for manifest in manifests:
-                lines.append(
-                    f"  • {manifest.get('label', 'Untitled')} ({manifest.get('id', '')})"
-                )
+                lines.append(f"  • {manifest.get('label', 'Untitled')} ({manifest.get('id', '')})")
                 lines.append(f"    URL: {manifest.get('url', '')}")
         else:
             lines.append("No manifests found")
 
         return "\n".join(lines)
 
-    def format_error_message(
-        self, error_message: str, error_suggestions: Optional[List[str]] = None
-    ) -> str:
+    def format_error_message(self, error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
         """Format error messages as string."""
         formatted_lines = [f"❌ Error: {error_message}"]
 

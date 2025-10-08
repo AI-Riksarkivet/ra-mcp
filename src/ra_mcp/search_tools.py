@@ -102,9 +102,7 @@ async def search_transcribed(
         )
 
         if not search_result.hits:
-            return _generate_no_results_message(
-                keyword, offset, search_result.total_hits
-            )
+            return _generate_no_results_message(keyword, offset, search_result.total_hits)
 
         if show_context and search_result.enriched:
             _truncate_page_texts_if_needed(search_result.hits, truncate_page_text)
@@ -115,13 +113,9 @@ async def search_transcribed(
             show_full_context=show_context,
         )
 
-        formatted_results = _apply_token_limit_if_needed(
-            formatted_results, max_response_tokens
-        )
+        formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
 
-        formatted_results = _append_pagination_info_if_needed(
-            formatted_results, search_result, offset, max_results
-        )
+        formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
 
         return formatted_results
 
@@ -145,9 +139,7 @@ def _generate_no_results_message(keyword, offset, total_hits):
     """Generate appropriate message when no results are found."""
     if offset > 0:
         return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
-    return (
-        f"No results found for '{keyword}'. Try different search terms or variations."
-    )
+    return f"No results found for '{keyword}'. Try different search terms or variations."
 
 
 def _truncate_page_texts_if_needed(hits, max_length):
@@ -162,20 +154,13 @@ def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
     """Apply token limit to the formatted results if needed."""
     estimated_tokens = len(formatted_results) // 4
     if estimated_tokens > max_response_tokens:
-        return (
-            formatted_results[: max_response_tokens * 4]
-            + "\n\n[Response truncated due to size limits]"
-        )
+        return formatted_results[: max_response_tokens * 4] + "\n\n[Response truncated due to size limits]"
     return formatted_results
 
 
-def _append_pagination_info_if_needed(
-    formatted_results, search_result, offset, max_results
-):
+def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results):
     """Append pagination information to results if there are more results available."""
-    pagination_info = analysis.get_pagination_info(
-        search_result.hits, search_result.total_hits, offset, max_results
-    )
+    pagination_info = analysis.get_pagination_info(search_result.hits, search_result.total_hits, offset, max_results)
 
     if pagination_info["has_more"]:
         formatted_results += f"\n\n📊 **Pagination**: Showing documents {pagination_info['document_range_start']}-{pagination_info['document_range_end']}"
@@ -281,9 +266,7 @@ async def get_document_structure(
         search_operations = SearchOperations(http_client=default_http_client)
         display_service = DisplayService(formatter=PlainTextFormatter())
 
-        document_structure = _fetch_document_structure(
-            search_operations, reference_code=reference_code, pid=pid
-        )
+        document_structure = _fetch_document_structure(search_operations, reference_code=reference_code, pid=pid)
 
         if not document_structure:
             return _generate_structure_not_found_message()

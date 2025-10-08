@@ -78,9 +78,7 @@ def _calculate_pagination_metadata(
     limit: int,
 ) -> Dict[str, Union[int, bool, Optional[int]]]:
     """Calculate pagination metadata."""
-    has_additional_results = len(unique_documents) == limit and total_hits > len(
-        search_hits
-    )
+    has_additional_results = len(unique_documents) == limit and total_hits > len(search_hits)
 
     document_range_start = offset // limit * limit + 1
     document_range_end = document_range_start + len(unique_documents) - 1
@@ -115,9 +113,7 @@ def extract_search_summary(
     return search_summary
 
 
-def _build_search_summary(
-    search_operation: SearchOperation, document_grouped_hits: Dict[str, List[SearchHit]]
-) -> SearchSummary:
+def _build_search_summary(search_operation: SearchOperation, document_grouped_hits: Dict[str, List[SearchHit]]) -> SearchSummary:
     """Build summary from search operation."""
     return SearchSummary(
         keyword=search_operation.keyword,

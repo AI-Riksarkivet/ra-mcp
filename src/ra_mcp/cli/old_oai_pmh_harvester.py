@@ -60,9 +60,7 @@ class OAIPMHClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "Riksarkivet OAI-PMH Harvester/1.0"})
 
-    def _make_request(
-        self, params: Dict[str, str], archive_set: Optional[str] = None
-    ) -> etree.Element:
+    def _make_request(self, params: Dict[str, str], archive_set: Optional[str] = None) -> etree.Element:
         """Make an OAI-PMH request and return parsed XML."""
         # Build URL - archive sets are part of the URL path, not query parameters
         url = self.base_url
@@ -96,8 +94,7 @@ class OAIPMHClient:
             "base_url": self._get_text(identify, "oai:baseURL") or "",
             "protocol_version": self._get_text(identify, "oai:protocolVersion") or "",
             "admin_email": self._get_text(identify, "oai:adminEmail") or "",
-            "earliest_datestamp": self._get_text(identify, "oai:earliestDatestamp")
-            or "",
+            "earliest_datestamp": self._get_text(identify, "oai:earliestDatestamp") or "",
             "deleted_record": self._get_text(identify, "oai:deletedRecord") or "",
             "granularity": self._get_text(identify, "oai:granularity") or "",
         }
@@ -163,8 +160,7 @@ class OAIPMHClient:
                 {
                     "prefix": self._get_text(format_elem, "oai:metadataPrefix") or "",
                     "schema": self._get_text(format_elem, "oai:schema") or "",
-                    "namespace": self._get_text(format_elem, "oai:metadataNamespace")
-                    or "",
+                    "namespace": self._get_text(format_elem, "oai:metadataNamespace") or "",
                 }
             )
 
@@ -215,9 +211,7 @@ class OAIPMHClient:
 
         return identifiers
 
-    def get_record(
-        self, identifier: str, metadata_prefix: str = "oai_ape_ead"
-    ) -> Dict[str, Any]:
+    def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> Dict[str, Any]:
         """Get a specific record with full metadata."""
         params = {
             "verb": "GetRecord",
@@ -254,9 +248,7 @@ class OAIPMHClient:
     ) -> List[Dict[str, Any]]:
         """Harvest multiple records within a date range."""
         # First get identifiers using ListIdentifiers
-        identifiers = self.list_identifiers(
-            set_spec, metadata_prefix, from_date, until_date
-        )
+        identifiers = self.list_identifiers(set_spec, metadata_prefix, from_date, until_date)
 
         # Filter out resumption token info and only get actual records
         record_identifiers = [i for i in identifiers if "identifier" in i]
@@ -269,18 +261,14 @@ class OAIPMHClient:
         total = len(record_identifiers)
 
         for idx, identifier_info in enumerate(record_identifiers):
-            console.print(
-                f"[cyan]Processing {idx + 1}/{total}: {identifier_info['identifier']}[/cyan]"
-            )
+            console.print(f"[cyan]Processing {idx + 1}/{total}: {identifier_info['identifier']}[/cyan]")
             try:
                 # Get full record details for each identifier
                 record = self.get_record(identifier_info["identifier"], metadata_prefix)
                 records.append(record)
             except Exception as e:
                 # Continue harvesting even if one record fails
-                console.print(
-                    f"[yellow]Warning: Failed to get record {identifier_info['identifier']}: {e}[/yellow]"
-                )
+                console.print(f"[yellow]Warning: Failed to get record {identifier_info['identifier']}: {e}[/yellow]")
                 continue
 
         return records
@@ -297,9 +285,7 @@ class OAIPMHClient:
         until_date = datetime.now().strftime("%Y-%m-%d")
         from_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
 
-        console.print(
-            f"[blue]Searching for records modified between {from_date} and {until_date} ({days_back} days back)[/blue]"
-        )
+        console.print(f"[blue]Searching for records modified between {from_date} and {until_date} ({days_back} days back)[/blue]")
 
         return self.harvest_records(
             from_date=from_date,
@@ -362,15 +348,11 @@ class OAIPMHClient:
             metadata["description"] = scope[0].text
 
         # Extract digital object links
-        dao_image = ead.xpath(
-            './/ead:dao[@xlink:role="IMAGE"]/@xlink:href', namespaces=NAMESPACES
-        )
+        dao_image = ead.xpath('.//ead:dao[@xlink:role="IMAGE"]/@xlink:href', namespaces=NAMESPACES)
         if dao_image:
             metadata["image_viewer"] = dao_image[0]
 
-        dao_manifest = ead.xpath(
-            './/ead:dao[@xlink:role="MANIFEST"]/@xlink:href', namespaces=NAMESPACES
-        )
+        dao_manifest = ead.xpath('.//ead:dao[@xlink:role="MANIFEST"]/@xlink:href', namespaces=NAMESPACES)
         if dao_manifest:
             metadata["iiif_manifest"] = dao_manifest[0]
 
@@ -491,18 +473,14 @@ def list_sets(client):
 def list_identifiers(client, set_spec, metadata_prefix, from_date, until_date, limit):
     """List record identifiers from a set or date range."""
     try:
-        identifiers = client.list_identifiers(
-            set_spec, metadata_prefix, from_date, until_date
-        )
+        identifiers = client.list_identifiers(set_spec, metadata_prefix, from_date, until_date)
 
         # Filter out resumption token info
         records = [i for i in identifiers if "identifier" in i]
         resumption = [i for i in identifiers if "resumption_token" in i]
 
         # Create table
-        table = Table(
-            title="Record Identifiers" + (f" from {set_spec}" if set_spec else "")
-        )
+        table = Table(title="Record Identifiers" + (f" from {set_spec}" if set_spec else ""))
         table.add_column("Reference Code", style="cyan")
         table.add_column("Last Modified", style="green")
 
@@ -512,16 +490,12 @@ def list_identifiers(client, set_spec, metadata_prefix, from_date, until_date, l
         console.print(table)
 
         if len(records) > limit:
-            console.print(
-                f"\n[yellow]Showing {limit} of {len(records)} records[/yellow]"
-            )
+            console.print(f"\n[yellow]Showing {limit} of {len(records)} records[/yellow]")
 
         if resumption:
             r = resumption[0]
             if r.get("complete_list_size"):
-                console.print(
-                    f"\n[yellow]Total records available: {r['complete_list_size']}[/yellow]"
-                )
+                console.print(f"\n[yellow]Total records available: {r['complete_list_size']}[/yellow]")
             console.print("[yellow]Resumption token available for pagination[/yellow]")
 
     except Exception as e:
@@ -532,9 +506,7 @@ def list_identifiers(client, set_spec, metadata_prefix, from_date, until_date, l
 @cli.command("get-record")
 @click.argument("identifier")
 @click.option("--metadata-prefix", default="oai_ape_ead", help="Metadata format")
-@click.option(
-    "--output-format", type=click.Choice(["table", "json", "xml"]), default="table"
-)
+@click.option("--output-format", type=click.Choice(["table", "json", "xml"]), default="table")
 @click.pass_obj
 def get_record(client, identifier, metadata_prefix, output_format):
     """Get detailed metadata for a specific record."""
@@ -600,9 +572,7 @@ def get_record(client, identifier, metadata_prefix, output_format):
 def harvest(client, from_date, until_date, set_spec, metadata_prefix, output, limit):
     """Harvest records within a date range."""
     try:
-        records = client.harvest_records(
-            from_date, until_date, set_spec, metadata_prefix, limit
-        )
+        records = client.harvest_records(from_date, until_date, set_spec, metadata_prefix, limit)
 
         console.print(f"[green]✓ Harvested {len(records)} records[/green]")
 
@@ -635,9 +605,7 @@ def harvest(client, from_date, until_date, set_spec, metadata_prefix, output, li
             console.print(table)
 
             if len(records) > 10:
-                console.print(
-                    f"\n[yellow]Showing 10 of {len(records)} records[/yellow]"
-                )
+                console.print(f"\n[yellow]Showing 10 of {len(records)} records[/yellow]")
                 console.print("[yellow]Use --output to save all records[/yellow]")
 
     except Exception as e:
@@ -658,14 +626,10 @@ def recent(client, set_spec, days, limit, metadata_prefix, output):
         records = client.get_recent_records(set_spec, days, metadata_prefix, limit)
 
         if not records:
-            console.print(
-                f"[yellow]No records found in {set_spec} modified within the last {days} days[/yellow]"
-            )
+            console.print(f"[yellow]No records found in {set_spec} modified within the last {days} days[/yellow]")
             return
 
-        console.print(
-            f"[green]✓ Found {len(records)} records modified in the last {days} days[/green]"
-        )
+        console.print(f"[green]✓ Found {len(records)} records modified in the last {days} days[/green]")
 
         if output:
             # Save to file
@@ -691,9 +655,7 @@ def recent(client, set_spec, days, limit, metadata_prefix, output):
                 if modified_date != "N/A":
                     # Format the date nicely
                     try:
-                        dt = datetime.fromisoformat(
-                            modified_date.replace("Z", "+00:00")
-                        )
+                        dt = datetime.fromisoformat(modified_date.replace("Z", "+00:00"))
                         modified_date = dt.strftime("%Y-%m-%d %H:%M")
                     except Exception:
                         pass  # Keep original format if parsing fails
@@ -725,15 +687,9 @@ def extract_pid(client, identifier):
             )
 
             console.print("\n[yellow]How to use this PID:[/yellow]")
-            console.print(
-                f"1. IIIF Collection: https://lbiiif.riksarkivet.se/collection/arkiv/{pid}"
-            )
-            console.print(
-                f"2. With IIIF tools: ../iiif/step2_explore_collection.sh {pid}"
-            )
-            console.print(
-                f'3. MCP IIIF: mcp__oxenstierna__iiif_get_collection_info("{pid}")'
-            )
+            console.print(f"1. IIIF Collection: https://lbiiif.riksarkivet.se/collection/arkiv/{pid}")
+            console.print(f"2. With IIIF tools: ../iiif/step2_explore_collection.sh {pid}")
+            console.print(f'3. MCP IIIF: mcp__oxenstierna__iiif_get_collection_info("{pid}")')
 
             # Also try to get the record to show if it has digital content
             record = client.get_record(identifier)
@@ -741,9 +697,7 @@ def extract_pid(client, identifier):
                 console.print("\n[green]✓ Digital content confirmed available![/green]")
         else:
             console.print("[red]Could not extract PID from this record[/red]")
-            console.print(
-                "[yellow]The record may not have digital content available[/yellow]"
-            )
+            console.print("[yellow]The record may not have digital content available[/yellow]")
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
@@ -756,8 +710,7 @@ def demo(client):
     """Run a demonstration of all features."""
     console.print(
         Panel(
-            "[bold cyan]OAI-PMH Harvester Demo[/bold cyan]\n"
-            "This will demonstrate all features of the harvester",
+            "[bold cyan]OAI-PMH Harvester Demo[/bold cyan]\nThis will demonstrate all features of the harvester",
             border_style="cyan",
         )
     )

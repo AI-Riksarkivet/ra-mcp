@@ -32,10 +32,5 @@ app.command()(browse)
 app.command()(serve)
 
 
-def main():
-    """Main entry point for the CLI."""
-    app()
-
-
 if __name__ == "__main__":
-    main()
+    app()

@@ -28,15 +28,11 @@ class SearchEnrichmentService:
         """Enrich search hits with full page context by exploring IIIF collections."""
         grouped_hits_by_pid = self._group_hits_by_persistent_identifier(hits, max_pages)
 
-        enriched_search_results = self._process_grouped_hits(
-            grouped_hits_by_pid, max_pages, search_term
-        )
+        enriched_search_results = self._process_grouped_hits(grouped_hits_by_pid, max_pages, search_term)
 
         return enriched_search_results
 
-    def _group_hits_by_persistent_identifier(
-        self, search_hits: List[SearchHit], maximum_limit: int
-    ) -> dict:
+    def _group_hits_by_persistent_identifier(self, search_hits: List[SearchHit], maximum_limit: int) -> dict:
         """Group hits by PID to avoid exploring the same collection multiple times."""
         grouped_hits = defaultdict(list)
         limited_hits = search_hits[:maximum_limit]
@@ -46,9 +42,7 @@ class SearchEnrichmentService:
 
         return grouped_hits
 
-    def _process_grouped_hits(
-        self, grouped_hits: dict, page_limit: int, search_keyword: Optional[str]
-    ) -> List[SearchHit]:
+    def _process_grouped_hits(self, grouped_hits: dict, page_limit: int, search_keyword: Optional[str]) -> List[SearchHit]:
         """Process grouped hits and enrich them with context."""
         enriched_results = []
         total_processed_count = 0
@@ -79,9 +73,7 @@ class SearchEnrichmentService:
         search_keyword: Optional[str],
     ) -> List[SearchHit]:
         """Process all hits for a single PID."""
-        iiif_collection_data = self.iiif_client.explore_collection(
-            persistent_identifier, timeout=10
-        )
+        iiif_collection_data = self.iiif_client.explore_collection(persistent_identifier, timeout=10)
 
         if self._has_valid_manifests(iiif_collection_data):
             return self._process_hits_with_manifest(
@@ -123,9 +115,7 @@ class SearchEnrichmentService:
             if len(processed_results) >= remaining_capacity:
                 break
 
-            enriched_hit = self._enrich_hit_with_manifest(
-                hit, manifest_identifier, search_keyword
-            )
+            enriched_hit = self._enrich_hit_with_manifest(hit, manifest_identifier, search_keyword)
             processed_results.append(enriched_hit)
 
         return processed_results
@@ -152,12 +142,8 @@ class SearchEnrichmentService:
 
             # Without manifest, we can't generate ALTO URLs
             # Only set image and bildvisning URLs using the PID
-            hit.image_url = url_generator.iiif_image_url(
-                persistent_identifier, hit.page_number
-            )
-            hit.bildvisning_url = url_generator.bildvisning_url(
-                persistent_identifier, hit.page_number, search_keyword
-            )
+            hit.image_url = url_generator.iiif_image_url(persistent_identifier, hit.page_number)
+            hit.bildvisning_url = url_generator.bildvisning_url(persistent_identifier, hit.page_number, search_keyword)
             # Use snippet text since we can't fetch ALTO content
             hit.full_page_text = hit.snippet_text
             processed_results.append(hit)
@@ -183,9 +169,7 @@ class SearchEnrichmentService:
         if not search_hit.alto_url:
             return None
 
-        alto_text_content = self.alto_client.fetch_content(
-            search_hit.alto_url, timeout=8
-        )
+        alto_text_content = self.alto_client.fetch_content(search_hit.alto_url, timeout=8)
 
         return alto_text_content
 
@@ -198,27 +182,17 @@ class SearchEnrichmentService:
         """Enrich a single hit with generated URLs."""
         # Clean the manifest identifier for ALTO URL (remove arkis! prefix if present)
         clean_manifest_id = url_generator.remove_arkis_prefix(manifest_identifier)
-        search_hit.alto_url = url_generator.alto_url(
-            clean_manifest_id, search_hit.page_number
-        )
-        search_hit.image_url = url_generator.iiif_image_url(
-            manifest_identifier, search_hit.page_number
-        )
-        search_hit.bildvisning_url = url_generator.bildvisning_url(
-            manifest_identifier, search_hit.page_number, search_keyword
-        )
+        search_hit.alto_url = url_generator.alto_url(clean_manifest_id, search_hit.page_number)
+        search_hit.image_url = url_generator.iiif_image_url(manifest_identifier, search_hit.page_number)
+        search_hit.bildvisning_url = url_generator.bildvisning_url(manifest_identifier, search_hit.page_number, search_keyword)
 
-    def expand_hits_with_context_padding(
-        self, hits: List[SearchHit], padding: int = 1
-    ) -> List[SearchHit]:
+    def expand_hits_with_context_padding(self, hits: List[SearchHit], padding: int = 1) -> List[SearchHit]:
         """Expand search hits with context pages around each hit."""
         if padding <= 0:
             return hits
 
         grouped_document_hits = self._group_hits_by_document(hits)
-        expanded_search_results = self._build_expanded_hit_collection(
-            grouped_document_hits, padding
-        )
+        expanded_search_results = self._build_expanded_hit_collection(grouped_document_hits, padding)
 
         sorted_results = self._sort_hits_by_document_order(expanded_search_results)
         return sorted_results
@@ -233,9 +207,7 @@ class SearchEnrichmentService:
 
         return document_grouped_hits
 
-    def _build_expanded_hit_collection(
-        self, grouped_documents: dict, context_padding: int
-    ) -> List[SearchHit]:
+    def _build_expanded_hit_collection(self, grouped_documents: dict, context_padding: int) -> List[SearchHit]:
         """Build expanded collection with context pages."""
         expanded_results = []
 
@@ -244,13 +216,9 @@ class SearchEnrichmentService:
 
             document_page_numbers = self._extract_page_numbers_from_hits(document_hits)
 
-            context_page_set = self._generate_context_pages(
-                document_page_numbers, context_padding
-            )
+            context_page_set = self._generate_context_pages(document_page_numbers, context_padding)
 
-            expanded_document_hits = self._create_hits_for_all_pages(
-                persistent_id, reference_code, context_page_set, document_hits
-            )
+            expanded_document_hits = self._create_hits_for_all_pages(persistent_id, reference_code, context_page_set, document_hits)
 
             expanded_results.extend(expanded_document_hits)
 
@@ -282,9 +250,7 @@ class SearchEnrichmentService:
 
         for page_identifier in original_pages:
             if isinstance(page_identifier, int):
-                padded_pages = self._calculate_padded_pages(
-                    page_identifier, padding_size
-                )
+                padded_pages = self._calculate_padded_pages(page_identifier, padding_size)
                 context_page_collection.update(padded_pages)
             else:
                 context_page_collection.add(page_identifier)
@@ -328,28 +294,20 @@ class SearchEnrichmentService:
 
         return page_hits
 
-    def _sort_hits_by_document_order(
-        self, hit_collection: List[SearchHit]
-    ) -> List[SearchHit]:
+    def _sort_hits_by_document_order(self, hit_collection: List[SearchHit]) -> List[SearchHit]:
         """Sort hits by PID, reference code, and page number."""
         return sorted(hit_collection, key=self._sort_key)
 
-    def _find_existing_hit(
-        self, document_hits: List[SearchHit], target_page: Union[int, str]
-    ) -> Optional[SearchHit]:
+    def _find_existing_hit(self, document_hits: List[SearchHit], target_page: Union[int, str]) -> Optional[SearchHit]:
         """Find existing hit for a given page."""
         for hit in document_hits:
             if self._page_matches_hit(target_page, hit):
                 return hit
         return None
 
-    def _page_matches_hit(
-        self, target_page: Union[int, str], search_hit: SearchHit
-    ) -> bool:
+    def _page_matches_hit(self, target_page: Union[int, str], search_hit: SearchHit) -> bool:
         """Check if target page matches the hit's page number."""
-        hit_page_normalized = self._normalize_page_for_comparison(
-            search_hit.page_number
-        )
+        hit_page_normalized = self._normalize_page_for_comparison(search_hit.page_number)
 
         try:
             if isinstance(target_page, int):
@@ -374,9 +332,7 @@ class SearchEnrichmentService:
         formatted_page_number = self._format_page_number(page_identifier)
         template_hit = self._get_template_hit(existing_document_hits)
 
-        return self._build_context_hit_from_template(
-            persistent_identifier, reference_code, formatted_page_number, template_hit
-        )
+        return self._build_context_hit_from_template(persistent_identifier, reference_code, formatted_page_number, template_hit)
 
     def _format_page_number(self, page_identifier: Union[int, str]) -> str:
         """Format page identifier as string."""
@@ -413,9 +369,7 @@ class SearchEnrichmentService:
 
     def _sort_key(self, search_hit: SearchHit):
         """Sort key for organizing hits."""
-        parsed_page_number = self._extract_numeric_page_for_sorting(
-            search_hit.page_number
-        )
+        parsed_page_number = self._extract_numeric_page_for_sorting(search_hit.page_number)
         return (search_hit.pid, search_hit.reference_code, parsed_page_number)
 
     def _extract_numeric_page_for_sorting(self, page_number: str) -> int:

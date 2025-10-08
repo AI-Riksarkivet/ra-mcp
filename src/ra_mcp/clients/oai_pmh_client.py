@@ -17,20 +17,14 @@ class OAIPMHClient:
         self.http_client = http_client
         self.base_url = base_url
 
-    def get_record(
-        self, identifier: str, metadata_prefix: str = "oai_ape_ead"
-    ) -> Dict[str, Union[str, List, Dict]]:
+    def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> Dict[str, Union[str, List, Dict]]:
         """Get a specific record with full metadata."""
-        oai_request_parameters = self._build_oai_request_parameters(
-            identifier, metadata_prefix
-        )
+        oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
 
         xml_response_root = self._make_request(oai_request_parameters)
         oai_record_element = self._extract_record_from_response(xml_response_root)
 
-        extracted_record_data = self._build_basic_record_result(
-            oai_record_element, metadata_prefix
-        )
+        extracted_record_data = self._build_basic_record_result(oai_record_element, metadata_prefix)
 
         if metadata_prefix == "oai_ape_ead":
             ead_metadata = self._extract_ead_metadata(oai_record_element)
@@ -38,9 +32,7 @@ class OAIPMHClient:
 
         return extracted_record_data
 
-    def _build_oai_request_parameters(
-        self, record_identifier: str, metadata_format: str
-    ) -> Dict[str, str]:
+    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, str]:
         """Build OAI-PMH request parameters."""
         return {
             "verb": "GetRecord",
@@ -55,9 +47,7 @@ class OAIPMHClient:
             raise Exception("No record found in OAI-PMH response")
         return record_elements[0]
 
-    def _build_basic_record_result(
-        self, record_element: etree.Element, metadata_format: str
-    ) -> Dict[str, Union[str, List, Dict]]:
+    def _build_basic_record_result(self, record_element: etree.Element, metadata_format: str) -> Dict[str, Union[str, List, Dict]]:
         """Build basic record result from header information."""
         record_header = self._parse_header_information(record_element)
 
@@ -67,9 +57,7 @@ class OAIPMHClient:
             "metadata_format": metadata_format,
         }
 
-    def _parse_header_information(
-        self, record_element: etree.Element
-    ) -> Dict[str, str]:
+    def _parse_header_information(self, record_element: etree.Element) -> Dict[str, str]:
         """Parse header information from record element."""
         header_elements = record_element.xpath("oai:header", namespaces=NAMESPACES)
         if not header_elements:
@@ -106,9 +94,7 @@ class OAIPMHClient:
     def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
-            xml_content = self.http_client.get_xml(
-                self.base_url, params=request_parameters, timeout=30
-            )
+            xml_content = self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
 
             xml_response_root = self._parse_xml_response(xml_content)
             self._check_oai_response_errors(xml_response_root)
@@ -123,9 +109,7 @@ class OAIPMHClient:
         try:
             return etree.fromstring(xml_data)
         except Exception as parse_error:
-            raise Exception(
-                f"Failed to parse XML response: {parse_error}"
-            ) from parse_error
+            raise Exception(f"Failed to parse XML response: {parse_error}") from parse_error
 
     def _check_oai_response_errors(self, xml_root: etree.Element) -> None:
         """Check for OAI-PMH errors in the response."""
@@ -135,9 +119,7 @@ class OAIPMHClient:
             error_message = error_elements[0].text or "No error message"
             raise Exception(f"OAI-PMH Error [{error_code}]: {error_message}")
 
-    def _extract_ead_metadata(
-        self, record_element: etree.Element
-    ) -> Dict[str, Union[str, List, Dict]]:
+    def _extract_ead_metadata(self, record_element: etree.Element) -> Dict[str, Union[str, List, Dict]]:
         """Extract metadata from EAD format."""
         ead_metadata_element = self._extract_ead_element_from_record(record_element)
 
@@ -164,41 +146,26 @@ class OAIPMHClient:
 
         return extracted_metadata
 
-    def _extract_ead_element_from_record(
-        self, record_element: etree.Element
-    ) -> Optional[etree.Element]:
+    def _extract_ead_element_from_record(self, record_element: etree.Element) -> Optional[etree.Element]:
         """Extract EAD element from record."""
-        ead_elements = record_element.xpath(
-            ".//ead:ead", namespaces={"ead": NAMESPACES["ead"]}
-        )
+        ead_elements = record_element.xpath(".//ead:ead", namespaces={"ead": NAMESPACES["ead"]})
         return ead_elements[0] if ead_elements else None
 
     def _extract_title_from_ead(self, ead_element: etree.Element) -> str:
         """Extract title from EAD element."""
-        return (
-            self._get_text(ead_element, ".//ead:unittitle", {"ead": NAMESPACES["ead"]})
-            or ""
-        )
+        return self._get_text(ead_element, ".//ead:unittitle", {"ead": NAMESPACES["ead"]}) or ""
 
     def _extract_unitid_from_ead(self, ead_element: etree.Element) -> str:
         """Extract unit ID from EAD element."""
-        return (
-            self._get_text(ead_element, ".//ead:unitid", {"ead": NAMESPACES["ead"]})
-            or ""
-        )
+        return self._get_text(ead_element, ".//ead:unitid", {"ead": NAMESPACES["ead"]}) or ""
 
     def _extract_repository_from_ead(self, ead_element: etree.Element) -> str:
         """Extract repository information from EAD element."""
-        return (
-            self._get_text(ead_element, ".//ead:repository", {"ead": NAMESPACES["ead"]})
-            or ""
-        )
+        return self._get_text(ead_element, ".//ead:repository", {"ead": NAMESPACES["ead"]}) or ""
 
     def _extract_nad_link_from_ead(self, ead_element: etree.Element) -> str:
         """Extract NAD link from EAD element."""
-        dao_elements = ead_element.xpath(
-            ".//ead:dao", namespaces={"ead": NAMESPACES["ead"]}
-        )
+        dao_elements = ead_element.xpath(".//ead:dao", namespaces={"ead": NAMESPACES["ead"]})
         if dao_elements:
             return dao_elements[0].get("{http://www.w3.org/1999/xlink}href", "")
         return ""
