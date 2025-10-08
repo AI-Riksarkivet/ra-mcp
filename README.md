@@ -2,12 +2,13 @@
   <img src="assets/logo/logo_512.jpg" alt="RA-MCP Logo" width="250">
 </div>
 
+
+# ra-mcp (WIP)
+
 [![Dagger](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml)
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
 [![Secret Leaks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml)
 [![Checks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/checks.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/checks.yml)
-
-# ra-mcp (WIP)
 
 
 ## MCPs for Riksarkivet
@@ -365,6 +366,7 @@ get_document_structure(
 - Browse specific pages for detailed examination with keyword highlighting
 
 ___
+
 
 
 
