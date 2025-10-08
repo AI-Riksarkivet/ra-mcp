@@ -63,7 +63,12 @@ uv run ra search '"Stockholm trolldom"~10'  # "Stockholm" and "trolldom" within 
 
 # Boosting terms - increase relevance of specific terms
 uv run ra search "Stockholm^4 trol*"  # Boost "Stockholm" relevance with wildcard
-uv run ra search '"Stockholm dom*"^4 Reg*'  # Boost entire phrase with wildcard
+uv run ra search '("Stockholm dom*"^4 Reg*)'  # Boost entire phrase with wildcard
+
+# Boolean operators - combine search terms
+uv run ra search "(Stockholm AND trolldom)"  # Both terms required
+uv run ra search "(Stockholm OR Göteborg)"  # Either term (or both)
+uv run ra search "(Stockholm NOT trolldom)"  # Stockholm but not trolldom
 ```
 
 **Search Options:**
@@ -84,6 +89,9 @@ uv run ra search '"Stockholm dom*"^4 Reg*'  # Boost entire phrase with wildcard
 | **Fuzzy (custom)** | `~N` | `"Stockholm~1"` | Finds similar terms with max edit distance N (0-2) |
 | **Proximity** | `"word1 word2"~N` | `"Stockholm trolldom"~10` | Finds terms within N words of each other |
 | **Boosting** | `^N` | `"Stockholm^4 trol*"` | Increases relevance of boosted term (default: 1) |
+| **Boolean AND** | `AND` or `&&` | `(Stockholm AND trolldom)` | Both terms must be present |
+| **Boolean OR** | `OR` or `\|\|` | `(Stockholm OR Göteborg)` | Either term (or both) must be present |
+| **Boolean NOT** | `NOT` or `!` | `(Stockholm NOT trolldom)` | First term without second term |
 
 ### 2. Browse Specific Documents
 
