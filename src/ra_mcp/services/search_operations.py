@@ -3,10 +3,10 @@ Unified search operations that can be used by both CLI and MCP interfaces.
 This eliminates code duplication between CLI commands and MCP tools.
 """
 
-from typing import List, Optional, Tuple, Dict, Union
+from typing import List, Optional, Dict, Union
 
 from ..clients import SearchAPI, IIIFClient
-from ..models import SearchHit, SearchOperation, BrowseOperation, DocumentMetadata
+from ..models import SearchOperation, BrowseOperation, DocumentMetadata
 from ..utils import parse_page_range, remove_arkis_prefix
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
@@ -40,7 +40,6 @@ class SearchOperations:
         max_hits_per_document: Optional[int] = None,
         show_context: bool = False,
         max_pages_with_context: int = 0,
-        context_padding: int = 0,
     ) -> SearchOperation:
         """Search for transcribed text across document collections.
 
@@ -54,7 +53,6 @@ class SearchOperations:
             max_hits_per_document: Limit hits per document (None for unlimited).
             show_context: Whether to fetch and include surrounding text context.
             max_pages_with_context: Number of pages to enrich with full context.
-            context_padding: Number of adjacent pages to include for context.
 
         Returns:
             SearchOperation containing search hits, total count, and metadata.
@@ -73,7 +71,7 @@ class SearchOperations:
 
         # Enrich with context if requested
         if show_context and hits and max_pages_with_context > 0:
-            self._enrich_search_operation_with_context(search_operation, max_pages_with_context, context_padding, keyword)
+            self._enrich_search_operation_with_context(search_operation, max_pages_with_context, keyword)
 
         return search_operation
 
@@ -81,26 +79,22 @@ class SearchOperations:
         self,
         search_operation: SearchOperation,
         page_limit: int,
-        padding_size: int,
         search_keyword: str,
     ) -> None:
         """Enrich search operation with contextual page content.
 
         Modifies the search operation in-place by fetching full page content
-        for the specified hits and optionally including adjacent pages.
+        for the specified hits.
 
         Args:
             search_operation: The operation to enrich (modified in-place).
             page_limit: Maximum number of pages to enrich.
-            padding_size: Number of pages before/after to include.
             search_keyword: Original search term for highlighting.
         """
-        # Limit hits and optionally expand with padding
+        # Limit hits
         limited_hits = search_operation.hits[:page_limit]
 
-        hits_for_enrichment = self.enrichment_service.expand_hits_with_context_padding(limited_hits, padding_size) if padding_size > 0 else limited_hits
-
-        search_operation.hits = self.enrichment_service.enrich_hits_with_context(hits_for_enrichment, len(hits_for_enrichment), search_keyword)
+        search_operation.hits = self.enrichment_service.enrich_hits_with_context(limited_hits, len(limited_hits), search_keyword)
         search_operation.enriched = True
 
     def browse_document(
@@ -208,43 +202,6 @@ class SearchOperations:
                 page_contexts.append(page_context)
 
         return page_contexts
-
-    def show_pages_with_context(
-        self,
-        keyword: str,
-        max_pages: int = 10,
-        context_padding: int = 1,
-        search_limit: int = 50,
-    ) -> Tuple[SearchOperation, List[SearchHit]]:
-        """Search and display pages with full context.
-
-        Combines search and context enrichment to provide search results
-        with surrounding page content for better understanding.
-
-        Args:
-            keyword: Search term to find in transcribed text.
-            max_pages: Maximum pages to display with full context.
-            context_padding: Number of adjacent pages to include.
-            search_limit: Maximum search results to retrieve initially.
-
-        Returns:
-            Tuple containing:
-            - SearchOperation: Original search results and metadata.
-            - List[SearchHit]: Enriched hits with full page content
-              and padding pages included.
-        """
-        search_op = self.search_transcribed(keyword=keyword, max_results=search_limit, show_context=False)
-
-        if not search_op.hits:
-            return search_op, []
-
-        display_hits = search_op.hits[:max_pages]
-
-        expanded_hits = self.enrichment_service.expand_hits_with_context_padding(display_hits, context_padding)
-
-        enriched_hits = self.enrichment_service.enrich_hits_with_context(expanded_hits, len(expanded_hits), keyword)
-
-        return search_op, enriched_hits
 
     def get_document_structure(self, reference_code: Optional[str] = None, pid: Optional[str] = None) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
         """Retrieve document structure and IIIF collection information.

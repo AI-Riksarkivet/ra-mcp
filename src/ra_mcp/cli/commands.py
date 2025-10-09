@@ -171,7 +171,6 @@ def perform_search_with_progress(
             max_results=max_results,
             show_context=False,  # First get basic results
             max_pages_with_context=0,
-            context_padding=0,
             max_hits_per_document=max_hits_per_document,
         )
 
@@ -222,7 +221,6 @@ def perform_search_with_progress(
                 max_results=max_results,
                 show_context=True,
                 max_pages_with_context=max_pages,
-                context_padding=0,
                 max_hits_per_document=max_hits_per_document,
             )
 
