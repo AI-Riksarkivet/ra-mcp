@@ -98,15 +98,15 @@ func (m *RaMcp) Serve(
 		return nil, err
 	}
 
-	// Override the default CMD to use custom port and host
 	return container.
-		WithExec([]string{
-			"ra", "serve",
-			"--host", host,
-			"--port", fmt.Sprintf("%d", port),
-		}).
 		WithExposedPort(port).
-		AsService(), nil
+		AsService(dagger.ContainerAsServiceOpts{ // ✅ Args passed to AsService
+			Args: []string{
+				"ra", "serve",
+				"--host", host,
+				"--port", fmt.Sprintf("%d", port),
+			},
+		}), nil
 }
 
 // Publish builds and publishes container image to registry with authentication
