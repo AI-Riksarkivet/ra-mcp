@@ -306,12 +306,12 @@ dagger call test
 **Build and publish to Docker registry:**
 ```bash
 # Set environment variables
-export DOCKER_USERNAME="your-username"
+
 export DOCKER_PASSWORD="your-password"
 
 # Build and publish
 dagger call publish \
-  --docker-username=env:DOCKER_USERNAME \
+  --docker-username="username" \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
   --tag="latest" \
