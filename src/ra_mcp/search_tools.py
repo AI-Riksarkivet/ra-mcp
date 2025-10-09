@@ -214,7 +214,17 @@ def _append_pagination_info_if_needed(formatted_results, search_result, offset, 
     This tool retrieves complete page transcriptions from historical documents in Swedish.
     Each result includes the full transcribed text as it appears in the original document,
     plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
-    Prefer showing the whole transcription and link in responses of individual pages
+    Prefer showing the whole transcription and link in responses of individual pages. 
+    Download some of the nearby pages too on selected pages if context seem to be missing from the trancript 
+    to get a better picture
+
+    Original text:
+    transcript
+
+    Translation
+    Modern translation in language of user 
+
+    Links
 
     Key features:
     - Returns full page transcriptions in (original language)
