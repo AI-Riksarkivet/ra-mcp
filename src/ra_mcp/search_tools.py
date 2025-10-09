@@ -67,7 +67,7 @@ search_mcp = FastMCP(
     Fuzzy & Proximity:
     - "Stockholm~" - Fuzzy search (edit distance 2)
     - "Stockholm~1" - Fuzzy with custom edit distance
-    - '"Stockholm trolldom"~10' - Proximity (within 10 words)
+    - '\"Stockholm trolldom\"~10' - Proximity (within 10 words)
 
     Boolean Operators:
     - "(Stockholm AND trolldom)" - Both terms required
@@ -77,7 +77,7 @@ search_mcp = FastMCP(
 
     Boosting & Grouping:
     - "Stockholm^4 troll*" - Boost term relevance (4x)
-    - '("Stockholm dom*"^4 Reg*)' - Boost phrase with wildcards
+    - '(\"Stockholm dom*\"^4 Reg*)' - Boost phrase with wildcards
     - "((Stockholm OR Göteborg) AND troll*)" - Complex grouping
 
     TYPICAL WORKFLOW:
@@ -111,10 +111,12 @@ search_mcp = FastMCP(
     - Basic: "Stockholm" - exact term search
     - Wildcards: "Stock*", "St?ckholm", "*holm" - match patterns
     - Fuzzy: "Stockholm~" or "Stockholm~1" - find similar words (typos, variants)
-    - Proximity: '"Stockholm trolldom"~10' - words within 10 words of each other
+    - Proximity: '\"Stockholm trolldom\"~10' - words within 10 words of each other
     - Boolean: "(Stockholm AND trolldom)", "(Stockholm OR Göteborg)", "(Stockholm NOT trolldom)"
-    - Boosting: "Stockholm^4 trol*" - increase relevance of specific terms
+    - Boosting: \"Stockholm^4 trol*\" - increase relevance of specific terms
     - Complex: "((troll* OR häx*) AND (Stockholm OR Göteborg))" - combine operators
+
+    NOTE make sure to use grouping () for any boolean search also  \"\" is important to group multiple words
 
     Parameters:
     - keyword: Search term or Solr query (required)
@@ -185,7 +187,7 @@ def _generate_no_results_message(keyword, offset, total_hits):
     """Generate appropriate message when no results are found."""
     if offset > 0:
         return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
-    return f"No results found for '{keyword}'. Try different search terms or variations."
+    return f"No results found for '{keyword}'. make sure to use \"\" "
 
 
 def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
