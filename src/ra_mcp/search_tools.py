@@ -105,7 +105,6 @@ search_mcp = FastMCP(
     - Returns document metadata, page numbers, and text snippets containing the keyword
     - Provides direct links to page images and ALTO XML transcriptions
     - Supports pagination via offset parameter for comprehensive discovery
-    - Optional full page context with show_context=True
     - Advanced search syntax for precise queries
 
     Search syntax examples:
@@ -120,28 +119,24 @@ search_mcp = FastMCP(
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - show_context: If True, include full page transcriptions (default: False for more results)
     - max_results: Maximum documents to return per query (default: 10)
     - max_hits_per_document: Maximum matching pages per document (default: 3)
+    - max_response_tokens: Maximum tokens in response (default: 15000)
 
     Best practices:
     - Start with offset=0 and increase by 50 to discover all matches
-    - Use show_context=False initially to see more results
     - Search related terms and variants for comprehensive coverage
     - Use wildcards (*) for word variations: "troll*" finds "trolldom", "trolleri", "trollkona"
     - Use fuzzy search (~) for historical spelling variants
+    - Use browse_document tool to view full page transcriptions of interesting results
     """,
 )
 async def search_transcribed(
     keyword: str,
     offset: int,
-    show_context: bool = False,
-    max_results: int = 10,
+    max_results: int = 50,
     max_hits_per_document: int = 3,
-    max_pages_with_context: int = 0,
-    context_padding: int = 0,
     max_response_tokens: int = 15000,
-    truncate_page_text: int = 800,
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
@@ -153,21 +148,15 @@ async def search_transcribed(
             offset=offset,
             max_results=max_results,
             max_hits_per_document=max_hits_per_document,
-            show_context=show_context,
-            max_pages_with_context=max_pages_with_context,
-            context_padding=context_padding,
         )
 
         if not search_result.hits:
             return _generate_no_results_message(keyword, offset, search_result.total_hits)
 
-        if show_context and search_result.enriched:
-            _truncate_page_texts_if_needed(search_result.hits, truncate_page_text)
-
         formatted_results = display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
-            show_full_context=show_context,
+            show_full_context=False,
         )
 
         formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
@@ -182,7 +171,7 @@ async def search_transcribed(
             error_suggestions=[
                 "Try a simpler search term",
                 "Check if the service is available",
-                "Reduce max_results or max_pages_with_context",
+                "Reduce max_results",
             ],
         )
 
@@ -197,14 +186,6 @@ def _generate_no_results_message(keyword, offset, total_hits):
     if offset > 0:
         return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
     return f"No results found for '{keyword}'. Try different search terms or variations."
-
-
-def _truncate_page_texts_if_needed(hits, max_length):
-    """Truncate page texts that exceed the maximum length."""
-    for hit in hits:
-        if hasattr(hit, "full_page_text") and hit.full_page_text:
-            if len(hit.full_page_text) > max_length:
-                hit.full_page_text = hit.full_page_text[:max_length] + "..."
 
 
 def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
