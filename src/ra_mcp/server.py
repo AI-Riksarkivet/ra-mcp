@@ -9,7 +9,7 @@ This server uses composition to combine multiple tool servers:
 import asyncio
 import logging
 import argparse
-
+from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
 from ra_mcp.search_tools import search_mcp
@@ -31,6 +31,9 @@ main_server = FastMCP(
     """,
 )
 
+@main_server.custom_route("/", methods=["GET"])
+async def root(_):
+    return FileResponse("assets/index.html")
 
 async def setup_server():
     """Setup server composition by importing all tool servers."""
