@@ -19,16 +19,14 @@ search_mcp = FastMCP(
     AVAILABLE TOOLS:
 
     1. 🔍 search_transcribed - Search for keywords in transcribed materials
-       - Returns documents and pages containing the keyword
+       - Returns documents and pages containing the keyword (a subset of what is written on the document)
        - Offset parameter required to encourage comprehensive discovery
-       - Context disabled by default for maximum hit coverage
        - Provides direct links to images and ALTO XML
        - Supports advanced Solr search syntax (see SEARCH SYNTAX below)
 
     2. 📖 browse_document - Browse specific pages by reference code
        - View full transcriptions of specific pages
        - Supports page ranges and multiple pages
-       - Optional keyword highlighting
 
     3. 📚 get_document_structure - Get document structure without content
        - Quick overview of available manifests
@@ -47,7 +45,7 @@ search_mcp = FastMCP(
        - Use table_of_contents to see available sections
 
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
-    1. Start with search_transcribed(keyword, offset=0) for initial hits
+    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide bellow when searching)
     2. Continue pagination with increasing offsets (50, 100, 150...) to find all matches
     3. Use show_context=False (default) to see more results per query
     4. Only enable show_context=True when you want full page text for specific hits
@@ -98,18 +96,47 @@ search_mcp = FastMCP(
 
 @search_mcp.tool(
     name="search_transcribed",
-    description="Search for keywords in transcribed historical documents from Riksarkivet",
+    description="""Search for keywords in transcribed historical documents from the Swedish National Archives (Riksarkivet).
+
+    This tool searches through historical documents and returns matching pages with their transcriptions.
+    Supports advanced Solr query syntax including wildcards, fuzzy search, Boolean operators, and proximity searches.
+
+    Key features:
+    - Returns document metadata, page numbers, and text snippets containing the keyword
+    - Provides direct links to page images and ALTO XML transcriptions
+    - Supports pagination via offset parameter for comprehensive discovery
+    - Advanced search syntax for precise queries
+
+    Search syntax examples:
+    - Basic: "Stockholm" - exact term search
+    - Wildcards: "Stock*", "St?ckholm", "*holm" - match patterns
+    - Fuzzy: "Stockholm~" or "Stockholm~1" - find similar words (typos, variants)
+    - Proximity: '"Stockholm trolldom"~10' - words within 10 words of each other
+    - Boolean: "(Stockholm AND trolldom)", "(Stockholm OR Göteborg)", "(Stockholm NOT trolldom)"
+    - Boosting: "Stockholm^4 trol*" - increase relevance of specific terms
+    - Complex: "((troll* OR häx*) AND (Stockholm OR Göteborg))" - combine operators
+
+    Parameters:
+    - keyword: Search term or Solr query (required)
+    - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
+    - max_results: Maximum documents to return per query (default: 10)
+    - max_hits_per_document: Maximum matching pages per document (default: 3)
+    - max_response_tokens: Maximum tokens in response (default: 15000)
+
+    Best practices:
+    - Start with offset=0 and increase by 50 to discover all matches
+    - Search related terms and variants for comprehensive coverage
+    - Use wildcards (*) for word variations: "troll*" finds "trolldom", "trolleri", "trollkona"
+    - Use fuzzy search (~) for historical spelling variants
+    - Use browse_document tool to view full page transcriptions of interesting results
+    """,
 )
 async def search_transcribed(
     keyword: str,
     offset: int,
-    show_context: bool = False,
-    max_results: int = 10,
+    max_results: int = 50,
     max_hits_per_document: int = 3,
-    max_pages_with_context: int = 0,
-    context_padding: int = 0,
     max_response_tokens: int = 15000,
-    truncate_page_text: int = 800,
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
@@ -121,21 +148,15 @@ async def search_transcribed(
             offset=offset,
             max_results=max_results,
             max_hits_per_document=max_hits_per_document,
-            show_context=show_context,
-            max_pages_with_context=max_pages_with_context,
-            context_padding=context_padding,
         )
 
         if not search_result.hits:
             return _generate_no_results_message(keyword, offset, search_result.total_hits)
 
-        if show_context and search_result.enriched:
-            _truncate_page_texts_if_needed(search_result.hits, truncate_page_text)
-
         formatted_results = display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
-            show_full_context=show_context,
+            show_full_context=False,
         )
 
         formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
@@ -150,7 +171,7 @@ async def search_transcribed(
             error_suggestions=[
                 "Try a simpler search term",
                 "Check if the service is available",
-                "Reduce max_results or max_pages_with_context",
+                "Reduce max_results",
             ],
         )
 
@@ -165,14 +186,6 @@ def _generate_no_results_message(keyword, offset, total_hits):
     if offset > 0:
         return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
     return f"No results found for '{keyword}'. Try different search terms or variations."
-
-
-def _truncate_page_texts_if_needed(hits, max_length):
-    """Truncate page texts that exceed the maximum length."""
-    for hit in hits:
-        if hasattr(hit, "full_page_text") and hit.full_page_text:
-            if len(hit.full_page_text) > max_length:
-                hit.full_page_text = hit.full_page_text[:max_length] + "..."
 
 
 def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
@@ -196,7 +209,33 @@ def _append_pagination_info_if_needed(formatted_results, search_result, offset, 
 
 @search_mcp.tool(
     name="browse_document",
-    description="Browse specific pages of a document by reference code",
+    description="""Browse specific pages of a document by reference code and view full transcriptions.
+
+    This tool retrieves complete page transcriptions from historical documents in Swedish.
+    Each result includes the full transcribed text as it appears in the original document,
+    plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
+    Prefer showing the whole transcription and link in responses of individual pages
+
+    Key features:
+    - Returns full page transcriptions in (original language)
+    - Provides links to bildvisaren (Riksarkivet's image viewer) for viewing original documents
+    - Supports single pages, page ranges, or multiple specific pages
+    - Direct links to ALTO XML for detailed text layout information
+
+    Parameters:
+    - reference_code: Document reference code from search results (e.g., "SE/RA/420422/01")
+    - pages: Page specification - single ("5"), range ("1-10"), or comma-separated ("5,7,9")
+    - highlight_term: Optional keyword to highlight in the transcription
+    - max_pages: Maximum number of pages to retrieve (default: 20)
+
+    Examples:
+    - browse_document("SE/RA/420422/01", "5") - View full transcription of page 5
+    - browse_document("SE/RA/420422/01", "1-10") - View pages 1 through 10
+    - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
+
+    Note: Transcriptions are as they appear in the historical documents.
+    Use this tool when you need complete page content rather than just search snippets.
+    """,
 )
 async def browse_document(
     reference_code: str,
