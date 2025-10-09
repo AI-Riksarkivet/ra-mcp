@@ -88,43 +88,6 @@ def extract_institution(hit: SearchHit) -> str:
     return ""
 
 
-def format_page_list(page_numbers: List[str], max_pages: int = 5) -> str:
-    """
-    Format a list of page numbers for display.
-
-    Args:
-        page_numbers: List of page numbers
-        max_pages: Maximum number of pages to show before truncating
-
-    Returns:
-        Formatted string like "1, 2, 3, 4, 5..."
-    """
-    if len(page_numbers) <= max_pages:
-        return ", ".join(page_numbers)
-
-    shown_pages = page_numbers[:max_pages]
-    return ", ".join(shown_pages) + "..."
-
-
-def group_hits_by_reference(hits: List[SearchHit]) -> Dict[str, List[SearchHit]]:
-    """
-    Group search hits by reference code.
-
-    Args:
-        hits: List of search hits
-
-    Returns:
-        Dictionary mapping reference codes to lists of hits
-    """
-    grouped: Dict[str, List[SearchHit]] = {}
-    for hit in hits:
-        ref_code = hit.reference_code
-        if ref_code not in grouped:
-            grouped[ref_code] = []
-        grouped[ref_code].append(hit)
-    return grouped
-
-
 def sort_hits_by_page(hits: List[SearchHit]) -> List[SearchHit]:
     """
     Sort hits by page number (handling numeric sorting).
