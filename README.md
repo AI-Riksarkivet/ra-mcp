@@ -77,9 +77,9 @@ uv run ra search "((troll* OR häx*) AND (Stockholm OR Göteborg))"  # Complex g
 ```
 
 **Search Options:**
+- `--browse` - Show full page transcriptions
 - `--max N` - Maximum search results (default: 50)
 - `--max-display N` - Maximum results to display (default: 20)
-- `--browse` - Show full page transcriptions
 - `--max-pages N` - Maximum pages to load context for (default: 10)
 - `--max-hits-per-vol N` - Maximum hits to return per volume (default: 3)
 
