@@ -227,57 +227,23 @@ class RichConsoleFormatter(BaseFormatter):
 
         return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-    def format_document_panel(self, doc_ref: str, doc_hits: List[SearchHit], keyword: str) -> Panel:
-        """
-        Create a Rich Panel for a document with multiple hits.
-
-        Args:
-            doc_ref: Document reference code
-            doc_hits: List of hits for this document
-            keyword: Search keyword for highlighting
-
-        Returns:
-            Rich Panel object
-        """
-        doc_hits = sort_hits_by_page(doc_hits)
-        content = []
-        first_hit = doc_hits[0]
-
-        # Document metadata
-        content.append(f"[bold blue]📄 Title:[/bold blue] {first_hit.title}")
-
-        # Get unique page numbers
-        unique_pages = get_unique_page_numbers(doc_hits)
-        content.append(f"[bold green]📄 Pages with hits:[/bold green] {', '.join(unique_pages)}")
-
-        if first_hit.date:
-            content.append(f"[bold blue]📅 Date:[/bold blue] {first_hit.date}")
-
-        # Add full page texts if available
-        for hit in doc_hits:
-            if hit.full_page_text:
-                display_text = self.highlight_search_keyword(hit.full_page_text, keyword)
-                trimmed_page = trim_page_number(str(hit.page_number))
-                content.append(f"\n[bold cyan]Page {trimmed_page}:[/bold cyan]")
-                content.append(f"[italic]{display_text}[/italic]")
-
-        panel_title = f"[cyan]Document: {doc_ref} ({len(doc_hits)} pages)[/cyan]"
-
-        return self.format_panel("\n".join(content), panel_title=panel_title, panel_border_style="green")
 
     def format_search_summary(self, summary: SearchSummary) -> List[str]:
         """
         Format search summary information.
 
         Args:
-            summary: Search summary object
+            summary: Search summary with hit counts and metadata
 
         Returns:
             List of formatted summary lines
         """
         lines = []
-        lines.append(f"\n✓ Found {summary.page_hits_returned} page-level hits across {summary.documents_returned} documents")
-        lines.append("[dim]💡 Tips: Use --context to see full page transcriptions | Use 'browse' command to view specific reference codes[/dim]")
+        lines.append(f"\n[bold green]✓[/bold green] Found [bold]{summary.page_hits_returned}[/bold] page hits across [bold]{summary.documents_returned}[/bold] volumes")
+
+        if summary.total_hits > summary.page_hits_returned:
+            lines.append(f"[dim]   (Total {summary.total_hits} hits available, showing from offset {summary.offset})[/dim]")
+
         return lines
 
     def format_browse_example(self, grouped_hits: Dict[str, List[SearchHit]], keyword: str) -> List[str]:
