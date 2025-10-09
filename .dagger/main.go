@@ -55,12 +55,10 @@ func (m *RaMcp) BuildLocal(
 // Build creates a production-ready container image using default settings
 func (m *RaMcp) Build(
 	ctx context.Context,
-	// +optional
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
 	source *dagger.Directory,
 ) (*dagger.Container, error) {
-	if source == nil {
-		source = dag.CurrentModule().Source().Directory("..")
-	}
 	return m.BuildLocal(ctx, source, "riksarkivet/ra-mcp", []string{}, "latest", "docker.io")
 }
 
@@ -112,4 +110,3 @@ func (m *RaMcp) Publish(ctx context.Context,
 
 	return container.Publish(ctx, imageRef)
 }
-

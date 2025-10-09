@@ -56,5 +56,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import src.ra_mcp.server; print('Server module loads successfully')" || exit 1
 
 # Default to running the MCP server with HTTP transport
-EXPOSE 8000
-CMD ["python", "src/ra_mcp/server.py", "--http", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 7860
+ENV GRADIO_SERVER_NAME="0.0.0.0"
+
+CMD ["ra", "serve", "--host","0.0.0.0", "--port", "7860"]

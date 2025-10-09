@@ -55,8 +55,8 @@ def main():
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)")
     parser.add_argument(
         "--host",
-        default="localhost",
-        help="Host for HTTP transport (default: localhost)",
+        default="0.0.0.0",
+        help="Host for HTTP transport (default: 0.0.0.0)",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
 
@@ -72,8 +72,7 @@ def main():
 
     if args.http:
         logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{args.host}:{args.port}")
-        logger.info(f"Connect with: claude mcp add --transport sse ra-mcp http://{args.host}:{args.port}/sse")
-        main_server.run(transport="sse", host=args.host, port=args.port)
+        main_server.run(transport="streamable-http", host=args.host, port=args.port, path="/mcp")
     else:
         logger.info("Starting Riksarkivet MCP stdio server")
         logger.info("Mode: Direct integration with Claude Desktop")
