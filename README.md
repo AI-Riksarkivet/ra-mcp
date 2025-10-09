@@ -144,11 +144,9 @@ When you run a search, results are presented with:
 ```
 Document: SE/RA/310187/1 - Kommissorialrätt i Stockholm ang. trolldom
 Institution: Riksarkivet i Stockholm/Täby | Date: 1676 - 1677
-├─ Page 2: "...Kommissorialrätt i Stockholm ang. **trolldom** 1676..."
-├─ Page 7: "...som sig medh någon klagomåhl öfwer detta **Trolldoms** wäsende..."
-├─ Page 8: "...till hemmande af denne **Trolldoms** Sundh på åthskillige orter..."
-├─ Page 52: "...hustru Anna förklarades skyldig till **trolldom** och förde..."
-└─ Page 72: "...bekände han sig hafwa brukat **trolldom** emot sina fiender..."
+├─ Page 2: "... **trolldom** ..."
+├─ Page 7: "... **Trolldoms** ..."
+├─ Page 8: "... **Trolldoms**..."
 
 Browse commands:
   uv run ra browse "SE/RA/310187/1" --page 7 --search-term "trolldom"
@@ -390,6 +388,7 @@ get_document_structure(
 - Browse specific pages for detailed examination with keyword highlighting
 
 ___
+
 
 
 
