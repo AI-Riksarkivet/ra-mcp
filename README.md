@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo/logo_512.jpg" alt="RA-MCP Logo" width="250">
+  <img src="assets/logo-rm-bg.png" alt="RA-MCP Logo" width="350">
 </div>
 
 
@@ -26,11 +26,42 @@ A MCP server and command-line tools for searching and browsing transcribed histo
 
 ## Getting Started
 
-### Quick Setup
+## MCP
+
+Adding ra-mcp with streamable http for ChatGPT or Claude:
+
+url: `https://riksarkivet-ra-mcp.hf.space/mcp`
+
+### Claude Code
 
 ```bash
-# Search for anything 
-uv run ra search "Stockholm"
+claude mcp add --transport http ra-mcp https://riksarkivet-ra-mcp.hf.space/mcp
+```
+
+### IDEs
+
+```bash
+cat > mcp.json <<'EOF'
+{
+  "mcpServers": {
+    "ra-mcp": {
+      "type": "streamable-http",
+      "url": "https://riksarkivet-ra-mcp.hf.space/mcp",
+      "note": "ra-mcp server (FastMCP) - via Streamable HTTP"
+    }
+  }
+}
+EOF
+```
+
+## CLI
+
+Install cli
+
+```bash
+uv pip install ra-mcp
+# or
+uv add ra-mcp
 ```
 
 ## How to Use
@@ -259,6 +290,11 @@ uv run ra serve --help
 
 ## MCP Server Development
 
+```bash
+# clone repo
+git clone https://github.com/AI-Riksarkivet/ra-mcp.git
+```
+
 ### Running the MCP Server
 
 ```bash
@@ -266,10 +302,10 @@ uv run ra serve --help
 uv sync && uv pip install -e .
 
 # Run the main MCP server (stdio)
-cd src/ra_mcp && python server.py
+cd src/ra_mcp && uv run ra serve
 
 # Run with SSE/HTTP transport on port 8000
-cd src/ra_mcp && python server.py --http
+cd src/ra_mcp && uv run ra serve --http
 ```
 
 ### Testing with MCP Inspector
@@ -278,7 +314,7 @@ Use the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to te
 
 ```bash
 # Test the server interactively
-npx @modelcontextprotocol/inspector uv run python src/ra_mcp/server.py
+npx @modelcontextprotocol/inspector uv run ra serve --http
 ```
 
 The MCP Inspector provides a web interface to test server tools, resources, and prompts during development.

@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"dagger/ra-mcp/internal/dagger"
+	"fmt"
 	"strings"
 )
 
@@ -76,6 +77,36 @@ func (m *RaMcp) Test(
 	return container.
 		WithExec([]string{"uv", "run", "pytest", "--cov=src/ra_mcp", "--cov-report=term"}).
 		Stdout(ctx)
+}
+
+// Serve starts the RA-MCP server as a service - dagger call serve up --ports 9000:7860
+func (m *RaMcp) Serve(
+	ctx context.Context,
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
+	// +optional
+	source *dagger.Directory,
+	// Port to expose the service on
+	// +default=7860
+	port int,
+	// Host to bind to (0.0.0.0 for all interfaces, 127.0.0.1 for localhost only)
+	// +default="0.0.0.0"
+	host string,
+) (*dagger.Service, error) {
+	container, err := m.Build(ctx, source)
+	if err != nil {
+		return nil, err
+	}
+
+	// Override the default CMD to use custom port and host
+	return container.
+		WithExec([]string{
+			"ra", "serve",
+			"--host", host,
+			"--port", fmt.Sprintf("%d", port),
+		}).
+		WithExposedPort(port).
+		AsService(), nil
 }
 
 // Publish builds and publishes container image to registry with authentication

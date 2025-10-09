@@ -42,6 +42,9 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 COPY --from=builder /app/README.md /app/LICENSE ./
 
+# Copy static assets (index.html)
+COPY assets/index.html ./index.html
+
 # Create directory for potential data/cache
 RUN mkdir -p /app/data && chown -R ra-mcp:ra-mcp /app
 
@@ -58,5 +61,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Default to running the MCP server with HTTP transport
 EXPOSE 7860
 ENV GRADIO_SERVER_NAME="0.0.0.0"
-
 CMD ["ra", "serve", "--host","0.0.0.0", "--port", "7860"]

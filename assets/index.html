@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ra-mcp 🔍</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'JetBrains Mono',monospace;margin:0;background:#0b0b0b;color:#eee;display:grid;place-items:center;min-height:100dvh;padding:18px}
+    .card{max-width:860px;width:100%;background:#121212;border:1px solid #2a2a2a;border-radius:16px;padding:20px;box-shadow:0 8px 30px #0008;margin-bottom:16px}
+    h1{margin:0 0 12px;font-size:24px;color:#9ad1ff}
+    h2{margin-top:0;font-size:18px;color:#b8e6ff}
+    h3{margin-top:16px;font-size:15px;color:#9ad1ff}
+    p,code,pre{font-size:13px;line-height:1.6}
+    .muted{color:#b8b8b8}
+    .highlight{background:#1a1a1a;padding:2px 6px;border-radius:4px;color:#9ad1ff}
+    pre{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:14px;overflow:auto;margin:12px 0}
+    a{color:#9ad1ff;text-decoration:none;border-bottom:1px solid transparent;transition:border-color 0.2s}
+    a:hover{border-bottom-color:#9ad1ff}
+    .logo{text-align:center;margin-bottom:20px}
+    .logo-text{font-size:42px;margin:0;font-weight:600;background:linear-gradient(135deg,#9ad1ff,#7fb8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .example{background:#0d1117;border-left:3px solid #9ad1ff;padding:12px;margin:12px 0;border-radius:6px}
+    .badge{display:inline-block;background:#1a3a4a;color:#9ad1ff;padding:4px 10px;border-radius:12px;font-size:11px;margin-right:8px;margin-bottom:6px}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #2a2a2a}
+    th{color:#9ad1ff;font-weight:600}
+    .search-type{color:#7fb8ff}
+    ul{line-height:1.8;padding-left:20px}
+  </style>
+</head>
+<body>
+  <div style="max-width:860px;width:100%">
+    <div class="logo">
+      <p class="logo-text">ra-mcp</p>
+      <p class="muted" style="margin-top:-8px">Swedish National Archives Search via MCP</p>
+    </div>
+
+    <section class="card">
+      <h1>🔍 About</h1>
+      <p>
+        <strong>ra-mcp</strong> provides AI assistants with access to millions of transcribed historical documents 
+        from <em>Riksarkivet</em> (Swedish National Archives). Search 17th-19th century court records, 
+        prison registers, and other digitized materials using advanced search syntax.
+      </p>
+      <div style="margin-top:12px">
+        <span class="badge">Full-text search</span>
+        <span class="badge">ALTO XML transcriptions</span>
+        <span class="badge">IIIF images</span>
+        <span class="badge">Wildcards</span>
+        <span class="badge">Fuzzy search</span>
+        <span class="badge">Boolean operators</span>
+      </div>
+      <p style="margin-top:16px">
+        📖 Learn more: <a href="https://github.com/AI-Riksarkivet/ra-mcp" target="_blank">github.com/AI-Riksarkivet/ra-mcp</a>
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>🔌 Connect MCP Server</h2>
+
+      <h3>For Claude or ChatGPT</h3>
+      <p class="muted">
+        Adding ra-mcp with streamable http:<br>
+        URL: <span class="highlight">https://riksarkivet-ra-mcp.hf.space/mcp</span>
+      </p>
+
+      <h3>For Claude Code</h3>
+      <pre><code>claude mcp add --transport http ra-mcp https://riksarkivet-ra-mcp.hf.space/mcp</code></pre>
+
+      <h3>With MCP Inspector</h3>
+      <pre><code>cat &gt; mcp.json &lt;&lt;'EOF'
+{
+  "mcpServers": {
+    "ra-mcp": {
+      "type": "streamable-http",
+      "url": "https://riksarkivet-ra-mcp.hf.space/mcp",
+      "note": "ra-mcp server - Swedish National Archives"
+    }
+  }
+}
+EOF
+
+npx -y @modelcontextprotocol/inspector --config ./mcp.json</code></pre>
+      <p class="muted">
+        Open <span class="highlight">http://0.0.0.0:7860</span> in your browser to access the Inspector UI.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>🛠️ Available Tools</h2>
+      <ul>
+        <li><code>search_transcribed</code> - Full-text search with advanced syntax and pagination</li>
+        <li><code>browse_document</code> - View complete page transcriptions with highlighting</li>
+        <li><code>get_document_structure</code> - Document metadata & structure</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>📚 Search Syntax Reference</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Syntax</th>
+            <th>Example</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="search-type">Exact</td>
+            <td><code>"word"</code></td>
+            <td><code>"Stockholm"</code></td>
+            <td>Find exact matches</td>
+          </tr>
+          <tr>
+            <td class="search-type">Wildcard (single)</td>
+            <td><code>?</code></td>
+            <td><code>"St?ckholm"</code></td>
+            <td>Match any single character</td>
+          </tr>
+          <tr>
+            <td class="search-type">Wildcard (multiple)</td>
+            <td><code>*</code></td>
+            <td><code>"Stock*"</code></td>
+            <td>Match zero or more characters</td>
+          </tr>
+          <tr>
+            <td class="search-type">Fuzzy</td>
+            <td><code>~</code></td>
+            <td><code>"Stockholm~"</code></td>
+            <td>Find similar terms (edit distance: 2)</td>
+          </tr>
+          <tr>
+            <td class="search-type">Fuzzy (custom)</td>
+            <td><code>~N</code></td>
+            <td><code>"Stockholm~1"</code></td>
+            <td>Custom edit distance (0-2)</td>
+          </tr>
+          <tr>
+            <td class="search-type">Proximity</td>
+            <td><code>"w1 w2"~N</code></td>
+            <td><code>"Stockholm trolldom"~10</code></td>
+            <td>Words within N words apart</td>
+          </tr>
+          <tr>
+            <td class="search-type">Boosting</td>
+            <td><code>^N</code></td>
+            <td><code>"Stockholm^4 trol*"</code></td>
+            <td>Increase term relevance</td>
+          </tr>
+          <tr>
+            <td class="search-type">Boolean AND</td>
+            <td><code>AND</code></td>
+            <td><code>(Stockholm AND trolldom)</code></td>
+            <td>Both terms required</td>
+          </tr>
+          <tr>
+            <td class="search-type">Boolean OR</td>
+            <td><code>OR</code></td>
+            <td><code>(Stockholm OR Göteborg)</code></td>
+            <td>Either term required</td>
+          </tr>
+          <tr>
+            <td class="search-type">Boolean NOT</td>
+            <td><code>NOT</code></td>
+            <td><code>(Stockholm NOT trolldom)</code></td>
+            <td>Exclude second term</td>
+          </tr>
+          <tr>
+            <td class="search-type">Grouping</td>
+            <td><code>(...)</code></td>
+            <td><code>((Stockholm OR Göteborg) AND troll*)</code></td>
+            <td>Create sub-queries</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top:16px">
+        <strong>Note:</strong> Always use grouping <code>()</code> for boolean searches and <code>""</code> for multi-word phrases.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>🎯 Usage Examples</h2>
+      <p class="muted">Ask your AI assistant naturally:</p>
+      
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Find documents about Stockholm"</strong></p>
+        <p class="muted" style="margin:0">Simple keyword search</p>
+      </div>
+
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Search for troll* - any word starting with troll"</strong></p>
+        <p class="muted" style="margin:0">Wildcard search: trolldom, trolleri, trollkona, etc.</p>
+      </div>
+
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Find Stockholm and trolldom mentioned close together"</strong></p>
+        <p class="muted" style="margin:0">Proximity search within context</p>
+      </div>
+
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Search for (Stockholm OR Göteborg) AND troll*"</strong></p>
+        <p class="muted" style="margin:0">Complex boolean query with wildcards</p>
+      </div>
+
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Show me page 7 of document SE/RA/310187/1"</strong></p>
+        <p class="muted" style="margin:0">Browse specific pages with full transcription</p>
+      </div>
+
+      <div class="example">
+        <p style="margin-top:0">💬 <strong>"Browse pages 5-12 and highlight trolldom"</strong></p>
+        <p class="muted" style="margin:0">View page ranges with keyword highlighting</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
