@@ -90,7 +90,7 @@ class DisplayService:
                         lines.append(f"   {display_text}")
             else:
                 for hit in document_hits[:3]:
-                    snippet = hit.snippet_text[:150] + "..." if len(hit.snippet_text) > 150 else hit.snippet_text
+                    snippet = hit.snippet_text
                     snippet = self.formatter.highlight_search_keyword(snippet, search_operation.keyword)
                     lines.append(f"   Page {hit.page_number}: {snippet}")
 
