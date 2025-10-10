@@ -117,6 +117,7 @@ search_mcp = FastMCP(
     - Complex: "((troll* OR häx*) AND (Stockholm OR Göteborg))" - combine operators
 
     NOTE make sure to use grouping () for any boolean search also  \"\" is important to group multiple words
+    E.g do '((skatt* OR guld* OR silver*) AND (stöld* OR stul*))' instead of '(skatt* OR guld* OR silver*) AND (stöld* OR stul*)', i.e prefer grouping as that will retrun results, non-grouping will return 0 results 
 
     Parameters:
     - keyword: Search term or Solr query (required)
