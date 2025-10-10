@@ -21,6 +21,7 @@ keywords = [
     "model context protocol",
     "ra-mcp",
     "search",
+    "browse",
     "iiif",
     "llm",
     "agent",
@@ -61,6 +62,8 @@ indent-style = "space"
 lines-after-imports = 2
 known-first-party = ["ra-mcp"]
 
+[tool.ty]
+# error-on-warning = true
 
 [tool.ty.environment]
 python-version = "3.12"

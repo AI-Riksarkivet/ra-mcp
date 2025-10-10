@@ -8,136 +8,74 @@ import (
 	"strings"
 )
 
+// RaMcp provides CI/CD pipeline functions for the RA-MCP project
 type RaMcp struct{}
 
-// BuildLocal builds using Dockerfile from a local directory with custom environment variables
-func (m *RaMcp) BuildLocal(
-	ctx context.Context,
-	// Local directory to build from
-	// +optional
-	source *dagger.Directory,
-	// Image repository name
-	// +default="riksarkivet/ra-mcp"
-	imageRepository string,
-	// Environment variables for build customization (KEY=VALUE format)
-	// +default=[]
-	envVars []string,
-	// Image tag
-	// +default="latest"
-	imageTag string,
-	// Registry URL
-	// +default="docker.io"
-	registry string,
-) (*dagger.Container, error) {
-	// Convert environment variables to build args
-	var buildArgs []dagger.BuildArg
-	buildArgs = append(buildArgs, dagger.BuildArg{Name: "REGISTRY", Value: registry})
+// Default configuration constants
+const (
+	DefaultRegistry       = "docker.io"
+	DefaultImageRepo      = "riksarkivet/ra-mcp"
+	DefaultDockerUsername = "airiksarkivet"
+	DefaultPyPIURL        = "https://upload.pypi.org/legacy/"
+	DefaultPyPIUsername   = "__token__"
+)
 
-	// Parse environment variables and add to build args
-	for _, envVar := range envVars {
-		if parts := strings.Split(envVar, "="); len(parts) == 2 {
-			buildArgs = append(buildArgs, dagger.BuildArg{
-				Name:  parts[0],
-				Value: parts[1],
-			})
-		}
-	}
+// withUv adds uv to a container (for development/CI tasks only)
+func (m *RaMcp) withUv(container *dagger.Container) *dagger.Container {
+	uvBinary := dag.Container().
+		From("ghcr.io/astral-sh/uv:latest").
+		File("/uv")
 
-	// Build the container using Dockerfile
-	container := dag.Container().
-		Build(source, dagger.ContainerBuildOpts{
-			Dockerfile: "Dockerfile",
-			BuildArgs:  buildArgs,
-		})
+	uvxBinary := dag.Container().
+		From("ghcr.io/astral-sh/uv:latest").
+		File("/uvx")
 
-	return container, nil
+	return container.
+		WithFile("/usr/local/bin/uv", uvBinary).
+		WithFile("/usr/local/bin/uvx", uvxBinary)
 }
 
-// Build creates a production-ready container image using default settings
-func (m *RaMcp) Build(
-	ctx context.Context,
-	// Source directory containing Dockerfile and application code
-	// +defaultPath="/"
-	source *dagger.Directory,
-) (*dagger.Container, error) {
-	return m.BuildLocal(ctx, source, "riksarkivet/ra-mcp", []string{}, "latest", "docker.io")
-}
-
-// Test runs the test suite using the built container
-func (m *RaMcp) Test(
-	ctx context.Context,
-	// +optional
-	source *dagger.Directory,
-) (string, error) {
+// getVersion retrieves the raw version from pyproject.toml using uv
+func (m *RaMcp) getVersion(ctx context.Context, source *dagger.Directory) (string, error) {
 	container, err := m.Build(ctx, source)
 	if err != nil {
 		return "", err
 	}
 
-	return container.
-		WithExec([]string{"uv", "run", "pytest", "--cov=src/ra_mcp", "--cov-report=term"}).
+	container = m.withUv(container)
+
+	version, err := container.
+		WithExec([]string{"uv", "version", "--short"}).
 		Stdout(ctx)
-}
 
-// Serve starts the RA-MCP server as a service - dagger call serve up --ports 9000:7860
-func (m *RaMcp) Serve(
-	ctx context.Context,
-	// Source directory containing Dockerfile and application code
-	// +defaultPath="/"
-	// +optional
-	source *dagger.Directory,
-	// Port to expose the service on
-	// +default=7860
-	port int,
-	// Host to bind to (0.0.0.0 for all interfaces, 127.0.0.1 for localhost only)
-	// +default="0.0.0.0"
-	host string,
-) (*dagger.Service, error) {
-	container, err := m.Build(ctx, source)
-	if err != nil {
-		return nil, err
-	}
-
-	return container.
-		WithExposedPort(port).
-		AsService(dagger.ContainerAsServiceOpts{ // ✅ Args passed to AsService
-			Args: []string{
-				"ra", "serve",
-				"--host", host,
-				"--port", fmt.Sprintf("%d", port),
-			},
-		}), nil
-}
-
-// Publish builds and publishes container image to registry with authentication
-func (m *RaMcp) Publish(ctx context.Context,
-	// +default="riksarkivet/ra-mcp"
-	imageRepository string,
-	// +default="latest"
-	tag string,
-	// +default="docker.io"
-	registry string,
-	// Docker username for authentication
-	// +default="airiksarkivet"
-	dockerUsername string,
-	// Docker password from environment variable
-	dockerPassword *dagger.Secret,
-	// +optional
-	source *dagger.Directory) (string, error) {
-
-	container, err := m.Build(ctx, source)
 	if err != nil {
 		return "", err
 	}
 
-	imageRef := registry + "/" + imageRepository + ":" + tag
+	return strings.TrimSpace(version), nil
+}
 
-	// Authenticate with Docker registry if credentials provided
-	if dockerPassword != nil && dockerUsername != "" {
-		return container.
-			WithRegistryAuth(registry, dockerUsername, dockerPassword).
-			Publish(ctx, imageRef)
+// validateVersion checks if the provided tag matches the version in pyproject.toml
+func (m *RaMcp) validateVersion(ctx context.Context, source *dagger.Directory, tag string) error {
+	projectVersion, err := m.getVersion(ctx, source)
+	if err != nil {
+		return fmt.Errorf("failed to get version from pyproject.toml: %w", err)
 	}
 
-	return container.Publish(ctx, imageRef)
+	normalizeVersion := func(v string) string {
+		return strings.TrimPrefix(strings.TrimSpace(v), "v")
+	}
+
+	normalizedProject := normalizeVersion(projectVersion)
+	normalizedTag := normalizeVersion(tag)
+
+	if normalizedProject != normalizedTag {
+		return fmt.Errorf(
+			"version mismatch: pyproject.toml has version '%s' but release tag is '%s'",
+			projectVersion,
+			tag,
+		)
+	}
+
+	return nil
 }

@@ -5,11 +5,9 @@
 
 # ra-mcp (WIP)
 
-[![Dagger](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml)
+[![Tests](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml)
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
 [![Secret Leaks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml)
-[![Checks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/checks.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/checks.yml)
-
 
 ## MCPs for Riksarkivet
 

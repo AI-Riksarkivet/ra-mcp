@@ -1,16 +1,26 @@
-name: Dagger
+name: Tests
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
+
 jobs:
-  test:
-    name: test
+  ci:
+    name: Checks and Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+     
+      - name: Run Code Quality Checks
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          verb: callclea
+          args: checks
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: "latest"
       
-      - name: Run Dagger Test
+      - name: Run Tests
         uses: dagger/dagger-for-github@v8.2.0
         with:
           verb: call
