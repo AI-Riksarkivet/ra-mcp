@@ -42,10 +42,10 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 COPY --from=builder /app/README.md /app/LICENSE ./
 
-# Copy static assets (index.html)
-COPY assets/index.html ./index.html
+# Copy static assets (index.html) to assets directory
+COPY assets/index.html ./assets/index.html
 
-# Create directory for potential data/cache
+# Create directory for potential data/cache and set ownership
 RUN mkdir -p /app/data && chown -R ra-mcp:ra-mcp /app
 
 # Switch to non-root user
