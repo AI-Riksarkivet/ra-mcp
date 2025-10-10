@@ -152,7 +152,12 @@
       margin: 0 0 8px 0;
       line-height: 1.2;
     }
-    
+
+    .logo-svg {
+      width: 48px;
+      height: 48px;
+    }
+        
     .logo p:last-child {
       font-size: 13px;
       margin: 0;
@@ -280,16 +285,18 @@
 </head>
 <body>
   <div class="container">
-    <div class="logo">
-      <p class="logo-text">ra-mcp</p>
-      <p class="muted">Swedish National Archives Search via MCP</p>
-    </div>
+      <div class="logo">
+        <div class="logo-header">
+          <img class="logo-svg" src="https://github.com/AI-Riksarkivet/ra-mcp/blob/main/assets/ra.svg?raw=true" alt="Swedish Crown">
+          <h1 class="logo-text">ra-mcp</h1>
+        </div>
+      </div>
 
     <section class="card">
       <h1>🔍 About</h1>
       <p>
         <strong>ra-mcp</strong> provides AI assistants with access to millions of transcribed historical documents 
-        from <em>Riksarkivet</em> (Swedish National Archives). Search 17th-19th century court records, 
+        from <em>Riksarkivet</em> (the Swedish National Archives). Search 17th-19th century court records, 
         prison registers, and other digitized materials using advanced search syntax.
       </p>
       <img src="https://github.com/AI-Riksarkivet/ra-mcp/blob/main/assets/logo-rm-bg.png?raw=true" alt="RA-MCP Logo" width="150">
