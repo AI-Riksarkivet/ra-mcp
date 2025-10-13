@@ -3,7 +3,18 @@
 </div>
 
 
-# ra-mcp (WIP)
+# ra-mcp
+
+
+> **⚠️ Work in Progress (WIP)**
+> 
+> This repository is the result of two hackathons and is currently under development. It's more of a proof of concept than a production-ready solution. The codebase, documentation, and build processes are being continuously refined.
+> 
+> **Please note:**
+> - Expect changes and breaking updates
+> - APIs and interfaces may change without notice
+> - Use in production environments at your own risk
+> - Contributions and feedback are welcome as we work toward stability
 
 [![Tests](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml)
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
@@ -422,6 +433,7 @@ get_document_structure(
 - Browse specific pages for detailed examination with keyword highlighting
 
 ___
+
 
 
 
