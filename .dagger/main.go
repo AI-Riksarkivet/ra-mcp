@@ -71,7 +71,7 @@ func (m *RaMcp) validateVersion(ctx context.Context, source *dagger.Directory, t
 
 	if normalizedProject != normalizedTag {
 		return fmt.Errorf(
-			"version mismatch: pyproject.toml has version '%s' but release tag is '%s'",
+			"version mismatch: pyproject.toml has version 'v%s' but release tag is '%s'",
 			projectVersion,
 			tag,
 		)
