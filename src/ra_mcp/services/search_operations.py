@@ -6,7 +6,7 @@ This eliminates code duplication between CLI commands and MCP tools.
 from typing import List, Optional
 
 from ..clients import SearchAPI, IIIFClient
-from ..models import SearchOperation, BrowseOperation, DocumentMetadata
+from ..models import SearchResult, BrowseResult, DocumentMetadata
 from ..utils import parse_page_range
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
@@ -40,7 +40,7 @@ class SearchOperations:
         max_hits_per_document: Optional[int] = None,
         show_context: bool = False,
         max_pages_with_context: int = 0,
-    ) -> SearchOperation:
+    ) -> SearchResult:
         """Search for transcribed text across document collections.
 
         Executes a keyword search across all transcribed documents in the Riksarkivet
@@ -55,13 +55,13 @@ class SearchOperations:
             max_pages_with_context: Number of pages to enrich with full context.
 
         Returns:
-            SearchOperation containing search hits, total count, and metadata.
+            SearchResult containing search hits, total count, and metadata.
             If show_context is True, hits will include enriched page content.
         """
         # Execute search and build operation in one step
         hits, total_hits = self.search_api.search_transcribed_text(keyword, max_results, offset, max_hits_per_document)
 
-        search_operation = SearchOperation(
+        search_operation = SearchResult(
             hits=hits,
             total_hits=total_hits,
             keyword=keyword,
@@ -77,7 +77,7 @@ class SearchOperations:
 
     def _enrich_search_operation_with_context(
         self,
-        search_operation: SearchOperation,
+        search_operation: SearchResult,
         page_limit: int,
         search_keyword: str,
     ) -> None:
@@ -103,7 +103,7 @@ class SearchOperations:
         pages: str,
         highlight_term: Optional[str] = None,
         max_pages: int = 20,
-    ) -> BrowseOperation:
+    ) -> BrowseResult:
         """Browse specific pages of a document.
 
         Retrieves full transcribed content for specified pages of a document,
@@ -117,14 +117,14 @@ class SearchOperations:
             max_pages: Maximum number of pages to retrieve.
 
         Returns:
-            BrowseOperation containing page contexts, document metadata,
+            BrowseResult containing page contexts, document metadata,
             and persistent identifiers. Returns empty contexts if document
             not found or no valid pages.
         """
         manifset_id = self.page_service.oai_client.extract_manifset_id(reference_code)
 
         if not manifset_id:
-            return BrowseOperation(
+            return BrowseResult(
                 contexts=[],
                 reference_code=reference_code,
                 pages_requested=pages,
@@ -137,7 +137,7 @@ class SearchOperations:
         document_metadata = self._fetch_document_metadata(reference_code)
      
 
-        return BrowseOperation(
+        return BrowseResult(
             contexts=page_contexts,
             reference_code=reference_code,
             pages_requested=pages,

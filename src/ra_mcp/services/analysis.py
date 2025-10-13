@@ -4,7 +4,7 @@ Analysis functions for search results.
 
 from typing import Dict, List, Optional, Union
 
-from ..models import SearchHit, SearchOperation, SearchSummary
+from ..models import SearchHit, SearchResult, SearchSummary
 
 
 def get_pagination_info(
@@ -96,7 +96,7 @@ def _group_hits_by_document(search_hits: List[SearchHit]) -> Dict[str, List[Sear
 
 
 def extract_search_summary(
-    search_operation: SearchOperation,
+    search_operation: SearchResult,
 ) -> SearchSummary:
     """Extract summary information from a search operation.
 
@@ -113,7 +113,7 @@ def extract_search_summary(
     return search_summary
 
 
-def _build_search_summary(search_operation: SearchOperation, document_grouped_hits: Dict[str, List[SearchHit]]) -> SearchSummary:
+def _build_search_summary(search_operation: SearchResult, document_grouped_hits: Dict[str, List[SearchHit]]) -> SearchSummary:
     """Build summary from search operation."""
     return SearchSummary(
         keyword=search_operation.keyword,

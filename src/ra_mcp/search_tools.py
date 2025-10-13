@@ -204,8 +204,7 @@ async def search_transcribed(
         search_operations = SearchOperations(http_client=default_http_client)
         display_service = DisplayService(formatter=PlainTextFormatter())
 
-        search_result = _execute_search_query(
-            search_operations,
+        search_result = search_operations.search_transcribed(
             keyword=keyword,
             offset=offset,
             max_results=max_results,
@@ -236,18 +235,6 @@ async def search_transcribed(
                 "Reduce max_results",
             ],
         )
-
-
-def _execute_search_query(search_operations, **search_params):
-    """Execute the search query with the given parameters."""
-    return search_operations.search_transcribed(**search_params)
-
-
-def _generate_no_results_message(keyword, offset, total_hits):
-    """Generate appropriate message when no results are found."""
-    if offset > 0:
-        return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
-    return f"No results found for '{keyword}'. make sure to use \"\" "
 
 
 def _apply_token_limit_if_needed(formatted_results, max_response_tokens):

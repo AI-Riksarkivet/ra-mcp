@@ -5,7 +5,7 @@ Combines all display logic with conditional formatting based on border visibilit
 
 from typing import Dict, List, Optional, Union, Any
 
-from ..models import SearchOperation, BrowseOperation
+from ..models import SearchResult, BrowseResult
 from ..formatters import PlainTextFormatter
 from . import analysis
 
@@ -28,7 +28,7 @@ class DisplayService:
 
     def format_search_results(
         self,
-        search_operation: SearchOperation,
+        search_operation: SearchResult,
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
     ) -> Union[str, Any]:
@@ -39,7 +39,7 @@ class DisplayService:
 
         # For MCP mode or full context display, use string formatting
         if not search_operation.hits:
-            return "No search hits found."
+            return  self._generate_no_results_message()
 
         search_summary = analysis.extract_search_summary(search_operation)
         hits_grouped_by_document = search_summary.grouped_hits
@@ -106,7 +106,17 @@ class DisplayService:
 
         return "\n".join(lines)
 
-    def format_browse_results(self, operation: BrowseOperation, highlight_term: Optional[str] = None) -> Union[List[Any], str]:
+
+
+    def _generate_no_results_message(self,keyword, offset, total_hits):
+        """Generate appropriate message when no results are found."""
+        if offset > 0:
+            return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
+        return f"No results found for '{keyword}'. make sure to use \"\" "
+
+
+
+    def format_browse_results(self, operation: BrowseResult, highlight_term: Optional[str] = None) -> Union[List[Any], str]:
         """Format browse results as Rich Panel objects for CLI or string for MCP."""
         # For CLI mode, use Rich panels
         if self.show_border and hasattr(self.formatter, "format_page_context_panel"):

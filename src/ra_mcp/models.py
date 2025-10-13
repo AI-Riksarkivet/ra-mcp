@@ -49,7 +49,7 @@ class DocumentMetadata(BaseModel):
     manifest_url: Optional[str] = None
 
 
-class SearchOperation(BaseModel):
+class SearchResult(BaseModel):
     hits: List[SearchHit]
     total_hits: int
     keyword: str
@@ -57,11 +57,11 @@ class SearchOperation(BaseModel):
     enriched: bool = False
 
 
-class BrowseOperation(BaseModel):
+class BrowseResult(BaseModel):
     contexts: List[PageContext]
     reference_code: str
     pages_requested: str
-    #pid: Optional[str] = None
+    # pid: Optional[str] = None
     manifest_id: Optional[str] = None
     document_metadata: Optional[DocumentMetadata] = None
 

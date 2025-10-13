@@ -16,7 +16,7 @@ from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
-from ..models import SearchOperation, BrowseOperation, PageContext, DocumentMetadata
+from ..models import SearchResult, BrowseResult, PageContext, DocumentMetadata
 
 console = Console()
 app = typer.Typer()
@@ -36,13 +36,13 @@ def show_logging_status(enabled: bool) -> None:
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
 
-def display_search_summary(search_result: SearchOperation, keyword: str) -> None:
+def display_search_summary(search_result: SearchResult, keyword: str) -> None:
     """Display search result summary."""
     console.print(f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]")
 
 
 def display_context_results(
-    search_result: SearchOperation,
+    search_result: SearchResult,
     display_service: DisplayService,
     keyword: str,
     show_links: bool = False,
@@ -102,7 +102,7 @@ def display_context_results(
         )
 
         # Create a mock browse result for this document
-        mock_browse = BrowseOperation(
+        mock_browse = BrowseResult(
             contexts=contexts,
             reference_code=ref_code,
             pages_requested="context",
@@ -115,7 +115,7 @@ def display_context_results(
 
 
 def display_table_results(
-    search_result: SearchOperation,
+    search_result: SearchResult,
     display_service: DisplayService,
     max_display: int,
     keyword: str,

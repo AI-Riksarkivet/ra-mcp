@@ -10,7 +10,7 @@ from rich.panel import Panel
 from rich.console import Console
 
 from .base_formatter import BaseFormatter
-from ..models import SearchOperation, PageContext, SearchHit, SearchSummary
+from ..models import SearchResult, PageContext, SearchHit, SearchSummary
 from .utils import (
     trim_page_number,
     trim_page_numbers,
@@ -122,7 +122,7 @@ class RichConsoleFormatter(BaseFormatter):
             text_content,
         )
 
-    def format_search_results_table(self, search_operation: SearchOperation, max_display: int = 20) -> Union[Table, str]:
+    def format_search_results_table(self, search_operation: SearchResult, max_display: int = 20) -> Union[Table, str]:
         """
         Create a Rich Table for search results.
 

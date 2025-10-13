@@ -4,7 +4,7 @@ Main CLI entry point for ra-mcp.
 
 import typer
 
-from .commands import search, browse, serve
+from ra_mcp.cli.commands import search, browse, serve
 
 app = typer.Typer(
     name="ra",

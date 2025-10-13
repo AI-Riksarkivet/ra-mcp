@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug RA Browse with UV",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "uv",
+            "pythonArgs": [
+                "run",
+                "python"
+            ],
+            "program": "${workspaceFolder}/src/ra_mcp/cli/cli.py",
+            "args": ["browse", "SE/VaLA/03825/01/A II/55", "--page", "222", "--search-term", "stulit"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

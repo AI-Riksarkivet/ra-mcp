@@ -76,7 +76,6 @@ class OAIPMHClient:
             nad_link = retrieved_record.get("nad_link")
 
             if nad_link:
-                print(nad_link)
                 return self._extract_manifset_id_from_nad_link(nad_link)
 
             return None
