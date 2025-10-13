@@ -28,20 +28,21 @@ class DisplayService:
 
     def format_search_results(
         self,
-        search_operation: SearchResult,
+        search_result: SearchResult,
         maximum_documents_to_display: int = 20,
         show_full_context: bool = False,
     ) -> Union[str, Any]:
         """Format search results using Rich table for CLI or plain text for MCP."""
+
+
         # For CLI mode without full context, use Rich table
         if self.show_border and not show_full_context and hasattr(self.formatter, "format_search_results_table"):
-            return self.formatter.format_search_results_table(search_operation, maximum_documents_to_display)
+            return self.formatter.format_search_results_table(search_result, maximum_documents_to_display)
 
-        # For MCP mode or full context display, use string formatting
-        if not search_operation.hits:
-            return  self._generate_no_results_message()
+        if not search_result.hits:
+            return  self._generate_no_results_message(search_result)
 
-        search_summary = analysis.extract_search_summary(search_operation)
+        search_summary = analysis.extract_search_summary(search_result)
         hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
@@ -72,7 +73,7 @@ class DisplayService:
             trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
 
-            if show_full_context and search_operation.enriched:
+            if show_full_context and search_result.enriched:
                 for hit in document_hits[:3]:
                     if hit.full_page_text:
                         is_search_hit = hit.snippet_text != "[Context page - no search hit]"
@@ -82,7 +83,7 @@ class DisplayService:
 
                         display_text = hit.full_page_text
                         if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(display_text, search_operation.keyword)
+                            display_text = self.formatter.highlight_search_keyword(display_text, search_result.keyword)
 
                         if len(display_text) > 500:
                             display_text = display_text[:500] + "..."
@@ -91,7 +92,7 @@ class DisplayService:
             else:
                 for hit in document_hits[:3]:
                     snippet = hit.snippet_text
-                    snippet = self.formatter.highlight_search_keyword(snippet, search_operation.keyword)
+                    snippet = self.formatter.highlight_search_keyword(snippet, search_result.keyword)
                     lines.append(f"   Page {hit.page_number}: {snippet}")
 
             if len(document_hits) > 3:
@@ -108,11 +109,11 @@ class DisplayService:
 
 
 
-    def _generate_no_results_message(self,keyword, offset, total_hits):
+    def _generate_no_results_message(self,search_result):
         """Generate appropriate message when no results are found."""
-        if offset > 0:
-            return f"No more results found for '{keyword}' at offset {offset}. Total results: {total_hits}"
-        return f"No results found for '{keyword}'. make sure to use \"\" "
+        if search_result.offset > 0:
+            return f"No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}"
+        return f"No results found for '{search_result.keyword}'. make sure to use \"\" "
 
 
 

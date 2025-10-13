@@ -96,31 +96,31 @@ def _group_hits_by_document(search_hits: List[SearchHit]) -> Dict[str, List[Sear
 
 
 def extract_search_summary(
-    search_operation: SearchResult,
+    search_result: SearchResult,
 ) -> SearchSummary:
     """Extract summary information from a search operation.
 
     Args:
-        search_operation: Search operation to summarize
+        search_result: Search operation to summarize
 
     Returns:
         Dictionary containing search summary
     """
-    grouped_by_document = _group_hits_by_document(search_operation.hits)
+    grouped_by_document = _group_hits_by_document(search_result.hits)
 
-    search_summary = _build_search_summary(search_operation, grouped_by_document)
+    search_summary = _build_search_summary(search_result, grouped_by_document)
 
     return search_summary
 
 
-def _build_search_summary(search_operation: SearchResult, document_grouped_hits: Dict[str, List[SearchHit]]) -> SearchSummary:
+def _build_search_summary(search_result: SearchResult, document_grouped_hits: Dict[str, List[SearchHit]]) -> SearchSummary:
     """Build summary from search operation."""
     return SearchSummary(
-        keyword=search_operation.keyword,
-        total_hits=search_operation.total_hits,
-        page_hits_returned=len(search_operation.hits),
+        keyword=search_result.keyword,
+        total_hits=search_result.total_hits,
+        page_hits_returned=len(search_result.hits),
         documents_returned=len(document_grouped_hits),
-        enriched=search_operation.enriched,
-        offset=search_operation.offset,
+        enriched=search_result.enriched,
+        offset=search_result.offset,
         grouped_hits=document_grouped_hits,
     )

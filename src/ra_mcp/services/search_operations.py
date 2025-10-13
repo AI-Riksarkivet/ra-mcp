@@ -61,7 +61,7 @@ class SearchOperations:
         # Execute search and build operation in one step
         hits, total_hits = self.search_api.search_transcribed_text(keyword, max_results, offset, max_hits_per_document)
 
-        search_operation = SearchResult(
+        search_result = SearchResult(
             hits=hits,
             total_hits=total_hits,
             keyword=keyword,
@@ -71,13 +71,13 @@ class SearchOperations:
 
         # Enrich with context if requested
         if show_context and hits and max_pages_with_context > 0:
-            self._enrich_search_operation_with_context(search_operation, max_pages_with_context, keyword)
+            self._enrich_search_operation_with_context(search_result, max_pages_with_context, keyword)
 
-        return search_operation
+        return search_result
 
     def _enrich_search_operation_with_context(
         self,
-        search_operation: SearchResult,
+        search_result: SearchResult,
         page_limit: int,
         search_keyword: str,
     ) -> None:
@@ -87,15 +87,15 @@ class SearchOperations:
         for the specified hits.
 
         Args:
-            search_operation: The operation to enrich (modified in-place).
+            search_result: The operation to enrich (modified in-place).
             page_limit: Maximum number of pages to enrich.
             search_keyword: Original search term for highlighting.
         """
         # Limit hits
-        limited_hits = search_operation.hits[:page_limit]
+        limited_hits = search_result.hits[:page_limit]
 
-        search_operation.hits = self.enrichment_service.enrich_hits_with_context(limited_hits, len(limited_hits), search_keyword)
-        search_operation.enriched = True
+        search_result.hits = self.enrichment_service.enrich_hits_with_context(limited_hits, len(limited_hits), search_keyword)
+        search_result.enriched = True
 
     def browse_document(
         self,

@@ -122,29 +122,29 @@ class RichConsoleFormatter(BaseFormatter):
             text_content,
         )
 
-    def format_search_results_table(self, search_operation: SearchResult, max_display: int = 20) -> Union[Table, str]:
+    def format_search_results_table(self, search_result: SearchResult, max_display: int = 20) -> Union[Table, str]:
         """
         Create a Rich Table for search results.
 
         Args:
-            search_operation: Search operation with hits and metadata
+            search_result: Search operation with hits and metadata
             max_display: Maximum number of documents to display
 
         Returns:
             Rich Table object or message string if no hits
         """
-        if not search_operation.hits:
+        if not search_result.hits:
             return "[yellow]No search hits found.[/yellow]"
 
         from ..services import analysis
 
-        summary = analysis.extract_search_summary(search_operation)
+        summary = analysis.extract_search_summary(search_result)
         grouped_hits = summary.grouped_hits
 
         table = Table(
             "Institution & Reference",
             "Content",
-            title=f"Search Results for '{search_operation.keyword}'",
+            title=f"Search Results for '{search_result.keyword}'",
             show_lines=True,
             expand=True,
         )
@@ -184,7 +184,7 @@ class RichConsoleFormatter(BaseFormatter):
             # Add snippets
             for hit in ref_hits[:3]:
                 snippet = truncate_text(hit.snippet_text, 150)
-                snippet = self.highlight_search_keyword(snippet, search_operation.keyword)
+                snippet = self.highlight_search_keyword(snippet, search_result.keyword)
                 trimmed_page = trim_page_number(hit.page_number)
                 content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet}[/italic]")
 

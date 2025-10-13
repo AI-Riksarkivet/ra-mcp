@@ -211,9 +211,6 @@ async def search_transcribed(
             max_hits_per_document=max_hits_per_document,
         )
 
-        if not search_result.hits:
-            return _generate_no_results_message(keyword, offset, search_result.total_hits)
-
         formatted_results = display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
