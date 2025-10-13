@@ -14,11 +14,9 @@ from ..models import SearchOperation, PageContext, SearchHit, SearchSummary
 from .utils import (
     trim_page_number,
     trim_page_numbers,
-    get_unique_page_numbers,
     truncate_text,
     extract_institution,
     format_example_browse_command,
-    sort_hits_by_page,
 )
 
 

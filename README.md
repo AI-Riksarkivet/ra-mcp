@@ -393,14 +393,6 @@ browse_document(
 )
 ```
 
-#### 3. **get_document_structure**
-Get document structure and metadata without fetching content.
-```python
-get_document_structure(
-    reference_code="SE/RA/310187/1",  # Document reference (or use pid)
-    include_manifest_info=True         # Include IIIF manifest details
-)
-```
 
 ### 📚 Available Resources
 
@@ -412,7 +404,6 @@ get_document_structure(
 1. **Search** → `search_transcribed("trolldom", offset=0)` to find relevant documents
 2. **Paginate** → Continue with `offset=50, 100, 150...` for comprehensive discovery
 3. **Browse** → Use `browse_document()` to view specific pages with full transcriptions
-4. **Structure** → Use `get_document_structure()` to understand document organization
 
 ### 💡 Search Strategy Tips
 

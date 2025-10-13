@@ -28,11 +28,6 @@ search_mcp = FastMCP(
        - View full transcriptions of specific pages
        - Supports page ranges and multiple pages
 
-    3. 📚 get_document_structure - Get document structure without content
-       - Quick overview of available manifests
-       - Document metadata and hierarchy
-       - Useful for understanding what's available
-
     AVAILABLE RESOURCES:
 
     1. 📑 riksarkivet://contents/table_of_contents - Get table of contents
@@ -86,8 +81,7 @@ search_mcp = FastMCP(
     3. Use advanced syntax for precise queries (Boolean, wildcards, fuzzy, proximity)
     4. Review hit summaries to identify most relevant documents across all searches
     5. Use browse_document() for detailed examination of specific pages
-    6. Use get_document_structure() to understand document organization
-    7. Access guide resources for historical context and documentation
+    6. Access guide resources for historical context and documentation
 
     All tools return rich, formatted text optimized for LLM understanding.
     """,
@@ -377,82 +371,6 @@ def _generate_no_pages_found_message(reference_code):
             "The pages might not have transcriptions",
             "Try different page numbers",
             "Check if the document is fully digitized",
-        ],
-    )
-
-
-@search_mcp.tool(
-    name="get_document_structure",
-    description="Get document structure and metadata without fetching content",
-)
-async def get_document_structure(
-    reference_code: Optional[str] = None,
-    pid: Optional[str] = None,
-    include_manifest_info: bool = True,
-) -> str:
-    """
-    Get the structure and metadata of a document without fetching page content.
-
-    Useful for:
-    - Understanding what's available in a document
-    - Getting the total number of pages
-    - Finding available manifests
-    - Viewing document hierarchy
-
-    Provide either reference_code or pid.
-    """
-    try:
-        if not _validate_document_identifiers(reference_code, pid):
-            return _generate_missing_identifier_message()
-
-        search_operations = SearchOperations(http_client=default_http_client)
-        display_service = DisplayService(formatter=PlainTextFormatter())
-
-        document_structure = _fetch_document_structure(search_operations, reference_code=reference_code, pid=pid)
-
-        if not document_structure:
-            return _generate_structure_not_found_message()
-
-        return display_service.format_document_structure(document_structure)
-
-    except Exception as e:
-        return format_error_message(
-            f"Failed to get document structure: {str(e)}",
-            error_suggestions=[
-                "Check the reference code or PID",
-                "Try searching for the document first",
-            ],
-        )
-
-
-def _validate_document_identifiers(reference_code, pid):
-    """Validate that at least one document identifier is provided."""
-    return reference_code or pid
-
-
-def _fetch_document_structure(search_operations, **params):
-    """Fetch the document structure with the given parameters."""
-    return search_operations.get_document_structure(**params)
-
-
-def _generate_missing_identifier_message():
-    """Generate error message for missing document identifiers."""
-    return format_error_message(
-        "Either reference_code or pid must be provided",
-        error_suggestions=[
-            "Provide a reference code like 'SE/RA/420422/01'",
-            "Or provide a PID from search results",
-        ],
-    )
-
-
-def _generate_structure_not_found_message():
-    """Generate error message when document structure cannot be retrieved."""
-    return format_error_message(
-        "Could not get structure for the document",
-        error_suggestions=[
-            "The document might not have IIIF manifests",
-            "Try browsing specific pages instead",
         ],
     )
 

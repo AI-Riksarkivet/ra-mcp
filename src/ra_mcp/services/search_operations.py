@@ -3,11 +3,11 @@ Unified search operations that can be used by both CLI and MCP interfaces.
 This eliminates code duplication between CLI commands and MCP tools.
 """
 
-from typing import List, Optional, Dict, Union
+from typing import List, Optional
 
 from ..clients import SearchAPI, IIIFClient
 from ..models import SearchOperation, BrowseOperation, DocumentMetadata
-from ..utils import parse_page_range, remove_arkis_prefix
+from ..utils import parse_page_range
 from .search_enrichment_service import SearchEnrichmentService
 from .page_context_service import PageContextService
 from ..utils.http_client import HTTPClient
@@ -202,34 +202,6 @@ class SearchOperations:
                 page_contexts.append(page_context)
 
         return page_contexts
-
-    def get_document_structure(self, reference_code: Optional[str] = None, pid: Optional[str] = None) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
-        """Retrieve document structure and IIIF collection information.
-
-        Fetches structural metadata about a document including available
-        manifests, page counts, and hierarchical organization. Either
-        reference_code or pid must be provided.
-
-        Args:
-            reference_code: Document reference code to look up.
-            pid: Persistent identifier (alternative to reference_code).
-
-        Returns:
-            Dictionary containing IIIF collection information including
-            manifests list with IDs and labels, or None if document
-            not found or both parameters are missing.
-        """
-        # Resolve PID from either provided PID or reference code
-        if not reference_code and not pid:
-            return None
-
-        resolved_pid = pid if pid else self.page_service.oai_client.extract_pid(reference_code)
-
-        if not resolved_pid:
-            return None
-
-        cleaned_pid = remove_arkis_prefix(resolved_pid)
-        return self.iiif_client.explore_collection(cleaned_pid)
 
     def _fetch_document_metadata(self, reference_code: str) -> Optional[DocumentMetadata]:
         """Fetch document metadata by searching for the reference code.

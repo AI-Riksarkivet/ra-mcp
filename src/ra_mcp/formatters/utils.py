@@ -2,7 +2,7 @@
 Shared formatting utilities used across different formatters.
 """
 
-from typing import List, Set, Dict
+from typing import List, Set
 from ..models import SearchHit
 
 

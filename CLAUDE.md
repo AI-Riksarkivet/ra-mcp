@@ -99,7 +99,7 @@ The project implements a FastMCP-based Model Context Protocol server that provid
 ### Core Components
 Located in `src/ra_mcp/`:
 - **RA Core** (`ra_core.py`): Main API client for accessing Riksarkivet's transcribed documents
-- **Tools** (`tools.py`): MCP tool definitions for search_transcribed, browse_document, and get_document_structure
+- **Tools** (`tools.py`): MCP tool definitions for search_transcribed and browse_document
 - **Formatters** (`formatters.py`): Text formatting utilities for search results and document content
 - **Cache** (`cache.py`): Response caching to improve performance
 
@@ -107,7 +107,6 @@ Located in `src/ra_mcp/`:
 1. Use search_transcribed() to find documents containing keywords
 2. Review search results to identify relevant reference codes and page numbers
 3. Use browse_document() to view full transcriptions of specific pages
-4. Use get_document_structure() to understand document organization and available manifests
 
 ### HTR Gradio Integration
 The `htr_gradio/` directory contains:
