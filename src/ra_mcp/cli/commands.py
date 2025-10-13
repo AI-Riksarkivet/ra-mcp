@@ -337,7 +337,7 @@ def load_document_with_progress(
             max_pages=max_display,
         )
 
-        progress.update(loading_task, description=f"✓ Found PID: {browse_result.pid}")
+        progress.update(loading_task, description=f"✓ Found manifest_id: {browse_result.manifest_id}")
 
     return browse_result
 

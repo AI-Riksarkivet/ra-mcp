@@ -61,7 +61,7 @@ class BrowseOperation(BaseModel):
     contexts: List[PageContext]
     reference_code: str
     pages_requested: str
-    pid: Optional[str] = None
+    #pid: Optional[str] = None
     manifest_id: Optional[str] = None
     document_metadata: Optional[DocumentMetadata] = None
 
