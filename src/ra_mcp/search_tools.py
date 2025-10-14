@@ -4,7 +4,8 @@ from fastmcp import FastMCP
 
 
 from .services import SearchOperations, BrowseOperations
-from .services.display_service import DisplayService
+from .services.browse_display_service import BrowseDisplayService
+from .services.search_display_service import SearchDisplayService
 from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
 
@@ -200,7 +201,7 @@ async def search_transcribed(
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = DisplayService(formatter=PlainTextFormatter())
+        display_service = SearchDisplayService(formatter=PlainTextFormatter())
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
@@ -364,7 +365,7 @@ async def browse_document(
     """
     try:
         browse_operations = BrowseOperations(http_client=default_http_client)
-        display_service = DisplayService(formatter=PlainTextFormatter())
+        display_service = BrowseDisplayService(formatter=PlainTextFormatter())
 
         browse_result = _fetch_document_pages(
             browse_operations,

@@ -9,7 +9,8 @@ import typer
 from rich.console import Console
 
 from ..services import SearchOperations, BrowseOperations
-from ..services.display_service import DisplayService
+from ..services.browse_display_service import BrowseDisplayService
+from ..services.search_display_service import SearchDisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import get_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
@@ -48,7 +49,7 @@ def search(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = DisplayService(formatter=RichConsoleFormatter(console))
+    display_service = SearchDisplayService(formatter=RichConsoleFormatter(console))
 
     # Show logging status if enabled
     status_msg = display_service.format_logging_status(log)
@@ -111,7 +112,7 @@ def browse(
     """
     http_client = get_http_client(log)
     browse_operations = BrowseOperations(http_client=http_client)
-    display_service = DisplayService(formatter=RichConsoleFormatter(console))
+    display_service = BrowseDisplayService(formatter=RichConsoleFormatter(console))
 
     # Display browse header
     console.print(display_service.format_browse_header(reference_code))
