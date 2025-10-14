@@ -7,13 +7,13 @@ import os
 
 import typer
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ..services import SearchOperations
 from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
+from .cli_progress import perform_search_with_progress, load_document_with_progress
 
 console = Console()
 app = typer.Typer()
@@ -31,40 +31,6 @@ def show_logging_status(enabled: bool) -> None:
     """Display logging status message."""
     if enabled:
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
-
-
-def perform_search_with_progress(
-    search_operations,
-    keyword: str,
-    max_results: int,
-    max_hits_per_document: Optional[int],
-):
-    """Execute the search operation with enhanced progress indicators."""
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        # Search across all volumes
-        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
-
-        search_result = search_operations.search_transcribed(
-            keyword=keyword,
-            max_results=max_results,
-            show_context=False,
-            max_pages_with_context=0,
-            max_hits_per_document=max_hits_per_document,
-        )
-
-        # Update with detailed results
-        hits_count = len(search_result.hits)
-        docs_count = search_result.total_hits
-        progress.update(
-            search_task,
-            description=f"✓ Found {hits_count} page hits across {docs_count} volumes",
-        )
-
-    return search_result
 
 
 @app.command()
@@ -109,6 +75,7 @@ def search(
             keyword,
             max_results,
             effective_max_hits_per_doc,
+            console,
         )
 
         # Use DisplayService to format and display search results
@@ -126,33 +93,6 @@ def search(
 def display_browse_header(reference_code: str) -> None:
     """Display browse operation header."""
     console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")
-
-
-def load_document_with_progress(
-    search_operations,
-    reference_code: str,
-    pages: str,
-    search_term: Optional[str],
-    max_display: int,
-):
-    """Load document with progress indicator."""
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        loading_task = progress.add_task("Loading document information...", total=None)
-
-        browse_result = search_operations.browse_document(
-            reference_code=reference_code,
-            pages=pages,
-            highlight_term=search_term,
-            max_pages=max_display,
-        )
-
-        progress.update(loading_task, description=f"✓ Found manifest_id: {browse_result.manifest_id}")
-
-    return browse_result
 
 
 @app.command()
@@ -201,6 +141,7 @@ def browse(
             requested_pages or "1-20",
             search_term,
             max_display,
+            console,
         )
 
         if not browse_result.contexts:
