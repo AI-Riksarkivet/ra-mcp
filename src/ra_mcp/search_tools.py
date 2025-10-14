@@ -3,7 +3,7 @@ from typing import Optional
 from fastmcp import FastMCP
 
 
-from .services import SearchOperations, BrowseOperations, analysis
+from .services import SearchOperations, BrowseOperations
 from .services.display_service import DisplayService
 from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
@@ -239,9 +239,62 @@ def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
     return formatted_results
 
 
+def _extract_unique_documents(search_hits):
+    """Extract unique document identifiers from hits."""
+    unique_documents = set()
+    for hit in search_hits:
+        document_id = hit.reference_code or hit.pid
+        unique_documents.add(document_id)
+    return unique_documents
+
+
+def _calculate_pagination_metadata(unique_documents, search_hits, total_hits, offset, limit):
+    """Calculate pagination metadata."""
+    has_additional_results = len(unique_documents) == limit and total_hits > len(search_hits)
+
+    document_range_start = offset // limit * limit + 1
+    document_range_end = document_range_start + len(unique_documents) - 1
+    next_page_offset = offset + limit if has_additional_results else None
+
+    return {
+        "total_hits": total_hits,
+        "total_documents_shown": len(unique_documents),
+        "total_page_hits": len(search_hits),
+        "document_range_start": document_range_start,
+        "document_range_end": document_range_end,
+        "has_more": has_additional_results,
+        "next_offset": next_page_offset,
+    }
+
+
+def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result_limit):
+    """Calculate pagination information for search results.
+
+    Args:
+        search_hits: List of search hits
+        total_hit_count: Total number of hits
+        pagination_offset: Current offset
+        result_limit: Maximum results per page
+
+    Returns:
+        Dictionary with pagination metadata
+    """
+    unique_document_identifiers = _extract_unique_documents(search_hits)
+
+    pagination_metadata = _calculate_pagination_metadata(
+        unique_document_identifiers,
+        search_hits,
+        total_hit_count,
+        pagination_offset,
+        result_limit,
+    )
+
+    return pagination_metadata
+
+
 def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results):
     """Append pagination information to results if there are more results available."""
-    pagination_info = analysis.get_pagination_info(search_result.hits, search_result.total_hits, offset, max_results)
+    pagination_info = _get_pagination_info(search_result.hits, search_result.total_hits, offset, max_results)
 
     if pagination_info["has_more"]:
         formatted_results += f"\n\n📊 **Pagination**: Showing documents {pagination_info['document_range_start']}-{pagination_info['document_range_end']}"
