@@ -21,6 +21,25 @@ func (m *RaMcp) testAndBuild(ctx context.Context, source *dagger.Directory, oper
 	return container, nil
 }
 
+// resolveTag resolves the final tag to use, with optional version validation
+func (m *RaMcp) resolveTag(ctx context.Context, source *dagger.Directory, tag string, skipValidation bool) (string, error) {
+	if tag == "" {
+		version, err := m.getVersion(ctx, source)
+		if err != nil {
+			return "", err
+		}
+		return "v" + version, nil
+	}
+
+	if !skipValidation {
+		if err := m.validateVersion(ctx, source, tag); err != nil {
+			return "", err
+		}
+	}
+
+	return tag, nil
+}
+
 // PublishDocker builds, tests, and publishes container image to registry with authentication
 func (m *RaMcp) PublishDocker(
 	ctx context.Context,
@@ -42,16 +61,9 @@ func (m *RaMcp) PublishDocker(
 	// +optional
 	skipValidation bool,
 ) (string, error) {
-	if tag == "" {
-		version, err := m.getVersion(ctx, source)
-		if err != nil {
-			return "", err
-		}
-		tag = "v" + version
-	} else if !skipValidation {
-		if err := m.validateVersion(ctx, source, tag); err != nil {
-			return "", err
-		}
+	resolvedTag, err := m.resolveTag(ctx, source, tag, skipValidation)
+	if err != nil {
+		return "", err
 	}
 
 	container, err := m.testAndBuild(ctx, source, "Docker publish")
@@ -59,7 +71,7 @@ func (m *RaMcp) PublishDocker(
 		return "", err
 	}
 
-	imageRef := registry + "/" + imageRepository + ":" + tag
+	imageRef := registry + "/" + imageRepository + ":" + resolvedTag
 
 	if dockerPassword != nil && dockerUsername != "" {
 		return container.
@@ -89,12 +101,15 @@ func (m *RaMcp) PublishPypi(
 	// +optional
 	buildArgs []string,
 ) (string, error) {
-	container, err := m.testAndBuild(ctx, source, "PyPI publish")
+	_, err := m.Test(ctx, source)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("tests failed, aborting PyPI publish: %w", err)
 	}
 
-	container = m.withUv(container)
+	container, err := m.buildWithUv(ctx, source)
+	if err != nil {
+		return "", fmt.Errorf("build failed during PyPI publish: %w", err)
+	}
 
 	buildCmd := []string{"uv", "build"}
 	buildCmd = append(buildCmd, buildArgs...)

@@ -2,13 +2,23 @@
 Browse display service for formatting browse results.
 """
 
-from typing import List, Optional, Union, Any, Dict
-from .base_display_service import BaseDisplayService
+from typing import List, Optional, Union, Dict
+from ..formatters import PlainTextFormatter
 from ..models import BrowseResult
 
 
-class BrowseDisplayService(BaseDisplayService):
+class BrowseDisplayService:
     """Display service specifically for browse operations."""
+
+    def __init__(self, formatter=None):
+        """
+        Initialize the browse display service.
+
+        Args:
+            formatter: Formatter instance to use (PlainTextFormatter or RichConsoleFormatter)
+                      If None, defaults to PlainTextFormatter
+        """
+        self.formatter = formatter or PlainTextFormatter()
 
     def format_browse_results(
         self,
@@ -16,96 +26,20 @@ class BrowseDisplayService(BaseDisplayService):
         highlight_term: Optional[str] = None,
         show_links: bool = False,
         show_success_message: bool = True,
-    ) -> Union[List[Any], str]:
-        """Format browse results as Rich Panel objects for CLI or string for MCP.
+    ):
+        """
+        Format browse results by delegating to the formatter.
 
         Args:
             operation: BrowseResult containing page contexts and metadata
             highlight_term: Optional term to highlight in text
             show_links: Whether to show ALTO/Image/Bildvisning links section
             show_success_message: Whether to show success message (CLI only)
+
+        Returns:
+            Formatted browse results (type depends on formatter: list for Rich, str for Plain)
         """
-        # For CLI mode with Rich formatter, use advanced formatting
-        if self.show_border and hasattr(self.formatter, "format_browse_results_grouped"):
-            return self.formatter.format_browse_results_grouped(
-                operation,
-                highlight_term,
-                show_links,
-                show_success_message
-            )
-
-        # For MCP mode or fallback, use string formatting without borders
-        if not operation.contexts:
-            return f"No page contexts found for {operation.reference_code}"
-
-        lines = []
-        lines.append(f"📚 Document: {operation.reference_code}")
-
-        # Add rich metadata if available
-        if operation.document_metadata:
-            metadata = operation.document_metadata
-
-            # Display title
-            if metadata.title and metadata.title != "(No title)":
-                lines.append(f"📋 Title: {metadata.title}")
-
-            # Display date range
-            if metadata.date:
-                lines.append(f"📅 Date: {metadata.date}")
-
-            # Display archival institution
-            if metadata.archival_institution:
-                institutions = metadata.archival_institution
-                if institutions:
-                    inst_names = [inst.get("caption", "") for inst in institutions]
-                    lines.append(f"🏛️  Institution: {', '.join(inst_names)}")
-
-            # Display hierarchy
-            if metadata.hierarchy:
-                hierarchy = metadata.hierarchy
-                if hierarchy:
-                    for i, level in enumerate(hierarchy):
-                        caption = level.get("caption", "")
-                        caption = caption.replace("\n", " ").strip()
-
-                        if i == 0:
-                            lines.append(f"📁 {caption}")
-                        elif i == len(hierarchy) - 1:
-                            indent = "  " * i
-                            lines.append(f"{indent}└── 📄 {caption}")
-                        else:
-                            indent = "  " * i
-                            lines.append(f"{indent}├── 📁 {caption}")
-
-            # Display note if available
-            if metadata.note:
-                lines.append(f"📝 Note: {metadata.note}")
-
-        lines.append(f"📖 Pages loaded: {len(operation.contexts)}")
-        lines.append("")
-
-        for context in operation.contexts:
-            lines.append(f"📄 Page {context.page_number}")
-
-            if self.show_border:
-                lines.append("─" * 40)
-
-            display_text = context.full_text
-            if highlight_term:
-                display_text = self.formatter.highlight_search_keyword(display_text, highlight_term)
-
-            lines.append(display_text)
-            lines.append("")
-            lines.append("🔗 Links:")
-            lines.append(f"  📝 ALTO XML: {context.alto_url}")
-            if context.image_url:
-                lines.append(f"  🖼️  Image: {context.image_url}")
-            if context.bildvisning_url:
-                lines.append(f"  👁️  Bildvisning: {context.bildvisning_url}")
-
-            lines.append("")
-
-        return "\n".join(lines)
+        return self.formatter.format_browse_results(operation, highlight_term, show_links, show_success_message)
 
     def format_document_structure(self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
         """Format document structure information as string."""
@@ -142,7 +76,7 @@ class BrowseDisplayService(BaseDisplayService):
             "[yellow]Suggestions:[/yellow]",
             "• Check the reference code format",
             "• Try different page numbers",
-            "• The document might not have transcriptions"
+            "• The document might not have transcriptions",
         ]
 
     def format_browse_header(self, reference_code: str) -> str:

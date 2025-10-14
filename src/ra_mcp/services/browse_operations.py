@@ -124,9 +124,7 @@ class BrowseOperations:
         # Fetch context for each page
         page_contexts = []
         for page_number in page_numbers:
-            page_context = self._get_page_context(
-                manifest_identifier, str(page_number), reference_code, highlight_keyword
-            )
+            page_context = self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
             if page_context:
                 page_contexts.append(page_context)
 

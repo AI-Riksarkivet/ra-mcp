@@ -6,6 +6,14 @@ import (
 	"fmt"
 )
 
+var (
+	ruffFormatCmd      = []string{"uvx", "ruff", "format", "."}
+	ruffFormatCheckCmd = []string{"uvx", "ruff", "format", "--check", "."}
+	ruffCheckFixCmd    = []string{"uvx", "ruff", "check", "--fix", "."}
+	ruffCheckCmd       = []string{"uvx", "ruff", "check", "."}
+	tyCheckCmd         = []string{"uvx", "ty", "check"}
+)
+
 // RuffFormat formats code using ruff (modifies files)
 func (m *RaMcp) RuffFormat(
 	ctx context.Context,
@@ -13,15 +21,12 @@ func (m *RaMcp) RuffFormat(
 	// +optional
 	source *dagger.Directory,
 ) (*dagger.Directory, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.buildWithUv(ctx, source)
 	if err != nil {
 		return nil, err
 	}
 
-	container = m.withUv(container)
-
-	formattedContainer := container.
-		WithExec([]string{"uvx", "ruff", "format", "."})
+	formattedContainer := container.WithExec(ruffFormatCmd)
 
 	return formattedContainer.Directory("/app"), nil
 }
@@ -33,15 +38,12 @@ func (m *RaMcp) RuffCheck(
 	// +optional
 	source *dagger.Directory,
 ) (*dagger.Directory, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.buildWithUv(ctx, source)
 	if err != nil {
 		return nil, err
 	}
 
-	container = m.withUv(container)
-
-	fixedContainer := container.
-		WithExec([]string{"uvx", "ruff", "check", "--fix", "."})
+	fixedContainer := container.WithExec(ruffCheckFixCmd)
 
 	return fixedContainer.Directory("/app"), nil
 }
@@ -56,15 +58,13 @@ func (m *RaMcp) TypeCheck(
 	// +optional
 	ignoreError bool,
 ) (string, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.buildWithUv(ctx, source)
 	if err != nil {
 		return "", err
 	}
 
-	container = m.withUv(container)
-
 	out, err := container.
-		WithExec([]string{"uvx", "ty", "check"}).
+		WithExec(tyCheckCmd).
 		Stdout(ctx)
 
 	if err != nil && !ignoreError {
@@ -80,26 +80,22 @@ func (m *RaMcp) Checks(
 	// +optional
 	source *dagger.Directory,
 ) (string, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.buildWithUv(ctx, source)
 	if err != nil {
 		return "", err
 	}
 
-	container = m.withUv(container)
-
 	// Step 1: Apply formatting
-	container = container.
-		WithExec([]string{"uvx", "ruff", "format", "."})
+	container = container.WithExec(ruffFormatCmd)
 
 	// Step 2: Fix linting issues
-	container = container.
-		WithExec([]string{"uvx", "ruff", "check", "--fix", "."})
+	container = container.WithExec(ruffCheckFixCmd)
 
 	// Step 3: Verify everything passes (format check, lint check, type check)
 	_, err = container.
-		WithExec([]string{"uvx", "ruff", "format", "--check", "."}).
-		WithExec([]string{"uvx", "ruff", "check", "."}).
-		WithExec([]string{"uvx", "ty", "check"}).
+		WithExec(ruffFormatCheckCmd).
+		WithExec(ruffCheckCmd).
+		WithExec(tyCheckCmd).
 		Sync(ctx)
 
 	if err != nil {

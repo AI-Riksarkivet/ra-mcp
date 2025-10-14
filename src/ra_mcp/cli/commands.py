@@ -52,9 +52,8 @@ def search(
     search_display_service = SearchDisplayService(formatter=RichConsoleFormatter(console))
 
     # Show logging status if enabled
-    status_msg = search_display_service.format_logging_status(log)
-    if status_msg:
-        console.print(status_msg)
+    if log:
+        console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
     try:
         # Use the specified max_hits_per_document value (defaults to 3)
@@ -69,9 +68,7 @@ def search(
         )
 
         # Use DisplayService to format and display search results
-        formatted_output = search_display_service.format_search_results_with_summary(
-            search_result, max_display, keyword
-        )
+        formatted_output = search_display_service.format_search_results_with_summary(search_result, max_display, keyword)
         for item in formatted_output:
             console.print(item)
 
@@ -118,9 +115,8 @@ def browse(
     console.print(browse_display_service.format_browse_header(reference_code))
 
     # Show logging status if enabled
-    status_msg = browse_display_service.format_logging_status(log)
-    if status_msg:
-        console.print(status_msg)
+    if log:
+        console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
     requested_pages = page if page is not None else pages
 

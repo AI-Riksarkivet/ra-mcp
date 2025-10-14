@@ -122,19 +122,19 @@ class RichConsoleFormatter(BaseFormatter):
             text_content,
         )
 
-    def format_search_results_table(self, search_result: SearchResult, max_display: int = 20) -> Union[Table, str]:
+    def format_search_results(self, search_result: SearchResult, max_display: int = 20) -> Union[Table, str]:
         """
-        Create a Rich Table for search results.
+        Format search results as a Rich Table for CLI display.
 
         Args:
             search_result: Search operation with hits and metadata
             max_display: Maximum number of documents to display
 
         Returns:
-            Rich Table object or message string if no hits
+            Rich Table object (if results found) or formatted string (if no results)
         """
         if not search_result.hits:
-            return "[yellow]No search hits found.[/yellow]"
+            return self.format_no_results_message(search_result)
 
         summary = search_result.extract_summary()
         grouped_hits = summary.grouped_hits
@@ -223,7 +223,6 @@ class RichConsoleFormatter(BaseFormatter):
 
         return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-
     def format_search_summary(self, summary: SearchSummary) -> List[str]:
         """
         Format search summary information.
@@ -235,7 +234,9 @@ class RichConsoleFormatter(BaseFormatter):
             List of formatted summary lines
         """
         lines = []
-        lines.append(f"\n[bold green]✓[/bold green] Found [bold]{summary.page_hits_returned}[/bold] page hits across [bold]{summary.documents_returned}[/bold] volumes")
+        lines.append(
+            f"\n[bold green]✓[/bold green] Found [bold]{summary.page_hits_returned}[/bold] page hits across [bold]{summary.documents_returned}[/bold] volumes"
+        )
 
         if summary.total_hits > summary.page_hits_returned:
             lines.append(f"[dim]   (Total {summary.total_hits} hits available, showing from offset {summary.offset})[/dim]")
@@ -284,19 +285,33 @@ class RichConsoleFormatter(BaseFormatter):
             return f"\n[dim]... and {remaining} more documents[/dim]"
         return ""
 
-    def format_browse_results_grouped(
+    def format_no_results_message(self, search_result) -> str:
+        """
+        Generate appropriate message when no results are found.
+
+        Args:
+            search_result: SearchResult containing keyword, offset, and total_hits
+
+        Returns:
+            Formatted Rich markup message
+        """
+        if search_result.offset > 0:
+            return f"[yellow]No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}[/yellow]"
+        return f"[yellow]No results found for '{search_result.keyword}'. Make sure to use \"\" for exact phrases.[/yellow]"
+
+    def format_browse_results(
         self,
         browse_result: BrowseResult,
-        search_term: Optional[str] = None,
+        highlight_term: Optional[str] = None,
         show_links: bool = False,
         show_success_message: bool = True,
     ) -> List[Any]:
         """
-        Format browse results as grouped Rich panels with metadata.
+        Format browse results as grouped Rich panels with metadata for CLI display.
 
         Args:
             browse_result: BrowseResult containing contexts and metadata
-            search_term: Optional term to highlight in text
+            highlight_term: Optional term to highlight in text
             show_links: Whether to show ALTO/Image/Bildvisning links section
             show_success_message: Whether to print success message
 
@@ -398,16 +413,14 @@ class RichConsoleFormatter(BaseFormatter):
                 else:
                     # When not showing links section, include bildvisning link in separator
                     if context.bildvisning_url:
-                        panel_content.append(
-                            f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]"
-                        )
+                        panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
                     else:
                         panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
 
                 # Add page content with highlighting
                 display_text = context.full_text
-                if search_term:
-                    display_text = self.highlight_search_keyword(display_text, search_term)
+                if highlight_term:
+                    display_text = self.highlight_search_keyword(display_text, highlight_term)
                 panel_content.append(f"[italic]{display_text}[/italic]")
 
                 # Add links if requested

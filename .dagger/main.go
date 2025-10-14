@@ -35,6 +35,15 @@ func (m *RaMcp) withUv(container *dagger.Container) *dagger.Container {
 		WithFile("/usr/local/bin/uvx", uvxBinary)
 }
 
+// buildWithUv builds a container and adds uv tooling to it
+func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dagger.Container, error) {
+	container, err := m.Build(ctx, source)
+	if err != nil {
+		return nil, err
+	}
+	return m.withUv(container), nil
+}
+
 // getVersion retrieves the raw version from pyproject.toml using uv
 func (m *RaMcp) getVersion(ctx context.Context, source *dagger.Directory) (string, error) {
 	container, err := m.Build(ctx, source)
