@@ -166,9 +166,16 @@ class SearchAPI:
         return snippet_hits
 
     def _extract_page_number(self, page_data: Union[Dict, str]) -> str:
-        """Extract and normalize page number from page data."""
+        """Extract and normalize page number from page data.
+        
+        We extract the last segment after splitting by underscore.
+        """
         if isinstance(page_data, dict):
-            return page_data.get("id", "").lstrip("_")
+            page_id = page_data.get("id", "")
+            # Split by underscore and take the last element
+            if "_" in page_id:
+                return page_id.split("_")[-1]
+            return page_id.lstrip("_")
         return str(page_data)
 
     def _create_search_hit(
