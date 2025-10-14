@@ -8,7 +8,7 @@ from typing import Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ..services import SearchOperations
+from ..services import SearchOperations, BrowseOperations
 from ..models import SearchResult, BrowseResult
 
 
@@ -61,7 +61,7 @@ def perform_search_with_progress(
 
 
 def load_document_with_progress(
-    search_operations: SearchOperations,
+    browse_operations: BrowseOperations,
     reference_code: str,
     pages: str,
     search_term: Optional[str],
@@ -71,7 +71,7 @@ def load_document_with_progress(
     """Load document with progress indicator.
 
     Args:
-        search_operations: SearchOperations instance
+        browse_operations: BrowseOperations instance
         reference_code: Document reference code
         pages: Page specification (e.g., "1-10" or "5,7,9")
         search_term: Optional term to highlight
@@ -88,7 +88,7 @@ def load_document_with_progress(
     ) as progress:
         loading_task = progress.add_task("Loading document information...", total=None)
 
-        browse_result = search_operations.browse_document(
+        browse_result = browse_operations.browse_document(
             reference_code=reference_code,
             pages=pages,
             highlight_term=search_term,

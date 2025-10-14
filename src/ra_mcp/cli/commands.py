@@ -8,7 +8,7 @@ import os
 import typer
 from rich.console import Console
 
-from ..services import SearchOperations
+from ..services import SearchOperations, BrowseOperations
 from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import get_http_client
@@ -110,7 +110,7 @@ def browse(
         ra browse "SE/RA/123" --page 1 --log      # With API logging
     """
     http_client = get_http_client(log)
-    search_operations = SearchOperations(http_client=http_client)
+    browse_operations = BrowseOperations(http_client=http_client)
     display_service = DisplayService(formatter=RichConsoleFormatter(console))
 
     # Display browse header
@@ -125,7 +125,7 @@ def browse(
 
     try:
         browse_result = load_document_with_progress(
-            search_operations,
+            browse_operations,
             reference_code,
             requested_pages or "1-20",
             search_term,

@@ -3,7 +3,7 @@ from typing import Optional
 from fastmcp import FastMCP
 
 
-from .services import SearchOperations, analysis
+from .services import SearchOperations, BrowseOperations, analysis
 from .services.display_service import DisplayService
 from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
@@ -313,11 +313,11 @@ async def browse_document(
     - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
     """
     try:
-        search_operations = SearchOperations(http_client=default_http_client)
+        browse_operations = BrowseOperations(http_client=default_http_client)
         display_service = DisplayService(formatter=PlainTextFormatter())
 
         browse_result = _fetch_document_pages(
-            search_operations,
+            browse_operations,
             reference_code=reference_code,
             pages=pages,
             highlight_term=highlight_term,
@@ -342,9 +342,9 @@ async def browse_document(
         )
 
 
-def _fetch_document_pages(search_operations, **browse_params):
+def _fetch_document_pages(browse_operations, **browse_params):
     """Fetch document pages with the given parameters."""
-    return search_operations.browse_document(**browse_params)
+    return browse_operations.browse_document(**browse_params)
 
 
 def _generate_no_pages_found_message(reference_code):
