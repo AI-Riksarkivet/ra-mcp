@@ -27,12 +27,6 @@ def get_http_client(enable_logging: bool) -> HTTPClient:
     return default_http_client
 
 
-def show_logging_status(enabled: bool) -> None:
-    """Display logging status message."""
-    if enabled:
-        console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
-
-
 @app.command()
 def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
@@ -64,7 +58,10 @@ def search(
     search_operations = SearchOperations(http_client=http_client)
     display_service = DisplayService(formatter=RichConsoleFormatter(console))
 
-    show_logging_status(log)
+    # Show logging status if enabled
+    status_msg = display_service.format_logging_status(log)
+    if status_msg:
+        console.print(status_msg)
 
     try:
         # Use the specified max_hits_per_document value (defaults to 3)
@@ -88,11 +85,6 @@ def search(
     except Exception as error:
         console.print(f"[red]Search failed: {error}[/red]")
         raise typer.Exit(code=1)
-
-
-def display_browse_header(reference_code: str) -> None:
-    """Display browse operation header."""
-    console.print(f"[blue]Looking up reference code: {reference_code}[/blue]")
 
 
 @app.command()
@@ -129,8 +121,13 @@ def browse(
     search_operations = SearchOperations(http_client=http_client)
     display_service = DisplayService(formatter=RichConsoleFormatter(console))
 
-    display_browse_header(reference_code)
-    show_logging_status(log)
+    # Display browse header
+    console.print(display_service.format_browse_header(reference_code))
+
+    # Show logging status if enabled
+    status_msg = display_service.format_logging_status(log)
+    if status_msg:
+        console.print(status_msg)
 
     requested_pages = page if page is not None else pages
 

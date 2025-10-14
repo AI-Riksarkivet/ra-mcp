@@ -307,3 +307,27 @@ class DisplayService:
                 output.append(remaining_message)
 
         return output
+
+    def format_logging_status(self, enabled: bool) -> Optional[str]:
+        """Format logging status message.
+
+        Args:
+            enabled: Whether logging is enabled
+
+        Returns:
+            Status message or None if logging disabled
+        """
+        if enabled:
+            return "[dim]API logging enabled - check ra_mcp_api.log[/dim]"
+        return None
+
+    def format_browse_header(self, reference_code: str) -> str:
+        """Format browse operation header.
+
+        Args:
+            reference_code: Document reference code being browsed
+
+        Returns:
+            Formatted header message
+        """
+        return f"[blue]Looking up reference code: {reference_code}[/blue]"
