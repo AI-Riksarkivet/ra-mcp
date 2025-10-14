@@ -56,6 +56,32 @@ class SearchResult(BaseModel):
     offset: int
     enriched: bool = False
 
+    def extract_summary(self) -> "SearchSummary":
+        """Extract summary information from this search result.
+
+        Groups hits by document and creates a SearchSummary with metadata.
+
+        Returns:
+            SearchSummary containing grouped hits and statistics.
+        """
+        # Group hits by document (reference code or PID)
+        grouped_hits: Dict[str, List[SearchHit]] = {}
+        for hit in self.hits:
+            document_id = hit.reference_code or hit.pid
+            if document_id not in grouped_hits:
+                grouped_hits[document_id] = []
+            grouped_hits[document_id].append(hit)
+
+        return SearchSummary(
+            keyword=self.keyword,
+            total_hits=self.total_hits,
+            page_hits_returned=len(self.hits),
+            documents_returned=len(grouped_hits),
+            enriched=self.enriched,
+            offset=self.offset,
+            grouped_hits=grouped_hits,
+        )
+
 
 class BrowseResult(BaseModel):
     contexts: List[PageContext]

@@ -7,7 +7,6 @@ from typing import Dict, List, Optional, Union, Any
 
 from ..models import SearchResult, BrowseResult
 from ..formatters import PlainTextFormatter
-from . import analysis
 
 
 class DisplayService:
@@ -40,7 +39,7 @@ class DisplayService:
         if not search_result.hits:
             return  self._generate_no_results_message(search_result)
 
-        search_summary = analysis.extract_search_summary(search_result)
+        search_summary = search_result.extract_summary()
         hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
@@ -269,7 +268,7 @@ class DisplayService:
             return output
 
         # Get search summary and format it
-        summary = analysis.extract_search_summary(search_result)
+        summary = search_result.extract_summary()
         summary_lines = self.formatter.format_search_summary(summary)
         output.extend(summary_lines)
 

@@ -136,9 +136,7 @@ class RichConsoleFormatter(BaseFormatter):
         if not search_result.hits:
             return "[yellow]No search hits found.[/yellow]"
 
-        from ..services import analysis
-
-        summary = analysis.extract_search_summary(search_result)
+        summary = search_result.extract_summary()
         grouped_hits = summary.grouped_hits
 
         table = Table(
