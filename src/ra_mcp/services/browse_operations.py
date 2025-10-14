@@ -5,10 +5,9 @@ Handles document browsing, page fetching, and metadata retrieval.
 
 from typing import List, Optional
 
-from ..clients import IIIFClient
-from ..models import BrowseResult, DocumentMetadata
-from ..utils import parse_page_range
-from .page_context_service import PageContextService
+from ..clients import IIIFClient, ALTOClient, OAIPMHClient
+from ..models import BrowseResult, DocumentMetadata, PageContext
+from ..utils import parse_page_range, url_generator
 from ..utils.http_client import HTTPClient
 
 
@@ -19,12 +18,14 @@ class BrowseOperations:
     of documents by reference code.
 
     Attributes:
-        page_service: Service for fetching page-level context and content.
+        alto_client: Client for fetching ALTO XML content.
+        oai_client: Client for OAI-PMH metadata operations.
         iiif_client: Client for interacting with IIIF collections and manifests.
     """
 
     def __init__(self, http_client: HTTPClient):
-        self.page_service = PageContextService(http_client=http_client)
+        self.alto_client = ALTOClient(http_client=http_client)
+        self.oai_client = OAIPMHClient(http_client=http_client)
         self.iiif_client = IIIFClient(http_client=http_client)
 
     def browse_document(
@@ -51,7 +52,7 @@ class BrowseOperations:
             and persistent identifiers. Returns empty contexts if document
             not found or no valid pages.
         """
-        manifset_id = self.page_service.oai_client.extract_manifset_id(reference_code)
+        manifset_id = self.oai_client.extract_manifset_id(reference_code)
 
         if not manifset_id:
             return BrowseResult(
@@ -123,7 +124,7 @@ class BrowseOperations:
         # Fetch context for each page
         page_contexts = []
         for page_number in page_numbers:
-            page_context = self.page_service.get_page_context(
+            page_context = self._get_page_context(
                 manifest_identifier, str(page_number), reference_code, highlight_keyword
             )
             if page_context:
@@ -146,3 +147,44 @@ class BrowseOperations:
         except Exception:
             # If metadata fetch fails, return None - browse will still work
             return None
+
+    def _get_page_context(
+        self,
+        manifest_id: str,
+        page_number: str,
+        reference_code: str = "",
+        search_term: Optional[str] = None,
+    ) -> Optional[PageContext]:
+        """Get full page context for a specific page using manifest ID for ALTO URL generation.
+
+        Args:
+            manifest_id: IIIF manifest identifier.
+            page_number: Page number to fetch.
+            reference_code: Document reference code.
+            search_term: Optional search term for bildvisning URL.
+
+        Returns:
+            PageContext object with transcribed text and metadata, or None if not found.
+        """
+        cleaned_manifest_id = url_generator.remove_arkis_prefix(manifest_id)
+        alto_xml_url = url_generator.alto_url(cleaned_manifest_id, page_number)
+        image_url_link = url_generator.iiif_image_url(manifest_id, page_number)
+        bildvisning_link = url_generator.bildvisning_url(manifest_id, page_number, search_term)
+
+        if not alto_xml_url:
+            return None
+
+        full_text = self.alto_client.fetch_content(alto_xml_url)
+
+        if not full_text:
+            return None
+
+        return PageContext(
+            page_number=int(page_number) if page_number.isdigit() else 0,
+            page_id=page_number,
+            reference_code=reference_code,
+            full_text=full_text,
+            alto_url=alto_xml_url,
+            image_url=image_url_link or "",
+            bildvisning_url=bildvisning_link or "",
+        )
