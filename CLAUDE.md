@@ -65,9 +65,14 @@ The project uses Dagger for containerized builds and publishing.
 dagger call build
 ```
 
+**Run tests:**
+```bash
+dagger call test
+```
+
 **Build and publish to Docker registry:**
 ```bash
-dagger call publish \
+dagger call publish-docker \
   --docker-username=env:DOCKER_USERNAME \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
@@ -75,16 +80,27 @@ dagger call publish \
   --source=.
 ```
 
+**Build and publish to PyPI:**
+```bash
+dagger call publish-pypi \
+  --pypi-token=env:PYPI_TOKEN \
+  --source=.
+```
+
 **Available Dagger functions:**
 - `build`: Creates a production-ready container image
 - `test`: Runs the test suite using the built container
-- `publish`: Builds and publishes container image to registry with authentication
+- `publish-docker`: Runs tests, builds, and publishes container image to Docker registry (fails if tests fail)
+- `publish-pypi`: Runs tests, builds, and publishes Python package to PyPI (fails if tests fail)
 - `build-local`: Build with custom environment variables and settings
 
+**Test-First Deployment:**
+Both `publish-docker` and `publish-pypi` automatically run the full test suite before deploying. If any tests fail, the deployment is aborted and no artifacts are published. This ensures only tested code reaches production.
+
 **Prerequisites for publishing:**
-- Set `DOCKER_USERNAME` environment variable with Docker registry username
-- Set `DOCKER_PASSWORD` environment variable with Docker registry password
-- Ensure Docker registry access for the specified credentials
+- **Docker**: Set `DOCKER_USERNAME` and `DOCKER_PASSWORD` environment variables with Docker registry credentials
+- **PyPI**: Set `PYPI_TOKEN` environment variable with PyPI API token
+- Ensure registry access for the specified credentials
 
 ## Architecture
 

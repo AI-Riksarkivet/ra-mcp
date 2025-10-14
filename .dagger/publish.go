@@ -3,9 +3,25 @@ package main
 import (
 	"context"
 	"dagger/ra-mcp/internal/dagger"
+	"fmt"
 )
 
-// PublishDocker builds and publishes container image to registry with authentication
+// testAndBuild runs tests and builds the container if tests pass
+func (m *RaMcp) testAndBuild(ctx context.Context, source *dagger.Directory, operation string) (*dagger.Container, error) {
+	_, err := m.Test(ctx, source)
+	if err != nil {
+		return nil, fmt.Errorf("tests failed, aborting %s: %w", operation, err)
+	}
+
+	container, err := m.Build(ctx, source)
+	if err != nil {
+		return nil, fmt.Errorf("build failed during %s: %w", operation, err)
+	}
+
+	return container, nil
+}
+
+// PublishDocker builds, tests, and publishes container image to registry with authentication
 func (m *RaMcp) PublishDocker(
 	ctx context.Context,
 	// +default="riksarkivet/ra-mcp"
@@ -26,7 +42,6 @@ func (m *RaMcp) PublishDocker(
 	// +optional
 	skipValidation bool,
 ) (string, error) {
-	// If tag is not provided, get version from pyproject.toml and add "v" prefix
 	if tag == "" {
 		version, err := m.getVersion(ctx, source)
 		if err != nil {
@@ -34,13 +49,12 @@ func (m *RaMcp) PublishDocker(
 		}
 		tag = "v" + version
 	} else if !skipValidation {
-		// Validate that the provided tag matches pyproject.toml version
 		if err := m.validateVersion(ctx, source, tag); err != nil {
 			return "", err
 		}
 	}
 
-	container, err := m.Build(ctx, source)
+	container, err := m.testAndBuild(ctx, source, "Docker publish")
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +70,7 @@ func (m *RaMcp) PublishDocker(
 	return container.Publish(ctx, imageRef)
 }
 
-// PublishPypi builds and publishes the Python package to PyPI
+// PublishPypi builds, tests, and publishes the Python package to PyPI
 func (m *RaMcp) PublishPypi(
 	ctx context.Context,
 	// Source directory containing pyproject.toml
@@ -75,7 +89,7 @@ func (m *RaMcp) PublishPypi(
 	// +optional
 	buildArgs []string,
 ) (string, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.testAndBuild(ctx, source, "PyPI publish")
 	if err != nil {
 		return "", err
 	}

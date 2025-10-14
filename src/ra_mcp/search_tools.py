@@ -201,7 +201,7 @@ async def search_transcribed(
 ) -> str:
     try:
         search_operations = SearchOperations(http_client=default_http_client)
-        display_service = SearchDisplayService(formatter=PlainTextFormatter())
+        search_display_service = SearchDisplayService(formatter=PlainTextFormatter())
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
@@ -210,7 +210,7 @@ async def search_transcribed(
             max_hits_per_document=max_hits_per_document,
         )
 
-        formatted_results = display_service.format_search_results(
+        formatted_results = search_display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
         )
@@ -365,7 +365,7 @@ async def browse_document(
     """
     try:
         browse_operations = BrowseOperations(http_client=default_http_client)
-        display_service = BrowseDisplayService(formatter=PlainTextFormatter())
+        browse_display_service = BrowseDisplayService(formatter=PlainTextFormatter())
 
         browse_result = _fetch_document_pages(
             browse_operations,
@@ -378,7 +378,7 @@ async def browse_document(
         if not browse_result.contexts:
             return _generate_no_pages_found_message(reference_code)
 
-        result = display_service.format_browse_results(browse_result, highlight_term)
+        result = browse_display_service.format_browse_results(browse_result, highlight_term)
         # MCPFormatter always returns string, but type hints include List for RichConsoleFormatter
         return result if isinstance(result, str) else str(result)
 

@@ -49,10 +49,10 @@ def search(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    display_service = SearchDisplayService(formatter=RichConsoleFormatter(console))
+    search_display_service = SearchDisplayService(formatter=RichConsoleFormatter(console))
 
     # Show logging status if enabled
-    status_msg = display_service.format_logging_status(log)
+    status_msg = search_display_service.format_logging_status(log)
     if status_msg:
         console.print(status_msg)
 
@@ -69,7 +69,7 @@ def search(
         )
 
         # Use DisplayService to format and display search results
-        formatted_output = display_service.format_search_results_with_summary(
+        formatted_output = search_display_service.format_search_results_with_summary(
             search_result, max_display, keyword
         )
         for item in formatted_output:
@@ -112,13 +112,13 @@ def browse(
     """
     http_client = get_http_client(log)
     browse_operations = BrowseOperations(http_client=http_client)
-    display_service = BrowseDisplayService(formatter=RichConsoleFormatter(console))
+    browse_display_service = BrowseDisplayService(formatter=RichConsoleFormatter(console))
 
     # Display browse header
-    console.print(display_service.format_browse_header(reference_code))
+    console.print(browse_display_service.format_browse_header(reference_code))
 
     # Show logging status if enabled
-    status_msg = display_service.format_logging_status(log)
+    status_msg = browse_display_service.format_logging_status(log)
     if status_msg:
         console.print(status_msg)
 
@@ -136,13 +136,13 @@ def browse(
 
         if not browse_result.contexts:
             # Use DisplayService to format error message
-            error_lines = display_service.format_browse_error(reference_code)
+            error_lines = browse_display_service.format_browse_error(reference_code)
             for line in error_lines:
                 console.print(line)
             raise typer.Exit(code=1)
 
         # Use DisplayService to format and display results
-        formatted_output = display_service.format_browse_results(
+        formatted_output = browse_display_service.format_browse_results(
             browse_result,
             highlight_term=search_term,
             show_links=show_links,
