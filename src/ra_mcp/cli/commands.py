@@ -11,20 +11,12 @@ from rich.console import Console
 from ..services import SearchOperations
 from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
-from ..utils.http_client import HTTPClient, default_http_client
+from ..utils.http_client import get_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from .cli_progress import perform_search_with_progress, load_document_with_progress
 
 console = Console()
 app = typer.Typer()
-
-
-def get_http_client(enable_logging: bool) -> HTTPClient:
-    """Get HTTP client with optional logging enabled."""
-    if enable_logging:
-        os.environ["RA_MCP_LOG_API"] = "1"
-        return HTTPClient()
-    return default_http_client
 
 
 @app.command()

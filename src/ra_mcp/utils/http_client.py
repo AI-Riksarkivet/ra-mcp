@@ -244,3 +244,20 @@ class HTTPClient:
 
 
 default_http_client = HTTPClient()
+
+
+def get_http_client(enable_logging: bool = False) -> HTTPClient:
+    """Get HTTP client with optional logging enabled.
+
+    Args:
+        enable_logging: Whether to enable API call logging to ra_mcp_api.log
+
+    Returns:
+        HTTPClient instance with logging enabled or default client
+    """
+    import os
+
+    if enable_logging:
+        os.environ["RA_MCP_LOG_API"] = "1"
+        return HTTPClient()
+    return default_http_client
