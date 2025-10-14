@@ -9,12 +9,11 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ..services import SearchOperations, analysis
+from ..services import SearchOperations
 from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
 from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
-from ..models import SearchResult
 
 console = Console()
 app = typer.Typer()
@@ -32,46 +31,6 @@ def show_logging_status(enabled: bool) -> None:
     """Display logging status message."""
     if enabled:
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
-
-
-def display_search_summary(search_result: SearchResult, keyword: str) -> None:
-    """Display search result summary."""
-    console.print(f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]")
-
-
-def display_table_results(
-    search_result: SearchResult,
-    display_service: DisplayService,
-    max_display: int,
-    keyword: str,
-) -> None:
-    """Display search results in table format."""
-    formatted_table = display_service.format_search_results(search_result, max_display, False)
-
-    if not formatted_table:
-        return
-
-    # Get search summary and display it
-    summary = analysis.extract_search_summary(search_result)
-    summary_lines = display_service.formatter.format_search_summary(summary)
-    for line in summary_lines:
-        console.print(line)
-
-    # Display the table
-    if isinstance(formatted_table, str):
-        console.print(formatted_table)
-    else:
-        console.print(formatted_table)
-        # Display browse examples and remaining documents inline
-        grouped_hits = summary.grouped_hits
-        example_lines = display_service.formatter.format_browse_example(grouped_hits, keyword)
-        for line in example_lines:
-            console.print(line)
-
-        total_groups = len(grouped_hits)
-        remaining_message = display_service.formatter.format_remaining_documents(total_groups, max_display)
-        if remaining_message:
-            console.print(remaining_message)
 
 
 def perform_search_with_progress(
@@ -152,7 +111,12 @@ def search(
             effective_max_hits_per_doc,
         )
 
-        display_table_results(search_result, display_service, max_display, keyword)
+        # Use DisplayService to format and display search results
+        formatted_output = display_service.format_search_results_with_summary(
+            search_result, max_display, keyword
+        )
+        for item in formatted_output:
+            console.print(item)
 
     except Exception as error:
         console.print(f"[red]Search failed: {error}[/red]")

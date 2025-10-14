@@ -263,3 +263,47 @@ class DisplayService:
             "• Try different page numbers",
             "• The document might not have transcriptions"
         ]
+
+    def format_search_results_with_summary(
+        self,
+        search_result: SearchResult,
+        max_display: int,
+        keyword: str,
+    ) -> List[Any]:
+        """Format complete search results with summary, table, and examples.
+
+        Args:
+            search_result: SearchResult containing hits and metadata
+            max_display: Maximum number of documents to display
+            keyword: Search keyword for browse examples
+
+        Returns:
+            List of formatted output items (strings, tables, etc.)
+        """
+        output = []
+
+        formatted_table = self.format_search_results(search_result, max_display, False)
+
+        if not formatted_table:
+            return output
+
+        # Get search summary and format it
+        summary = analysis.extract_search_summary(search_result)
+        summary_lines = self.formatter.format_search_summary(summary)
+        output.extend(summary_lines)
+
+        # Add the table
+        output.append(formatted_table)
+
+        # For Rich tables (not strings), add browse examples and remaining documents
+        if not isinstance(formatted_table, str):
+            grouped_hits = summary.grouped_hits
+            example_lines = self.formatter.format_browse_example(grouped_hits, keyword)
+            output.extend(example_lines)
+
+            total_groups = len(grouped_hits)
+            remaining_message = self.formatter.format_remaining_documents(total_groups, max_display)
+            if remaining_message:
+                output.append(remaining_message)
+
+        return output
