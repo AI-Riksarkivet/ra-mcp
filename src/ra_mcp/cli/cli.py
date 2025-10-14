@@ -29,7 +29,6 @@ Search Syntax:
 
 Examples:
   ra search "Stockholm"                          # Basic search
-  ra search "trolldom" --browse --max-pages 5   # Search with full page transcriptions
   ra search "St*holm"                            # Wildcard search
   ra search "Stockholm~"                         # Fuzzy search
   ra search "(Stockholm AND trolldom)"           # Boolean search

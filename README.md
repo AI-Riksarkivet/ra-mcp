@@ -83,9 +83,6 @@ Find documents containing specific words or phrases:
 # Basic search
 uv run ra search "Stockholm"
 
-# Search with full page transcriptions
-uv run ra search "trolldom" --browse --max-pages 5
-
 # Wildcard search - single character (?)
 uv run ra search "St?ckholm"  # Matches "Stockholm", "Stäckholm", etc.
 
@@ -117,10 +114,8 @@ uv run ra search "((troll* OR häx*) AND (Stockholm OR Göteborg))"  # Complex g
 ```
 
 **Search Options:**
-- `--browse` - Show full page transcriptions
 - `--max N` - Maximum search results (default: 50)
 - `--max-display N` - Maximum results to display (default: 20)
-- `--max-pages N` - Maximum pages to load context for (default: 10)
 - `--max-hits-per-vol N` - Maximum hits to return per volume (default: 3)
 
 **Search Types:**
@@ -160,15 +155,6 @@ uv run ra browse "SE/RA/123" --page "5,7,9" --search-term "Stockholm"
 - `--search-term` - Highlight this term in the text
 - `--max-display N` - Maximum pages to display (default: 20)
 
-### 3. Search with Full Context
-
-The `--browse` flag shows complete page transcriptions instead of just snippets:
-
-```bash
-# Search with full page transcriptions
-uv run ra search "Stockholm" --browse --max-pages 5
-```
-
 ## Output Features
 
 ### 🔍 Search Results
@@ -193,28 +179,6 @@ Browse commands:
   uv run ra browse "SE/RA/310187/1" --pages "2,7,8,52,72" --search-term "trolldom"
 ```
 
-### 📄 Full Page Display
-With the `--browse` flag, you get complete page transcriptions featuring:
-
-- **Full text transcriptions** - Complete page content from ALTO XML
-- **Keyword highlighting** - Your search terms highlighted in yellow
-- **Rich metadata** - Document titles, dates, and archive hierarchy
-- **Direct access links** - Quick links to images, XML, and interactive viewer
-
-**Example output:**
-```
-═══ SE/RA/310187/1 - Page 7 ═══
-Title: Kommissorialrätt i Stockholm ang. trolldom
-Date: 1676-1677 | Institution: Riksarkivet i Stockholm/Täby
-
-....
-
-Links:
-📄 ALTO XML: https://sok.riksarkivet.se/dokument/alto/SE_RA_310187_1_007.xml
-🖼️  Image: https://lbiiif.riksarkivet.se/arkiv/SE_RA_310187_1_007.jpg
-🔍 Bildvisning: https://sok.riksarkivet.se/bildvisning/SE_RA_310187_1#007
-```
-
 ### 🔗 Available Resources
 Each result provides direct access to:
 
@@ -234,12 +198,7 @@ Each result provides direct access to:
    uv run ra search "Stockholm"
    ```
 
-2. **Get full context for interesting hits:**
-   ```bash
-   uv run ra search "Stockholm" --browse --max-pages 3
-   ```
-
-3. **Browse specific documents:**
+2. **Browse specific documents:**
    ```bash
    uv run ra browse "SE/RA/123456" --page "10-15" --search-term "Stockholm"
    ```
@@ -247,9 +206,6 @@ Each result provides direct access to:
 ### Advanced Usage
 
 ```bash
-# Comprehensive search with full page content
-uv run ra search "trolldom" --browse --max-pages 8
-
 # Targeted document browsing
 uv run ra browse "SE/RA/760264" --pages "1,5,10-12" --search-term "trolldom"
 

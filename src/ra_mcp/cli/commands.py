@@ -15,8 +15,8 @@ from ..services import SearchOperations, analysis
 from ..services.display_service import DisplayService
 from ..formatters import RichConsoleFormatter
 from ..utils.http_client import HTTPClient, default_http_client
-from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY, DEFAULT_MAX_PAGES
-from ..models import SearchResult, BrowseResult, PageContext, DocumentMetadata
+from ..config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
+from ..models import SearchResult
 
 console = Console()
 app = typer.Typer()
@@ -39,79 +39,6 @@ def show_logging_status(enabled: bool) -> None:
 def display_search_summary(search_result: SearchResult, keyword: str) -> None:
     """Display search result summary."""
     console.print(f"[green]Found {len(search_result.hits)} page-level hits in {search_result.total_hits} documents[/green]")
-
-
-def display_context_results(
-    search_result: SearchResult,
-    display_service: DisplayService,
-    keyword: str,
-    show_links: bool = False,
-) -> None:
-    """Display search results with full context using unified page display."""
-
-    # Sort hits by reference code and page number for better organization
-    sorted_hits = sorted(search_result.hits, key=lambda hit: (hit.reference_code, int(hit.page_number)))
-
-    # Convert SearchHits to PageContext format and group by reference code
-    # Use a set to track seen pages and avoid duplicates
-    grouped_contexts = {}
-    seen_pages = set()
-
-    for hit in sorted_hits:
-        if hit.full_page_text:
-            ref_code = hit.reference_code
-            page_key = f"{ref_code}_{hit.page_number}"
-
-            # Skip if we've already seen this exact page
-            if page_key in seen_pages:
-                continue
-
-            seen_pages.add(page_key)
-
-            if ref_code not in grouped_contexts:
-                grouped_contexts[ref_code] = []
-
-            page_context = PageContext(
-                page_number=int(hit.page_number),
-                page_id=page_key,
-                reference_code=hit.reference_code,
-                full_text=hit.full_page_text,
-                alto_url=hit.alto_url or "",
-                image_url=hit.image_url or "",
-                bildvisning_url=hit.bildvisning_url or "",
-            )
-            grouped_contexts[ref_code].append(page_context)
-
-    # Calculate total unique pages after deduplication
-    total_unique_pages = sum(len(contexts) for contexts in grouped_contexts.values())
-    console.print(f"[green]Successfully loaded {total_unique_pages} pages[/green]")
-
-    # Display each document separately with its own metadata
-    for ref_code, contexts in grouped_contexts.items():
-        # Get metadata for this specific document
-        representative_hit = next(hit for hit in sorted_hits if hit.reference_code == ref_code and hit.full_page_text)
-
-        document_metadata = DocumentMetadata(
-            title=representative_hit.title,
-            hierarchy=representative_hit.hierarchy,
-            archival_institution=representative_hit.archival_institution,
-            date=representative_hit.date,
-            note=representative_hit.note,
-            collection_url=representative_hit.collection_url,
-            manifest_url=representative_hit.manifest_url,
-        )
-
-        # Create a mock browse result for this document
-        mock_browse = BrowseResult(
-            contexts=contexts,
-            reference_code=ref_code,
-            pages_requested="context",
-            pid=None,
-            document_metadata=document_metadata,
-        )
-
-        # Display this document
-        display_browse_results(mock_browse, display_service, keyword, show_links, False)  # Don't show success message
 
 
 def display_table_results(
@@ -153,8 +80,6 @@ def perform_search_with_progress(
     search_operations,
     keyword: str,
     max_results: int,
-    browse: bool,
-    max_pages: int,
     max_hits_per_document: Optional[int],
 ):
     """Execute the search operation with enhanced progress indicators."""
@@ -163,13 +88,13 @@ def perform_search_with_progress(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        # Phase 1: Initial search across all volumes
+        # Search across all volumes
         search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,
             max_results=max_results,
-            show_context=False,  # First get basic results
+            show_context=False,
             max_pages_with_context=0,
             max_hits_per_document=max_hits_per_document,
         )
@@ -182,55 +107,6 @@ def perform_search_with_progress(
             description=f"✓ Found {hits_count} page hits across {docs_count} volumes",
         )
 
-        # Phase 2: Load full page content if in browse mode
-        if browse and search_result.hits and max_pages > 0:
-            limited_hits = min(hits_count, max_pages)
-
-            # Group hits by volume to show more specific progress
-            from collections import defaultdict
-
-            hits_by_volume = defaultdict(list)
-            for hit in search_result.hits[:max_pages]:
-                hits_by_volume[hit.reference_code].append(hit)
-
-            volume_count = len(hits_by_volume)
-            context_task = progress.add_task(
-                f"Loading ALTO transcriptions from {volume_count} volumes ({limited_hits} pages)...",
-                total=None,
-            )
-
-            # Show which volumes are being processed
-            volume_names = list(hits_by_volume.keys())[:3]  # Show first 3 volumes
-            if len(volume_names) > 1:
-                if volume_count > 3:
-                    progress.update(
-                        context_task,
-                        description=f"Loading from: {volume_names[0]}, {volume_names[1]}, and {volume_count - 2} more...",
-                    )
-                else:
-                    progress.update(
-                        context_task,
-                        description=f"Loading from: {', '.join(volume_names)}",
-                    )
-            elif volume_names:
-                progress.update(context_task, description=f"Loading ALTO from: {volume_names[0]}")
-
-            # Re-run with context loading
-            search_result = search_operations.search_transcribed(
-                keyword=keyword,
-                max_results=max_results,
-                show_context=True,
-                max_pages_with_context=max_pages,
-                max_hits_per_document=max_hits_per_document,
-            )
-
-            # Count successfully loaded pages with context
-            enriched_count = sum(1 for hit in search_result.hits if hit.full_page_text)
-            progress.update(
-                context_task,
-                description=f"✓ Loaded ALTO transcriptions for {enriched_count} pages from {volume_count} volumes",
-            )
-
     return search_result
 
 
@@ -239,16 +115,6 @@ def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
     max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
     max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
-    browse: Annotated[
-        bool,
-        typer.Option(
-            "--browse",
-            help="Show full page content for search hits (browse-style display)",
-        ),
-    ] = False,
-    max_pages: Annotated[
-        int, typer.Option(help="Maximum pages to load context for")
-    ] = DEFAULT_MAX_PAGES,
     max_hits_per_document: Annotated[
         Optional[int],
         typer.Option(
@@ -257,27 +123,17 @@ def search(
         ),
     ] = 3,
     log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
-    show_links: Annotated[
-        bool,
-        typer.Option(
-            "--show-links",
-            help="Display ALTO XML, Image, and Bildvisning links (only with --browse)",
-        ),
-    ] = False,
 ):
     """Search for keyword in transcribed materials.
 
     Fast search across all transcribed documents in Riksarkivet.
     Returns reference codes and page numbers containing the keyword.
-    Use --browse to see full page transcriptions.
 
     By default, returns up to 3 hits per volume. Use --max-hits-per-vol to adjust.
 
     Examples:
         ra search "Stockholm"                                    # Basic search (3 hits per volume)
-        ra search "trolldom" --browse --max-pages 5             # Browse with 3 hits per volume
         ra search "Stockholm" --max-hits-per-vol 2              # Max 2 hits per volume
-        ra search "Stockholm" --browse --max-hits-per-vol 5     # Browse with 5 hits per volume
         ra search "Stockholm" --max 100 --max-hits-per-vol 1    # Many volumes, 1 hit each
         ra search "Stockholm" --log                             # With API logging
     """
@@ -295,15 +151,10 @@ def search(
             search_operations,
             keyword,
             max_results,
-            browse,
-            max_pages,
             effective_max_hits_per_doc,
         )
 
-        if browse and search_result.hits:
-            display_context_results(search_result, display_service, keyword, show_links)
-        else:
-            display_table_results(search_result, display_service, max_display, keyword)
+        display_table_results(search_result, display_service, max_display, keyword)
 
     except Exception as error:
         console.print(f"[red]Search failed: {error}[/red]")
