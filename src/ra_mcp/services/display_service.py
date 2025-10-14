@@ -117,15 +117,29 @@ class DisplayService:
 
 
 
-    def format_browse_results(self, operation: BrowseResult, highlight_term: Optional[str] = None) -> Union[List[Any], str]:
-        """Format browse results as Rich Panel objects for CLI or string for MCP."""
-        # For CLI mode, use Rich panels
-        if self.show_border and hasattr(self.formatter, "format_page_context_panel"):
-            panels = []
-            for context in operation.contexts:
-                panel = self.formatter.format_page_context_panel(context, highlight_term)
-                panels.append(panel)
-            return panels
+    def format_browse_results(
+        self,
+        operation: BrowseResult,
+        highlight_term: Optional[str] = None,
+        show_links: bool = False,
+        show_success_message: bool = True,
+    ) -> Union[List[Any], str]:
+        """Format browse results as Rich Panel objects for CLI or string for MCP.
+
+        Args:
+            operation: BrowseResult containing page contexts and metadata
+            highlight_term: Optional term to highlight in text
+            show_links: Whether to show ALTO/Image/Bildvisning links section
+            show_success_message: Whether to show success message (CLI only)
+        """
+        # For CLI mode with Rich formatter, use advanced formatting
+        if self.show_border and hasattr(self.formatter, "format_browse_results_grouped"):
+            return self.formatter.format_browse_results_grouped(
+                operation,
+                highlight_term,
+                show_links,
+                show_success_message
+            )
 
         # For MCP mode or fallback, use string formatting without borders
         if not operation.contexts:
@@ -134,7 +148,7 @@ class DisplayService:
         lines = []
         lines.append(f"📚 Document: {operation.reference_code}")
 
-        # Add rich metadata if available (same as CLI mode)
+        # Add rich metadata if available
         if operation.document_metadata:
             metadata = operation.document_metadata
 
@@ -159,18 +173,14 @@ class DisplayService:
                 if hierarchy:
                     for i, level in enumerate(hierarchy):
                         caption = level.get("caption", "")
-                        # Replace newlines with spaces to keep hierarchy on single lines
                         caption = caption.replace("\n", " ").strip()
 
                         if i == 0:
-                            # Root level
                             lines.append(f"📁 {caption}")
                         elif i == len(hierarchy) - 1:
-                            # Last item
                             indent = "  " * i
                             lines.append(f"{indent}└── 📄 {caption}")
                         else:
-                            # Middle items
                             indent = "  " * i
                             lines.append(f"{indent}├── 📁 {caption}")
 
@@ -184,7 +194,6 @@ class DisplayService:
         for context in operation.contexts:
             lines.append(f"📄 Page {context.page_number}")
 
-            # Only add separator line if showing borders
             if self.show_border:
                 lines.append("─" * 40)
 
@@ -203,8 +212,7 @@ class DisplayService:
 
             lines.append("")
 
-        # Return string for MCP (no borders), list for CLI fallback
-        return "\n".join(lines) if not self.show_border else ["\n".join(lines)]
+        return "\n".join(lines)
 
     def format_document_structure(self, collection_info: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
         """Format document structure information as string."""

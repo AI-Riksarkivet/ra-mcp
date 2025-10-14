@@ -4,13 +4,13 @@ Creates actual Rich objects (Tables, Panels) for console display.
 """
 
 import re
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Any
 from rich.table import Table
 from rich.panel import Panel
-from rich.console import Console
+from rich.console import Console, Group
 
 from .base_formatter import BaseFormatter
-from ..models import SearchResult, PageContext, SearchHit, SearchSummary
+from ..models import SearchResult, PageContext, SearchHit, SearchSummary, BrowseResult
 from .utils import (
     trim_page_number,
     trim_page_numbers,
@@ -285,3 +285,159 @@ class RichConsoleFormatter(BaseFormatter):
             remaining = total - displayed
             return f"\n[dim]... and {remaining} more documents[/dim]"
         return ""
+
+    def format_browse_results_grouped(
+        self,
+        browse_result: BrowseResult,
+        search_term: Optional[str] = None,
+        show_links: bool = False,
+        show_success_message: bool = True,
+    ) -> List[Any]:
+        """
+        Format browse results as grouped Rich panels with metadata.
+
+        Args:
+            browse_result: BrowseResult containing contexts and metadata
+            search_term: Optional term to highlight in text
+            show_links: Whether to show ALTO/Image/Bildvisning links section
+            show_success_message: Whether to print success message
+
+        Returns:
+            List containing optional success message and panel objects
+        """
+        output = []
+
+        if show_success_message:
+            output.append(f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]")
+
+        # Group page contexts by reference code
+        grouped_contexts = {}
+        for context in browse_result.contexts:
+            ref_code = context.reference_code
+            if ref_code not in grouped_contexts:
+                grouped_contexts[ref_code] = []
+            grouped_contexts[ref_code].append(context)
+
+        # Display results grouped by document
+        for ref_code, contexts in grouped_contexts.items():
+            # Sort pages by page number
+            sorted_contexts = sorted(contexts, key=lambda c: c.page_number)
+
+            renderables = []
+
+            # Add document metadata at the top of the panel if available
+            if browse_result.document_metadata:
+                metadata = browse_result.document_metadata
+
+                # Create left column content (basic info)
+                left_content = []
+                left_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
+
+                # Display title
+                if metadata.title and metadata.title != "(No title)":
+                    left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+
+                # Display date range
+                if metadata.date:
+                    left_content.append(f"[blue]📅 Date:[/blue] {metadata.date}")
+
+                # Display archival institution
+                if metadata.archival_institution:
+                    institutions = metadata.archival_institution
+                    if institutions:
+                        inst_names = [inst.get("caption", "") for inst in institutions]
+                        left_content.append(f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}")
+
+                # Create right column content (hierarchy)
+                right_content = []
+                if metadata.hierarchy:
+                    hierarchy = metadata.hierarchy
+                    if hierarchy:
+                        for i, level in enumerate(hierarchy):
+                            caption = level.get("caption", "")
+                            caption = caption.replace("\n", " ").strip()
+
+                            if i == 0:
+                                right_content.append(f"📁 {caption}")
+                            elif i == len(hierarchy) - 1:
+                                indent = "  " * i
+                                right_content.append(f"{indent}└── 📄 {caption}")
+                            else:
+                                indent = "  " * i
+                                right_content.append(f"{indent}├── 📁 {caption}")
+
+                # Create clean two-column layout using Rich Table
+                if right_content:
+                    metadata_table = Table.grid(padding=(0, 2))
+                    metadata_table.add_column(justify="left", ratio=1)
+                    metadata_table.add_column(justify="left", ratio=1)
+
+                    left_text = "\n".join(left_content)
+                    right_text = "\n".join(right_content)
+
+                    metadata_table.add_row(left_text, right_text)
+                    renderables.append(metadata_table)
+                else:
+                    renderables.append("\n".join(left_content))
+
+                # Display note on its own row if available
+                if metadata.note:
+                    renderables.append(f"[blue]📝 Note:[/blue] {metadata.note}")
+
+                renderables.append("")
+            else:
+                # If no metadata available, just show the document header
+                renderables.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
+                renderables.append("")
+
+            panel_content = []
+
+            for context in sorted_contexts:
+                # Add page separator with optional bildvisning link
+                if show_links:
+                    # When showing all links below, keep simple separator
+                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+                else:
+                    # When not showing links section, include bildvisning link in separator
+                    if context.bildvisning_url:
+                        panel_content.append(
+                            f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]"
+                        )
+                    else:
+                        panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+
+                # Add page content with highlighting
+                display_text = context.full_text
+                if search_term:
+                    display_text = self.highlight_search_keyword(display_text, search_term)
+                panel_content.append(f"[italic]{display_text}[/italic]")
+
+                # Add links if requested
+                if show_links:
+                    panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
+                    panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+                    if context.image_url:
+                        panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+                    if context.bildvisning_url:
+                        panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+
+                # Add spacing between pages (except for the last one)
+                if context != sorted_contexts[-1]:
+                    panel_content.append("")
+
+            # Add page content to renderables
+            for line in panel_content:
+                renderables.append(line)
+
+            # Create the grouped panel using Rich Group
+            panel_group = Group(*renderables)
+            grouped_panel = Panel(
+                panel_group,
+                title=None,
+                border_style="green",
+                padding=(1, 1),
+            )
+            output.append("")  # Add spacing before the panel
+            output.append(grouped_panel)
+
+        return output
