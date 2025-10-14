@@ -246,3 +246,20 @@ class DisplayService:
                 formatted_lines.append(f"  • {suggestion_text}")
 
         return "\n".join(formatted_lines)
+
+    def format_browse_error(self, reference_code: str) -> List[str]:
+        """Format error message for failed browse operation.
+
+        Args:
+            reference_code: The reference code that failed to load
+
+        Returns:
+            List of formatted error message lines
+        """
+        return [
+            f"[red]Could not load pages for {reference_code}[/red]",
+            "[yellow]Suggestions:[/yellow]",
+            "• Check the reference code format",
+            "• Try different page numbers",
+            "• The document might not have transcriptions"
+        ]

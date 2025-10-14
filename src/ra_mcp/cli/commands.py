@@ -191,15 +191,6 @@ def load_document_with_progress(
     return browse_result
 
 
-def display_browse_error(reference_code: str) -> None:
-    """Display error message for failed browse operation."""
-    console.print(f"[red]Could not load pages for {reference_code}[/red]")
-    console.print("[yellow]Suggestions:[/yellow]")
-    console.print("• Check the reference code format")
-    console.print("• Try different page numbers")
-    console.print("• The document might not have transcriptions")
-
-
 @app.command()
 def browse(
     reference_code: Annotated[str, typer.Argument(help="Reference code of the document")],
@@ -249,7 +240,10 @@ def browse(
         )
 
         if not browse_result.contexts:
-            display_browse_error(reference_code)
+            # Use DisplayService to format error message
+            error_lines = display_service.format_browse_error(reference_code)
+            for line in error_lines:
+                console.print(line)
             raise typer.Exit(code=1)
 
         # Use DisplayService to format and display results
