@@ -30,13 +30,11 @@ class DisplayService:
         self,
         search_result: SearchResult,
         maximum_documents_to_display: int = 20,
-        show_full_context: bool = False,
     ) -> Union[str, Any]:
         """Format search results using Rich table for CLI or plain text for MCP."""
 
-
-        # For CLI mode without full context, use Rich table
-        if self.show_border and not show_full_context and hasattr(self.formatter, "format_search_results_table"):
+        # For CLI mode, use Rich table
+        if self.show_border and hasattr(self.formatter, "format_search_results_table"):
             return self.formatter.format_search_results_table(search_result, maximum_documents_to_display)
 
         if not search_result.hits:
@@ -73,27 +71,10 @@ class DisplayService:
             trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
 
-            if show_full_context and search_result.enriched:
-                for hit in document_hits[:3]:
-                    if hit.full_page_text:
-                        is_search_hit = hit.snippet_text != "[Context page - no search hit]"
-                        page_type = "SEARCH HIT" if is_search_hit else "context"
-
-                        lines.append(f"\n   📄 Page {hit.page_number} ({page_type}):")
-
-                        display_text = hit.full_page_text
-                        if is_search_hit:
-                            display_text = self.formatter.highlight_search_keyword(display_text, search_result.keyword)
-
-                        if len(display_text) > 500:
-                            display_text = display_text[:500] + "..."
-
-                        lines.append(f"   {display_text}")
-            else:
-                for hit in document_hits[:3]:
-                    snippet = hit.snippet_text
-                    snippet = self.formatter.highlight_search_keyword(snippet, search_result.keyword)
-                    lines.append(f"   Page {hit.page_number}: {snippet}")
+            for hit in document_hits[:3]:
+                snippet = hit.snippet_text
+                snippet = self.formatter.highlight_search_keyword(snippet, search_result.keyword)
+                lines.append(f"   Page {hit.page_number}: {snippet}")
 
             if len(document_hits) > 3:
                 lines.append(f"   ...and {len(document_hits) - 3} more pages with hits")
@@ -282,7 +263,7 @@ class DisplayService:
         """
         output = []
 
-        formatted_table = self.format_search_results(search_result, max_display, False)
+        formatted_table = self.format_search_results(search_result, max_display)
 
         if not formatted_table:
             return output

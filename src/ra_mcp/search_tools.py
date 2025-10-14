@@ -42,15 +42,13 @@ search_mcp = FastMCP(
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
     1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide bellow when searching)
     2. Continue pagination with increasing offsets (50, 100, 150...) to find all matches
-    3. Use show_context=False (default) to see more results per query
-    4. Only enable show_context=True when you want full page text for specific hits
-    5. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
+    3. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
        - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
        - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)
        - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
        - Period-appropriate terminology and archaic spellings
-    6. Note reference codes and page numbers for detailed browsing
-    7. Use browse_document() to view full transcriptions of interesting pages
+    4. Note reference codes and page numbers for detailed browsing
+    5. Use browse_document() to view full transcriptions of interesting pages
 
     SEARCH SYNTAX (Solr Query Syntax):
 
@@ -214,7 +212,6 @@ async def search_transcribed(
         formatted_results = display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
-            show_full_context=False,
         )
 
         formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)

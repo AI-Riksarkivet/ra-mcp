@@ -44,8 +44,6 @@ def perform_search_with_progress(
         search_result = search_operations.search_transcribed(
             keyword=keyword,
             max_results=max_results,
-            show_context=False,
-            max_pages_with_context=0,
             max_hits_per_document=max_hits_per_document,
         )
 
