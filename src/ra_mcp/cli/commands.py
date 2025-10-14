@@ -165,36 +165,6 @@ def browse(
         raise typer.Exit(code=1)
 
 
-def start_stdio_server() -> None:
-    """Start MCP server with stdio transport."""
-    console.print("[blue]Starting MCP server with stdio transport[/blue]")
-    from ..server import main as server_main
-    import sys
-
-    original_argv = sys.argv
-    sys.argv = ["ra-mcp-server"]
-
-    try:
-        server_main()
-    finally:
-        sys.argv = original_argv
-
-
-def start_http_server(host: str, port: int) -> None:
-    """Start MCP server with HTTP/SSE transport."""
-    console.print(f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]")
-    from ..server import main as server_main
-    import sys
-
-    original_argv = sys.argv
-    sys.argv = ["ra-mcp-server", "--http", "--port", str(port), "--host", host]
-
-    try:
-        server_main()
-    finally:
-        sys.argv = original_argv
-
-
 @app.command()
 def serve(
     port: Annotated[
@@ -211,14 +181,26 @@ def serve(
         ra serve --port 8000        # Start with HTTP/SSE transport on port 8000
         ra serve --port 8000 --log  # Start with API logging enabled
     """
+    import sys
+    from ..server import main as server_main
+
     if log:
         os.environ["RA_MCP_LOG_API"] = "1"
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
+    # Prepare arguments for server
+    original_argv = sys.argv
     if port:
-        start_http_server(host, port)
+        console.print(f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]")
+        sys.argv = ["ra-mcp-server", "--http", "--port", str(port), "--host", host]
     else:
-        start_stdio_server()
+        console.print("[blue]Starting MCP server with stdio transport[/blue]")
+        sys.argv = ["ra-mcp-server"]
+
+    try:
+        server_main()
+    finally:
+        sys.argv = original_argv
 
 
 @app.callback()
