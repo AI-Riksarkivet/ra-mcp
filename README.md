@@ -306,24 +306,49 @@ dagger call test
 
 **Build and publish to Docker registry:**
 ```bash
-# Set environment variables
+# Set environment variables (both required)
+export DOCKER_USERNAME="your-dockerhub-username"
+export DOCKER_PASSWORD="your-dockerhub-token-or-password"
 
-export DOCKER_PASSWORD="your-password"
-
-# Build and publish
-dagger call publish \
-  --docker-username="username" \
+# Build and publish with explicit tag
+dagger call publish-docker \
+  --docker-username=env:DOCKER_USERNAME \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
-  --tag="latest" \
+  --tag="v0.2.0" \
+  --source=.
+
+# Or publish using version from pyproject.toml (auto-prefixes with "v")
+dagger call publish-docker \
+  --docker-username=env:DOCKER_USERNAME \
+  --docker-password=env:DOCKER_PASSWORD \
+  --image-repository="riksarkivet/ra-mcp" \
+  --source=.
+```
+
+**Build and publish to PyPI:**
+```bash
+# Set PyPI token
+export PYPI_TOKEN="your-pypi-token"
+
+# Build and publish to PyPI
+dagger call publish-pypi \
+  --pypi-token=env:PYPI_TOKEN \
   --source=.
 ```
 
 #### Available Dagger Functions
 - `build`: Creates a production-ready container image using the Dockerfile
-- `test`: Runs the test suite using pytest with coverage reporting
-- `publish`: Builds and publishes container image to registry with authentication
 - `build-local`: Build with custom environment variables and registry settings
+- `test`: Runs the test suite (currently skipped until test suite is implemented)
+- `publish-docker`: Builds and publishes container image to Docker registry with authentication
+- `publish-pypi`: Builds and publishes Python package to PyPI
+
+**Important Notes:**
+- Both `DOCKER_USERNAME` and `DOCKER_PASSWORD` must be set as environment variables
+- Use the `env:` prefix for Secret parameters (username and password)
+- Tests are currently skipped in the publish pipeline until the test suite is implemented
+- Tags can be explicit (e.g., `v0.2.0`) or auto-generated from `pyproject.toml`
 
 The Dagger configuration is located in `.dagger/main.go` and provides a complete CI/CD pipeline for the project.
 
