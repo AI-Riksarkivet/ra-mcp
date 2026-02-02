@@ -6,12 +6,13 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "asyncio>=4.0.0",
-    "fastmcp>=2.12.3",
+    "fastmcp>=2.14.4",
+    "mcp>=1.26.0",
     "lxml>=6.0.2",
-    "pydantic>=2.11.9",
-    "rich>=14.1.0",
-    "starlette>=0.48.0",
-    "typer>=0.19.2",
+    "pydantic>=2.12.5",
+    "rich>=14.3.2",
+    "starlette>=0.52.1",
+    "typer>=0.21.1",
     "types-lxml>=2025.8.25",
 ]
 license = "Apache-2.0"

@@ -175,8 +175,6 @@ search_mcp = FastMCP(
 
         The key is that proximity operators in this system work best with exactly 2 terms in quotes, and you can then combine multiple proximity searches using Boolean operators outside the quotes!
 
-
-
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
@@ -195,7 +193,7 @@ search_mcp = FastMCP(
 async def search_transcribed(
     keyword: str,
     offset: int,
-    max_results: int = 50,
+    max_results: int = 25,
     max_hits_per_document: int = 3,
     max_response_tokens: int = 15000,
 ) -> str:

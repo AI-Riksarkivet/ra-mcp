@@ -42,10 +42,9 @@ class SearchAPI:
         search_parameters = self._build_search_parameters(search_keyword, maximum_documents, pagination_offset)
 
         try:
+            
             search_result_data = self._execute_search_request(search_parameters)
-
             retrieved_documents = self._extract_documents_from_response(search_result_data, maximum_documents)
-
             collected_search_hits = self._collect_hits_from_documents(retrieved_documents, maximum_hits_per_document)
 
             total_available_results = search_result_data.get("totalHits", len(collected_search_hits))

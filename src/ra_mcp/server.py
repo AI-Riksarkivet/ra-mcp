@@ -22,7 +22,7 @@ main_server = FastMCP(
     instructions="""
     🏛️ Riksarkivet MCP Server
 
-    A comprehensive MCP server providing access to the Swedish National Archives (Riksarkivet) data.
+    A MCP server that provides access to the Swedish National Archives (Riksarkivet) data.
     This server combines multiple specialized tool servers to provide a unified interface.
 
     Available tool categories:
