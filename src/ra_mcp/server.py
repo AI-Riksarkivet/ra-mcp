@@ -4,18 +4,47 @@ Riksarkivet MCP Server - Main Entry Point
 This server uses composition to combine multiple tool servers:
 - Search tools for transcribed document search and browsing
 - Future tools can be added as separate servers
+
+Environment variables for debugging:
+- RA_MCP_LOG_LEVEL: Set logging level (DEBUG, INFO, WARNING, ERROR) - default: INFO
+- RA_MCP_LOG_API: Enable API call logging to file (ra_mcp_api.log)
+- RA_MCP_TIMEOUT: Override default timeout in seconds (default: 60)
 """
 
 import asyncio
 import logging
 import argparse
+import os
+import sys
 from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
 from ra_mcp.search_tools import search_mcp
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("ra-mcp")
+
+def setup_logging():
+    """Configure logging for the MCP server with environment variable support."""
+    log_level = os.getenv("RA_MCP_LOG_LEVEL", "INFO").upper()
+    log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+    # Configure root logger
+    logging.basicConfig(
+        level=getattr(logging, log_level, logging.INFO),
+        format=log_format,
+        handlers=[
+            logging.StreamHandler(sys.stderr),  # Always log to stderr for Hugging Face
+        ]
+    )
+
+    logger = logging.getLogger("ra-mcp")
+    logger.info(f"Logging configured at level: {log_level}")
+    logger.info(f"Timeout setting: {os.getenv('RA_MCP_TIMEOUT', '60')}s")
+    logger.info(f"API logging: {'enabled' if os.getenv('RA_MCP_LOG_API') else 'disabled'}")
+
+    return logger
+
+
+logger = setup_logging()
 
 main_server = FastMCP(
     name="riksarkivet-mcp",

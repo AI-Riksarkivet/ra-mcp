@@ -450,13 +450,25 @@ git push
 
 ### Debugging Tips
 
+**Environment Variables for Debugging:**
+```bash
+# Set logging level (DEBUG, INFO, WARNING, ERROR)
+export RA_MCP_LOG_LEVEL=DEBUG
+
+# Enable API call logging to file (ra_mcp_api.log)
+export RA_MCP_LOG_API=1
+
+# Override timeout (useful for Hugging Face)
+export RA_MCP_TIMEOUT=120
+```
+
 **MCP Server Issues:**
 ```bash
 # Use MCP Inspector for interactive testing
 npx @modelcontextprotocol/inspector uv run ra serve
 
-# Enable verbose logging
-uv run ra serve --verbose
+# Enable verbose logging with environment variable
+RA_MCP_LOG_LEVEL=DEBUG uv run ra serve --http
 
 # Test HTTP endpoint
 curl -X POST http://localhost:8000/mcp \
@@ -466,12 +478,18 @@ curl -X POST http://localhost:8000/mcp \
 
 **Search Issues:**
 ```bash
-# Test search directly via CLI
-uv run ra search "test query" --max 5
+# Test search directly via CLI with debug logging
+RA_MCP_LOG_LEVEL=DEBUG uv run ra search "test query" --max 5
 
 # Check API response
 curl "https://data.riksarkivet.se/api/records?q=Stockholm&rows=1"
+
+# Monitor API logs (if RA_MCP_LOG_API=1)
+tail -f ra_mcp_api.log
 ```
+
+**Debugging on Hugging Face:**
+See [DEBUGGING.md](DEBUGGING.md) for comprehensive guide on debugging timeout and API issues when deployed to Hugging Face Spaces.
 
 ## MCP Specification Reference
 

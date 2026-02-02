@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Optional
 from fastmcp import FastMCP
@@ -8,6 +9,9 @@ from .services.browse_display_service import BrowseDisplayService
 from .services.search_display_service import SearchDisplayService
 from .formatters import format_error_message, PlainTextFormatter
 from .utils.http_client import default_http_client
+
+
+logger = logging.getLogger(__name__)
 
 
 search_mcp = FastMCP(
@@ -197,10 +201,14 @@ async def search_transcribed(
     max_hits_per_document: int = 3,
     max_response_tokens: int = 15000,
 ) -> str:
+    logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}, max_results={max_results}")
+
     try:
+        logger.debug("Initializing search operations...")
         search_operations = SearchOperations(http_client=default_http_client)
         search_display_service = SearchDisplayService(formatter=PlainTextFormatter())
 
+        logger.info(f"Executing search for '{keyword}'...")
         search_result = search_operations.search_transcribed(
             keyword=keyword,
             offset=offset,
@@ -208,24 +216,27 @@ async def search_transcribed(
             max_hits_per_document=max_hits_per_document,
         )
 
+        logger.info(f"Formatting {len(search_result.hits)} search results...")
         formatted_results = search_display_service.format_search_results(
             search_result,
             maximum_documents_to_display=max_results,
         )
 
         formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
-
         formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
 
+        logger.info(f"✓ Search completed successfully, returning results")
         return formatted_results
 
     except Exception as e:
+        logger.error(f"✗ MCP search_transcribed failed: {type(e).__name__}: {e}", exc_info=True)
         return format_error_message(
             f"Search failed: {str(e)}",
             error_suggestions=[
                 "Try a simpler search term",
                 "Check if the service is available",
                 "Reduce max_results",
+                "Check Hugging Face logs for timeout details",
             ],
         )
 

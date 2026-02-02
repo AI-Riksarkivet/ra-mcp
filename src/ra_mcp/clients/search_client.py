@@ -2,6 +2,7 @@
 Search API client for Riksarkivet.
 """
 
+import logging
 import re
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -15,11 +16,16 @@ from ..models import SearchHit
 from ..utils.http_client import HTTPClient
 
 
+logger = logging.getLogger(__name__)
+
+
 class SearchAPI:
-    """Client for Riksarkivet Search API."""
+    """Client for Riksarkivet Search API with comprehensive logging."""
 
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
+        self.logger = logging.getLogger("ra_mcp.search_api")
+        self.logger.setLevel(logging.INFO)
 
     def search_transcribed_text(
         self,
@@ -39,19 +45,31 @@ class SearchAPI:
         Returns:
             tuple: (list of SearchHit objects, total number of results)
         """
+        self.logger.info(f"Starting search: keyword='{search_keyword}', max_docs={maximum_documents}, offset={pagination_offset}")
+
         search_parameters = self._build_search_parameters(search_keyword, maximum_documents, pagination_offset)
+        self.logger.debug(f"Search parameters: {search_parameters}")
 
         try:
-            
+            self.logger.info(f"Executing search request to {SEARCH_API_BASE_URL}...")
             search_result_data = self._execute_search_request(search_parameters)
+            self.logger.info(f"Search request completed successfully")
+
+            self.logger.debug("Extracting documents from response...")
             retrieved_documents = self._extract_documents_from_response(search_result_data, maximum_documents)
+            self.logger.info(f"Retrieved {len(retrieved_documents)} documents")
+
+            self.logger.debug("Collecting hits from documents...")
             collected_search_hits = self._collect_hits_from_documents(retrieved_documents, maximum_hits_per_document)
+            self.logger.info(f"Collected {len(collected_search_hits)} search hits")
 
             total_available_results = search_result_data.get("totalHits", len(collected_search_hits))
+            self.logger.info(f"✓ Search completed: {len(collected_search_hits)} hits from {total_available_results} total")
 
             return collected_search_hits, total_available_results
 
         except Exception as error:
+            self.logger.error(f"✗ Search failed for keyword '{search_keyword}': {type(error).__name__}: {error}")
             raise Exception(f"Search failed: {error}") from error
 
     def _build_search_parameters(self, keyword: str, result_limit: int, offset: int) -> Dict[str, Union[str, int]]:
