@@ -91,3 +91,59 @@ func (m *RaMcp) ServeUp(
 	// Expose the service port to the host
 	return service, nil
 }
+
+// ServePublished runs a published Docker image from a registry
+func (m *RaMcp) ServePublished(
+	ctx context.Context,
+	// Docker image reference (e.g., "riksarkivet/ra-mcp:v0.2.3-alpine")
+	// +default="riksarkivet/ra-mcp:latest"
+	imageRef string,
+	// Port to expose
+	// +default=7860
+	port int,
+) (*dagger.Service, error) {
+	return dag.Container().
+		From(imageRef).
+		WithExposedPort(port).
+		AsService(dagger.ContainerAsServiceOpts{
+			Args: []string{
+				"ra", "serve",
+				"--host", "0.0.0.0",
+				"--port", fmt.Sprintf("%d", port),
+			},
+		}), nil
+}
+
+// TestPublished tests a published Docker image from a registry
+func (m *RaMcp) TestPublished(
+	ctx context.Context,
+	// Docker image reference
+	// +default="riksarkivet/ra-mcp:latest"
+	imageRef string,
+	// Port to test
+	// +default=7860
+	port int,
+) (string, error) {
+	service, err := m.ServePublished(ctx, imageRef, port)
+	if err != nil {
+		return "", fmt.Errorf("failed to start published image: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("http://localhost:%d", port)
+
+	testContainer := dag.Container().
+		From("curlimages/curl:latest").
+		WithServiceBinding("ra-mcp", service).
+		WithExec([]string{
+			"curl", "-f", "-s",
+			fmt.Sprintf("http://ra-mcp:%d/", port),
+		})
+
+	output, err := testContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("health check failed: %w", err)
+	}
+
+	return fmt.Sprintf("✅ Published image %s works!\n\nServer at %s\n\nResponse preview:\n%s",
+		imageRef, endpoint, output[:500]+"..."), nil
+}

@@ -284,6 +284,55 @@ npx @modelcontextprotocol/inspector uv run ra serve --http
 
 The MCP Inspector provides a web interface to test server tools, resources, and prompts during development.
 
+### Testing Docker Images with Dagger
+
+You can test both locally built images and published Docker Hub images using Dagger:
+
+#### Test Locally Built Image
+
+```bash
+# Build and test in one command
+dagger call test-server --source=.
+
+# Or build first, then get an interactive shell
+dagger call build --source=. terminal
+```
+
+#### Test Published Docker Hub Image
+
+```bash
+# Test a published image with health check
+dagger call test-published --image-ref="riksarkivet/ra-mcp:v0.2.3-alpine"
+
+# Start a published image as a service
+dagger call serve-published \
+  --image-ref="riksarkivet/ra-mcp:v0.2.3-alpine" \
+  --port=8000 \
+  up --ports 8000:8000
+```
+
+**Note:** The `--ports` argument is required to forward the container port to your localhost. Format is `HOST_PORT:CONTAINER_PORT`.
+
+#### Connect Claude Code to Dagger Service
+
+Once the service is running:
+
+```bash
+# Add to Claude Code (SSE transport recommended)
+claude mcp add --transport sse ra-mcp http://localhost:8000/mcp
+
+# Verify connection
+claude mcp list
+
+# Test the connection
+claude mcp test ra-mcp
+```
+
+#### Stop the Service
+
+- Press `Ctrl+C` in the terminal where the service is running
+- Or kill the process: `pkill -f "dagger call serve-published"`
+
 ### Building and Publishing with Dagger
 
 The project uses Dagger for containerized builds and publishing to Docker registries. Pre-built images are available on [Docker Hub](https://hub.docker.com/r/riksarkivet/ra-mcp).

@@ -1,4 +1,4 @@
-FROM python:3.12-slim-trixie as builder
+FROM python:3.12-alpine as builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /usr/local/bin/
 WORKDIR /app
@@ -9,17 +9,14 @@ COPY README.md LICENSE ./
 
 RUN uv sync --frozen --no-cache
 
-FROM python:3.12-slim-trixie as production
+FROM python:3.12-alpine as production
 
 # Create non-root user for security
-RUN groupadd --gid 1000 ra-mcp && \
-    useradd --uid 1000 --gid ra-mcp --shell /bin/bash --create-home ra-mcp
+RUN addgroup -g 1000 ra-mcp && \
+    adduser -u 1000 -G ra-mcp -s /bin/sh -D ra-mcp
 
-# Install only essential packages (ca-certificates for HTTPS)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /var/tmp/*
+# Install only runtime dependencies
+RUN apk add --no-cache ca-certificates libgcc libstdc++
 
 WORKDIR /app
 
@@ -36,7 +33,7 @@ USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 
-# Health check via Python import (lightweight)
+# Health check via Python import (lightweight)vilk
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import sys" || exit 1
 

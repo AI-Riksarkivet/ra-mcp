@@ -3,8 +3,7 @@ OAI-PMH client for Riksarkivet.
 """
 
 from typing import Dict, Optional, Union, List
-
-from lxml import etree
+import xml.etree.ElementTree as ET
 
 from ..config import OAI_BASE_URL, NAMESPACES
 from ..utils.http_client import HTTPClient
@@ -40,14 +39,14 @@ class OAIPMHClient:
             "metadataPrefix": metadata_format,
         }
 
-    def _extract_record_from_response(self, xml_root: etree.Element) -> etree.Element:
+    def _extract_record_from_response(self, xml_root: ET.Element) -> ET.Element:
         """Extract record element from OAI-PMH response."""
-        record_elements = xml_root.xpath("//oai:record", namespaces=NAMESPACES)
+        record_elements = xml_root.findall(".//{http://www.openarchives.org/OAI/2.0/}record")
         if not record_elements:
             raise Exception("No record found in OAI-PMH response")
         return record_elements[0]
 
-    def _build_basic_record_result(self, record_element: etree.Element, metadata_format: str) -> Dict[str, Union[str, List, Dict]]:
+    def _build_basic_record_result(self, record_element: ET.Element, metadata_format: str) -> Dict[str, Union[str, List, Dict]]:
         """Build basic record result from header information."""
         record_header = self._parse_header_information(record_element)
 
@@ -57,16 +56,17 @@ class OAIPMHClient:
             "metadata_format": metadata_format,
         }
 
-    def _parse_header_information(self, record_element: etree.Element) -> Dict[str, str]:
+    def _parse_header_information(self, record_element: ET.Element) -> Dict[str, str]:
         """Parse header information from record element."""
-        header_elements = record_element.xpath("oai:header", namespaces=NAMESPACES)
+        oai_ns = "{http://www.openarchives.org/OAI/2.0/}"
+        header_elements = record_element.findall(f"./{oai_ns}header")
         if not header_elements:
             return {"identifier": "", "datestamp": ""}
 
         header_element = header_elements[0]
         return {
-            "identifier": self._get_text(header_element, "oai:identifier") or "",
-            "datestamp": self._get_text(header_element, "oai:datestamp") or "",
+            "identifier": self._get_text(header_element, f"{oai_ns}identifier") or "",
+            "datestamp": self._get_text(header_element, f"{oai_ns}datestamp") or "",
         }
 
     def extract_manifset_id(self, identifier: str) -> Optional[str]:
@@ -92,7 +92,7 @@ class OAIPMHClient:
             return manifset_id
         return ""
 
-    def _make_request(self, request_parameters: Dict[str, str]) -> etree.Element:
+    def _make_request(self, request_parameters: Dict[str, str]) -> ET.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
             xml_content = self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
@@ -105,22 +105,22 @@ class OAIPMHClient:
         except Exception as e:
             raise Exception(f"OAI-PMH request failed: {e}") from e
 
-    def _parse_xml_response(self, xml_data: bytes) -> etree.Element:
+    def _parse_xml_response(self, xml_data: bytes) -> ET.Element:
         """Parse XML response content."""
         try:
-            return etree.fromstring(xml_data)
+            return ET.fromstring(xml_data)
         except Exception as parse_error:
             raise Exception(f"Failed to parse XML response: {parse_error}") from parse_error
 
-    def _check_oai_response_errors(self, xml_root: etree.Element) -> None:
+    def _check_oai_response_errors(self, xml_root: ET.Element) -> None:
         """Check for OAI-PMH errors in the response."""
-        error_elements = xml_root.xpath("//oai:error", namespaces=NAMESPACES)
+        error_elements = xml_root.findall(".//{http://www.openarchives.org/OAI/2.0/}error")
         if error_elements:
             error_code = error_elements[0].get("code", "unknown")
             error_message = error_elements[0].text or "No error message"
             raise Exception(f"OAI-PMH Error [{error_code}]: {error_message}")
 
-    def _extract_ead_metadata(self, record_element: etree.Element) -> Dict[str, Union[str, List, Dict]]:
+    def _extract_ead_metadata(self, record_element: ET.Element) -> Dict[str, Union[str, List, Dict]]:
         """Extract metadata from EAD format."""
         ead_metadata_element = self._extract_ead_element_from_record(record_element)
 
@@ -147,43 +147,42 @@ class OAIPMHClient:
 
         return extracted_metadata
 
-    def _extract_ead_element_from_record(self, record_element: etree.Element) -> Optional[etree.Element]:
+    def _extract_ead_element_from_record(self, record_element: ET.Element) -> Optional[ET.Element]:
         """Extract EAD element from record."""
-        ead_elements = record_element.xpath(".//ead:ead", namespaces={"ead": NAMESPACES["ead"]})
+        ead_ns = NAMESPACES["ead"]
+        ead_elements = record_element.findall(f".//{{{ead_ns}}}ead")
         return ead_elements[0] if ead_elements else None
 
-    def _extract_title_from_ead(self, ead_element: etree.Element) -> str:
+    def _extract_title_from_ead(self, ead_element: ET.Element) -> str:
         """Extract title from EAD element."""
-        return self._get_text(ead_element, ".//ead:unittitle", {"ead": NAMESPACES["ead"]}) or ""
+        ead_ns = NAMESPACES["ead"]
+        return self._get_text(ead_element, f".//{{{ead_ns}}}unittitle") or ""
 
-    def _extract_unitid_from_ead(self, ead_element: etree.Element) -> str:
+    def _extract_unitid_from_ead(self, ead_element: ET.Element) -> str:
         """Extract unit ID from EAD element."""
-        return self._get_text(ead_element, ".//ead:unitid", {"ead": NAMESPACES["ead"]}) or ""
+        ead_ns = NAMESPACES["ead"]
+        return self._get_text(ead_element, f".//{{{ead_ns}}}unitid") or ""
 
-    def _extract_repository_from_ead(self, ead_element: etree.Element) -> str:
+    def _extract_repository_from_ead(self, ead_element: ET.Element) -> str:
         """Extract repository information from EAD element."""
-        return self._get_text(ead_element, ".//ead:repository", {"ead": NAMESPACES["ead"]}) or ""
+        ead_ns = NAMESPACES["ead"]
+        return self._get_text(ead_element, f".//{{{ead_ns}}}repository") or ""
 
-    def _extract_nad_link_from_ead(self, ead_element: etree.Element) -> str:
+    def _extract_nad_link_from_ead(self, ead_element: ET.Element) -> str:
         """Extract NAD link from EAD element."""
-        dao_elements = ead_element.xpath(".//ead:dao", namespaces={"ead": NAMESPACES["ead"]})
+        ead_ns = NAMESPACES["ead"]
+        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
         if dao_elements:
             return dao_elements[0].get("{http://www.w3.org/1999/xlink}href", "")
         return ""
 
     def _get_text(
         self,
-        element: etree.Element,
-        xpath: str,
-        namespaces: Optional[Dict[str, str]] = None,
+        element: ET.Element,
+        tag_path: str,
     ) -> Optional[str]:
-        """Get text from element using XPath."""
-        if namespaces is None:
-            namespaces = NAMESPACES
-
-        matches = element.xpath(xpath, namespaces=namespaces)
-        if matches:
-            if hasattr(matches[0], "text"):
-                return matches[0].text
-            return str(matches[0])
+        """Get text from element using tag path (with namespace)."""
+        matches = element.findall(tag_path)
+        if matches and matches[0].text:
+            return matches[0].text
         return None

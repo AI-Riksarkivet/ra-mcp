@@ -8,12 +8,10 @@ dependencies = [
     "asyncio>=4.0.0",
     "fastmcp>=2.14.4",
     "mcp>=1.26.0",
-    "lxml>=6.0.2",
     "pydantic>=2.12.5",
     "rich>=14.3.2",
     "starlette>=0.52.1",
     "typer>=0.21.1",
-    "types-lxml>=2025.8.25",
     "urllib3>=2.6.3",
     "python-multipart>=0.0.22",
 ]

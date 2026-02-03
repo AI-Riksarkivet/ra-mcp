@@ -137,18 +137,6 @@ dagger call build --source=. terminal
 # - Debug issues: ls -la /app
 ```
 
-**Testing the built container locally with Docker:**
-```bash
-# Export container as tarball
-dagger call build --source=. export --path=ra-mcp.tar
-
-# Load into Docker
-docker load < ra-mcp.tar
-
-# Run the container
-docker run -p 7860:7860 ra-mcp:latest
-```
-
 ## Building and Publishing
 
 ### Prerequisites
@@ -330,61 +318,6 @@ Then add to `claude_desktop_config.json`:
 - Well-known patterns
 - Standard operations
 
-**Example:**
-```python
-# ❌ Bad - unclear names requiring comments
-def p(d):  # Process data
-    r = d * 2  # Double the result
-    return r
-
-# ✅ Good - self-documenting code
-def double_search_results(search_data: SearchResult) -> ProcessedResult:
-    """
-    Double the search result count for pagination estimation.
-
-    Used when search API returns partial results and we need to estimate
-    total available documents for pagination display.
-    """
-    return search_data.scale_by_factor(2)
-
-# ✅ Also good - simple operation, no docstring needed
-def is_valid_page_number(page: int) -> bool:
-    return page > 0 and page < 10000
-```
-
-**Critical line-specific notes**: Use docstrings to explain important context, NOT inline comments.
-
-```python
-# ❌ Avoid inline comments
-def fetch_document(ref_code: str):
-    # IMPORTANT: Must use httpx due to Riksarkivet timeout bug
-    client = httpx.Client()
-
-# ✅ Better - document in function/module docstring
-def fetch_document(ref_code: str):
-    """
-    Fetch document from Riksarkivet API.
-
-    Note: Uses httpx instead of requests due to timeout issues with
-    Riksarkivet's API servers. See: https://github.com/AI-Riksarkivet/ra-mcp/issues/X
-    """
-    client = httpx.Client()
-```
-
-### API Client Choice
-
-**IMPORTANT**: When using Riksarkivet endpoints, prefer `httpx` or `urllib` instead of `requests`. There is a timeout bug when using the `requests` library against Riksarkivet's APIs.
-
-```python
-# ✅ Preferred
-import httpx
-response = httpx.get("https://data.riksarkivet.se/api/records")
-
-# ❌ Avoid - has timeout issues
-import requests
-response = requests.get("https://data.riksarkivet.se/api/records")
-```
-
 ## API Endpoints
 
 ### Current Integrations
@@ -400,47 +333,6 @@ response = requests.get("https://data.riksarkivet.se/api/records")
 - **[Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm)**: Semantic search interface (experimental)
 - **[HTRflow](https://pypi.org/project/htrflow/)**: Handwritten text recognition pipeline (PyPI package)
 
-## Project Structure
-
-```
-ra-mcp/
-├── src/ra_mcp/
-│   ├── server.py              # Main MCP server (FastMCP composition)
-│   ├── search_tools.py        # MCP tools and resources
-│   ├── config.py              # Configuration
-│   ├── models.py              # Data models
-│   ├── cli/                   # CLI commands (Typer)
-│   │   ├── cli.py
-│   │   ├── commands.py
-│   │   └── cli_progress.py
-│   ├── services/              # Business logic layer
-│   │   ├── search_operations.py
-│   │   ├── browse_operations.py
-│   │   ├── search_display_service.py
-│   │   └── browse_display_service.py
-│   ├── clients/               # API clients
-│   │   ├── search_client.py
-│   │   ├── alto_client.py
-│   │   ├── iiif_client.py
-│   │   └── oai_pmh_client.py
-│   ├── formatters/            # Output formatting
-│   │   ├── base_formatter.py
-│   │   ├── plain_formatter.py
-│   │   └── rich_formatter.py
-│   └── utils/                 # Utilities
-│       ├── http_client.py
-│       ├── page_utils.py
-│       └── url_generator.py
-├── resources/                 # Historical guide markdown files
-├── tests/                     # Test suite (TO BE CREATED)
-├── .dagger/                   # CI/CD pipeline (Dagger)
-│   ├── main.go
-│   └── publish.go
-├── .github/workflows/         # GitHub Actions
-├── pyproject.toml             # Python project configuration
-├── Dockerfile                 # Container image
-└── CLAUDE.md                  # This file
-```
 
 ## Common Tasks
 
