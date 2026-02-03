@@ -107,6 +107,48 @@ uv run ra serve --http
 curl http://localhost:8000/mcp
 ```
 
+### Testing with Dagger
+
+You can build and test the containerized server using Dagger:
+
+```bash
+# Build and test server with automatic health check
+dagger call test-server --source=.
+
+# Just build the container
+dagger call build --source=.
+
+# Start server as a Dagger service (for testing with other containers)
+dagger call serve --source=. --port=7860
+
+# Expose server on host for manual testing
+dagger call serve-up --source=. --port=7860 up
+```
+
+**Interactive testing with Dagger shell:**
+```bash
+# Build and get a shell in the container
+dagger call build --source=. terminal
+
+# Inside the container, you can:
+# - Test the server: ra serve --host 0.0.0.0 --port 7860
+# - Run CLI commands: ra search "trolldom"
+# - Check environment: python --version
+# - Debug issues: ls -la /app
+```
+
+**Testing the built container locally with Docker:**
+```bash
+# Export container as tarball
+dagger call build --source=. export --path=ra-mcp.tar
+
+# Load into Docker
+docker load < ra-mcp.tar
+
+# Run the container
+docker run -p 7860:7860 ra-mcp:latest
+```
+
 ## Building and Publishing
 
 ### Prerequisites
@@ -136,6 +178,46 @@ dagger call test
 # Build with custom settings
 dagger call build-local
 ```
+
+### Security Scanning
+
+The project includes Trivy vulnerability scanning for container images:
+
+```bash
+# Scan for CRITICAL and HIGH vulnerabilities (fails if found)
+dagger call scan --source=.
+
+# Scan with custom severity levels
+dagger call scan --source=. --severity="CRITICAL,HIGH,MEDIUM"
+
+# Scan without failing the build (for reports)
+dagger call scan --source=. --exit-code=0
+
+# Get JSON output for automation
+dagger call scan-json --source=.
+
+# CI/CD scan (fails on CRITICAL/HIGH)
+dagger call scan-ci --source=.
+
+# Generate SARIF report for GitHub Security tab
+dagger call scan-sarif --source=. --output-path="trivy-results.sarif"
+```
+
+**Current Scan Results Summary:**
+- **Debian packages**: 2 HIGH (glibc CVE-2026-0861 - no fix available)
+- **Python packages**: 0 HIGH (all fixed!)
+- **Total**: 2 HIGH, 0 CRITICAL ✅
+
+**Recent CVE Fixes:**
+- ✅ Fixed urllib3 CVEs by upgrading to 2.6.3
+- ✅ Fixed python-multipart CVE-2026-24486 by upgrading to 0.0.22
+- ✅ Optimized Dockerfile with pinned uv version (0.5.13)
+- ✅ Using python:3.12-slim-trixie (Debian 13) for latest security patches
+
+**Note on Base Image Choice:**
+- Tested distroless (Debian 12): 6 CRITICAL + 13 HIGH vulnerabilities
+- Using slim-trixie (Debian 13): 0 CRITICAL + 2 HIGH vulnerabilities
+- Debian 13 is significantly more secure than Debian 12 for this use case
 
 ### Publishing to Docker Registry
 

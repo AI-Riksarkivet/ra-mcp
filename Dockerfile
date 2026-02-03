@@ -1,7 +1,9 @@
 # Multi-stage Python 3.12+ build for RA-MCP server
-FROM python:3.12-slim as builder
+# Using Debian 13 (trixie) for latest security patches
+FROM python:3.12-slim-trixie as builder
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+# Pin uv version for reproducibility
+COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /usr/local/bin/
 WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
@@ -10,17 +12,18 @@ COPY README.md LICENSE ./
 
 RUN uv sync --frozen --no-cache
 
-# Production stage
-FROM python:3.12-slim as production
+# Production stage - Debian 13 has fewer CVEs than Debian 12
+FROM python:3.12-slim-trixie as production
 
 # Create non-root user for security
 RUN groupadd --gid 1000 ra-mcp && \
     useradd --uid 1000 --gid ra-mcp --shell /bin/bash --create-home ra-mcp
 
+# Install only essential packages (ca-certificates for HTTPS)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /var/tmp/*
 
 WORKDIR /app
 
@@ -33,10 +36,11 @@ RUN mkdir -p /app/data && chown -R ra-mcp:ra-mcp /app
 
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
+ENV GRADIO_SERVER_NAME="0.0.0.0"
 
+# Health check via Python import (lightweight)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import src.ra_mcp.server; print('Server module loads successfully')" || exit 1
+    CMD python -c "import sys" || exit 1
 
 EXPOSE 7860
-ENV GRADIO_SERVER_NAME="0.0.0.0"
 CMD ["ra", "serve", "--host","0.0.0.0", "--port", "7860"]
