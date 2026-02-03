@@ -1,8 +1,5 @@
-# Multi-stage Python 3.12+ build for RA-MCP server
-# Using Debian 13 (trixie) for latest security patches
 FROM python:3.12-slim-trixie as builder
 
-# Pin uv version for reproducibility
 COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /usr/local/bin/
 WORKDIR /app
 
@@ -12,7 +9,6 @@ COPY README.md LICENSE ./
 
 RUN uv sync --frozen --no-cache
 
-# Production stage - Debian 13 has fewer CVEs than Debian 12
 FROM python:3.12-slim-trixie as production
 
 # Create non-root user for security
@@ -33,6 +29,8 @@ COPY --from=builder /app/README.md /app/LICENSE /app/pyproject.toml ./
 COPY assets/index.html ./assets/index.html
 
 RUN mkdir -p /app/data && chown -R ra-mcp:ra-mcp /app
+
+RUN python -m pip install --no-cache-dir --upgrade pip==25.3
 
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
