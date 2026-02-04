@@ -10,9 +10,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_core.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from ra_mcp_core.utils.http_client import get_http_client
-from ra_mcp_search.formatters import RichConsoleFormatter
-from ra_mcp_search.formatters.utils import trim_page_numbers, format_example_browse_command
 from ra_mcp_search.operations import SearchOperations
+
+from .formatting import RichConsoleFormatter
 
 console = Console()
 
