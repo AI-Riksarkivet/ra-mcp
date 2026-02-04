@@ -6,6 +6,7 @@ from typing import Optional, Annotated
 
 import typer
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_core.config import DEFAULT_MAX_DISPLAY
 from ra_mcp_core.formatters import RichConsoleFormatter
@@ -13,7 +14,6 @@ from ra_mcp_core.utils.http_client import get_http_client
 
 from ..services import BrowseOperations
 from ..services.browse_display_service import BrowseDisplayService
-from .cli_progress import load_document_with_progress
 
 console = Console()
 
@@ -61,14 +61,25 @@ def browse(
     requested_pages = page if page is not None else pages
 
     try:
-        browse_result = load_document_with_progress(
-            browse_operations,
-            reference_code,
-            requested_pages or "1-20",
-            search_term,
-            max_display,
-            console,
-        )
+        # Load document with progress indicator
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            loading_task = progress.add_task("Loading document information...", total=None)
+
+            browse_result = browse_operations.browse_document(
+                reference_code=reference_code,
+                pages=requested_pages or "1-20",
+                highlight_term=search_term,
+                max_pages=max_display,
+            )
+
+            progress.update(
+                loading_task,
+                description=f"✓ Found manifest_id: {browse_result.manifest_id}",
+            )
 
         if not browse_result.contexts:
             # Use DisplayService to format error message

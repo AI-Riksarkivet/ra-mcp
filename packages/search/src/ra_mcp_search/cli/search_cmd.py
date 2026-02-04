@@ -6,6 +6,7 @@ from typing import Optional, Annotated
 
 import typer
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_core.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from ra_mcp_core.formatters import RichConsoleFormatter
@@ -13,7 +14,6 @@ from ra_mcp_core.utils.http_client import get_http_client
 
 from ..services import SearchOperations
 from ..services.search_display_service import SearchDisplayService
-from .cli_progress import perform_search_with_progress
 
 console = Console()
 
@@ -56,13 +56,27 @@ def search(
         # Use the specified max_hits_per_document value (defaults to 3)
         effective_max_hits_per_doc = max_hits_per_document
 
-        search_result = perform_search_with_progress(
-            search_operations,
-            keyword,
-            max_results,
-            effective_max_hits_per_doc,
-            console,
-        )
+        # Execute search with progress indicator
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
+
+            search_result = search_operations.search_transcribed(
+                keyword=keyword,
+                max_results=max_results,
+                max_hits_per_document=effective_max_hits_per_doc,
+            )
+
+            # Update with detailed results
+            hits_count = len(search_result.hits)
+            docs_count = search_result.total_hits
+            progress.update(
+                search_task,
+                description=f"✓ Found {hits_count} page hits across {docs_count} volumes",
+            )
 
         # Use DisplayService to format and display search results
         formatted_output = search_display_service.format_search_results_with_summary(search_result, max_display, keyword)
