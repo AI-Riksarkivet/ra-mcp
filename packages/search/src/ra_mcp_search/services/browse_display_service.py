@@ -3,7 +3,7 @@ Browse display service for formatting browse results.
 """
 
 from typing import List, Optional, Union, Dict
-from ra_mcp_core.formatters import PlainTextFormatter
+from ..formatters import PlainTextFormatter
 from ra_mcp_core.models import BrowseResult
 
 

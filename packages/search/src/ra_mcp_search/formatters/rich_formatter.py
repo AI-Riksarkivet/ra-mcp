@@ -10,7 +10,7 @@ from rich.panel import Panel
 from rich.console import Console, Group
 
 from .base_formatter import BaseFormatter
-from ..models import SearchResult, PageContext, SearchRecord, BrowseResult
+from ra_mcp_core.models import SearchResult, PageContext, SearchRecord, BrowseResult
 from .utils import (
     trim_page_number,
     trim_page_numbers,
