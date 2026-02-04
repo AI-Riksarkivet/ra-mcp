@@ -17,21 +17,29 @@ console = Console()
 
 
 def browse(
-    reference_code: Annotated[str, typer.Argument(help="Reference code of the document")],
+    reference_code: Annotated[
+        str, typer.Argument(help="Document reference code from search results (e.g., 'SE/RA/420422/01')")
+    ],
     pages: Annotated[
         Optional[str],
-        typer.Option(help='Page range to display (e.g., "1-10" or "5,7,9")'),
+        typer.Option(help='Page specification: single ("5"), range ("1-10"), or list ("5,7,9"). Alias: --page'),
     ] = None,
     page: Annotated[
         Optional[str],
-        typer.Option(help="Single page or page range to display (alias for --pages)"),
+        typer.Option(help='Page specification: single ("5"), range ("1-10"), or list ("5,7,9"). Shorthand for --pages'),
     ] = None,
-    search_term: Annotated[Optional[str], typer.Option(help="Highlight this term in the text")] = None,
-    max_display: Annotated[int, typer.Option(help="Maximum pages to display")] = DEFAULT_MAX_DISPLAY,
-    log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
+    search_term: Annotated[
+        Optional[str], typer.Option("--search-term", help="Highlight keyword in transcribed text (case-insensitive)")
+    ] = None,
+    max_display: Annotated[
+        int, typer.Option("--max-display", help="Maximum number of pages to display in output")
+    ] = DEFAULT_MAX_DISPLAY,
+    log: Annotated[
+        bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")
+    ] = False,
     show_links: Annotated[
         bool,
-        typer.Option("--show-links", help="Display ALTO XML, Image, and Bildvisning links"),
+        typer.Option("--show-links", help="Display direct links to ALTO XML, IIIF images, and Bildvisaren viewer"),
     ] = False,
 ):
     """Browse pages by reference code.

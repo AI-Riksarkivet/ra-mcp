@@ -18,17 +18,28 @@ console = Console()
 
 
 def search(
-    keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
-    max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
-    max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
+    keyword: Annotated[
+        str,
+        typer.Argument(
+            help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"
+        ),
+    ],
+    max_results: Annotated[
+        int, typer.Option("--max", help="Maximum number of records to fetch from API (pagination size)")
+    ] = DEFAULT_MAX_RESULTS,
+    max_display: Annotated[
+        int, typer.Option("--max-display", help="Maximum number of records to display in output")
+    ] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
         Optional[int],
         typer.Option(
             "--max-hits-per-vol",
-            help="Maximum number of hits to return per volume (useful for searching across many volumes)",
+            help="Limit hits per volume (useful for broad searches across many volumes). Default: 3 hits per volume",
         ),
     ] = 3,
-    log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
+    log: Annotated[
+        bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")
+    ] = False,
 ):
     """Search for keyword in transcribed materials.
 
