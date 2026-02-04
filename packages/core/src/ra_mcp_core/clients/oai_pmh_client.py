@@ -69,27 +69,27 @@ class OAIPMHClient:
             "datestamp": self._get_text(header_element, f"{oai_ns}datestamp") or "",
         }
 
-    def extract_manifset_id(self, identifier: str) -> Optional[str]:
+    def extract_manifest_id(self, identifier: str) -> Optional[str]:
         """Extract PID from a record for IIIF access."""
         try:
             retrieved_record = self.get_record(identifier, "oai_ape_ead")
             nad_link = retrieved_record.get("nad_link")
 
             if nad_link:
-                return self._extract_manifset_id_from_nad_link(nad_link)
+                return self._extract_manifest_id_from_nad_link(nad_link)
 
             return None
         except Exception:
             return None
 
-    def _extract_manifset_id_from_nad_link(self, nad_link_url: str) -> str:
-        """Extract Manifset ID from NAD link URL."""
+    def _extract_manifest_id_from_nad_link(self, nad_link_url: str) -> str:
+        """Extract Manifest ID from NAD link URL."""
         url_segments = nad_link_url.rstrip("/").split("/")
         if url_segments:
             # Remove query parameters if present
-            manifset_id = url_segments[-1].split("?")[0]
+            manifest_id = url_segments[-1].split("?")[0]
 
-            return manifset_id
+            return manifest_id
         return ""
 
     def _make_request(self, request_parameters: Dict[str, str]) -> ET.Element:

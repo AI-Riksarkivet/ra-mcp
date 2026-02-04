@@ -52,16 +52,16 @@ class BrowseOperations:
             and persistent identifiers. Returns empty contexts if document
             not found or no valid pages.
         """
-        manifset_id = self.oai_client.extract_manifset_id(reference_code)
+        manifest_id = self.oai_client.extract_manifest_id(reference_code)
 
-        if not manifset_id:
+        if not manifest_id:
             return BrowseResult(
                 contexts=[],
                 reference_code=reference_code,
                 pages_requested=pages,
             )
 
-        page_contexts = self._fetch_page_contexts(manifset_id, pages, max_pages, reference_code, highlight_term)
+        page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
 
         # Fetch document metadata by searching for the reference code
         document_metadata = self._fetch_document_metadata(reference_code)
@@ -70,7 +70,7 @@ class BrowseOperations:
             contexts=page_contexts,
             reference_code=reference_code,
             pages_requested=pages,
-            manifest_id=manifset_id,
+            manifest_id=manifest_id,
             document_metadata=document_metadata,
         )
 
