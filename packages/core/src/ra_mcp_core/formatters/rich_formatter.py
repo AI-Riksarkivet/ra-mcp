@@ -370,9 +370,9 @@ class RichConsoleFormatter(BaseFormatter):
 
             renderables = []
 
-            # Add document metadata at the top of the panel if available
-            if browse_result.document_metadata:
-                metadata = browse_result.document_metadata
+            # Add OAI-PMH metadata at the top of the panel if available
+            if browse_result.oai_metadata:
+                metadata = browse_result.oai_metadata
 
                 # Create left column content (basic info)
                 left_content = []
@@ -382,52 +382,20 @@ class RichConsoleFormatter(BaseFormatter):
                 if metadata.title and metadata.title != "(No title)":
                     left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
 
-                # Display date range
-                if metadata.date:
-                    left_content.append(f"[blue]📅 Date:[/blue] {metadata.date}")
+                # Display repository
+                if metadata.repository:
+                    left_content.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
 
-                # Display archival institution
-                if metadata.archival_institution:
-                    institutions = metadata.archival_institution
-                    if institutions:
-                        inst_names = [inst.get("caption", "") for inst in institutions]
-                        left_content.append(f"[blue]🏛️  Institution:[/blue] {', '.join(inst_names)}")
+                # Display unitid
+                if metadata.unitid and metadata.unitid != ref_code:
+                    left_content.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
 
-                # Create right column content (hierarchy)
-                right_content = []
-                if metadata.hierarchy:
-                    hierarchy = metadata.hierarchy
-                    if hierarchy:
-                        for i, level in enumerate(hierarchy):
-                            caption = level.get("caption", "")
-                            caption = caption.replace("\n", " ").strip()
+                # Display metadata content
+                renderables.append("\n".join(left_content))
 
-                            if i == 0:
-                                right_content.append(f"📁 {caption}")
-                            elif i == len(hierarchy) - 1:
-                                indent = "  " * i
-                                right_content.append(f"{indent}└── 📄 {caption}")
-                            else:
-                                indent = "  " * i
-                                right_content.append(f"{indent}├── 📁 {caption}")
-
-                # Create clean two-column layout using Rich Table
-                if right_content:
-                    metadata_table = Table.grid(padding=(0, 2))
-                    metadata_table.add_column(justify="left", ratio=1)
-                    metadata_table.add_column(justify="left", ratio=1)
-
-                    left_text = "\n".join(left_content)
-                    right_text = "\n".join(right_content)
-
-                    metadata_table.add_row(left_text, right_text)
-                    renderables.append(metadata_table)
-                else:
-                    renderables.append("\n".join(left_content))
-
-                # Display note on its own row if available
-                if metadata.note:
-                    renderables.append(f"[blue]📝 Note:[/blue] {metadata.note}")
+                # Display NAD link if available
+                if metadata.nad_link:
+                    renderables.append(f"[blue]🔗 NAD Link:[/blue] [dim]{metadata.nad_link}[/dim]")
 
                 renderables.append("")
             else:

@@ -6,7 +6,7 @@ Handles document browsing, page fetching, and metadata retrieval.
 from typing import List, Optional
 
 from ra_mcp_core.clients import IIIFClient, ALTOClient, OAIPMHClient
-from ra_mcp_core.models import BrowseResult, DocumentMetadata, PageContext
+from ra_mcp_core.models import BrowseResult, OAIPMHMetadata, PageContext
 from ra_mcp_core.utils import parse_page_range, url_generator
 from ra_mcp_core.utils.http_client import HTTPClient
 
@@ -63,15 +63,15 @@ class BrowseOperations:
 
         page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
 
-        # Fetch document metadata by searching for the reference code
-        document_metadata = self._fetch_document_metadata(reference_code)
+        # Fetch OAI-PMH metadata for the document
+        oai_metadata = self._fetch_oai_metadata(reference_code)
 
         return BrowseResult(
             contexts=page_contexts,
             reference_code=reference_code,
             pages_requested=pages,
             manifest_id=manifest_id,
-            document_metadata=document_metadata,
+            oai_metadata=oai_metadata,
         )
 
     def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
@@ -130,18 +130,28 @@ class BrowseOperations:
 
         return page_contexts
 
-    def _fetch_document_metadata(self, reference_code: str) -> Optional[DocumentMetadata]:
-        """Fetch document metadata by searching for the reference code.
+    def _fetch_oai_metadata(self, reference_code: str) -> Optional[OAIPMHMetadata]:
+        """Fetch OAI-PMH metadata for a document.
 
         Args:
             reference_code: Document reference code to get metadata for.
 
         Returns:
-            Dictionary containing document metadata (hierarchy, institution, etc.)
+            OAIPMHMetadata containing title, repository, etc. from OAI-PMH API,
             or None if not found.
         """
         try:
-            return None
+            record = self.oai_client.get_record(reference_code, "oai_ape_ead")
+
+            # Map OAI-PMH response to OAIPMHMetadata model
+            return OAIPMHMetadata(
+                identifier=record.get("identifier", reference_code),
+                title=record.get("title"),
+                unitid=record.get("unitid"),
+                repository=record.get("repository"),
+                nad_link=record.get("nad_link"),
+                datestamp=record.get("datestamp"),
+            )
         except Exception:
             # If metadata fetch fails, return None - browse will still work
             return None

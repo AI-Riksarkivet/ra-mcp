@@ -40,7 +40,7 @@ from .models import (
     SearchResult,
     # Browse Results
     PageContext,
-    DocumentMetadata,
+    OAIPMHMetadata,
     BrowseResult,
 )
 
@@ -75,6 +75,6 @@ __all__ = [
     "SearchResult",
     # Browse Results
     "PageContext",
-    "DocumentMetadata",
+    "OAIPMHMetadata",
     "BrowseResult",
 ]

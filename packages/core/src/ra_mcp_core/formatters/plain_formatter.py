@@ -209,45 +209,25 @@ class PlainTextFormatter(BaseFormatter):
         lines = []
         lines.append(f"📚 Document: {browse_result.reference_code}")
 
-        # Add rich metadata if available
-        if browse_result.document_metadata:
-            metadata = browse_result.document_metadata
+        # Add OAI-PMH metadata if available
+        if browse_result.oai_metadata:
+            metadata = browse_result.oai_metadata
 
             # Display title
             if metadata.title and metadata.title != "(No title)":
                 lines.append(f"📋 Title: {metadata.title}")
 
-            # Display date range
-            if metadata.date:
-                lines.append(f"📅 Date: {metadata.date}")
+            # Display repository
+            if metadata.repository:
+                lines.append(f"🏛️  Repository: {metadata.repository}")
 
-            # Display archival institution
-            if metadata.archival_institution:
-                institutions = metadata.archival_institution
-                if institutions:
-                    inst_names = [inst.get("caption", "") for inst in institutions]
-                    lines.append(f"🏛️  Institution: {', '.join(inst_names)}")
+            # Display unitid
+            if metadata.unitid and metadata.unitid != browse_result.reference_code:
+                lines.append(f"🔖 Unit ID: {metadata.unitid}")
 
-            # Display hierarchy
-            if metadata.hierarchy:
-                hierarchy = metadata.hierarchy
-                if hierarchy:
-                    for i, level in enumerate(hierarchy):
-                        caption = level.get("caption", "")
-                        caption = caption.replace("\n", " ").strip()
-
-                        if i == 0:
-                            lines.append(f"📁 {caption}")
-                        elif i == len(hierarchy) - 1:
-                            indent = "  " * i
-                            lines.append(f"{indent}└── 📄 {caption}")
-                        else:
-                            indent = "  " * i
-                            lines.append(f"{indent}├── 📁 {caption}")
-
-            # Display note if available
-            if metadata.note:
-                lines.append(f"📝 Note: {metadata.note}")
+            # Display NAD link
+            if metadata.nad_link:
+                lines.append(f"🔗 NAD Link: {metadata.nad_link}")
 
         lines.append(f"📖 Pages loaded: {len(browse_result.contexts)}")
         lines.append("")

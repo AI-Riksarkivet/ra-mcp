@@ -184,31 +184,42 @@ class SearchResult(BaseModel):
 # ============================================================================
 
 class PageContext(BaseModel):
-    """Full page context for browsing."""
+    """
+    Full page context for browsing.
+
+    Contains transcribed text, ALTO XML URL, and image URLs for a single page.
+    """
     page_number: int
     page_id: str
     reference_code: str
-    full_text: str
-    alto_url: str
-    image_url: str
-    bildvisning_url: str = ""
+    full_text: str  # Extracted from ALTO XML
+    alto_url: str  # Client-generated URL to ALTO XML
+    image_url: str  # Client-generated IIIF image URL
+    bildvisning_url: str = ""  # Client-generated bildvisning URL
 
 
-class DocumentMetadata(BaseModel):
-    """Document metadata for browse operations."""
-    title: Optional[str] = None
-    hierarchy: Optional[List[Dict[str, str]]] = None
-    archival_institution: Optional[List[Dict[str, str]]] = None
-    date: Optional[str] = None
-    note: Optional[str] = None
-    collection_url: Optional[str] = None
-    manifest_url: Optional[str] = None
+class OAIPMHMetadata(BaseModel):
+    """
+    Document metadata from OAI-PMH GetRecord response.
+
+    Maps to EAD metadata fields returned by the OAI-PMH API.
+    """
+    identifier: str  # Record identifier (e.g., "SE/RA/310187/1")
+    title: Optional[str] = None  # EAD unittitle
+    unitid: Optional[str] = None  # EAD unitid
+    repository: Optional[str] = None  # EAD repository name
+    nad_link: Optional[str] = None  # Link to bildvisning
+    datestamp: Optional[str] = None  # Last modified timestamp
 
 
 class BrowseResult(BaseModel):
-    """Result from browsing document pages."""
+    """
+    Result from browsing document pages.
+
+    Contains page contexts, manifest ID, and optional OAI-PMH metadata.
+    """
     contexts: List[PageContext]
     reference_code: str
     pages_requested: str
-    manifest_id: Optional[str] = None
-    document_metadata: Optional[DocumentMetadata] = None
+    manifest_id: Optional[str] = None  # IIIF manifest ID (e.g., "R0001203")
+    oai_metadata: Optional[OAIPMHMetadata] = None  # Metadata from OAI-PMH API
