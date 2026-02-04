@@ -11,7 +11,6 @@ from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
 
 from ..operations import BrowseOperations
-from ..formatters import BrowseDisplayService
 
 
 def register_browse_tool(mcp) -> None:
@@ -78,7 +77,7 @@ def register_browse_tool(mcp) -> None:
         """
         try:
             browse_operations = BrowseOperations(http_client=default_http_client)
-            browse_display_service = BrowseDisplayService(formatter=PlainTextFormatter())
+            formatter = PlainTextFormatter()
 
             browse_result = _fetch_document_pages(
                 browse_operations,
@@ -91,9 +90,9 @@ def register_browse_tool(mcp) -> None:
             if not browse_result.contexts:
                 return _generate_no_pages_found_message(reference_code)
 
-            result = browse_display_service.format_browse_results(browse_result, highlight_term)
-            # MCPFormatter always returns string, but type hints include List for RichConsoleFormatter
-            return result if isinstance(result, str) else str(result)
+            result = formatter.format_browse_results(browse_result, highlight_term)
+            # PlainTextFormatter always returns string
+            return result
 
         except Exception as e:
             return format_error_message(

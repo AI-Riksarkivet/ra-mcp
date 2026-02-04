@@ -11,7 +11,6 @@ from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
 
 from ..operations import SearchOperations
-from ..formatters import SearchDisplayService
 
 
 logger = logging.getLogger(__name__)
@@ -135,7 +134,7 @@ def register_search_tool(mcp) -> None:
         try:
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
-            search_display_service = SearchDisplayService(formatter=PlainTextFormatter())
+            formatter = PlainTextFormatter()
 
             logger.info(f"Executing search for '{keyword}'...")
             search_result = search_operations.search_transcribed(
@@ -146,7 +145,7 @@ def register_search_tool(mcp) -> None:
             )
 
             logger.info(f"Formatting {len(search_result.items)} search results...")
-            formatted_results = search_display_service.format_search_results(
+            formatted_results = formatter.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,
             )
@@ -233,7 +232,7 @@ def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result
 
 def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results):
     """Append pagination information to results if there are more results available."""
-    pagination_info = _get_pagination_info(search_result.hits, search_result.total_hits, offset, max_results)
+    pagination_info = _get_pagination_info(search_result.items, search_result.response.total_hits, offset, max_results)
 
     if pagination_info["has_more"]:
         formatted_results += f"\n\n📊 **Pagination**: Showing documents {pagination_info['document_range_start']}-{pagination_info['document_range_end']}"

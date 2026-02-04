@@ -13,7 +13,7 @@ from ..formatters import RichConsoleFormatter
 from ra_mcp_core.utils.http_client import get_http_client
 
 from ..operations import SearchOperations
-from ..formatters import SearchDisplayService
+from ..formatters.utils import trim_page_numbers, format_example_browse_command
 
 console = Console()
 
@@ -46,7 +46,7 @@ def search(
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
-    search_display_service = SearchDisplayService(formatter=RichConsoleFormatter(console))
+    formatter = RichConsoleFormatter(console)
 
     # Show logging status if enabled
     if log:
@@ -77,10 +77,31 @@ def search(
                 description=f"✓ Found {snippet_count} page hits across {len(search_result.items)} volumes",
             )
 
-        # Use DisplayService to format and display search results
-        formatted_output = search_display_service.format_search_results_with_summary(search_result, max_display, keyword)
-        for item in formatted_output:
-            console.print(item)
+        # Format and display search results directly
+        table = formatter.format_search_results(search_result, max_display)
+        console.print(table)
+
+        # Display summary statistics
+        snippet_count = search_result.count_snippets()
+        records_count = len(search_result.items)
+        summary_lines = formatter.format_search_summary_stats(
+            snippet_count=snippet_count,
+            records_count=records_count,
+            total_hits=search_result.response.total_hits,
+            offset=search_result.offset,
+        )
+        for line in summary_lines:
+            console.print(line)
+
+        # Display example browse command
+        example_lines = formatter.format_browse_example(search_result.items, keyword)
+        for line in example_lines:
+            console.print(line)
+
+        # Display remaining documents message
+        remaining_msg = formatter.format_remaining_documents(len(search_result.items), max_display)
+        if remaining_msg:
+            console.print(remaining_msg)
 
     except Exception as error:
         console.print(f"[red]Search failed: {error}[/red]")

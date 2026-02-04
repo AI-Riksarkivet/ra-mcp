@@ -9,7 +9,7 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.console import Console, Group
 
-from .base_formatter import BaseFormatter
+# BaseFormatter removed - not needed
 from ra_mcp_core.models import SearchResult, PageContext, SearchRecord, BrowseResult
 from .utils import (
     trim_page_number,
@@ -19,7 +19,7 @@ from .utils import (
 )
 
 
-class RichConsoleFormatter(BaseFormatter):
+class RichConsoleFormatter:
     """
     Formatter that creates Rich objects for console output.
     This formatter is used by DisplayService for CLI display.

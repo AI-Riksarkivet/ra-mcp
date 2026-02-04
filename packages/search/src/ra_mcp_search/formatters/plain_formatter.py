@@ -5,10 +5,8 @@ Plain text formatter for MCP/LLM output without any Rich markup.
 import re
 from typing import List
 
-from .base_formatter import BaseFormatter
 
-
-class PlainTextFormatter(BaseFormatter):
+class PlainTextFormatter:
     """Formatter that produces plain text without any Rich markup."""
 
     def format_text(self, text_content: str, style_name: str = "") -> str:
