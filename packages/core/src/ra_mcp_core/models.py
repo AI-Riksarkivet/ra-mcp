@@ -25,6 +25,7 @@ class SearchHit(BaseModel):
     manifest_url: Optional[str] = None
     archival_institution: Optional[List[Dict[str, str]]] = None
     date: Optional[str] = None
+    total_hits_in_document: Optional[int] = None  
 
 
 class PageContext(BaseModel):

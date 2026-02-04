@@ -116,6 +116,10 @@ class SearchAPI:
         if not transcribed_content or "snippets" not in transcribed_content:
             return []
 
+        # Extract total hits available for this document from API
+        total_hits_in_doc = transcribed_content.get("numTotal", 0)
+        document_info["total_hits_in_document"] = total_hits_in_doc
+
         return self._process_document_snippets(transcribed_content["snippets"], document_info, maximum_hits)
 
     def _extract_document_information(self, document: Dict) -> Dict:
@@ -216,6 +220,7 @@ class SearchAPI:
             manifest_url=document_info["manifest_url"],
             archival_institution=document_info["archival_institution"],
             date=document_info["date"],
+            total_hits_in_document=document_info.get("total_hits_in_document"),
         )
 
     def _clean_html(self, html_text: str) -> str:

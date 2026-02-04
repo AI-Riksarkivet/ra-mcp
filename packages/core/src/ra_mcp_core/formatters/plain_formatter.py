@@ -152,7 +152,16 @@ class PlainTextFormatter(BaseFormatter):
 
             page_numbers = sorted(set(hit.page_number for hit in document_hits))
             trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
+            hit_count = len(document_hits)
+            hit_label = "hit" if hit_count == 1 else "hits"
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
+
+            # Show total hits if available and different from shown count
+            total_in_doc = first_hit.total_hits_in_document
+            if total_in_doc and total_in_doc > hit_count:
+                lines.append(f"💡 {hit_count} {hit_label} shown ({total_in_doc} total)")
+            else:
+                lines.append(f"💡 {hit_count} {hit_label} found")
 
             for hit in document_hits[:3]:
                 snippet = hit.snippet_text

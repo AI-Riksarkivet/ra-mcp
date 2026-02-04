@@ -161,11 +161,19 @@ class RichConsoleFormatter(BaseFormatter):
             if institution:
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
-            # Format page numbers
+            # Format page numbers with hit count
             pages = sorted(set(h.page_number for h in ref_hits))
             pages_trimmed = trim_page_numbers(pages)
             pages_str = ",".join(pages_trimmed)
-            institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"'
+            hit_count = len(ref_hits)
+            hit_label = "hit" if hit_count == 1 else "hits"
+
+            # Show total hits if available and different from shown count
+            total_in_doc = first_hit.total_hits_in_document
+            if total_in_doc and total_in_doc > hit_count:
+                institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"\n💡 [dim]{hit_count} {hit_label} shown ({total_in_doc} total)[/dim]'
+            else:
+                institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"\n💡 [dim]{hit_count} {hit_label} found[/dim]'
 
             if first_hit.date:
                 institution_and_ref += f"\n📅 [dim]{first_hit.date}[/dim]"
