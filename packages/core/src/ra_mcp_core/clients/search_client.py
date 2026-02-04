@@ -53,7 +53,7 @@ class SearchAPI:
         try:
             self.logger.info(f"Executing search request to {SEARCH_API_BASE_URL}...")
             search_result_data = self._execute_search_request(search_parameters)
-            self.logger.info(f"Search request completed successfully")
+            self.logger.info("Search request completed successfully")
 
             self.logger.debug("Extracting documents from response...")
             retrieved_documents = self._extract_documents_from_response(search_result_data, maximum_documents)
@@ -184,7 +184,7 @@ class SearchAPI:
 
     def _extract_page_number(self, page_data: Union[Dict, str]) -> str:
         """Extract and normalize page number from page data.
-        
+
         We extract the last segment after splitting by underscore.
         """
         if isinstance(page_data, dict):

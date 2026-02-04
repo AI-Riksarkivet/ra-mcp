@@ -8,8 +8,8 @@ from typing import Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from ra_mcp_core.models import SearchResult, BrowseResult
 from ..services import SearchOperations, BrowseOperations
-from ..models import SearchResult, BrowseResult
 
 
 def perform_search_with_progress(
@@ -37,9 +37,7 @@ def perform_search_with_progress(
         console=console,
     ) as progress:
         # Search across all volumes
-        search_task = progress.add_task(
-            f"Searching for '{keyword}' across all transcribed volumes...", total=None
-        )
+        search_task = progress.add_task(f"Searching for '{keyword}' across all transcribed volumes...", total=None)
 
         search_result = search_operations.search_transcribed(
             keyword=keyword,

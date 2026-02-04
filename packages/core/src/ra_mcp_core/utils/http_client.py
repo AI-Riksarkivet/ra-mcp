@@ -45,19 +45,12 @@ class HTTPClient:
             # File handler for persistent logs
             if self.debug_console or os.getenv("RA_MCP_LOG_API"):
                 file_handler = logging.FileHandler("ra_mcp_api.log")
-                file_handler.setFormatter(
-                    logging.Formatter(
-                        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                        datefmt="%Y-%m-%d %H:%M:%S"
-                    )
-                )
+                file_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
                 self.logger.addHandler(file_handler)
 
             # Console handler for stderr (visible in Hugging Face logs)
             console_handler = logging.StreamHandler(sys.stderr)
-            console_handler.setFormatter(
-                logging.Formatter("%(levelname)s - %(name)s - %(message)s")
-            )
+            console_handler.setFormatter(logging.Formatter("%(levelname)s - %(name)s - %(message)s"))
             self.logger.addHandler(console_handler)
 
     def get_json(

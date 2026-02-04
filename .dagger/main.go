@@ -46,10 +46,11 @@ func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dag
 
 // getVersion retrieves the raw version from pyproject.toml using uv
 func (m *RaMcp) getVersion(ctx context.Context, source *dagger.Directory) (string, error) {
-	container, err := m.Build(ctx, source)
-	if err != nil {
-		return "", err
-	}
+	// Use a builder container with source files (not the production image)
+	container := dag.Container().
+		From("python:3.12-alpine").
+		WithDirectory("/app", source).
+		WithWorkdir("/app")
 
 	container = m.withUv(container)
 

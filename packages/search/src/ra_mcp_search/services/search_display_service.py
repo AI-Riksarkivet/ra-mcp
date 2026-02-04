@@ -2,8 +2,8 @@
 Search display service for formatting search results.
 """
 
-from ..formatters import PlainTextFormatter
-from ..models import SearchResult
+from ra_mcp_core.formatters import PlainTextFormatter
+from ra_mcp_core.models import SearchResult
 
 
 class SearchDisplayService:

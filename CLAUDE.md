@@ -8,15 +8,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Architecture
 
-The project uses FastMCP's composition pattern to combine multiple specialized servers:
+The project is organized as a **uv workspace** with three modular packages:
 
-- **Main Server** ([server.py](src/ra_mcp/server.py)): FastMCP composition server that imports tool servers
-- **Search Tools** ([search_tools.py](src/ra_mcp/search_tools.py)): MCP tools (`search_transcribed`, `browse_document`) and resources
-- **CLI** ([cli/](src/ra_mcp/cli/)): Command-line interface using Typer
-- **Services** ([services/](src/ra_mcp/services/)): Business logic (SearchOperations, BrowseOperations, Display services)
-- **Clients** ([clients/](src/ra_mcp/clients/)): API clients for IIIF, ALTO, OAI-PMH, and Search APIs
-- **Formatters** ([formatters/](src/ra_mcp/formatters/)): Output formatting (Plain text, Rich console)
-- **Utils** ([utils/](src/ra_mcp/utils/)): HTTP client, page utilities, URL generation
+```
+ra-mcp/
+├── packages/
+│   ├── core/           # ra-mcp-core: Models, config, clients, formatters, utils
+│   ├── search/         # ra-mcp-search: MCP tools, services, CLI commands
+│   └── server/         # ra-mcp-server: Server composition, main CLI
+├── pyproject.toml      # Workspace configuration
+└── uv.lock            # Shared lockfile
+```
+
+### Package Structure
+
+**ra-mcp-core** (no internal dependencies):
+- [config.py](packages/core/src/ra_mcp_core/config.py): API URLs and configuration constants
+- [models.py](packages/core/src/ra_mcp_core/models.py): Pydantic data models (SearchHit, SearchResult, BrowseResult)
+- [clients/](packages/core/src/ra_mcp_core/clients/): API clients (SearchAPI, ALTOClient, OAIPMHClient, IIIFClient)
+- [formatters/](packages/core/src/ra_mcp_core/formatters/): Output formatters (PlainTextFormatter, RichConsoleFormatter)
+- [utils/](packages/core/src/ra_mcp_core/utils/): HTTP client, page utilities, URL generation
+
+**ra-mcp-search** (depends on core):
+- [mcp.py](packages/search/src/ra_mcp_search/mcp.py): MCP tools (`search_transcribed`, `browse_document`) and resources
+- [services/](packages/search/src/ra_mcp_search/services/): Business logic (SearchOperations, BrowseOperations, display services)
+- [cli/](packages/search/src/ra_mcp_search/cli/): CLI commands for search and browse
+
+**ra-mcp-server** (depends on search):
+- [server.py](packages/server/src/ra_mcp_server/server.py): FastMCP composition server
+- [cli/app.py](packages/server/src/ra_mcp_server/cli/app.py): Main CLI entry point with serve command
+
+### Package Dependencies
+
+```
+ra-mcp-core          (no internal deps)
+       ↑
+ra-mcp-search        (depends on core)
+       ↑
+ra-mcp-server        (depends on search, composes MCP servers)
+```
 
 ## Development Workflow
 
@@ -27,8 +57,8 @@ The project uses FastMCP's composition pattern to combine multiple specialized s
 git clone https://github.com/AI-Riksarkivet/ra-mcp.git
 cd ra-mcp
 
-# Install dependencies
-uv sync && uv pip install -e .
+# Install dependencies (syncs workspace packages)
+uv sync
 ```
 
 ### Running the Server
@@ -38,10 +68,10 @@ uv sync && uv pip install -e .
 uv run ra serve
 
 # MCP server (HTTP/SSE) - for web clients, testing, and development
-uv run ra serve --http --port 8000
+uv run ra serve --port 8000
 
 # With verbose logging
-uv run ra serve --http --verbose
+uv run ra serve --port 8000 --log
 ```
 
 ### Using the CLI
@@ -54,7 +84,7 @@ uv run ra search "trolldom"
 uv run ra search "Stockholm" --max 50
 
 # Browse specific documents
-uv run ra browse "SE/RA/310187/1" --pages "7,8,52"
+uv run ra browse "SE/RA/310187/1" --page "7,8,52"
 uv run ra browse "SE/RA/420422/01" --pages "1-10" --search-term "Stockholm"
 
 # Get help
@@ -65,20 +95,18 @@ uv run ra browse --help
 
 ### Testing
 
-**IMPORTANT**: The test infrastructure is currently being set up. Tests will be added in the `tests/` directory.
+**IMPORTANT**: The test infrastructure is currently being set up. Tests will be added in the `packages/*/tests/` directories.
 
 ```bash
 # Run all tests (when tests exist)
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=ra_mcp --cov-report=html
+uv run pytest --cov=ra_mcp_core --cov=ra_mcp_search --cov=ra_mcp_server --cov-report=html
 
-# Run specific test file
-uv run pytest tests/test_search.py -v
-
-# Run specific test
-uv run pytest tests/test_search.py::test_search_transcribed -v
+# Run specific package tests
+uv run pytest packages/core/tests/ -v
+uv run pytest packages/search/tests/ -v
 ```
 
 **Note**: The Dagger pipeline currently skips tests until the test suite is implemented. See [.dagger/publish.go:12-16](.dagger/publish.go).
@@ -103,7 +131,7 @@ uv run ty check
 npx @modelcontextprotocol/inspector uv run ra serve
 
 # Test HTTP/SSE server with curl
-uv run ra serve --http
+uv run ra serve --port 8000
 curl http://localhost:8000/mcp
 ```
 
@@ -167,46 +195,6 @@ dagger call test
 dagger call build-local
 ```
 
-### Security Scanning
-
-The project includes Trivy vulnerability scanning for container images:
-
-```bash
-# Scan for CRITICAL and HIGH vulnerabilities (fails if found)
-dagger call scan --source=.
-
-# Scan with custom severity levels
-dagger call scan --source=. --severity="CRITICAL,HIGH,MEDIUM"
-
-# Scan without failing the build (for reports)
-dagger call scan --source=. --exit-code=0
-
-# Get JSON output for automation
-dagger call scan-json --source=.
-
-# CI/CD scan (fails on CRITICAL/HIGH)
-dagger call scan-ci --source=.
-
-# Generate SARIF report for GitHub Security tab
-dagger call scan-sarif --source=. --output-path="trivy-results.sarif"
-```
-
-**Current Scan Results Summary:**
-- **Debian packages**: 2 HIGH (glibc CVE-2026-0861 - no fix available)
-- **Python packages**: 0 HIGH (all fixed!)
-- **Total**: 2 HIGH, 0 CRITICAL ✅
-
-**Recent CVE Fixes:**
-- ✅ Fixed urllib3 CVEs by upgrading to 2.6.3
-- ✅ Fixed python-multipart CVE-2026-24486 by upgrading to 0.0.22
-- ✅ Optimized Dockerfile with pinned uv version (0.5.13)
-- ✅ Using python:3.12-slim-trixie (Debian 13) for latest security patches
-
-**Note on Base Image Choice:**
-- Tested distroless (Debian 12): 6 CRITICAL + 13 HIGH vulnerabilities
-- Using slim-trixie (Debian 13): 0 CRITICAL + 2 HIGH vulnerabilities
-- Debian 13 is significantly more secure than Debian 12 for this use case
-
 ### Publishing to Docker Registry
 
 ```bash
@@ -226,12 +214,6 @@ dagger call publish-docker \
   --source=.
 ```
 
-**Important Notes:**
-- Tests run automatically before publishing (currently skipped)
-- Both `DOCKER_USERNAME` and `DOCKER_PASSWORD` must be set
-- Use `env:` prefix for Secret parameters
-- Pre-built images available at [Docker Hub](https://hub.docker.com/r/riksarkivet/ra-mcp)
-
 ### Publishing to PyPI
 
 ```bash
@@ -240,8 +222,6 @@ dagger call publish-pypi \
   --pypi-token=env:PYPI_TOKEN \
   --source=.
 ```
-
-**Note**: PyPI publish runs tests first. Deployment is aborted if tests fail.
 
 ## Claude Code Integration
 
@@ -268,28 +248,6 @@ Add to `claude_desktop_config.json`:
     "ra-mcp": {
       "command": "uv",
       "args": ["run", "ra", "serve"],
-      "env": {}
-    }
-  }
-}
-```
-
-### Claude Code as MCP Server
-
-You can also run Claude Code itself as an MCP server:
-
-```bash
-# Start Claude Code as MCP server
-claude mcp serve
-```
-
-Then add to `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "claude-code": {
-      "command": "claude",
-      "args": ["mcp", "serve"],
       "env": {}
     }
   }
@@ -338,14 +296,14 @@ Then add to `claude_desktop_config.json`:
 
 ### Adding a New MCP Tool
 
-1. Edit [search_tools.py](src/ra_mcp/search_tools.py) or create a new tool file
+1. Edit [mcp.py](packages/search/src/ra_mcp_search/mcp.py) or create a new tool file in the search package
 2. Use `@search_mcp.tool()` decorator with comprehensive description
 3. Add detailed docstring with examples and parameter documentation
-4. If creating a new file, import in [server.py](src/ra_mcp/server.py):
+4. If creating a new MCP module, import it in [server.py](packages/server/src/ra_mcp_server/server.py):
 
 ```python
 # In server.py
-from ra_mcp.new_tools import new_mcp
+from ra_mcp_new_module.mcp import new_mcp
 
 async def setup_server():
     await main_server.import_server(search_mcp)
@@ -373,19 +331,48 @@ def get_my_resource(param: str) -> str:
 
 ### Adding API Clients
 
-1. Create new client in [clients/](src/ra_mcp/clients/)
-2. Follow existing patterns (see [alto_client.py](src/ra_mcp/clients/alto_client.py))
-3. Use `httpx` for HTTP requests
+1. Create new client in [packages/core/src/ra_mcp_core/clients/](packages/core/src/ra_mcp_core/clients/)
+2. Follow existing patterns (see [alto_client.py](packages/core/src/ra_mcp_core/clients/alto_client.py))
+3. Use the centralized HTTPClient from utils
 4. Add comprehensive error handling
 5. Use dependency injection for HTTP client
+
+### Adding a New Package/Module
+
+To add a new MCP module (e.g., `ra-mcp-metadata`):
+
+1. Create the package structure:
+   ```bash
+   mkdir -p packages/metadata/src/ra_mcp_metadata/{services,cli}
+   mkdir -p packages/metadata/tests
+   ```
+
+2. Create `packages/metadata/pyproject.toml`:
+   ```toml
+   [project]
+   name = "ra-mcp-metadata"
+   version = "0.2.7"
+   dependencies = ["ra-mcp-core"]
+
+   [tool.uv.sources]
+   ra-mcp-core = { workspace = true }
+
+   [build-system]
+   requires = ["hatchling"]
+   build-backend = "hatchling.build"
+   ```
+
+3. Add MCP tools in `mcp.py`, CLI commands in `cli/`
+4. Import into server's composition
+5. Register CLI sub-app if needed
 
 ### Updating Dependencies
 
 ```bash
-# Add new dependency
-uv add package-name
+# Add new dependency to a package
+cd packages/core && uv add package-name
 
-# Add development dependency
+# Add development dependency (root)
 uv add --dev package-name
 
 # Update all dependencies
@@ -442,7 +429,7 @@ export RA_MCP_TIMEOUT=120
 npx @modelcontextprotocol/inspector uv run ra serve
 
 # Enable verbose logging with environment variable
-RA_MCP_LOG_LEVEL=DEBUG uv run ra serve --http
+RA_MCP_LOG_LEVEL=DEBUG uv run ra serve --port 8000
 
 # Test HTTP endpoint
 curl -X POST http://localhost:8000/mcp \
@@ -478,7 +465,7 @@ For detailed information about the Model Context Protocol specification, impleme
 
 **Issue**: Server won't start
 - Check if port 8000 is already in use: `lsof -i :8000`
-- Try a different port: `uv run ra serve --http --port 8001`
+- Try a different port: `uv run ra serve --port 8001`
 
 **Issue**: No search results found
 - Verify API is accessible: `curl https://data.riksarkivet.se/api/records`
@@ -516,5 +503,6 @@ When working with this codebase:
 2. **Read full context**: Use the Read tool on complete files, not just snippets
 3. **Prefer modifications**: Edit existing code rather than creating new files
 4. **Check types**: The project uses type hints - maintain them in all code
-5. **Follow patterns**: Match existing code style and patterns (see [services/](src/ra_mcp/services/))
+5. **Follow patterns**: Match existing code style and patterns (see [packages/search/src/ra_mcp_search/services/](packages/search/src/ra_mcp_search/services/))
 6. **Document thoroughly**: MCP tools need excellent documentation for LLM understanding
+7. **Workspace awareness**: Changes to core affect both search and server packages

@@ -5,10 +5,10 @@ Handles document browsing, page fetching, and metadata retrieval.
 
 from typing import List, Optional
 
-from ..clients import IIIFClient, ALTOClient, OAIPMHClient
-from ..models import BrowseResult, DocumentMetadata, PageContext
-from ..utils import parse_page_range, url_generator
-from ..utils.http_client import HTTPClient
+from ra_mcp_core.clients import IIIFClient, ALTOClient, OAIPMHClient
+from ra_mcp_core.models import BrowseResult, DocumentMetadata, PageContext
+from ra_mcp_core.utils import parse_page_range, url_generator
+from ra_mcp_core.utils.http_client import HTTPClient
 
 
 class BrowseOperations:

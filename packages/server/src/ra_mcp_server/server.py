@@ -19,7 +19,7 @@ import sys
 from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
-from ra_mcp.search_tools import search_mcp
+from ra_mcp_search.mcp import search_mcp
 
 
 def setup_logging():
@@ -33,7 +33,7 @@ def setup_logging():
         format=log_format,
         handlers=[
             logging.StreamHandler(sys.stderr),  # Always log to stderr for Hugging Face
-        ]
+        ],
     )
 
     logger = logging.getLogger("ra-mcp")
@@ -60,9 +60,11 @@ main_server = FastMCP(
     """,
 )
 
+
 @main_server.custom_route("/", methods=["GET"])
 async def root(_):
     return FileResponse("assets/index.html")
+
 
 async def setup_server():
     """Setup server composition by importing all tool servers."""

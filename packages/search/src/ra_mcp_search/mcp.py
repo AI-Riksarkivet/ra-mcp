@@ -4,11 +4,12 @@ from typing import Optional
 from fastmcp import FastMCP
 
 
+from ra_mcp_core.formatters import format_error_message, PlainTextFormatter
+from ra_mcp_core.utils.http_client import default_http_client
+
 from .services import SearchOperations, BrowseOperations
 from .services.browse_display_service import BrowseDisplayService
 from .services.search_display_service import SearchDisplayService
-from .formatters import format_error_message, PlainTextFormatter
-from .utils.http_client import default_http_client
 
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ search_mcp = FastMCP(
     - Complex: "((troll* OR häx*) AND (Stockholm OR Göteborg))" - combine operators
 
     NOTE: make sure to use grouping () for any boolean search also  \"\" is important to group multiple words
-    E.g do '((skatt* OR guld* OR silver*) AND (stöld* OR stul*))' instead of '(skatt* OR guld* OR silver*) AND (stöld* OR stul*)', i.e prefer grouping as that will retrun results, non-grouping will return 0 results 
+    E.g do '((skatt* OR guld* OR silver*) AND (stöld* OR stul*))' instead of '(skatt* OR guld* OR silver*) AND (stöld* OR stul*)', i.e prefer grouping as that will retrun results, non-grouping will return 0 results
 
     also prefer to use fuzzy search i.e. something like ((stöld~2 OR tjufnad~2) AND (silver* OR guld*)) AND (döm* OR straff*) as many trancriptions are OCR/HTR AI based with common errors. Also account for old swedish i.e (((präst* OR prest*) OR (kyrko* OR kyrck*)) AND ((silver* OR silfv*) OR (guld* OR gull*)))
 
@@ -139,7 +140,7 @@ search_mcp = FastMCP(
         📊 Working Examples by Category:
         Crime & Punishment:
         "tredje stöld"~5           # Third-time theft
-        "dömd hänga"~10            # Sentenced to hang  
+        "dömd hänga"~10            # Sentenced to hang
         "inbrott natt*"~5          # Burglary at night
         "kyrka stöld"~10           # Church theft
         Values & Items:
@@ -151,7 +152,7 @@ search_mcp = FastMCP(
         ("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*
         # Church thefts or church thieves in 1700s
 
-        ("inbrott natt*"~5) AND (guld* OR silver*)  
+        ("inbrott natt*"~5) AND (guld* OR silver*)
         # Night burglaries involving gold or silver
 
         ("första resan" AND stöld*) OR ("tredje stöld"~5)
@@ -225,7 +226,7 @@ async def search_transcribed(
         formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
         formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
 
-        logger.info(f"✓ Search completed successfully, returning results")
+        logger.info("✓ Search completed successfully, returning results")
         return formatted_results
 
     except Exception as e:
@@ -320,15 +321,15 @@ def _append_pagination_info_if_needed(formatted_results, search_result, offset, 
     This tool retrieves complete page transcriptions from historical documents in Swedish.
     Each result includes the full transcribed text as it appears in the original document,
     plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
-    Prefer showing the whole transcription and link in responses of individual pages. 
-    Download some of the nearby pages too on selected pages if context seem to be missing from the trancript 
+    Prefer showing the whole transcription and link in responses of individual pages.
+    Download some of the nearby pages too on selected pages if context seem to be missing from the trancript
     to get a better picture
 
     Original text:
     transcript
 
     Translation
-    Modern translation in language of user 
+    Modern translation in language of user
 
     Links
 
@@ -495,7 +496,16 @@ def _check_file_exists(filename):
     """Check if the markdown file exists."""
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
-    markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
+    markdown_path = os.path.join(current_dir, "..", "..", "..", "..", "resources", filename)
+    if not os.path.exists(markdown_path):
+        # Try alternative paths for different package layouts
+        alt_paths = [
+            os.path.join(current_dir, "..", "..", "..", "..", "..", "resources", filename),
+            os.path.join(current_dir, "..", "..", "..", "..", "..", "markdown", filename),
+        ]
+        for alt_path in alt_paths:
+            if os.path.exists(alt_path):
+                return True
     return os.path.exists(markdown_path)
 
 
@@ -515,8 +525,18 @@ def _load_markdown_file(filename):
     """Load content from a markdown file."""
     filename = os.path.basename(filename)
     current_dir = os.path.dirname(__file__)
-    markdown_path = os.path.join(current_dir, "..", "..", "markdown", filename)
 
-    with open(markdown_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    return content
+    # Try multiple possible paths
+    possible_paths = [
+        os.path.join(current_dir, "..", "..", "..", "..", "resources", filename),
+        os.path.join(current_dir, "..", "..", "..", "..", "..", "resources", filename),
+        os.path.join(current_dir, "..", "..", "..", "..", "..", "markdown", filename),
+    ]
+
+    for markdown_path in possible_paths:
+        if os.path.exists(markdown_path):
+            with open(markdown_path, "r", encoding="utf-8") as f:
+                return f.read()
+
+    # Default path for error message
+    raise FileNotFoundError(f"Could not find {filename} in any expected location")

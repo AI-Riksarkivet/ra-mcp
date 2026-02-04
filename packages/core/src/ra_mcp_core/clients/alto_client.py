@@ -91,11 +91,7 @@ class ALTOClient:
         Returns:
             Space-separated text from matching elements, or None if no text found.
         """
-        text_segments = [
-            element.get("CONTENT", "")
-            for element in xml_root.findall(xpath, namespaces or {})
-            if element.get("CONTENT", "")
-        ]
+        text_segments = [element.get("CONTENT", "") for element in xml_root.findall(xpath, namespaces or {}) if element.get("CONTENT", "")]
         return " ".join(text_segments).strip() or None if text_segments else None
 
     def _extract_text_from_alto(self, xml_root: ET.Element) -> Optional[str]:

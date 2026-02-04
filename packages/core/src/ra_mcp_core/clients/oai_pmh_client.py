@@ -88,7 +88,7 @@ class OAIPMHClient:
         if url_segments:
             # Remove query parameters if present
             manifset_id = url_segments[-1].split("?")[0]
-      
+
             return manifset_id
         return ""
 
