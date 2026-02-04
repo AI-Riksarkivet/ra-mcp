@@ -22,7 +22,7 @@ def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
     max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
     max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
-    max_snippets_per_document: Annotated[
+    max_snippets_per_record: Annotated[
         Optional[int],
         typer.Option(
             "--max-hits-per-vol",
@@ -53,8 +53,8 @@ def search(
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
     try:
-        # Use the specified max_snippets_per_document value (defaults to 3)
-        effective_max_hits_per_doc = max_snippets_per_document
+        # Use the specified max_snippets_per_record value (defaults to 3)
+        effective_max_hits_per_doc = max_snippets_per_record
 
         # Execute search with progress indicator
         with Progress(
@@ -67,7 +67,7 @@ def search(
             search_result = search_operations.search_transcribed(
                 keyword=keyword,
                 max_results=max_results,
-                max_snippets_per_document=effective_max_hits_per_doc,
+                max_snippets_per_record=effective_max_hits_per_doc,
             )
 
             # Update with detailed results

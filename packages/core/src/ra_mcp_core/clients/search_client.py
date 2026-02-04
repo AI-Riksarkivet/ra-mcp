@@ -1,130 +1,93 @@
 """
 Search API client for Riksarkivet.
+
+Provides a simplified interface to the Riksarkivet Search API (/api/records endpoint)
+with direct Pydantic response parsing.
 """
 
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Optional
 
-from ..config import (
-    SEARCH_API_BASE_URL,
-    REQUEST_TIMEOUT,
-    DEFAULT_MAX_RESULTS,
-)
-from ..models import SearchRecord, RecordsResponse
+from ..config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
+from ..models import RecordsResponse
 from ..utils.http_client import HTTPClient
 
 
-logger = logging.getLogger(__name__)
-
-
 class SearchAPI:
-    """Client for Riksarkivet Search API."""
+    """
+    Client for Riksarkivet Search API.
+
+    Handles searching transcribed documents and returns structured responses
+    that directly map to the API's JSON structure.
+    """
 
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
         self.logger = logging.getLogger("ra_mcp.search_api")
-        self.logger.setLevel(logging.INFO)
 
     def search_transcribed_text(
         self,
-        search_keyword: str,
-        maximum_documents: int = DEFAULT_MAX_RESULTS,
-        pagination_offset: int = 0,
-        maximum_snippets_per_document: Optional[int] = None,
+        transcribed_text: str,
+        max: int = DEFAULT_MAX_RESULTS,
+        offset: int = 0,
+        max_snippets_per_record: Optional[int] = None,
     ) -> RecordsResponse:
         """
         Search for keyword in transcribed materials.
 
+        Parameter names match the Search API specification for clarity.
+
         Args:
-            search_keyword: Search term or Solr query
-            maximum_documents: Maximum number of documents to fetch from API
-            pagination_offset: Pagination offset for results
-            maximum_snippets_per_document: Maximum number of snippets to keep per document (None = all)
+            transcribed_text: Search term or Solr query (API parameter name)
+            max: Maximum number of records to return (API parameter name)
+            offset: Pagination offset (API parameter name)
+            max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
 
         Returns:
-            RecordsResponse: API response with items and totalHits
+            RecordsResponse with all API fields populated
         """
-        self.logger.info(
-            f"Starting search: keyword='{search_keyword}', max_docs={maximum_documents}, offset={pagination_offset}"
-        )
-
-        search_parameters = self._build_search_parameters(search_keyword, maximum_documents, pagination_offset)
-        self.logger.debug(f"Search parameters: {search_parameters}")
+        self.logger.info(f"Starting search: keyword='{transcribed_text}', max={max}, offset={offset}")
 
         try:
-            self.logger.info(f"Executing search request to {SEARCH_API_BASE_URL}...")
-            search_result_data = self._execute_search_request(search_parameters)
-            self.logger.info("Search request completed successfully")
+            # Execute search request
+            params = {
+                "transcribed_text": transcribed_text,
+                "only_digitised_materials": "true",
+                "max": max,
+                "offset": offset,
+                "sort": "relevance",
+            }
 
-            # Parse documents and limit snippets
-            self.logger.debug("Parsing records from API response...")
-            items_data = search_result_data.get("items", [])
-            documents = self._parse_documents(items_data, maximum_snippets_per_document)
-
-            # Create response object matching API structure
-            response = RecordsResponse(
-                items=documents,
-                totalHits=search_result_data.get("totalHits", 0),
-                hits=search_result_data.get("hits"),
-                offset=search_result_data.get("offset"),
-                facets=search_result_data.get("facets"),
-                _links=search_result_data.get("_links")
+            response_data = self.http_client.get_json(
+                SEARCH_API_BASE_URL,
+                params=params,
+                timeout=REQUEST_TIMEOUT
             )
 
-            total_snippets = response.count_snippets()
-            self.logger.info(f"Retrieved {len(response.items)} records")
-            self.logger.info(f"✓ Search completed: {total_snippets} snippet hits from {response.total_hits} total records")
+            # Parse entire API response with Pydantic
+            response = RecordsResponse(**response_data)
+
+            # Apply client-side snippet limiting if requested
+            if max_snippets_per_record:
+                self._limit_snippets(response, max_snippets_per_record)
+
+            self.logger.info(
+                f"✓ Search completed: {response.count_snippets()} snippets "
+                f"from {len(response.items)} records ({response.total_hits} total)"
+            )
 
             return response
 
         except Exception as error:
-            self.logger.error(f"✗ Search failed for keyword '{search_keyword}': {type(error).__name__}: {error}")
-            raise Exception(f"Search failed: {error}") from error
+            self.logger.error(f"✗ Search failed: {type(error).__name__}: {error}")
+            raise
 
-    def _build_search_parameters(self, keyword: str, result_limit: int, offset: int) -> Dict[str, Union[str, int]]:
-        """Build search API parameters."""
-        return {
-            "transcribed_text": keyword,
-            "only_digitised_materials": "true",
-            "max": result_limit,
-            "offset": offset,
-            "sort": "relevance",
-        }
-
-    def _execute_search_request(self, parameters: Dict) -> Dict:
-        """Execute the search API request using centralized HTTP client."""
-        return self.http_client.get_json(SEARCH_API_BASE_URL, params=parameters, timeout=REQUEST_TIMEOUT)
-
-    def _parse_documents(
-        self,
-        items: List[Dict],
-        max_snippets_per_doc: Optional[int] = None
-    ) -> List[SearchRecord]:
+    def _limit_snippets(self, response: RecordsResponse, max_snippets: int) -> None:
         """
-        Parse API response items into SearchRecord objects.
+        Limit snippets per record (client-side truncation).
 
-        Args:
-            items: List of document items from API response
-            max_snippets_per_doc: Maximum snippets to keep per document (None = all)
-
-        Returns:
-            List of SearchRecord objects
+        Modifies the response in-place to keep only the first N snippets per record.
         """
-        documents = []
-
-        for item in items:
-            try:
-                # Parse document using Pydantic
-                document = SearchRecord(**item)
-
-                # Limit snippets if requested
-                if max_snippets_per_doc and document.transcribed_text:
-                    document.transcribed_text.snippets = document.transcribed_text.snippets[:max_snippets_per_doc]
-
-                documents.append(document)
-
-            except Exception as e:
-                self.logger.warning(f"Failed to parse document {item.get('id', 'unknown')}: {e}")
-                continue
-
-        return documents
+        for record in response.items:
+            if record.transcribed_text:
+                record.transcribed_text.snippets = record.transcribed_text.snippets[:max_snippets]

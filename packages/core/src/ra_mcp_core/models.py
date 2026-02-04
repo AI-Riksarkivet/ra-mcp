@@ -157,7 +157,7 @@ class SearchResult(BaseModel):
     transcribed_text: str  # Search keyword (API parameter name)
     max: int  # Maximum results per page (API parameter name)
     offset: int  # Pagination offset (API parameter name)
-    max_snippets_per_document: Optional[int] = None  # Client-side snippet limiting (not an API parameter)
+    max_snippets_per_record: Optional[int] = None  # Client-side snippet limiting (not an API parameter)
 
     @property
     def items(self) -> List[SearchRecord]:
