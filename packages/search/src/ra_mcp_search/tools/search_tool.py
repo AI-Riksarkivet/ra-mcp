@@ -111,7 +111,7 @@ def register_search_tool(mcp) -> None:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
     - max_results: Maximum documents to return per query (default: 10)
-    - max_hits_per_document: Maximum matching pages per document (default: 3)
+    - max_snippets_per_document: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
 
     Best practices:
@@ -126,7 +126,7 @@ def register_search_tool(mcp) -> None:
         keyword: str,
         offset: int,
         max_results: int = 25,
-        max_hits_per_document: int = 3,
+        max_snippets_per_document: int = 3,
         max_response_tokens: int = 15000,
     ) -> str:
         logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}, max_results={max_results}")
@@ -141,10 +141,10 @@ def register_search_tool(mcp) -> None:
                 keyword=keyword,
                 offset=offset,
                 max_results=max_results,
-                max_hits_per_document=max_hits_per_document,
+                max_snippets_per_document=max_snippets_per_document,
             )
 
-            logger.info(f"Formatting {len(search_result.hits)} search results...")
+            logger.info(f"Formatting {len(search_result.documents)} search results...")
             formatted_results = search_display_service.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,

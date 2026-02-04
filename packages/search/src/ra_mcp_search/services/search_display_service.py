@@ -69,12 +69,11 @@ class SearchDisplayService:
 
         # For Rich tables (not strings), add browse examples and remaining documents
         if not isinstance(formatted_table, str):
-            grouped_hits = summary.grouped_hits
-            example_lines = self.formatter.format_browse_example(grouped_hits, keyword)
+            example_lines = self.formatter.format_browse_example(summary.documents, keyword)
             output.extend(example_lines)
 
-            total_groups = len(grouped_hits)
-            remaining_message = self.formatter.format_remaining_documents(total_groups, max_display)
+            total_docs = len(summary.documents)
+            remaining_message = self.formatter.format_remaining_documents(total_docs, max_display)
             if remaining_message:
                 output.append(remaining_message)
 

@@ -10,12 +10,11 @@ from rich.panel import Panel
 from rich.console import Console, Group
 
 from .base_formatter import BaseFormatter
-from ..models import SearchResult, PageContext, SearchHit, SearchSummary, BrowseResult
+from ..models import SearchResult, PageContext, SearchRecord, SearchSummary, BrowseResult
 from .utils import (
     trim_page_number,
     trim_page_numbers,
     truncate_text,
-    extract_institution,
     format_example_browse_command,
 )
 
@@ -127,17 +126,14 @@ class RichConsoleFormatter(BaseFormatter):
         Format search results as a Rich Table for CLI display.
 
         Args:
-            search_result: Search operation with hits and metadata
+            search_result: Search operation with documents and metadata
             max_display: Maximum number of documents to display
 
         Returns:
             Rich Table object (if results found) or formatted string (if no results)
         """
-        if not search_result.hits:
+        if not search_result.documents:
             return self.format_no_results_message(search_result)
-
-        summary = search_result.extract_summary()
-        grouped_hits = summary.grouped_hits
 
         table = Table(
             "Institution & Reference",
@@ -147,55 +143,59 @@ class RichConsoleFormatter(BaseFormatter):
             expand=True,
         )
 
-        displayed_groups = 0
-        for ref_code, ref_hits in grouped_hits.items():
-            if displayed_groups >= max_display:
-                break
-            displayed_groups += 1
-
-            first_hit = ref_hits[0]
+        for idx, document in enumerate(search_result.documents[:max_display]):
+            if not document.transcribed_text or not document.transcribed_text.snippets:
+                continue
 
             # Build institution and reference column
-            institution = extract_institution(first_hit)
             institution_and_ref = ""
-            if institution:
+            if document.metadata.archival_institution:
+                institution = document.metadata.archival_institution[0].caption
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
-            # Format page numbers with hit count
-            pages = sorted(set(h.page_number for h in ref_hits))
+            # Extract unique page numbers from all snippets
+            pages = sorted(set(
+                page.id
+                for snippet in document.transcribed_text.snippets
+                for page in snippet.pages
+            ))
             pages_trimmed = trim_page_numbers(pages)
             pages_str = ",".join(pages_trimmed)
-            hit_count = len(ref_hits)
-            hit_label = "hit" if hit_count == 1 else "hits"
 
-            # Show total hits if available and different from shown count
-            total_in_doc = first_hit.total_hits_in_document
-            if total_in_doc and total_in_doc > hit_count:
-                institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"\n💡 [dim]{hit_count} {hit_label} shown ({total_in_doc} total)[/dim]'
+            # Show snippet count vs total hits
+            snippet_count = len(document.transcribed_text.snippets)
+            total_hits = document.get_total_hits()
+            hit_label = "hit" if snippet_count == 1 else "hits"
+
+            if total_hits > snippet_count:
+                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
             else:
-                institution_and_ref += f'📚 "{ref_code}" --page "{pages_str}"\n💡 [dim]{hit_count} {hit_label} found[/dim]'
+                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
 
-            if first_hit.date:
-                institution_and_ref += f"\n📅 [dim]{first_hit.date}[/dim]"
+            if document.metadata.date:
+                institution_and_ref += f"\n📅 [dim]{document.metadata.date}[/dim]"
 
             # Build content column
-            title_text = truncate_text(first_hit.title, 50)
+            title_text = truncate_text(document.get_title(), 50)
             content_parts = []
 
-            if title_text and title_text.strip():
+            if title_text and title_text.strip() and title_text != "(No title)":
                 content_parts.append(f"[bold blue]{title_text}[/bold blue]")
             else:
-                content_parts.append("[bright_black]No title[/bright_black]")
+                content_parts.append("[bright_black](No title)[/bright_black]")
 
-            # Add snippets
-            for hit in ref_hits[:3]:
-                snippet = truncate_text(hit.snippet_text, 150)
-                snippet = self.highlight_search_keyword(snippet, search_result.keyword)
-                trimmed_page = trim_page_number(hit.page_number)
-                content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet}[/italic]")
+            # Add snippets (up to 3)
+            for snippet in document.transcribed_text.snippets[:3]:
+                snippet_text = truncate_text(snippet.text, 150)
+                snippet_text = self.highlight_search_keyword(snippet_text, search_result.keyword)
 
-            if len(ref_hits) > 3:
-                content_parts.append(f"[dim]...and {len(ref_hits) - 3} more pages with hits[/dim]")
+                # Get first page number for this snippet
+                if snippet.pages:
+                    trimmed_page = trim_page_number(snippet.pages[0].id)
+                    content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet_text}[/italic]")
+
+            if len(document.transcribed_text.snippets) > 3:
+                content_parts.append(f"[dim]...and {len(document.transcribed_text.snippets) - 3} more pages with hits[/dim]")
 
             table.add_row(institution_and_ref, "\n".join(content_parts))
 
@@ -251,28 +251,43 @@ class RichConsoleFormatter(BaseFormatter):
 
         return lines
 
-    def format_browse_example(self, grouped_hits: Dict[str, List[SearchHit]], keyword: str) -> List[str]:
+    def format_browse_example(self, documents: List[SearchRecord], keyword: str) -> List[str]:
         """
         Format an example browse command.
 
         Args:
-            grouped_hits: Dictionary of grouped hits by reference
+            documents: List of SearchRecord objects
             keyword: Search keyword
 
         Returns:
             List of formatted command lines
         """
-        if not grouped_hits:
+        if not documents:
+            return []
+
+        # Get first document with snippets
+        first_doc = None
+        for doc in documents:
+            if doc.transcribed_text and doc.transcribed_text.snippets:
+                first_doc = doc
+                break
+
+        if not first_doc:
             return []
 
         lines = []
-        first_ref = next(iter(grouped_hits.keys()))
-        first_group = grouped_hits[first_ref]
-        pages = sorted(set(h.page_number for h in first_group))
+        ref_code = first_doc.metadata.reference_code
+
+        # Extract page numbers from snippets
+        pages = sorted(set(
+            page.id
+            for snippet in first_doc.transcribed_text.snippets
+            for page in snippet.pages
+        ))
         pages_trimmed = trim_page_numbers(pages[:5])
 
         lines.append("\n[dim]💡 Example: To view these hits, run:[/dim]")
-        cmd = format_example_browse_command(first_ref, pages_trimmed, keyword)
+        cmd = format_example_browse_command(ref_code, pages_trimmed, keyword)
         lines.append(f"[cyan]   {cmd}[/cyan]")
 
         return lines

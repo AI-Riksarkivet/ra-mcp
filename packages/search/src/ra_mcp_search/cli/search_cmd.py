@@ -22,7 +22,7 @@ def search(
     keyword: Annotated[str, typer.Argument(help="Keyword to search for")],
     max_results: Annotated[int, typer.Option("--max", help="Maximum search results")] = DEFAULT_MAX_RESULTS,
     max_display: Annotated[int, typer.Option(help="Maximum results to display")] = DEFAULT_MAX_DISPLAY,
-    max_hits_per_document: Annotated[
+    max_snippets_per_document: Annotated[
         Optional[int],
         typer.Option(
             "--max-hits-per-vol",
@@ -53,8 +53,8 @@ def search(
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
     try:
-        # Use the specified max_hits_per_document value (defaults to 3)
-        effective_max_hits_per_doc = max_hits_per_document
+        # Use the specified max_snippets_per_document value (defaults to 3)
+        effective_max_hits_per_doc = max_snippets_per_document
 
         # Execute search with progress indicator
         with Progress(
@@ -67,15 +67,14 @@ def search(
             search_result = search_operations.search_transcribed(
                 keyword=keyword,
                 max_results=max_results,
-                max_hits_per_document=effective_max_hits_per_doc,
+                max_snippets_per_document=effective_max_hits_per_doc,
             )
 
             # Update with detailed results
-            hits_count = len(search_result.hits)
-            docs_count = search_result.total_hits
+            summary = search_result.extract_summary()
             progress.update(
                 search_task,
-                description=f"✓ Found {hits_count} page hits across {docs_count} volumes",
+                description=f"✓ Found {summary.page_hits_returned} page hits across {summary.documents_returned} volumes",
             )
 
         # Use DisplayService to format and display search results

@@ -114,68 +114,73 @@ class PlainTextFormatter(BaseFormatter):
         Format search results as plain text with emojis for MCP/LLM consumption.
 
         Args:
-            search_result: SearchResult containing hits and metadata
+            search_result: SearchResult containing documents and metadata
             maximum_documents_to_display: Maximum number of documents to display
 
         Returns:
             Formatted plain text search results
         """
-        if not search_result.hits:
+        if not search_result.documents:
             return self.format_no_results_message(search_result)
 
         search_summary = search_result.extract_summary()
-        hits_grouped_by_document = search_summary.grouped_hits
 
         lines = []
         lines.append(f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents")
-
         lines.append("")
 
-        displayed_document_count = 0
-        for reference_code, document_hits in hits_grouped_by_document.items():
-            if displayed_document_count >= maximum_documents_to_display:
-                break
-            displayed_document_count += 1
+        for idx, document in enumerate(search_result.documents[:maximum_documents_to_display]):
+            if not document.transcribed_text or not document.transcribed_text.snippets:
+                continue
 
-            first_hit = document_hits[0]
-            lines.append(f"📚 Document: {reference_code}")
-            if first_hit.archival_institution:
-                institution = first_hit.archival_institution[0].get("caption", "")
-                if institution:
-                    lines.append(f"🏛️  Institution: {institution}")
+            lines.append(f"📚 Document: {document.metadata.reference_code}")
 
-            if first_hit.date:
-                lines.append(f"📅 Date: {first_hit.date}")
+            if document.metadata.archival_institution:
+                institution = document.metadata.archival_institution[0].caption
+                lines.append(f"🏛️  Institution: {institution}")
 
-            title = first_hit.title[:100] + "..." if len(first_hit.title) > 100 else first_hit.title
-            lines.append(f"📄 Title: {title}")
+            if document.metadata.date:
+                lines.append(f"📅 Date: {document.metadata.date}")
 
-            page_numbers = sorted(set(hit.page_number for hit in document_hits))
+            title = document.get_title()
+            title_display = title[:100] + "..." if len(title) > 100 else title
+            lines.append(f"📄 Title: {title_display}")
+
+            # Extract page numbers from snippets
+            page_numbers = sorted(set(
+                page.id
+                for snippet in document.transcribed_text.snippets
+                for page in snippet.pages
+            ))
             trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
-            hit_count = len(document_hits)
-            hit_label = "hit" if hit_count == 1 else "hits"
+
+            snippet_count = len(document.transcribed_text.snippets)
+            total_hits = document.get_total_hits()
+            hit_label = "hit" if snippet_count == 1 else "hits"
+
             lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
 
             # Show total hits if available and different from shown count
-            total_in_doc = first_hit.total_hits_in_document
-            if total_in_doc and total_in_doc > hit_count:
-                lines.append(f"💡 {hit_count} {hit_label} shown ({total_in_doc} total)")
+            if total_hits > snippet_count:
+                lines.append(f"💡 {snippet_count} {hit_label} shown ({total_hits} total)")
             else:
-                lines.append(f"💡 {hit_count} {hit_label} found")
+                lines.append(f"💡 {snippet_count} {hit_label} found")
 
-            for hit in document_hits[:3]:
-                snippet = hit.snippet_text
-                snippet = self.highlight_search_keyword(snippet, search_result.keyword)
-                lines.append(f"   Page {hit.page_number}: {snippet}")
+            # Show first 3 snippets
+            for snippet in document.transcribed_text.snippets[:3]:
+                snippet_text = self.highlight_search_keyword(snippet.text, search_result.keyword)
+                if snippet.pages:
+                    page_id = snippet.pages[0].id
+                    lines.append(f"   Page {page_id}: {snippet_text}")
 
-            if len(document_hits) > 3:
-                lines.append(f"   ...and {len(document_hits) - 3} more pages with hits")
+            if len(document.transcribed_text.snippets) > 3:
+                lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
 
             lines.append("")
 
-        total_document_count = len(hits_grouped_by_document)
-        if total_document_count > displayed_document_count:
-            remaining_documents = total_document_count - displayed_document_count
+        total_document_count = len(search_result.documents)
+        if total_document_count > maximum_documents_to_display:
+            remaining_documents = total_document_count - maximum_documents_to_display
             lines.append(f"... and {remaining_documents} more documents")
 
         return "\n".join(lines)

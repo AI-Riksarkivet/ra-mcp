@@ -27,7 +27,7 @@ class SearchOperations:
         keyword: str,
         offset: int = 0,
         max_results: int = 10,
-        max_hits_per_document: Optional[int] = None,
+        max_snippets_per_document: Optional[int] = None,
     ) -> SearchResult:
         """Search for transcribed text across document collections.
 
@@ -38,20 +38,22 @@ class SearchOperations:
             keyword: Search term or phrase to look for in transcribed text.
             offset: Number of results to skip for pagination.
             max_results: Maximum number of documents to return.
-            max_hits_per_document: Limit hits per document (None for unlimited).
+            max_snippets_per_document: Limit snippets per document (None for unlimited).
 
         Returns:
-            SearchResult containing search hits, total count, and metadata.
+            SearchResult containing documents, total count, and metadata.
         """
-        # Execute search and build operation in one step
-        hits, total_hits = self.search_api.search_transcribed_text(keyword, max_results, offset, max_hits_per_document)
+        # Execute search
+        documents, total_hits = self.search_api.search_transcribed_text(
+            keyword,
+            max_results,
+            offset,
+            max_snippets_per_document
+        )
 
-        search_result = SearchResult(
-            hits=hits,
+        return SearchResult(
+            documents=documents,
             total_hits=total_hits,
             keyword=keyword,
             offset=offset,
-            enriched=False,
         )
-
-        return search_result

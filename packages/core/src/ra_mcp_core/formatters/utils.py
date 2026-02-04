@@ -2,21 +2,20 @@
 Shared formatting utilities used across different formatters.
 """
 
-from typing import List, Set
-from ..models import SearchHit
+from typing import List
 
 
 def trim_page_number(page_number: str) -> str:
     """
-    Remove leading zeros from page number, keeping at least one digit.
+    Remove leading underscores and zeros from page number, keeping at least one digit.
 
     Args:
-        page_number: Page number string, possibly with leading zeros
+        page_number: Page number string, possibly with leading underscores/zeros (e.g., "_00012")
 
     Returns:
-        Page number without leading zeros
+        Page number without leading underscores/zeros (e.g., "12")
     """
-    return page_number.lstrip("0") or "0"
+    return page_number.lstrip("_0") or "0"
 
 
 def trim_page_numbers(page_numbers: List[str]) -> List[str]:
@@ -30,25 +29,6 @@ def trim_page_numbers(page_numbers: List[str]) -> List[str]:
         List of trimmed page numbers
     """
     return [trim_page_number(p) for p in page_numbers]
-
-
-def get_unique_page_numbers(hits: List[SearchHit]) -> List[str]:
-    """
-    Get unique page numbers from hits, preserving order and trimming zeros.
-
-    Args:
-        hits: List of search hits
-
-    Returns:
-        List of unique, trimmed page numbers in order
-    """
-    seen: Set[str] = set()
-    result = []
-    for hit in hits:
-        if hit.page_number not in seen:
-            result.append(trim_page_number(hit.page_number))
-            seen.add(hit.page_number)
-    return result
 
 
 def truncate_text(text: str, max_length: int, add_ellipsis: bool = True) -> str:
@@ -69,36 +49,6 @@ def truncate_text(text: str, max_length: int, add_ellipsis: bool = True) -> str:
     if add_ellipsis and max_length > 3:
         return text[: max_length - 3] + "..."
     return text[:max_length]
-
-
-def extract_institution(hit: SearchHit) -> str:
-    """
-    Extract institution name from a search hit.
-
-    Args:
-        hit: Search hit containing metadata
-
-    Returns:
-        Institution name or empty string
-    """
-    if hit.archival_institution:
-        return hit.archival_institution[0].get("caption", "")
-    elif hit.hierarchy:
-        return hit.hierarchy[0].get("caption", "")
-    return ""
-
-
-def sort_hits_by_page(hits: List[SearchHit]) -> List[SearchHit]:
-    """
-    Sort hits by page number (handling numeric sorting).
-
-    Args:
-        hits: List of search hits
-
-    Returns:
-        Sorted list of hits
-    """
-    return sorted(hits, key=lambda h: int(h.page_number) if h.page_number.isdigit() else 0)
 
 
 def format_example_browse_command(reference_code: str, page_numbers: List[str], search_term: str = "") -> str:

@@ -25,12 +25,23 @@ from .config import (
 )
 
 from .models import (
-    SearchHit,
+    # API Response Models
+    ArchivalInstitution,
+    HierarchyLevel,
+    Provenance,
+    Metadata,
+    PageInfo,
+    Snippet,
+    TranscribedText,
+    DocumentLinks,
+    SearchRecord,
+    # Search Results
+    SearchResult,
+    SearchSummary,
+    # Browse Results
     PageContext,
     DocumentMetadata,
-    SearchResult,
     BrowseResult,
-    SearchSummary,
 )
 
 __all__ = [
@@ -49,11 +60,21 @@ __all__ = [
     "DEFAULT_MAX_PAGES",
     "NAMESPACES",
     "ALTO_NAMESPACES",
-    # Models
-    "SearchHit",
+    # API Response Models
+    "ArchivalInstitution",
+    "HierarchyLevel",
+    "Provenance",
+    "Metadata",
+    "PageInfo",
+    "Snippet",
+    "TranscribedText",
+    "DocumentLinks",
+    "SearchRecord",
+    # Search Results
+    "SearchResult",
+    "SearchSummary",
+    # Browse Results
     "PageContext",
     "DocumentMetadata",
-    "SearchResult",
     "BrowseResult",
-    "SearchSummary",
 ]
