@@ -8,7 +8,6 @@ for searching and browsing transcribed historical documents.
 from fastmcp import FastMCP
 
 from .tools import register_search_tool, register_browse_tool
-from .resources import register_guide_resources
 
 
 search_mcp = FastMCP(
@@ -29,17 +28,6 @@ search_mcp = FastMCP(
     2. 📖 browse_document - Browse specific pages by reference code
        - View full transcriptions of specific pages
        - Supports page ranges and multiple pages
-
-    AVAILABLE RESOURCES:
-
-    1. 📑 riksarkivet://contents/table_of_contents - Get table of contents
-       - Returns the complete guide index (Innehållsförteckning)
-       - Lists all available historical guide sections
-
-    2. 📄 riksarkivet://guide/{filename} - Load specific guide sections
-       - Access detailed historical documentation by filename
-       - Examples: '01_Domstolar.md', '02_Fangelse.md'
-       - Use table_of_contents to see available sections
 
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
     1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide bellow when searching)
@@ -81,14 +69,12 @@ search_mcp = FastMCP(
     3. Use advanced syntax for precise queries (Boolean, wildcards, fuzzy, proximity)
     4. Review hit summaries to identify most relevant documents across all searches
     5. Use browse_document() for detailed examination of specific pages
-    6. Access guide resources for historical context and documentation
 
     All tools return rich, formatted text optimized for LLM understanding.
     """,
 )
 
 
-# Register all tools and resources
+# Register all tools
 register_search_tool(search_mcp)
 register_browse_tool(search_mcp)
-register_guide_resources(search_mcp)

@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ra-mcp-search",
+    "ra-mcp-guide",
     "starlette>=0.52.1",
 ]
 license = "Apache-2.0"
@@ -15,6 +16,7 @@ ra = "ra_mcp_server.cli:app"
 
 [tool.uv.sources]
 ra-mcp-search = { workspace = true }
+ra-mcp-guide = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

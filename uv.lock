@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 members = [
     "ra-mcp",
     "ra-mcp-core",
+    "ra-mcp-guide",
     "ra-mcp-search",
     "ra-mcp-server",
 ]
@@ -1157,6 +1158,21 @@ requires-dist = [
 ]
 
 [[package]]
+name = "ra-mcp-guide"
+version = "0.2.7"
+source = { editable = "packages/guide" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-core" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "ra-mcp-core", editable = "packages/core" },
+]
+
+[[package]]
 name = "ra-mcp-search"
 version = "0.2.7"
 source = { editable = "packages/search" }
@@ -1178,12 +1194,14 @@ name = "ra-mcp-server"
 version = "0.2.7"
 source = { editable = "packages/server" }
 dependencies = [
+    { name = "ra-mcp-guide" },
     { name = "ra-mcp-search" },
     { name = "starlette" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "ra-mcp-guide", editable = "packages/guide" },
     { name = "ra-mcp-search", editable = "packages/search" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]

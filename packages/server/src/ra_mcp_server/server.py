@@ -20,6 +20,7 @@ from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
 from ra_mcp_search.mcp import search_mcp
+from ra_mcp_guide.mcp import guide_mcp
 
 
 def setup_logging():
@@ -56,7 +57,7 @@ main_server = FastMCP(
 
     Available tool categories:
     - Search Tools: Search and browse transcribed historical documents
-    - (More tool categories can be added here)
+    - Guide Resources: Historical documentation and guides about Swedish archives
     """,
 )
 
@@ -73,6 +74,10 @@ async def setup_server():
     # Import search tools without prefix (they already have descriptive names)
     await main_server.import_server(search_mcp)
     logger.info("Imported search tools")
+
+    # Import guide resources
+    await main_server.import_server(guide_mcp)
+    logger.info("Imported guide resources")
 
     # Future tool servers can be imported here with appropriate prefixes
     # Example:

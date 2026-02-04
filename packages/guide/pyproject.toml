@@ -1,0 +1,21 @@
+[project]
+name = "ra-mcp-guide"
+version = "0.2.7"
+description = "Historical guide resources for Riksarkivet MCP"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ra-mcp-core",
+    "fastmcp>=2.14.4",
+]
+license = "Apache-2.0"
+
+[tool.uv.sources]
+ra-mcp-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ra_mcp_guide"]
