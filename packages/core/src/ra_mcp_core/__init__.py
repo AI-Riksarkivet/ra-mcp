@@ -35,9 +35,9 @@ from .models import (
     TranscribedText,
     DocumentLinks,
     SearchRecord,
+    RecordsResponse,
     # Search Results
     SearchResult,
-    SearchSummary,
     # Browse Results
     PageContext,
     DocumentMetadata,
@@ -70,9 +70,9 @@ __all__ = [
     "TranscribedText",
     "DocumentLinks",
     "SearchRecord",
+    "RecordsResponse",
     # Search Results
     "SearchResult",
-    "SearchSummary",
     # Browse Results
     "PageContext",
     "DocumentMetadata",

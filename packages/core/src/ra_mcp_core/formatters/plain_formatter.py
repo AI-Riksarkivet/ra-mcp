@@ -120,16 +120,15 @@ class PlainTextFormatter(BaseFormatter):
         Returns:
             Formatted plain text search results
         """
-        if not search_result.documents:
+        if not search_result.items:
             return self.format_no_results_message(search_result)
 
-        search_summary = search_result.extract_summary()
-
         lines = []
-        lines.append(f"Found {search_summary.page_hits_returned} page-level hits across {search_summary.documents_returned} documents")
+        snippet_count = search_result.count_snippets()
+        lines.append(f"Found {snippet_count} page-level hits across {len(search_result.items)} documents")
         lines.append("")
 
-        for idx, document in enumerate(search_result.documents[:maximum_documents_to_display]):
+        for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
             if not document.transcribed_text or not document.transcribed_text.snippets:
                 continue
 
@@ -178,7 +177,7 @@ class PlainTextFormatter(BaseFormatter):
 
             lines.append("")
 
-        total_document_count = len(search_result.documents)
+        total_document_count = len(search_result.items)
         if total_document_count > maximum_documents_to_display:
             remaining_documents = total_document_count - maximum_documents_to_display
             lines.append(f"... and {remaining_documents} more documents")

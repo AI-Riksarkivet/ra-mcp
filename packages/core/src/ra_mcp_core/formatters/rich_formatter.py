@@ -10,7 +10,7 @@ from rich.panel import Panel
 from rich.console import Console, Group
 
 from .base_formatter import BaseFormatter
-from ..models import SearchResult, PageContext, SearchRecord, SearchSummary, BrowseResult
+from ..models import SearchResult, PageContext, SearchRecord, BrowseResult
 from .utils import (
     trim_page_number,
     trim_page_numbers,
@@ -132,7 +132,7 @@ class RichConsoleFormatter(BaseFormatter):
         Returns:
             Rich Table object (if results found) or formatted string (if no results)
         """
-        if not search_result.documents:
+        if not search_result.items:
             return self.format_no_results_message(search_result)
 
         table = Table(
@@ -143,7 +143,7 @@ class RichConsoleFormatter(BaseFormatter):
             expand=True,
         )
 
-        for idx, document in enumerate(search_result.documents[:max_display]):
+        for idx, document in enumerate(search_result.items[:max_display]):
             if not document.transcribed_text or not document.transcribed_text.snippets:
                 continue
 
@@ -231,23 +231,32 @@ class RichConsoleFormatter(BaseFormatter):
 
         return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-    def format_search_summary(self, summary: SearchSummary) -> List[str]:
+    def format_search_summary_stats(
+        self,
+        snippet_count: int,
+        records_count: int,
+        total_hits: int,
+        offset: int
+    ) -> List[str]:
         """
-        Format search summary information.
+        Format search summary statistics.
 
         Args:
-            summary: Search summary with hit counts and metadata
+            snippet_count: Number of snippets/page hits returned
+            records_count: Number of records/documents returned
+            total_hits: Total number of records matching query
+            offset: Pagination offset
 
         Returns:
             List of formatted summary lines
         """
         lines = []
         lines.append(
-            f"\n[bold green]✓[/bold green] Found [bold]{summary.page_hits_returned}[/bold] page hits across [bold]{summary.documents_returned}[/bold] volumes"
+            f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_count}[/bold] volumes"
         )
 
-        if summary.total_hits > summary.page_hits_returned:
-            lines.append(f"[dim]   (Total {summary.total_hits} hits available, showing from offset {summary.offset})[/dim]")
+        if total_hits > records_count:
+            lines.append(f"[dim]   (Total {total_hits} hits available, showing from offset {offset})[/dim]")
 
         return lines
 

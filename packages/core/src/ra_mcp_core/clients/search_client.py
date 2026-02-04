@@ -10,7 +10,7 @@ from ..config import (
     REQUEST_TIMEOUT,
     DEFAULT_MAX_RESULTS,
 )
-from ..models import SearchRecord
+from ..models import SearchRecord, RecordsResponse
 from ..utils.http_client import HTTPClient
 
 
@@ -31,7 +31,7 @@ class SearchAPI:
         maximum_documents: int = DEFAULT_MAX_RESULTS,
         pagination_offset: int = 0,
         maximum_snippets_per_document: Optional[int] = None,
-    ) -> tuple[List[SearchRecord], int]:
+    ) -> RecordsResponse:
         """
         Search for keyword in transcribed materials.
 
@@ -42,7 +42,7 @@ class SearchAPI:
             maximum_snippets_per_document: Maximum number of snippets to keep per document (None = all)
 
         Returns:
-            tuple: (list of SearchRecord objects, total number of results available)
+            RecordsResponse: API response with items and totalHits
         """
         self.logger.info(
             f"Starting search: keyword='{search_keyword}', max_docs={maximum_documents}, offset={pagination_offset}"
@@ -56,19 +56,22 @@ class SearchAPI:
             search_result_data = self._execute_search_request(search_parameters)
             self.logger.info("Search request completed successfully")
 
-            total_available_results = search_result_data.get("totalHits", 0)
+            # Parse documents and limit snippets
+            self.logger.debug("Parsing records from API response...")
+            items_data = search_result_data.get("items", [])
+            documents = self._parse_documents(items_data, maximum_snippets_per_document)
 
-            self.logger.debug("Parsing documents from API response...")
-            documents = self._parse_documents(
-                search_result_data.get("items", []),
-                maximum_snippets_per_document
+            # Create response object matching API structure
+            response = RecordsResponse(
+                items=documents,
+                totalHits=search_result_data.get("totalHits", 0)
             )
-            self.logger.info(f"Retrieved {len(documents)} documents")
 
-            total_snippets = sum(doc.get_snippet_count() for doc in documents)
-            self.logger.info(f"✓ Search completed: {total_snippets} snippet hits from {total_available_results} total documents")
+            total_snippets = response.count_snippets()
+            self.logger.info(f"Retrieved {len(response.items)} records")
+            self.logger.info(f"✓ Search completed: {total_snippets} snippet hits from {response.total_hits} total records")
 
-            return documents, total_available_results
+            return response
 
         except Exception as error:
             self.logger.error(f"✗ Search failed for keyword '{search_keyword}': {type(error).__name__}: {error}")

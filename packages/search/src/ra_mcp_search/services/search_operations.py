@@ -44,7 +44,7 @@ class SearchOperations:
             SearchResult containing documents, total count, and metadata.
         """
         # Execute search
-        documents, total_hits = self.search_api.search_transcribed_text(
+        response = self.search_api.search_transcribed_text(
             keyword,
             max_results,
             offset,
@@ -52,8 +52,7 @@ class SearchOperations:
         )
 
         return SearchResult(
-            documents=documents,
-            total_hits=total_hits,
+            response=response,
             keyword=keyword,
             offset=offset,
         )

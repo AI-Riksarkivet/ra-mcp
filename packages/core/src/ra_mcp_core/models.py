@@ -123,43 +123,52 @@ class SearchRecord(BaseModel):
 
 
 # ============================================================================
-# Search Results Container
+# API Search Response
 # ============================================================================
 
+class RecordsResponse(BaseModel):
+    """
+    Search API response matching /api/records endpoint.
+
+    Maps to the full API response structure from /api/records.
+    """
+    items: List[SearchRecord]
+    total_hits: int = Field(alias="totalHits")
+    max: Optional[int] = None  # Max results per page from query
+    offset: Optional[int] = None  # Pagination offset from query
+    query: Optional[str] = None  # The parsed search query
+    facets: Optional[Dict[str, Any]] = None  # Faceted search results (if requested)
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    def count_snippets(self) -> int:
+        """Count total snippets across all records."""
+        return sum(record.get_snippet_count() for record in self.items)
+
+
 class SearchResult(BaseModel):
-    """Container for search results."""
-    documents: List[SearchRecord]
-    total_hits: int
+    """
+    Search result with query context.
+
+    Wraps RecordsResponse with the search parameters for display/formatting.
+    """
+    response: RecordsResponse
     keyword: str
     offset: int
 
-    def extract_summary(self) -> "SearchSummary":
-        """Extract summary information from search results.
+    @property
+    def items(self) -> List[SearchRecord]:
+        """Get records from response."""
+        return self.response.items
 
-        Returns:
-            SearchSummary with statistics about the search results.
-        """
-        # Count total page hits across all documents
-        total_page_hits = sum(doc.get_snippet_count() for doc in self.documents)
+    @property
+    def total_hits(self) -> int:
+        """Get total hits from response."""
+        return self.response.total_hits
 
-        return SearchSummary(
-            keyword=self.keyword,
-            total_hits=self.total_hits,
-            page_hits_returned=total_page_hits,
-            documents_returned=len(self.documents),
-            offset=self.offset,
-            documents=self.documents,
-        )
-
-
-class SearchSummary(BaseModel):
-    """Summary information from a search operation."""
-    keyword: str
-    total_hits: int
-    page_hits_returned: int
-    documents_returned: int
-    offset: int
-    documents: List[SearchRecord]
+    def count_snippets(self) -> int:
+        """Count total snippets across all records."""
+        return self.response.count_snippets()
 
 
 # ============================================================================

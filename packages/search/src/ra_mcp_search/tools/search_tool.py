@@ -144,7 +144,7 @@ def register_search_tool(mcp) -> None:
                 max_snippets_per_document=max_snippets_per_document,
             )
 
-            logger.info(f"Formatting {len(search_result.documents)} search results...")
+            logger.info(f"Formatting {len(search_result.items)} search results...")
             formatted_results = search_display_service.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,

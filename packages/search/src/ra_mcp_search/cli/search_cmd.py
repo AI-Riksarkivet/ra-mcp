@@ -71,10 +71,10 @@ def search(
             )
 
             # Update with detailed results
-            summary = search_result.extract_summary()
+            snippet_count = search_result.count_snippets()
             progress.update(
                 search_task,
-                description=f"✓ Found {summary.page_hits_returned} page hits across {summary.documents_returned} volumes",
+                description=f"✓ Found {snippet_count} page hits across {len(search_result.items)} volumes",
             )
 
         # Use DisplayService to format and display search results

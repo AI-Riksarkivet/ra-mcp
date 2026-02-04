@@ -59,9 +59,14 @@ class SearchDisplayService:
         if not formatted_table:
             return output
 
-        # Get search summary and format it
-        summary = search_result.extract_summary()
-        summary_lines = self.formatter.format_search_summary(summary)
+        # Format search summary
+        snippet_count = search_result.count_snippets()
+        summary_lines = self.formatter.format_search_summary_stats(
+            snippet_count,
+            len(search_result.items),
+            search_result.total_hits,
+            search_result.offset
+        )
         output.extend(summary_lines)
 
         # Add the table
@@ -69,11 +74,10 @@ class SearchDisplayService:
 
         # For Rich tables (not strings), add browse examples and remaining documents
         if not isinstance(formatted_table, str):
-            example_lines = self.formatter.format_browse_example(summary.documents, keyword)
+            example_lines = self.formatter.format_browse_example(search_result.items, keyword)
             output.extend(example_lines)
 
-            total_docs = len(summary.documents)
-            remaining_message = self.formatter.format_remaining_documents(total_docs, max_display)
+            remaining_message = self.formatter.format_remaining_documents(len(search_result.items), max_display)
             if remaining_message:
                 output.append(remaining_message)
 
