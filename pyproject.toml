@@ -1,11 +1,14 @@
 [project]
 name = "ra-mcp"
 version = "0.2.7"
-description = "Riksarkivet first MCPs to expose APIs in dataplattformen and htrflow"
+description = "Riksarkivet MCP server composition and CLI"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "ra-mcp-server",
+    "ra-mcp-search-mcp",
+    "ra-mcp-search-cli",
+    "ra-mcp-guide",
+    "starlette>=0.52.1",
 ]
 license = "Apache-2.0"
 keywords = [
@@ -41,7 +44,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-bypass-selection = true
+packages = ["src/ra_mcp_server"]
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -51,7 +54,7 @@ ra-mcp-core = { workspace = true }
 ra-mcp-search = { workspace = true }
 ra-mcp-search-cli = { workspace = true }
 ra-mcp-search-mcp = { workspace = true }
-ra-mcp-server = { workspace = true }
+ra-mcp-guide = { workspace = true }
 
 [tool.ruff.lint]
 ignore = []
