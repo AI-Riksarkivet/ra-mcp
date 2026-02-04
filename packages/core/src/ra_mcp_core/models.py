@@ -134,10 +134,10 @@ class RecordsResponse(BaseModel):
     """
     items: List[SearchRecord]
     total_hits: int = Field(alias="totalHits")
-    max: Optional[int] = None  # Max results per page from query
+    hits: Optional[int] = None  # Number of records returned in this response
     offset: Optional[int] = None  # Pagination offset from query
-    query: Optional[str] = None  # The parsed search query
-    facets: Optional[Dict[str, Any]] = None  # Faceted search results (if requested)
+    facets: Optional[List[Dict[str, Any]]] = None  # Faceted search results (list of facet objects)
+    links: Optional[Dict[str, str]] = Field(None, alias="_links")  # HATEOAS links
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -150,11 +150,14 @@ class SearchResult(BaseModel):
     """
     Search result with query context.
 
-    Wraps RecordsResponse with the search parameters for display/formatting.
+    Wraps RecordsResponse with the search parameters used to execute the search.
+    Parameter names match the Search API specification.
     """
     response: RecordsResponse
-    keyword: str
-    offset: int
+    transcribed_text: str  # Search keyword (API parameter name)
+    max: int  # Maximum results per page (API parameter name)
+    offset: int  # Pagination offset (API parameter name)
+    max_snippets_per_document: Optional[int] = None  # Client-side snippet limiting (not an API parameter)
 
     @property
     def items(self) -> List[SearchRecord]:
@@ -165,6 +168,11 @@ class SearchResult(BaseModel):
     def total_hits(self) -> int:
         """Get total hits from response."""
         return self.response.total_hits
+
+    @property
+    def keyword(self) -> str:
+        """Alias for transcribed_text for backward compatibility."""
+        return self.transcribed_text
 
     def count_snippets(self) -> int:
         """Count total snippets across all records."""

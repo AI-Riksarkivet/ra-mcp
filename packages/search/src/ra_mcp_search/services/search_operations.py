@@ -53,6 +53,8 @@ class SearchOperations:
 
         return SearchResult(
             response=response,
-            keyword=keyword,
+            transcribed_text=keyword,
+            max=max_results,
             offset=offset,
+            max_snippets_per_document=max_snippets_per_document
         )

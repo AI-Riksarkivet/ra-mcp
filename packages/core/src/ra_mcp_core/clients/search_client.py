@@ -64,7 +64,11 @@ class SearchAPI:
             # Create response object matching API structure
             response = RecordsResponse(
                 items=documents,
-                totalHits=search_result_data.get("totalHits", 0)
+                totalHits=search_result_data.get("totalHits", 0),
+                hits=search_result_data.get("hits"),
+                offset=search_result_data.get("offset"),
+                facets=search_result_data.get("facets"),
+                _links=search_result_data.get("_links")
             )
 
             total_snippets = response.count_snippets()
