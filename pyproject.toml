@@ -49,6 +49,8 @@ members = ["packages/*"]
 [tool.uv.sources]
 ra-mcp-core = { workspace = true }
 ra-mcp-search = { workspace = true }
+ra-mcp-search-cli = { workspace = true }
+ra-mcp-search-mcp = { workspace = true }
 ra-mcp-server = { workspace = true }
 
 [tool.ruff.lint]
@@ -63,7 +65,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_core", "ra_mcp_search", "ra_mcp_server"]
+known-first-party = ["ra_mcp_core", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_server"]
 
 [tool.ty]
 # error-on-warning = true

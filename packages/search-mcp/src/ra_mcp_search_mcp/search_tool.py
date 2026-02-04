@@ -7,10 +7,9 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 import logging
 
 from ra_mcp_core.formatters import format_error_message
-from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
-
-from ..operations import SearchOperations
+from ra_mcp_search.formatters import PlainTextFormatter
+from ra_mcp_search.operations import SearchOperations
 
 
 logger = logging.getLogger(__name__)

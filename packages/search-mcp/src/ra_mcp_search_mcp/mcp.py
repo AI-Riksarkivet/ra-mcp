@@ -7,7 +7,8 @@ for searching and browsing transcribed historical documents.
 
 from fastmcp import FastMCP
 
-from .tools import register_search_tool, register_browse_tool
+from .search_tool import register_search_tool
+from .browse_tool import register_browse_tool
 
 
 search_mcp = FastMCP(

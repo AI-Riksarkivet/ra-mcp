@@ -8,6 +8,8 @@ members = [
     "ra-mcp-core",
     "ra-mcp-guide",
     "ra-mcp-search",
+    "ra-mcp-search-cli",
+    "ra-mcp-search-mcp",
     "ra-mcp-server",
 ]
 
@@ -1177,16 +1179,46 @@ name = "ra-mcp-search"
 version = "0.2.7"
 source = { editable = "packages/search" }
 dependencies = [
-    { name = "fastmcp" },
     { name = "ra-mcp-core" },
+    { name = "rich" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ra-mcp-core", editable = "packages/core" },
+    { name = "rich", specifier = ">=13.9.4" },
+]
+
+[[package]]
+name = "ra-mcp-search-cli"
+version = "0.2.7"
+source = { editable = "packages/search-cli" }
+dependencies = [
+    { name = "ra-mcp-search" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "ra-mcp-core", editable = "packages/core" },
+    { name = "ra-mcp-search", editable = "packages/search" },
+    { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.21.1" },
+]
+
+[[package]]
+name = "ra-mcp-search-mcp"
+version = "0.2.7"
+source = { editable = "packages/search-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-search" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "ra-mcp-search", editable = "packages/search" },
 ]
 
 [[package]]
@@ -1195,14 +1227,16 @@ version = "0.2.7"
 source = { editable = "packages/server" }
 dependencies = [
     { name = "ra-mcp-guide" },
-    { name = "ra-mcp-search" },
+    { name = "ra-mcp-search-cli" },
+    { name = "ra-mcp-search-mcp" },
     { name = "starlette" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "ra-mcp-guide", editable = "packages/guide" },
-    { name = "ra-mcp-search", editable = "packages/search" },
+    { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
+    { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
 

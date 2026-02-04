@@ -1,17 +1,18 @@
 """
-RA-MCP Search: Search and browse MCP tools for Riksarkivet.
+RA-MCP Search: Search operations and formatters for Riksarkivet.
 
-Provides MCP tools for searching and browsing transcribed historical documents
-from the Swedish National Archives.
+Provides shared business logic and formatting for search and browse functionality
+used by both CLI and MCP tool packages.
 """
 
 __version__ = "0.2.7"
 
-from .mcp import search_mcp
 from .operations import SearchOperations, BrowseOperations
+from .formatters import PlainTextFormatter, RichConsoleFormatter
 
 __all__ = [
-    "search_mcp",
     "SearchOperations",
     "BrowseOperations",
+    "PlainTextFormatter",
+    "RichConsoleFormatter",
 ]

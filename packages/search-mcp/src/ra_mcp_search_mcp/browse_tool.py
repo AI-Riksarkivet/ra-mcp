@@ -7,10 +7,9 @@ Provides the browse_document tool for viewing full page transcriptions.
 from typing import Optional
 
 from ra_mcp_core.formatters import format_error_message
-from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
-
-from ..operations import BrowseOperations
+from ra_mcp_search.formatters import PlainTextFormatter
+from ra_mcp_search.operations import BrowseOperations
 
 
 def register_browse_tool(mcp) -> None:
