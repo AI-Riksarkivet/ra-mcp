@@ -8,7 +8,8 @@ from the Swedish National Archives.
 __version__ = "0.2.7"
 
 from .mcp import search_mcp
-from .services import SearchOperations, BrowseOperations, SearchDisplayService, BrowseDisplayService
+from .operations import SearchOperations, BrowseOperations
+from .formatters import SearchDisplayService, BrowseDisplayService
 
 __all__ = [
     "search_mcp",

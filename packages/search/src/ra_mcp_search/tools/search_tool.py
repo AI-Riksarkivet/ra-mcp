@@ -10,8 +10,8 @@ from ra_mcp_core.formatters import format_error_message
 from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
 
-from ..services import SearchOperations
-from ..services.search_display_service import SearchDisplayService
+from ..operations import SearchOperations
+from ..formatters import SearchDisplayService
 
 
 logger = logging.getLogger(__name__)

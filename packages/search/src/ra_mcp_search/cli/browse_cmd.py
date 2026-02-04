@@ -12,8 +12,8 @@ from ra_mcp_core.config import DEFAULT_MAX_DISPLAY
 from ..formatters import RichConsoleFormatter
 from ra_mcp_core.utils.http_client import get_http_client
 
-from ..services import BrowseOperations
-from ..services.browse_display_service import BrowseDisplayService
+from ..operations import BrowseOperations
+from ..formatters import BrowseDisplayService
 
 console = Console()
 

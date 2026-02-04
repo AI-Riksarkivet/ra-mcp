@@ -10,8 +10,8 @@ from ra_mcp_core.formatters import format_error_message
 from ..formatters import PlainTextFormatter
 from ra_mcp_core.utils.http_client import default_http_client
 
-from ..services import BrowseOperations
-from ..services.browse_display_service import BrowseDisplayService
+from ..operations import BrowseOperations
+from ..formatters import BrowseDisplayService
 
 
 def register_browse_tool(mcp) -> None:
