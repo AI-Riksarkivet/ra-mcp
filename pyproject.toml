@@ -73,7 +73,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_search", "ra_mcp_search_cli", "search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "browse_mcp", "guide_mcp", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_search", "search_cli", "search_mcp", "ra_mcp_browse", "browse_cli", "browse_mcp", "guide_mcp", "ra_mcp_server"]
 
 [tool.ty]
 # error-on-warning = true

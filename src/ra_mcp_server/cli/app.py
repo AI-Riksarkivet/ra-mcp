@@ -9,8 +9,8 @@ from typing import Optional, Annotated
 import typer
 from rich.console import Console
 
-from ra_mcp_search_cli import search_app
-from ra_mcp_browse_cli import browse_app
+from search_cli import search_app
+from browse_cli import browse_app
 
 console = Console()
 
