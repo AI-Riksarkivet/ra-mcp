@@ -211,6 +211,10 @@ class RichConsoleFormatter:
                 note_text = truncate_text(document.metadata.note, 250)
                 content_parts.append(f"[dim]📝 {note_text}[/dim]")
 
+            # Add link to view on Riksarkivet website
+            if document.links and document.links.html:
+                content_parts.append(f"[blue]🔗 {document.links.html}[/blue]")
+
             # Add snippets if available (for transcribed text searches)
             if document.transcribed_text and document.transcribed_text.snippets:
                 for snippet in document.transcribed_text.snippets[:3]:
