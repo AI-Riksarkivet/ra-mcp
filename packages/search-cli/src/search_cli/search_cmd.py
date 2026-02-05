@@ -39,11 +39,11 @@ def search(
     ] = 3,
     transcribed_only: Annotated[
         bool,
-        typer.Option("--transcribed-only/--all-fields", help="Search only transcribed text (default) or all fields including metadata")
+        typer.Option("--transcribed-text/--text", help="Search transcribed text (default) or general text fields (metadata)")
     ] = True,
     only_digitised: Annotated[
         bool,
-        typer.Option("--digitised-only/--all-materials", help="Limit to digitised materials with images (default) or search all records")
+        typer.Option("--only-digitised-materials/--include-all-materials", help="Limit to digitised materials (default) or include all records")
     ] = True,
     log: Annotated[
         bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")
@@ -51,21 +51,25 @@ def search(
 ):
     """Search for keyword in historical documents.
 
-    Fast search across Riksarkivet collections. By default searches transcribed text in digitised materials.
-    Use --all-fields to search metadata (titles, names, places, etc.).
+    Fast search across Riksarkivet collections. Flags match the API parameters exactly.
 
-    NOTE: Transcribed text search only works with digitised materials. If you use --all-materials,
-    the search automatically switches to metadata search (--all-fields is implied).
+    API Parameters (mapped to flags):
+    - transcribed_text: AI-transcribed text search (requires only_digitised_materials=true)
+    - text: General metadata search (titles, names, places, provenance)
+    - only_digitised_materials: Filter for digitised materials with images
+
+    NOTE: --transcribed-text requires --only-digitised-materials (can't search transcriptions
+    of non-digitised materials). Using --include-all-materials automatically switches to --text.
 
     By default, returns up to 3 hits per volume. Use --max-hits-per-vol to adjust.
 
     Examples:
-        ra search "Stockholm"                                    # Basic transcribed text search (3 hits per volume)
-        ra search "Stockholm" --all-fields                      # Search all fields including metadata
-        ra search "Stockholm" --all-fields --all-materials      # Search all fields in all materials
-        ra search "Stockholm" --max-hits-per-vol 2              # Max 2 hits per volume
-        ra search "Stockholm" --max 100 --max-hits-per-vol 1    # Many volumes, 1 hit each
-        ra search "Stockholm" --log                             # With API logging
+        ra search "Stockholm"                                        # transcribed_text + only_digitised_materials
+        ra search "Stockholm" --text                                # text + only_digitised_materials
+        ra search "Stockholm" --include-all-materials               # text + all materials (auto-switches)
+        ra search "Stockholm" --max-hits-per-vol 2                  # Limit hits per volume
+        ra search "Stockholm" --max 100 --max-hits-per-vol 1        # Many volumes, 1 hit each
+        ra search "Stockholm" --log                                 # With API logging
     """
     http_client = get_http_client(log)
     search_operations = SearchOperations(http_client=http_client)
@@ -77,10 +81,10 @@ def search(
 
     try:
         # Transcribed text search requires digitised materials
-        # If user wants all materials, automatically use metadata search
+        # If user wants all materials, automatically use text search
         if not only_digitised and transcribed_only:
-            console.print("[yellow]⚠️  Note: Transcribed text search requires digitised materials.[/yellow]")
-            console.print("[yellow]   Switching to metadata search (--all-fields) for all materials.[/yellow]\n")
+            console.print("[yellow]⚠️  Note: --transcribed-text requires --only-digitised-materials[/yellow]")
+            console.print("[yellow]   Automatically switching to --text when --include-all-materials is used.[/yellow]\n")
             transcribed_only = False
 
         # Use the specified max_snippets_per_record value (defaults to 3)
