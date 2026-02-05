@@ -143,33 +143,35 @@ class RichConsoleFormatter:
         )
 
         for idx, document in enumerate(search_result.items[:max_display]):
-            if not document.transcribed_text or not document.transcribed_text.snippets:
-                continue
-
             # Build institution and reference column
             institution_and_ref = ""
             if document.metadata.archival_institution:
                 institution = document.metadata.archival_institution[0].caption
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
-            # Extract unique page numbers from all snippets
-            pages = sorted(set(
-                page.id
-                for snippet in document.transcribed_text.snippets
-                for page in snippet.pages
-            ))
-            pages_trimmed = trim_page_numbers(pages)
-            pages_str = ",".join(pages_trimmed)
+            # Handle records with transcribed text snippets
+            if document.transcribed_text and document.transcribed_text.snippets:
+                # Extract unique page numbers from all snippets
+                pages = sorted(set(
+                    page.id
+                    for snippet in document.transcribed_text.snippets
+                    for page in snippet.pages
+                ))
+                pages_trimmed = trim_page_numbers(pages)
+                pages_str = ",".join(pages_trimmed)
 
-            # Show snippet count vs total hits
-            snippet_count = len(document.transcribed_text.snippets)
-            total_hits = document.get_total_hits()
-            hit_label = "hit" if snippet_count == 1 else "hits"
+                # Show snippet count vs total hits
+                snippet_count = len(document.transcribed_text.snippets)
+                total_hits = document.get_total_hits()
+                hit_label = "hit" if snippet_count == 1 else "hits"
 
-            if total_hits > snippet_count:
-                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
+                if total_hits > snippet_count:
+                    institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
+                else:
+                    institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
             else:
-                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
+                # For metadata-only results (no transcription snippets)
+                institution_and_ref += f'📚 "{document.metadata.reference_code}"\n💡 [dim]Metadata match[/dim]'
 
             if document.metadata.date:
                 institution_and_ref += f"\n📅 [dim]{document.metadata.date}[/dim]"
@@ -183,18 +185,45 @@ class RichConsoleFormatter:
             else:
                 content_parts.append("[bright_black](No title)[/bright_black]")
 
-            # Add snippets (up to 3)
-            for snippet in document.transcribed_text.snippets[:3]:
-                snippet_text = truncate_text(snippet.text, 150)
-                snippet_text = self.highlight_search_keyword(snippet_text, search_result.keyword)
+            # Add object type and type
+            type_info = f"{document.object_type}"
+            if document.type:
+                type_info += f" / {document.type}"
+            content_parts.append(f"[yellow]🏷️  {type_info}[/yellow]")
 
-                # Get first page number for this snippet
-                if snippet.pages:
-                    trimmed_page = trim_page_number(snippet.pages[0].id)
-                    content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet_text}[/italic]")
+            # Add hierarchy information for metadata searches
+            if document.metadata.hierarchy:
+                hierarchy_parts = [h.caption for h in document.metadata.hierarchy]
+                if hierarchy_parts:
+                    hierarchy_text = " → ".join(hierarchy_parts[:3])  # Show up to 3 levels
+                    content_parts.append(f"[cyan]📂 {truncate_text(hierarchy_text, 150)}[/cyan]")
 
-            if len(document.transcribed_text.snippets) > 3:
-                content_parts.append(f"[dim]...and {len(document.transcribed_text.snippets) - 3} more pages with hits[/dim]")
+            # Add provenance (creator) information
+            if document.metadata.provenance:
+                prov = document.metadata.provenance[0]
+                prov_text = prov.caption
+                if prov.date:
+                    prov_text += f" ({prov.date})"
+                content_parts.append(f"[green]👤 {truncate_text(prov_text, 100)}[/green]")
+
+            # Add note if available (useful for metadata searches)
+            if document.metadata.note:
+                note_text = truncate_text(document.metadata.note, 250)
+                content_parts.append(f"[dim]📝 {note_text}[/dim]")
+
+            # Add snippets if available (for transcribed text searches)
+            if document.transcribed_text and document.transcribed_text.snippets:
+                for snippet in document.transcribed_text.snippets[:3]:
+                    snippet_text = truncate_text(snippet.text, 150)
+                    snippet_text = self.highlight_search_keyword(snippet_text, search_result.keyword)
+
+                    # Get first page number for this snippet
+                    if snippet.pages:
+                        trimmed_page = trim_page_number(snippet.pages[0].id)
+                        content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet_text}[/italic]")
+
+                if len(document.transcribed_text.snippets) > 3:
+                    content_parts.append(f"[dim]...and {len(document.transcribed_text.snippets) - 3} more pages with hits[/dim]")
 
             table.add_row(institution_and_ref, "\n".join(content_parts))
 

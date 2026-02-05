@@ -31,7 +31,7 @@ def register_search_tool(mcp) -> None:
 
     @mcp.tool(
         name="search_transcribed",
-        description="""Search for keywords in transcribed historical documents from the Swedish National Archives (Riksarkivet).
+        description="""Search for keywords in historical documents from the Swedish National Archives (Riksarkivet).
 
     This tool searches through historical documents and returns matching pages with their transcriptions.
     Supports advanced Solr query syntax including wildcards, fuzzy search, Boolean operators, and proximity searches.
@@ -120,6 +120,8 @@ def register_search_tool(mcp) -> None:
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
+    - transcribed_only: Search only in transcribed text (True) or all fields including metadata (False) (default: True)
+    - only_digitised: Limit results to digitized materials with images (default: True)
     - max_results: Maximum documents to return per query (default: 10)
     - max_snippets_per_record: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
@@ -135,20 +137,29 @@ def register_search_tool(mcp) -> None:
     async def search_transcribed(
         keyword: str,
         offset: int,
+        transcribed_only: bool = True,
+        only_digitised: bool = True,
         max_results: int = 25,
         max_snippets_per_record: int = 3,
         max_response_tokens: int = 15000,
     ) -> str:
-        logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}, max_results={max_results}")
+        search_type = "transcribed" if transcribed_only else "all fields"
+        digitised_filter = "digitised only" if only_digitised else "all materials"
+        logger.info(
+            f"MCP Tool: search_transcribed called with keyword='{keyword}', "
+            f"offset={offset}, type={search_type}, filter={digitised_filter}"
+        )
 
         try:
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
 
-            logger.info(f"Executing search for '{keyword}'...")
-            search_result = search_operations.search_transcribed(
+            logger.info(f"Executing {search_type} search for '{keyword}'...")
+            search_result = search_operations.search(
                 keyword=keyword,
+                transcribed_only=transcribed_only,
+                only_digitised=only_digitised,
                 offset=offset,
                 max_results=max_results,
                 max_snippets_per_record=max_snippets_per_record,

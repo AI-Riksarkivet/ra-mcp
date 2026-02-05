@@ -26,38 +26,64 @@ class SearchAPI:
         self.http_client = http_client
         self.logger = logging.getLogger("ra_mcp.search_api")
 
-    def search_transcribed_text(
+    def search(
         self,
-        transcribed_text: str,
+        text: Optional[str] = None,
+        transcribed_text: Optional[str] = None,
+        only_digitised_materials: bool = True,
         max: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
         max_snippets_per_record: Optional[int] = None,
     ) -> RecordsResponse:
         """
-        Search for keyword in transcribed materials.
+        Search for records using various search parameters.
 
         Parameter names match the Search API specification for clarity.
+        You can search either transcribed materials or general text (metadata, names, places).
 
         Args:
-            transcribed_text: Search term or Solr query (API parameter name)
+            text: General free-text search across all fields
+            transcribed_text: Search specifically in AI-transcribed text (requires only_digitised_materials=True)
+            only_digitised_materials: Limit results to digitized materials (default: True)
             max: Maximum number of records to return (API parameter name)
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
 
         Returns:
             RecordsResponse with all API fields populated
+
+        Raises:
+            ValueError: If transcribed_text is used without only_digitised_materials=True
         """
-        self.logger.info(f"Starting search: keyword='{transcribed_text}', max={max}, offset={offset}")
+        # Validate parameters
+        if transcribed_text and not only_digitised_materials:
+            raise ValueError(
+                "transcribed_text search requires only_digitised_materials=True. "
+                "Use text parameter instead of transcribed_text to search all materials."
+            )
+
+        if not text and not transcribed_text:
+            raise ValueError("Must provide either 'text' or 'transcribed_text' parameter")
+
+        search_term = transcribed_text or text
+        search_type = "transcribed" if transcribed_text else "general"
+        self.logger.info(f"Starting {search_type} search: keyword='{search_term}', max={max}, offset={offset}")
 
         try:
-            # Execute search request
+            # Build search parameters
             params = {
-                "transcribed_text": transcribed_text,
-                "only_digitised_materials": "true",
                 "max": max,
                 "offset": offset,
                 "sort": "relevance",
             }
+
+            if only_digitised_materials:
+                params["only_digitised_materials"] = "true"
+
+            if transcribed_text:
+                params["transcribed_text"] = transcribed_text
+            elif text:
+                params["text"] = text
 
             response_data = self.http_client.get_json(
                 SEARCH_API_BASE_URL,
@@ -82,6 +108,35 @@ class SearchAPI:
         except Exception as error:
             self.logger.error(f"✗ Search failed: {type(error).__name__}: {error}")
             raise
+
+    def search_transcribed_text(
+        self,
+        transcribed_text: str,
+        max: int = DEFAULT_MAX_RESULTS,
+        offset: int = 0,
+        max_snippets_per_record: Optional[int] = None,
+    ) -> RecordsResponse:
+        """
+        Search for keyword in transcribed materials (convenience method).
+
+        This is a convenience wrapper around the main search() method.
+
+        Args:
+            transcribed_text: Search term or Solr query (API parameter name)
+            max: Maximum number of records to return (API parameter name)
+            offset: Pagination offset (API parameter name)
+            max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
+
+        Returns:
+            RecordsResponse with all API fields populated
+        """
+        return self.search(
+            transcribed_text=transcribed_text,
+            only_digitised_materials=True,
+            max=max,
+            offset=offset,
+            max_snippets_per_record=max_snippets_per_record
+        )
 
     def _limit_snippets(self, response: RecordsResponse, max_snippets: int) -> None:
         """

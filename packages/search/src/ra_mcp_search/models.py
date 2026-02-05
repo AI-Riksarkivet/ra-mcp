@@ -29,7 +29,7 @@ class HierarchyLevel(BaseModel):
 class Provenance(BaseModel):
     """Provenance information."""
     caption: str
-    uri: str
+    uri: Optional[str] = None  # URI is optional in some API responses
     date: Optional[str] = None
 
 
