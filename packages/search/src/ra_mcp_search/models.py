@@ -1,8 +1,7 @@
 """
-Data models for Riksarkivet MCP server.
+Data models for Riksarkivet search operations.
 
-Models are designed to closely match the API JSON structure while providing
-convenient access to search results and browse operations.
+Models are designed to closely match the Search API JSON structure.
 """
 
 from __future__ import annotations
@@ -69,7 +68,7 @@ class TranscribedText(BaseModel):
     snippets: List[Snippet]
 
     model_config = ConfigDict(populate_by_name=True)
-    
+
 
 
 class DocumentLinks(BaseModel):
@@ -83,7 +82,7 @@ class DocumentLinks(BaseModel):
     ead_ape: Optional[str] = Field(None, alias="ead/ape")
 
     model_config = ConfigDict(populate_by_name=True)
-    
+
 
 
 class SearchRecord(BaseModel):
@@ -97,7 +96,7 @@ class SearchRecord(BaseModel):
     links: Optional[DocumentLinks] = Field(None, alias="_links")
 
     model_config = ConfigDict(populate_by_name=True)
-    
+
 
     def get_manifest_url(self) -> Optional[str]:
         """Get manifest URL from links."""
@@ -177,49 +176,3 @@ class SearchResult(BaseModel):
     def count_snippets(self) -> int:
         """Count total snippets across all records."""
         return self.response.count_snippets()
-
-
-# ============================================================================
-# Browse Results Models
-# ============================================================================
-
-class PageContext(BaseModel):
-    """
-    Full page context for browsing.
-
-    Contains transcribed text, ALTO XML URL, and image URLs for a single page.
-    """
-    page_number: int
-    page_id: str
-    reference_code: str
-    full_text: str  # Extracted from ALTO XML
-    alto_url: str  # Client-generated URL to ALTO XML
-    image_url: str  # Client-generated IIIF image URL
-    bildvisning_url: str = ""  # Client-generated bildvisning URL
-
-
-class OAIPMHMetadata(BaseModel):
-    """
-    Document metadata from OAI-PMH GetRecord response.
-
-    Maps to EAD metadata fields returned by the OAI-PMH API.
-    """
-    identifier: str  # Record identifier (e.g., "SE/RA/310187/1")
-    title: Optional[str] = None  # EAD unittitle
-    unitid: Optional[str] = None  # EAD unitid
-    repository: Optional[str] = None  # EAD repository name
-    nad_link: Optional[str] = None  # Link to bildvisning
-    datestamp: Optional[str] = None  # Last modified timestamp
-
-
-class BrowseResult(BaseModel):
-    """
-    Result from browsing document pages.
-
-    Contains page contexts, manifest ID, and optional OAI-PMH metadata.
-    """
-    contexts: List[PageContext]
-    reference_code: str
-    pages_requested: str
-    manifest_id: Optional[str] = None  # IIIF manifest ID (e.g., "R0001203")
-    oai_metadata: Optional[OAIPMHMetadata] = None  # Metadata from OAI-PMH API

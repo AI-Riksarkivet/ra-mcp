@@ -9,8 +9,7 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.console import Console, Group
 
-# BaseFormatter removed - not needed
-from ra_mcp_core.models import SearchResult, PageContext, SearchRecord, BrowseResult
+from ra_mcp_search.models import SearchResult, SearchRecord
 from .utils import (
     trim_page_number,
     trim_page_numbers,
@@ -201,36 +200,6 @@ class RichConsoleFormatter:
 
         return table
 
-    def format_page_context_panel(self, context: PageContext, highlight_term: str = "") -> Panel:
-        """
-        Create a Rich Panel for a single page context.
-
-        Args:
-            context: Page context with full text and metadata
-            highlight_term: Optional term to highlight
-
-        Returns:
-            Rich Panel object
-        """
-        page_content = []
-
-        # Full transcribed text with highlighting
-        display_text = self.highlight_search_keyword(context.full_text, highlight_term)
-        page_content.append(f"[italic]{display_text}[/italic]")
-
-        # Links section
-        page_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-        page_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
-        if context.image_url:
-            page_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
-        if context.bildvisning_url:
-            page_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
-
-        trimmed_page = trim_page_number(str(context.page_number))
-        panel_title = f"[cyan]Page {trimmed_page}: {context.reference_code or 'Unknown Reference'}[/cyan]"
-
-        return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
-
     def format_search_summary_stats(
         self,
         snippet_count: int,
@@ -330,125 +299,3 @@ class RichConsoleFormatter:
         if search_result.offset > 0:
             return f"[yellow]No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}[/yellow]"
         return f"[yellow]No results found for '{search_result.keyword}'. Make sure to use \"\" for exact phrases.[/yellow]"
-
-    def format_browse_results(
-        self,
-        browse_result: BrowseResult,
-        highlight_term: Optional[str] = None,
-        show_links: bool = False,
-        show_success_message: bool = True,
-    ) -> List[Any]:
-        """
-        Format browse results as grouped Rich panels with metadata for CLI display.
-
-        Args:
-            browse_result: BrowseResult containing contexts and metadata
-            highlight_term: Optional term to highlight in text
-            show_links: Whether to show ALTO/Image/Bildvisning links section
-            show_success_message: Whether to print success message
-
-        Returns:
-            List containing optional success message and panel objects
-        """
-        output = []
-
-        if show_success_message:
-            output.append(f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]")
-
-        # Group page contexts by reference code
-        grouped_contexts = {}
-        for context in browse_result.contexts:
-            ref_code = context.reference_code
-            if ref_code not in grouped_contexts:
-                grouped_contexts[ref_code] = []
-            grouped_contexts[ref_code].append(context)
-
-        # Display results grouped by document
-        for ref_code, contexts in grouped_contexts.items():
-            # Sort pages by page number
-            sorted_contexts = sorted(contexts, key=lambda c: c.page_number)
-
-            renderables = []
-
-            # Add OAI-PMH metadata at the top of the panel if available
-            if browse_result.oai_metadata:
-                metadata = browse_result.oai_metadata
-
-                # Create left column content (basic info)
-                left_content = []
-                left_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
-
-                # Display title
-                if metadata.title and metadata.title != "(No title)":
-                    left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
-
-                # Display repository
-                if metadata.repository:
-                    left_content.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
-
-                # Display unitid
-                if metadata.unitid and metadata.unitid != ref_code:
-                    left_content.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
-
-                # Display metadata content
-                renderables.append("\n".join(left_content))
-
-                # Display NAD link if available
-                if metadata.nad_link:
-                    renderables.append(f"[blue]🔗 NAD Link:[/blue] [dim]{metadata.nad_link}[/dim]")
-
-                renderables.append("")
-            else:
-                # If no metadata available, just show the document header
-                renderables.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
-                renderables.append("")
-
-            panel_content = []
-
-            for context in sorted_contexts:
-                # Add page separator with optional bildvisning link
-                if show_links:
-                    # When showing all links below, keep simple separator
-                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
-                else:
-                    # When not showing links section, include bildvisning link in separator
-                    if context.bildvisning_url:
-                        panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
-                    else:
-                        panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
-
-                # Add page content with highlighting
-                display_text = context.full_text
-                if highlight_term:
-                    display_text = self.highlight_search_keyword(display_text, highlight_term)
-                panel_content.append(f"[italic]{display_text}[/italic]")
-
-                # Add links if requested
-                if show_links:
-                    panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-                    panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
-                    if context.image_url:
-                        panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
-                    if context.bildvisning_url:
-                        panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
-
-                # Add spacing between pages (except for the last one)
-                if context != sorted_contexts[-1]:
-                    panel_content.append("")
-
-            # Add page content to renderables
-            for line in panel_content:
-                renderables.append(line)
-
-            # Create the grouped panel using Rich Group
-            panel_group = Group(*renderables)
-            grouped_panel = Panel(
-                panel_group,
-                title=None,
-                border_style="green",
-                padding=(1, 1),
-            )
-            output.append("")  # Add spacing before the panel
-            output.append(grouped_panel)
-
-        return output

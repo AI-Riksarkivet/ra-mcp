@@ -9,8 +9,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.console import Console, Group
 
-# BaseFormatter removed - not needed
-from ra_mcp_core.models import SearchResult, PageContext, SearchRecord, BrowseResult
+from ra_mcp_browse.models import PageContext, BrowseResult
+from ra_mcp_search.models import SearchResult, SearchRecord
 from .utils import (
     trim_page_number,
     trim_page_numbers,

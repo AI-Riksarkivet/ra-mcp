@@ -9,9 +9,9 @@ import logging
 from typing import Optional
 
 from ra_mcp_core.utils.http_client import HTTPClient
-from ra_mcp_core.models import RecordsResponse
 
 from ra_mcp_search.config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
+from ra_mcp_search.models import RecordsResponse
 
 
 class SearchAPI:
