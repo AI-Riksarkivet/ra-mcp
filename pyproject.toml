@@ -9,7 +9,7 @@ dependencies = [
     "ra-mcp-search-cli",
     "ra-mcp-browse-mcp",
     "ra-mcp-browse-cli",
-    "ra-mcp-guide",
+    "ra-mcp-guide-mcp",
     "starlette>=0.52.1",
 ]
 license = "Apache-2.0"
@@ -59,7 +59,7 @@ ra-mcp-search-mcp = { workspace = true }
 ra-mcp-browse = { workspace = true }
 ra-mcp-browse-cli = { workspace = true }
 ra-mcp-browse-mcp = { workspace = true }
-ra-mcp-guide = { workspace = true }
+ra-mcp-guide-mcp = { workspace = true }
 
 [tool.ruff.lint]
 ignore = []
@@ -73,7 +73,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_server"]
 
 [tool.ty]
 # error-on-warning = true

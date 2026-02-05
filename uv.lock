@@ -9,7 +9,7 @@ members = [
     "ra-mcp-browse-cli",
     "ra-mcp-browse-mcp",
     "ra-mcp-common",
-    "ra-mcp-guide",
+    "ra-mcp-guide-mcp",
     "ra-mcp-search",
     "ra-mcp-search-cli",
     "ra-mcp-search-mcp",
@@ -1126,7 +1126,7 @@ source = { editable = "." }
 dependencies = [
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-browse-mcp" },
-    { name = "ra-mcp-guide" },
+    { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-search-cli" },
     { name = "ra-mcp-search-mcp" },
     { name = "starlette" },
@@ -1143,7 +1143,7 @@ dev = [
 requires-dist = [
     { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
-    { name = "ra-mcp-guide", editable = "packages/guide" },
+    { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
@@ -1205,9 +1205,9 @@ version = "0.2.7"
 source = { editable = "packages/common" }
 
 [[package]]
-name = "ra-mcp-guide"
+name = "ra-mcp-guide-mcp"
 version = "0.2.7"
-source = { editable = "packages/guide" }
+source = { editable = "packages/guide-mcp" }
 dependencies = [
     { name = "fastmcp" },
     { name = "ra-mcp-common" },
