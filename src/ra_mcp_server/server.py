@@ -25,9 +25,9 @@ from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
 # Import available modules (lazy imports handled in setup)
-from ra_mcp_search_mcp.mcp import search_mcp
-from ra_mcp_browse_mcp.mcp import browse_mcp
-from ra_mcp_guide_mcp.mcp import guide_mcp
+from search_mcp.mcp import search_mcp
+from browse_mcp.mcp import browse_mcp
+from guide_mcp.mcp import guide_mcp
 
 
 # Registry of available modules
