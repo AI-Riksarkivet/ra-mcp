@@ -56,17 +56,20 @@ class BrowseOperations:
         """
         manifest_id = self.oai_client.extract_manifest_id(reference_code)
 
+        # Always fetch OAI-PMH metadata (works for both digitised and non-digitised)
+        oai_metadata = self._fetch_oai_metadata(reference_code)
+
         if not manifest_id:
+            # No manifest = non-digitised material
+            # Return metadata but no page contexts
             return BrowseResult(
                 contexts=[],
                 reference_code=reference_code,
                 pages_requested=pages,
+                oai_metadata=oai_metadata,
             )
 
         page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
-
-        # Fetch OAI-PMH metadata for the document
-        oai_metadata = self._fetch_oai_metadata(reference_code)
 
         return BrowseResult(
             contexts=page_contexts,
@@ -110,6 +113,9 @@ class BrowseOperations:
         Retrieves full page content for each specified page number,
         with optional keyword highlighting.
 
+        Early exit optimization: If the first page fails to fetch (404 on ALTO),
+        stop attempting subsequent pages since they will also fail for non-transcribed materials.
+
         Args:
             manifest_identifier: IIIF manifest ID to fetch pages from.
             page_specification: Page range specification (e.g., '1-5,7').
@@ -125,10 +131,21 @@ class BrowseOperations:
 
         # Fetch context for each page
         page_contexts = []
+        consecutive_failures = 0
+        MAX_CONSECUTIVE_FAILURES = 3  # Try at least 3 pages before giving up
+
         for page_number in page_numbers:
             page_context = self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
             if page_context:
                 page_contexts.append(page_context)
+                consecutive_failures = 0  # Reset counter on success
+            else:
+                consecutive_failures += 1
+                # Early exit optimization: if first 3 pages all fail with 404, assume not transcribed
+                # Note: blank pages (200 OK but empty) are treated as successful page_context,
+                # so this only exits early when ALTO files don't exist (404 errors)
+                if consecutive_failures >= MAX_CONSECUTIVE_FAILURES and not page_contexts:
+                    break
 
         return page_contexts
 
@@ -153,6 +170,10 @@ class BrowseOperations:
                 repository=record.get("repository"),
                 nad_link=record.get("nad_link"),
                 datestamp=record.get("datestamp"),
+                unitdate=record.get("unitdate"),
+                description=record.get("description"),
+                iiif_manifest=record.get("iiif_manifest"),
+                iiif_image=record.get("iiif_image"),
             )
         except Exception:
             # If metadata fetch fails, return None - browse will still work
@@ -186,9 +207,11 @@ class BrowseOperations:
 
         full_text = self.alto_client.fetch_content(alto_xml_url)
 
-        if not full_text:
+        # None = ALTO doesn't exist (404), empty string = ALTO exists but blank page
+        if full_text is None:
             return None
 
+        # Allow empty string through - it means the page exists but is blank
         return PageContext(
             page_number=int(page_number) if page_number.isdigit() else 0,
             page_id=page_number,

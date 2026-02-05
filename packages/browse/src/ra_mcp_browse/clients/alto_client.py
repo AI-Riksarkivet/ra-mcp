@@ -53,7 +53,8 @@ class ALTOClient:
 
         Returns:
             Extracted text content as a single string with words space-separated,
-            or None if fetching/parsing fails or no text is found.
+            empty string if ALTO exists but has no text (blank page),
+            or None if fetching/parsing fails (404, network error, etc.).
 
         Example:
             >>> client.fetch_content("https://sok.riksarkivet.se/dokument/alto/SE_RA_123.xml")
@@ -72,7 +73,9 @@ class ALTOClient:
             return None
 
         # Extract and combine text
-        return self._extract_text_from_alto(xml_root)
+        text = self._extract_text_from_alto(xml_root)
+        # Return empty string if ALTO exists but has no text (vs None for 404)
+        return text if text else ""
 
     def _extract_text_with_pattern(
         self,

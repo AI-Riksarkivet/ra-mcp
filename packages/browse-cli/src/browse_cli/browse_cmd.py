@@ -91,13 +91,26 @@ def browse(
             )
 
         if not browse_result.contexts:
-            # Format error message
-            console.print(f"[yellow]No pages found for '{reference_code}'[/yellow]")
-            console.print("\n[dim]Suggestions:[/dim]")
-            console.print("[dim]- Check the reference code format[/dim]")
-            console.print("[dim]- Verify the document has transcribed pages[/dim]")
-            console.print("[dim]- Try different page numbers[/dim]")
-            raise typer.Exit(code=1)
+            # Check if we have metadata to display
+            if browse_result.oai_metadata:
+                # Display metadata for non-digitised/non-transcribed material
+                renderables = formatter.format_browse_results(
+                    browse_result,
+                    highlight_term=search_term,
+                    show_links=show_links,
+                    show_success_message=False,
+                )
+                for renderable in renderables:
+                    console.print(renderable)
+                return
+            else:
+                # No contexts and no metadata - truly not found
+                console.print(f"[yellow]No pages found for '{reference_code}'[/yellow]")
+                console.print("\n[dim]Suggestions:[/dim]")
+                console.print("[dim]- Check the reference code format[/dim]")
+                console.print("[dim]- Verify the document has transcribed pages[/dim]")
+                console.print("[dim]- Try different page numbers[/dim]")
+                raise typer.Exit(code=1)
 
         # Format and display results directly
         formatted_output = formatter.format_browse_results(

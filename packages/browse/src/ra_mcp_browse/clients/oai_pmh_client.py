@@ -145,6 +145,22 @@ class OAIPMHClient:
         if nad_link_url:
             extracted_metadata["nad_link"] = nad_link_url
 
+        unitdate_value = self._extract_unitdate_from_ead(ead_metadata_element)
+        if unitdate_value:
+            extracted_metadata["unitdate"] = unitdate_value
+
+        description_text = self._extract_description_from_ead(ead_metadata_element)
+        if description_text:
+            extracted_metadata["description"] = description_text
+
+        iiif_manifest_url = self._extract_iiif_manifest_from_ead(ead_metadata_element)
+        if iiif_manifest_url:
+            extracted_metadata["iiif_manifest"] = iiif_manifest_url
+
+        iiif_image_url = self._extract_iiif_image_from_ead(ead_metadata_element)
+        if iiif_image_url:
+            extracted_metadata["iiif_image"] = iiif_image_url
+
         return extracted_metadata
 
     def _extract_ead_element_from_record(self, record_element: ET.Element) -> Optional[ET.Element]:
@@ -169,11 +185,53 @@ class OAIPMHClient:
         return self._get_text(ead_element, f".//{{{ead_ns}}}repository") or ""
 
     def _extract_nad_link_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract NAD link from EAD element."""
+        """Extract NAD link from EAD element (dao with xlink:role='TEXT')."""
         ead_ns = NAMESPACES["ead"]
+        xlink_ns = "{http://www.w3.org/1999/xlink}"
         dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
+        for dao in dao_elements:
+            if dao.get(f"{xlink_ns}role") == "TEXT":
+                return dao.get(f"{xlink_ns}href", "")
+        # Fallback to first dao if no TEXT role found
         if dao_elements:
-            return dao_elements[0].get("{http://www.w3.org/1999/xlink}href", "")
+            return dao_elements[0].get(f"{xlink_ns}href", "")
+        return ""
+
+    def _extract_unitdate_from_ead(self, ead_element: ET.Element) -> str:
+        """Extract unit date from EAD element."""
+        ead_ns = NAMESPACES["ead"]
+        return self._get_text(ead_element, f".//{{{ead_ns}}}unitdate") or ""
+
+    def _extract_description_from_ead(self, ead_element: ET.Element) -> str:
+        """Extract description/scopecontent from EAD element."""
+        ead_ns = NAMESPACES["ead"]
+        # scopecontent contains paragraphs, get all text
+        scopecontent_elements = ead_element.findall(f".//{{{ead_ns}}}scopecontent")
+        if scopecontent_elements:
+            # Get all paragraph text within scopecontent
+            paragraphs = scopecontent_elements[0].findall(f".//{{{ead_ns}}}p")
+            if paragraphs:
+                return " ".join(p.text for p in paragraphs if p.text)
+        return ""
+
+    def _extract_iiif_manifest_from_ead(self, ead_element: ET.Element) -> str:
+        """Extract IIIF manifest URL from EAD element (dao with xlink:role='MANIFEST')."""
+        ead_ns = NAMESPACES["ead"]
+        xlink_ns = "{http://www.w3.org/1999/xlink}"
+        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
+        for dao in dao_elements:
+            if dao.get(f"{xlink_ns}role") == "MANIFEST":
+                return dao.get(f"{xlink_ns}href", "")
+        return ""
+
+    def _extract_iiif_image_from_ead(self, ead_element: ET.Element) -> str:
+        """Extract IIIF image URL from EAD element (dao with xlink:role='IMAGE')."""
+        ead_ns = NAMESPACES["ead"]
+        xlink_ns = "{http://www.w3.org/1999/xlink}"
+        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
+        for dao in dao_elements:
+            if dao.get(f"{xlink_ns}role") == "IMAGE":
+                return dao.get(f"{xlink_ns}href", "")
         return ""
 
     def _get_text(

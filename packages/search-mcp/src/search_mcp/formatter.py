@@ -123,7 +123,15 @@ class PlainTextFormatter:
 
         lines = []
         snippet_count = search_result.count_snippets()
-        lines.append(f"Found {snippet_count} page-level hits across {len(search_result.items)} documents")
+
+        # Show "100+" if we hit the max limit, indicating more are available
+        document_count = len(search_result.items)
+        if document_count >= search_result.max:
+            document_display = f"{document_count}+"
+        else:
+            document_display = str(document_count)
+
+        lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
         lines.append("")
 
         for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
@@ -149,7 +157,19 @@ class PlainTextFormatter:
                 for snippet in document.transcribed_text.snippets
                 for page in snippet.pages
             ))
-            trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
+            # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
+            # Split by underscore and take the last part (the actual page number)
+            trimmed_page_numbers = []
+            for page_id in page_numbers:
+                # Split by underscore and take last part
+                parts = page_id.split('_')
+                if parts:
+                    # Get the last non-empty part and strip leading zeros
+                    last_part = parts[-1]
+                    trimmed = last_part.lstrip("0") or "0"
+                    trimmed_page_numbers.append(trimmed)
+                else:
+                    trimmed_page_numbers.append(page_id)
 
             snippet_count = len(document.transcribed_text.snippets)
             total_hits = document.get_total_hits()

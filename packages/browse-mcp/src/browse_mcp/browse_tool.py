@@ -33,22 +33,32 @@ def register_browse_tool(mcp) -> None:
     Each result includes the full transcribed text as it appears in the original document,
     plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
     Prefer showing the whole transcription and link in responses of individual pages.
-    Download some of the nearby pages too on selected pages if context seem to be missing from the trancript
-    to get a better picture
+    Download some of the nearby pages too on selected pages if context seem to be missing from the transcript
+    to get a better picture.
 
     Original text:
     transcript
 
-    Translation
+    Translation:
     Modern translation in language of user
 
     Links
 
+    IMPORTANT BEHAVIORS:
+    - **Blank pages**: Pages may show "(Empty page - no transcribed text)" if the ALTO file exists
+      but contains no text (cover pages, blank pages, etc.). These are still digitised materials.
+    - **Non-digitised materials**: If no ALTO files exist (404 errors), the tool returns metadata only
+      including title, date range, description, and links to view the material online.
+    - **Mixed content**: Documents may have blank cover pages followed by pages with text content.
+
     Key features:
-    - Returns full page transcriptions in (original language)
+    - Returns full page transcriptions in original language (usually Swedish)
+    - Shows "(Empty page - no transcribed text)" for blank pages that are digitised but have no text
+    - Provides metadata (title, date, description) for non-digitised materials
     - Provides links to bildvisaren (Riksarkivet's image viewer) for viewing original documents
     - Supports single pages, page ranges, or multiple specific pages
     - Direct links to ALTO XML for detailed text layout information
+    - IIIF manifest and image URLs when available
 
     Parameters:
     - reference_code: Document reference code from search results (e.g., "SE/RA/420422/01")
@@ -97,7 +107,13 @@ def register_browse_tool(mcp) -> None:
             )
 
             if not browse_result.contexts:
-                return _generate_no_pages_found_message(reference_code)
+                # Check if we have metadata to display for non-digitised materials
+                if browse_result.oai_metadata:
+                    # Format metadata-only result
+                    result = formatter.format_browse_results(browse_result, highlight_term)
+                    return result
+                else:
+                    return _generate_no_pages_found_message(reference_code)
 
             result = formatter.format_browse_results(browse_result, highlight_term)
             # PlainTextFormatter always returns string

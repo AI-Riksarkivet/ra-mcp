@@ -352,7 +352,56 @@ class RichConsoleFormatter:
         """
         output = []
 
-        if show_success_message:
+        # Handle non-digitised materials (no pages but has metadata)
+        if not browse_result.contexts and browse_result.oai_metadata:
+            output.append("[yellow]⚠️  This material is not digitised or transcribed - no page images or text available.[/yellow]")
+            output.append("[dim]Showing metadata only:[/dim]\n")
+
+            # Display metadata for non-digitised material
+            metadata = browse_result.oai_metadata
+            metadata_parts = []
+            metadata_parts.append(f"[bold blue]📄 Reference Code:[/bold blue] {browse_result.reference_code}")
+
+            if metadata.title and metadata.title != "(No title)":
+                metadata_parts.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+
+            if metadata.unitdate:
+                metadata_parts.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
+
+            if metadata.repository:
+                metadata_parts.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
+
+            if metadata.unitid and metadata.unitid != browse_result.reference_code:
+                metadata_parts.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
+
+            if metadata.description:
+                # Truncate long descriptions
+                desc = metadata.description
+                if len(desc) > 300:
+                    desc = desc[:297] + "..."
+                metadata_parts.append(f"[blue]📝 Description:[/blue] {desc}")
+
+            if metadata.nad_link:
+                metadata_parts.append(f"[blue]🔗 View Online:[/blue] {metadata.nad_link}")
+
+            if metadata.iiif_manifest:
+                metadata_parts.append(f"[magenta]🖼️  IIIF Manifest:[/magenta] {metadata.iiif_manifest}")
+
+            if metadata.iiif_image:
+                metadata_parts.append(f"[cyan]🎨 Preview Image:[/cyan] {metadata.iiif_image}")
+
+            if metadata.datestamp:
+                metadata_parts.append(f"[dim]🕒 Last Updated:[/dim] {metadata.datestamp}")
+
+            panel = Panel(
+                "\n".join(metadata_parts),
+                title="[yellow]Non-Digitised Material[/yellow]",
+                border_style="yellow",
+            )
+            output.append(panel)
+            return output
+
+        if show_success_message and browse_result.contexts:
             output.append(f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]")
 
         # Group page contexts by reference code
@@ -382,6 +431,10 @@ class RichConsoleFormatter:
                 if metadata.title and metadata.title != "(No title)":
                     left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
 
+                # Display date range
+                if metadata.unitdate:
+                    left_content.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
+
                 # Display repository
                 if metadata.repository:
                     left_content.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
@@ -389,6 +442,14 @@ class RichConsoleFormatter:
                 # Display unitid
                 if metadata.unitid and metadata.unitid != ref_code:
                     left_content.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
+
+                # Display description if available
+                if metadata.description:
+                    # Truncate very long descriptions for transcribed materials
+                    desc = metadata.description
+                    if len(desc) > 200:
+                        desc = desc[:197] + "..."
+                    left_content.append(f"[dim]📝 {desc}[/dim]")
 
                 # Display metadata content
                 renderables.append("\n".join(left_content))
@@ -418,10 +479,13 @@ class RichConsoleFormatter:
                         panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
 
                 # Add page content with highlighting
-                display_text = context.full_text
-                if highlight_term:
-                    display_text = self.highlight_search_keyword(display_text, highlight_term)
-                panel_content.append(f"[italic]{display_text}[/italic]")
+                if context.full_text.strip():  # Page has text content
+                    display_text = context.full_text
+                    if highlight_term:
+                        display_text = self.highlight_search_keyword(display_text, highlight_term)
+                    panel_content.append(f"[italic]{display_text}[/italic]")
+                else:  # Blank page
+                    panel_content.append("[dim italic](Empty page - no transcribed text)[/dim italic]")
 
                 # Add links if requested
                 if show_links:

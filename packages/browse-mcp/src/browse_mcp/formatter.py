@@ -123,7 +123,15 @@ class PlainTextFormatter:
 
         lines = []
         snippet_count = search_result.count_snippets()
-        lines.append(f"Found {snippet_count} page-level hits across {len(search_result.items)} documents")
+
+        # Show "100+" if we hit the max limit, indicating more are available
+        document_count = len(search_result.items)
+        if document_count >= search_result.max:
+            document_display = f"{document_count}+"
+        else:
+            document_display = str(document_count)
+
+        lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
         lines.append("")
 
         for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
@@ -149,7 +157,19 @@ class PlainTextFormatter:
                 for snippet in document.transcribed_text.snippets
                 for page in snippet.pages
             ))
-            trimmed_page_numbers = [page_num.lstrip("0") or "0" for page_num in page_numbers]
+            # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
+            # Split by underscore and take the last part (the actual page number)
+            trimmed_page_numbers = []
+            for page_id in page_numbers:
+                # Split by underscore and take last part
+                parts = page_id.split('_')
+                if parts:
+                    # Get the last non-empty part and strip leading zeros
+                    last_part = parts[-1]
+                    trimmed = last_part.lstrip("0") or "0"
+                    trimmed_page_numbers.append(trimmed)
+                else:
+                    trimmed_page_numbers.append(page_id)
 
             snippet_count = len(document.transcribed_text.snippets)
             total_hits = document.get_total_hits()
@@ -201,10 +221,46 @@ class PlainTextFormatter:
         Returns:
             Formatted plain text browse results
         """
+        lines = []
+
+        # Handle non-digitised materials (no pages but has metadata)
+        if not browse_result.contexts and browse_result.oai_metadata:
+            lines.append("⚠️ This material is not digitised or transcribed - no page images or text available.")
+            lines.append("Showing metadata only:")
+            lines.append("")
+
+            metadata = browse_result.oai_metadata
+            lines.append(f"📄 Reference Code: {browse_result.reference_code}")
+
+            if metadata.title and metadata.title != "(No title)":
+                lines.append(f"📋 Title: {metadata.title}")
+
+            if metadata.unitdate:
+                lines.append(f"📅 Date Range: {metadata.unitdate}")
+
+            if metadata.repository:
+                lines.append(f"🏛️  Repository: {metadata.repository}")
+
+            if metadata.unitid and metadata.unitid != browse_result.reference_code:
+                lines.append(f"🔖 Unit ID: {metadata.unitid}")
+
+            if metadata.description:
+                lines.append(f"📝 Description: {metadata.description}")
+
+            if metadata.nad_link:
+                lines.append(f"🔗 View Online: {metadata.nad_link}")
+
+            if metadata.iiif_manifest:
+                lines.append(f"🖼️  IIIF Manifest: {metadata.iiif_manifest}")
+
+            if metadata.iiif_image:
+                lines.append(f"🎨 Preview Image: {metadata.iiif_image}")
+
+            return "\n".join(lines)
+
         if not browse_result.contexts:
             return f"No page contexts found for {browse_result.reference_code}"
 
-        lines = []
         lines.append(f"📚 Document: {browse_result.reference_code}")
 
         # Add OAI-PMH metadata if available
@@ -215,6 +271,10 @@ class PlainTextFormatter:
             if metadata.title and metadata.title != "(No title)":
                 lines.append(f"📋 Title: {metadata.title}")
 
+            # Display date range
+            if metadata.unitdate:
+                lines.append(f"📅 Date Range: {metadata.unitdate}")
+
             # Display repository
             if metadata.repository:
                 lines.append(f"🏛️  Repository: {metadata.repository}")
@@ -222,6 +282,14 @@ class PlainTextFormatter:
             # Display unitid
             if metadata.unitid and metadata.unitid != browse_result.reference_code:
                 lines.append(f"🔖 Unit ID: {metadata.unitid}")
+
+            # Display description if available
+            if metadata.description:
+                # Truncate long descriptions for readability
+                desc = metadata.description
+                if len(desc) > 200:
+                    desc = desc[:197] + "..."
+                lines.append(f"📝 {desc}")
 
             # Display NAD link
             if metadata.nad_link:
@@ -234,11 +302,15 @@ class PlainTextFormatter:
             lines.append(f"📄 Page {context.page_number}")
             lines.append("─" * 40)
 
-            display_text = context.full_text
-            if highlight_term:
-                display_text = self.highlight_search_keyword(display_text, highlight_term)
+            # Handle blank pages vs pages with content
+            if context.full_text.strip():  # Page has text content
+                display_text = context.full_text
+                if highlight_term:
+                    display_text = self.highlight_search_keyword(display_text, highlight_term)
+                lines.append(display_text)
+            else:  # Blank page
+                lines.append("(Empty page - no transcribed text)")
 
-            lines.append(display_text)
             lines.append("")
             lines.append("🔗 Links:")
             lines.append(f"  📝 ALTO XML: {context.alto_url}")

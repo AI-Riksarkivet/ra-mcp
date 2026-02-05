@@ -114,9 +114,17 @@ def search(
 
             # Update with detailed results
             snippet_count = search_result.count_snippets()
+            records_count = len(search_result.items)
+
+            # Show "100+" if we hit the max limit
+            if records_count >= search_result.max:
+                records_display = f"{records_count}+"
+            else:
+                records_display = str(records_count)
+
             progress.update(
                 search_task,
-                description=f"✓ Found {snippet_count} page hits across {len(search_result.items)} volumes",
+                description=f"✓ Found {snippet_count} page hits across {records_display} volumes",
             )
 
         # Format and display search results directly
@@ -131,6 +139,7 @@ def search(
             records_count=records_count,
             total_hits=search_result.response.total_hits,
             offset=search_result.offset,
+            max_requested=search_result.max,
         )
         for line in summary_lines:
             console.print(line)

@@ -243,7 +243,8 @@ class RichConsoleFormatter:
         snippet_count: int,
         records_count: int,
         total_hits: int,
-        offset: int
+        offset: int,
+        max_requested: int = None
     ) -> List[str]:
         """
         Format search summary statistics.
@@ -253,13 +254,21 @@ class RichConsoleFormatter:
             records_count: Number of records/documents returned
             total_hits: Total number of records matching query
             offset: Pagination offset
+            max_requested: Maximum records requested (for showing "+")
 
         Returns:
             List of formatted summary lines
         """
         lines = []
+
+        # Show "100+" if we hit the max limit
+        if max_requested and records_count >= max_requested:
+            records_display = f"{records_count}+"
+        else:
+            records_display = str(records_count)
+
         lines.append(
-            f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_count}[/bold] volumes"
+            f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_display}[/bold] volumes"
         )
 
         if total_hits > records_count:

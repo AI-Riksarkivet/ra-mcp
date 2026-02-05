@@ -33,8 +33,12 @@ class OAIPMHMetadata(BaseModel):
     title: Optional[str] = None  # EAD unittitle
     unitid: Optional[str] = None  # EAD unitid
     repository: Optional[str] = None  # EAD repository name
-    nad_link: Optional[str] = None  # Link to bildvisning
+    nad_link: Optional[str] = None  # Link to bildvisning (dao[@xlink:role="TEXT"])
     datestamp: Optional[str] = None  # Last modified timestamp
+    unitdate: Optional[str] = None  # EAD unitdate - date range of the document
+    description: Optional[str] = None  # EAD scopecontent - detailed description
+    iiif_manifest: Optional[str] = None  # IIIF manifest URL (dao[@xlink:role="MANIFEST"])
+    iiif_image: Optional[str] = None  # Direct IIIF image URL (dao[@xlink:role="IMAGE"])
 
 
 class BrowseResult(BaseModel):
