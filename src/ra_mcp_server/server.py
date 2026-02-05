@@ -1,9 +1,13 @@
 """
-Riksarkivet MCP Server - Main Entry Point
+Riksarkivet MCP Server - Composable Main Entry Point
 
-This server uses composition to combine multiple tool servers:
-- Search tools for transcribed document search and browsing
-- Future tools can be added as separate servers
+This server uses composition to combine multiple tool servers.
+Modules can be enabled/disabled via command-line flags for flexible deployment.
+
+Default modules:
+- search: Search tools for transcribed document search
+- browse: Browse tools for viewing document pages
+- guide: Historical documentation and archival guides
 
 Environment variables for debugging:
 - RA_MCP_LOG_LEVEL: Set logging level (DEBUG, INFO, WARNING, ERROR) - default: INFO
@@ -16,12 +20,40 @@ import logging
 import argparse
 import os
 import sys
+from typing import List, Dict, Any
 from starlette.responses import FileResponse
 from fastmcp import FastMCP
 
+# Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.mcp import search_mcp
 from ra_mcp_browse_mcp.mcp import browse_mcp
 from ra_mcp_guide.mcp import guide_mcp
+
+
+# Registry of available modules
+AVAILABLE_MODULES = {
+    "search": {
+        "server": search_mcp,
+        "description": "Search transcribed historical documents with advanced query syntax",
+        "default": True,
+    },
+    "browse": {
+        "server": browse_mcp,
+        "description": "View full page transcriptions by reference code",
+        "default": True,
+    },
+    "guide": {
+        "server": guide_mcp,
+        "description": "Access historical documentation and archival guides",
+        "default": True,
+    },
+    # Future modules can be added here:
+    # "metadata": {
+    #     "server": metadata_mcp,
+    #     "description": "Advanced metadata search and filtering",
+    #     "default": False,
+    # },
+}
 
 
 def setup_logging():
@@ -48,54 +80,121 @@ def setup_logging():
 
 logger = setup_logging()
 
-main_server = FastMCP(
-    name="riksarkivet-mcp",
-    instructions="""
+
+def build_instructions(enabled_modules: List[str]) -> str:
+    """Build dynamic instructions based on enabled modules.
+
+    Args:
+        enabled_modules: List of module names that are enabled.
+
+    Returns:
+        Comprehensive instruction string describing available capabilities.
+    """
+    module_descriptions = []
+    for module_name in enabled_modules:
+        if module_name in AVAILABLE_MODULES:
+            module = AVAILABLE_MODULES[module_name]
+            module_descriptions.append(f"    - {module_name}: {module['description']}")
+
+    modules_section = "\n".join(module_descriptions) if module_descriptions else "    (No modules enabled)"
+
+    return f"""
     🏛️ Riksarkivet MCP Server
 
-    A MCP server that provides access to the Swedish National Archives (Riksarkivet) data.
-    This server combines multiple specialized tool servers to provide a unified interface.
+    A Model Context Protocol server providing access to the Swedish National Archives (Riksarkivet).
+    This server combines multiple specialized tool servers into a unified interface for historical research.
 
-    Available tool categories:
-    - Search Tools: Search transcribed historical documents
-    - Browse Tools: Browse and view document pages with full text
-    - Guide Resources: Historical documentation and guides about Swedish archives
-    """,
-)
+    📋 ENABLED MODULES:
 
+{modules_section}
 
-@main_server.custom_route("/", methods=["GET"])
-async def root(_):
-    return FileResponse("assets/index.html")
+    Each tool and resource includes detailed documentation. Use MCP's tool/list and resource/list
+    to discover available capabilities, or consult individual tool descriptions for usage guidance.
+
+    """
 
 
-async def setup_server():
-    """Setup server composition by importing all tool servers."""
+def create_server(enabled_modules: List[str]) -> FastMCP:
+    """Create a FastMCP server with dynamic instructions.
+
+    Args:
+        enabled_modules: List of module names to enable.
+
+    Returns:
+        Configured FastMCP server instance.
+    """
+    return FastMCP(
+        name="riksarkivet-mcp",
+        instructions=build_instructions(enabled_modules),
+    )
+
+
+# Global server instance (configured in main)
+main_server = None
+
+
+async def setup_server(server: FastMCP, enabled_modules: List[str]):
+    """Setup server composition by importing selected tool servers.
+
+    Args:
+        server: The FastMCP server instance to configure.
+        enabled_modules: List of module names to import.
+    """
     logger.info("Setting up server composition...")
+    logger.info(f"Enabled modules: {', '.join(enabled_modules)}")
 
-    # Import search tools without prefix (they already have descriptive names)
-    await main_server.import_server(search_mcp)
-    logger.info("Imported search tools")
+    imported_count = 0
+    for module_name in enabled_modules:
+        if module_name not in AVAILABLE_MODULES:
+            logger.warning(f"⚠ Unknown module '{module_name}' - skipping")
+            continue
 
-    # Import browse tools without prefix (they already have descriptive names)
-    await main_server.import_server(browse_mcp)
-    logger.info("Imported browse tools")
+        module = AVAILABLE_MODULES[module_name]
+        try:
+            await server.import_server(module["server"])
+            logger.info(f"✓ Imported {module['server'].name}")
+            imported_count += 1
+        except Exception as e:
+            logger.error(f"✗ Failed to import {module_name}: {e}")
 
-    # Import guide resources
-    await main_server.import_server(guide_mcp)
-    logger.info("Imported guide resources")
+    if imported_count == 0:
+        logger.warning("⚠ No modules were successfully imported!")
+    else:
+        logger.info(f"Server composition complete. {imported_count} module(s) imported.")
 
-    # Future tool servers can be imported here with appropriate prefixes
-    # Example:
-    # await main_server.import_server(ocr_server, prefix="ocr")
-    # logger.info("Imported OCR tools with prefix 'ocr'")
-    # await main_server.import_server(iiif_server, prefix="iiif")
-    # logger.info("Imported IIIF tools with prefix 'iiif'")
+
+def setup_custom_routes(server: FastMCP):
+    """Setup custom HTTP routes for the server.
+
+    Args:
+        server: The FastMCP server instance to add routes to.
+    """
+    @server.custom_route("/", methods=["GET"])
+    async def root(_):
+        return FileResponse("assets/index.html")
 
 
 def main():
     """Main entry point for the server."""
-    parser = argparse.ArgumentParser(description="Riksarkivet MCP Server")
+    global main_server
+
+    # Get default modules
+    default_modules = [name for name, info in AVAILABLE_MODULES.items() if info["default"]]
+
+    parser = argparse.ArgumentParser(
+        description="Riksarkivet MCP Server - Composable access to Swedish National Archives",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Available modules:
+{chr(10).join(f"  {name:12} - {info['description']}" for name, info in AVAILABLE_MODULES.items())}
+
+Examples:
+  ra serve                              # Start with all default modules
+  ra serve --modules search,browse      # Start with only search and browse
+  ra serve --port 8000                  # Start HTTP server on port 8000
+  ra serve --modules search --port 8000 # Custom modules with HTTP transport
+        """,
+    )
     parser.add_argument("--http", action="store_true", help="Use HTTP/SSE transport instead of stdio")
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)")
     parser.add_argument(
@@ -104,16 +203,46 @@ def main():
         help="Host for HTTP transport (default: 0.0.0.0)",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+    parser.add_argument(
+        "--modules",
+        type=str,
+        default=",".join(default_modules),
+        help=f"Comma-separated list of modules to enable (default: {','.join(default_modules)})",
+    )
+    parser.add_argument(
+        "--list-modules",
+        action="store_true",
+        help="List available modules and exit",
+    )
 
     args = parser.parse_args()
+
+    # Handle --list-modules
+    if args.list_modules:
+        print("Available modules:")
+        for name, info in AVAILABLE_MODULES.items():
+            default_marker = " (default)" if info["default"] else ""
+            print(f"  {name:12} - {info['description']}{default_marker}")
+        return
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Verbose logging enabled")
 
+    # Parse enabled modules
+    enabled_modules = [m.strip() for m in args.modules.split(",") if m.strip()]
+
     logger.info("Initializing Riksarkivet MCP Server...")
-    asyncio.run(setup_server())
+
+    # Create server with dynamic instructions
+    main_server = create_server(enabled_modules)
+
+    # Setup custom routes
+    setup_custom_routes(main_server)
+
+    # Import selected modules
+    asyncio.run(setup_server(main_server, enabled_modules))
 
     if args.http:
         logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{args.host}:{args.port}")
