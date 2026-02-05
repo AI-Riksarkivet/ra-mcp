@@ -93,6 +93,27 @@ class PlainTextFormatter:
         keyword_pattern = re.compile(re.escape(search_keyword), re.IGNORECASE)
         return keyword_pattern.sub(lambda match: f"**{match.group()}**", text_content)
 
+    def _iiif_manifest_to_bildvisaren(self, iiif_manifest_url: str) -> str:
+        """
+        Convert IIIF manifest URL to bildvisaren URL.
+
+        Args:
+            iiif_manifest_url: IIIF manifest URL (e.g., https://lbiiif.riksarkivet.se/arkis!R0002497/manifest)
+
+        Returns:
+            Bildvisaren URL (e.g., https://sok.riksarkivet.se/bildvisning/R0002497) or empty string if conversion fails
+        """
+        try:
+            # Extract the ID between "arkis!" and "/manifest"
+            if "arkis!" in iiif_manifest_url and "/manifest" in iiif_manifest_url:
+                start_idx = iiif_manifest_url.find("arkis!") + len("arkis!")
+                end_idx = iiif_manifest_url.find("/manifest", start_idx)
+                manifest_id = iiif_manifest_url[start_idx:end_idx]
+                return f"https://sok.riksarkivet.se/bildvisning/{manifest_id}"
+            return ""
+        except Exception:
+            return ""
+
     def format_no_results_message(self, search_result) -> str:
         """
         Generate appropriate message when no results are found.
@@ -191,9 +212,14 @@ class PlainTextFormatter:
                 if document.links and document.links.html:
                     lines.append(f"🔗 View: {document.links.html}")
 
-                # Show IIIF manifest if available
+                # Show bildvisaren URL if IIIF manifest available
                 if document.links and document.links.image:
-                    lines.append(f"🖼️  IIIF: {document.links.image[0]}")
+                    bildvisaren_url = self._iiif_manifest_to_bildvisaren(document.links.image[0])
+                    if bildvisaren_url:
+                        lines.append(f"🖼️  View Images: {bildvisaren_url}")
+                    else:
+                        # Fallback to IIIF manifest if conversion fails
+                        lines.append(f"🖼️  IIIF: {document.links.image[0]}")
 
             # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
