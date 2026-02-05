@@ -1,20 +1,21 @@
 [project]
-name = "ra-mcp-search"
+name = "ra-mcp-browse-mcp"
 version = "0.2.7"
-description = "Search domain for Riksarkivet transcribed documents"
+description = "MCP tool for browsing Riksarkivet document pages"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "ra-mcp-core",
+    "ra-mcp-browse",
+    "fastmcp>=2.14.4",
 ]
 license = "Apache-2.0"
 
 [tool.uv.sources]
-ra-mcp-core = { workspace = true }
+ra-mcp-browse = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ra_mcp_search"]
+packages = ["src/ra_mcp_browse_mcp"]

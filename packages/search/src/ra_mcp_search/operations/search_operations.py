@@ -5,9 +5,10 @@ Handles keyword searching.
 
 from typing import Optional
 
-from ra_mcp_core.clients import SearchAPI
-from ra_mcp_core.models import SearchResult
 from ra_mcp_core.utils.http_client import HTTPClient
+from ra_mcp_core.models import SearchResult
+
+from ..clients import SearchAPI
 
 
 class SearchOperations:

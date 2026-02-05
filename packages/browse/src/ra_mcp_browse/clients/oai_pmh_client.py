@@ -5,8 +5,8 @@ OAI-PMH client for Riksarkivet.
 from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
 
-from ..config import OAI_BASE_URL, NAMESPACES
-from ..utils.http_client import HTTPClient
+from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
+from ra_mcp_core.utils.http_client import HTTPClient
 
 
 class OAIPMHClient:

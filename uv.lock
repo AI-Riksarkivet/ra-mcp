@@ -5,6 +5,9 @@ requires-python = ">=3.12"
 [manifest]
 members = [
     "ra-mcp",
+    "ra-mcp-browse",
+    "ra-mcp-browse-cli",
+    "ra-mcp-browse-mcp",
     "ra-mcp-core",
     "ra-mcp-guide",
     "ra-mcp-search",
@@ -1121,6 +1124,8 @@ name = "ra-mcp"
 version = "0.2.7"
 source = { editable = "." }
 dependencies = [
+    { name = "ra-mcp-browse-cli" },
+    { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide" },
     { name = "ra-mcp-search-cli" },
     { name = "ra-mcp-search-mcp" },
@@ -1136,6 +1141,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
+    { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-guide", editable = "packages/guide" },
     { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
@@ -1147,6 +1154,49 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "ty" },
+]
+
+[[package]]
+name = "ra-mcp-browse"
+version = "0.2.7"
+source = { editable = "packages/browse" }
+dependencies = [
+    { name = "ra-mcp-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ra-mcp-core", editable = "packages/core" }]
+
+[[package]]
+name = "ra-mcp-browse-cli"
+version = "0.2.7"
+source = { editable = "packages/browse-cli" }
+dependencies = [
+    { name = "ra-mcp-browse" },
+    { name = "rich" },
+    { name = "typer" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ra-mcp-browse", editable = "packages/browse" },
+    { name = "rich", specifier = ">=13.9.4" },
+    { name = "typer", specifier = ">=0.21.1" },
+]
+
+[[package]]
+name = "ra-mcp-browse-mcp"
+version = "0.2.7"
+source = { editable = "packages/browse-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-browse" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=2.14.4" },
+    { name = "ra-mcp-browse", editable = "packages/browse" },
 ]
 
 [[package]]
@@ -1187,14 +1237,10 @@ version = "0.2.7"
 source = { editable = "packages/search" }
 dependencies = [
     { name = "ra-mcp-core" },
-    { name = "rich" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "ra-mcp-core", editable = "packages/core" },
-    { name = "rich", specifier = ">=13.9.4" },
-]
+requires-dist = [{ name = "ra-mcp-core", editable = "packages/core" }]
 
 [[package]]
 name = "ra-mcp-search-cli"

@@ -8,8 +8,8 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ra_mcp_core.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from ra_mcp_core.utils.http_client import get_http_client
+from ra_mcp_search.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from ra_mcp_search.operations import SearchOperations
 
 from .formatting import RichConsoleFormatter

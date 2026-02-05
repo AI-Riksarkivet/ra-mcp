@@ -7,6 +7,8 @@ requires-python = ">=3.12"
 dependencies = [
     "ra-mcp-search-mcp",
     "ra-mcp-search-cli",
+    "ra-mcp-browse-mcp",
+    "ra-mcp-browse-cli",
     "ra-mcp-guide",
     "starlette>=0.52.1",
 ]
@@ -54,6 +56,9 @@ ra-mcp-core = { workspace = true }
 ra-mcp-search = { workspace = true }
 ra-mcp-search-cli = { workspace = true }
 ra-mcp-search-mcp = { workspace = true }
+ra-mcp-browse = { workspace = true }
+ra-mcp-browse-cli = { workspace = true }
+ra-mcp-browse-mcp = { workspace = true }
 ra-mcp-guide = { workspace = true }
 
 [tool.ruff.lint]
@@ -68,7 +73,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_core", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_server"]
+known-first-party = ["ra_mcp_core", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_server"]
 
 [tool.ty]
 # error-on-warning = true

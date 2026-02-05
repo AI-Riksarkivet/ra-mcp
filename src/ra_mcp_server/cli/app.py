@@ -10,6 +10,7 @@ import typer
 from rich.console import Console
 
 from ra_mcp_search_cli import search_app
+from ra_mcp_browse_cli import browse_app
 
 console = Console()
 
@@ -46,9 +47,12 @@ Examples:
     no_args_is_help=True,
 )
 
-# Import commands from search_app and add them to the root app
+# Import commands from search_app and browse_app and add them to the root app
 # This merges the search and browse commands at the root level
 for command in search_app.registered_commands:
+    app.registered_commands.append(command)
+
+for command in browse_app.registered_commands:
     app.registered_commands.append(command)
 
 

@@ -1,9 +1,8 @@
 """
-CLI commands for Riksarkivet search and browse.
+CLI command for Riksarkivet search.
 """
 
 from .app import search_app
 from .search_cmd import search
-from .browse_cmd import browse
 
-__all__ = ["search_app", "search", "browse"]
+__all__ = ["search_app", "search"]

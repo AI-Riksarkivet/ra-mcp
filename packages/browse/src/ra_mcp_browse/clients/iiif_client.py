@@ -4,8 +4,8 @@ IIIF client for Riksarkivet.
 
 from typing import Dict, Optional, Union, List
 
-from ..config import COLLECTION_API_BASE_URL
-from ..utils.http_client import HTTPClient
+from ra_mcp_browse.config import COLLECTION_API_BASE_URL
+from ra_mcp_core.utils.http_client import HTTPClient
 
 
 class IIIFClient:

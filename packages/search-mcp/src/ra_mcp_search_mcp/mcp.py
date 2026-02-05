@@ -1,45 +1,39 @@
 """
-Riksarkivet Search and Browse MCP Server.
+Riksarkivet Search MCP Server.
 
-This module sets up the FastMCP server and registers all tools and resources
-for searching and browsing transcribed historical documents.
+This module sets up the FastMCP server and registers search tools
+for searching transcribed historical documents.
 """
 
 from fastmcp import FastMCP
 
 from .search_tool import register_search_tool
-from .browse_tool import register_browse_tool
 
 
 search_mcp = FastMCP(
     name="ra-search-mcp",
     instructions="""
-    🏛️ Riksarkivet (RA) Search and Browse MCP Server
+    🏛️ Riksarkivet (RA) Search MCP Server
 
-    This server provides access to transcribed historical documents from the Swedish National Archives.
+    This server provides search access to transcribed historical documents from the Swedish National Archives.
 
-    AVAILABLE TOOLS:
+    AVAILABLE TOOL:
 
-    1. 🔍 search_transcribed - Search for keywords in transcribed materials
+    🔍 search_transcribed - Search for keywords in transcribed materials
        - Returns documents and pages containing the keyword (a subset of what is written on the document)
        - Offset parameter required to encourage comprehensive discovery
        - Provides direct links to images and ALTO XML
        - Supports advanced Solr search syntax (see SEARCH SYNTAX below)
 
-    2. 📖 browse_document - Browse specific pages by reference code
-       - View full transcriptions of specific pages
-       - Supports page ranges and multiple pages
-
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
-    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide bellow when searching)
+    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide below when searching)
     2. Continue pagination with increasing offsets (50, 100, 150...) to find all matches
     3. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
        - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
        - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)
        - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
        - Period-appropriate terminology and archaic spellings
-    4. Note reference codes and page numbers for detailed browsing
-    5. Use browse_document() to view full transcriptions of interesting pages
+    4. Note reference codes and page numbers from results for detailed browsing with browse tools
 
     SEARCH SYNTAX (Solr Query Syntax):
 
@@ -69,13 +63,12 @@ search_mcp = FastMCP(
     2. Search related terms in parallel to build complete context
     3. Use advanced syntax for precise queries (Boolean, wildcards, fuzzy, proximity)
     4. Review hit summaries to identify most relevant documents across all searches
-    5. Use browse_document() for detailed examination of specific pages
+    5. Use browse tools (separate server) for detailed examination of specific pages
 
     All tools return rich, formatted text optimized for LLM understanding.
     """,
 )
 
 
-# Register all tools
+# Register search tool
 register_search_tool(search_mcp)
-register_browse_tool(search_mcp)

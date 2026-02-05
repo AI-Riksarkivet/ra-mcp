@@ -1,25 +1,22 @@
 """
-Configuration constants for Riksarkivet MCP server.
+Configuration constants for browse operations.
 """
 
-# API Base URLs
-SEARCH_API_BASE_URL = "https://data.riksarkivet.se/api/records"
+# IIIF API URLs
 COLLECTION_API_BASE_URL = "https://lbiiif.riksarkivet.se/collection/arkiv"
 IIIF_MANIFEST_API_BASE_URL = "https://lbiiif.riksarkivet.se/arkis!"
-OAI_BASE_URL = "https://oai-pmh.riksarkivet.se/OAI"
+IIIF_IMAGE_BASE_URL = "https://lbiiif.riksarkivet.se/arkis"
 
-# Document viewing URLs
+# ALTO and Document viewing URLs
 SOK_BASE_URL = "https://sok.riksarkivet.se"
 ALTO_BASE_URL = "https://sok.riksarkivet.se/dokument/alto"
 BILDVISNING_BASE_URL = "https://sok.riksarkivet.se/bildvisning"
-IIIF_IMAGE_BASE_URL = "https://lbiiif.riksarkivet.se/arkis"
+
+# OAI-PMH API
+OAI_BASE_URL = "https://oai-pmh.riksarkivet.se/OAI"
 
 # Request settings
 REQUEST_TIMEOUT = 60
-
-# Default values
-DEFAULT_MAX_RESULTS = 50
-DEFAULT_MAX_DISPLAY = 20
 DEFAULT_MAX_PAGES = 10
 
 # XML Namespaces

@@ -8,11 +8,13 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ra_mcp_core.config import DEFAULT_MAX_DISPLAY
 from ra_mcp_core.utils.http_client import get_http_client
-from ra_mcp_search.operations import BrowseOperations
+from ra_mcp_browse.operations import BrowseOperations
+from ra_mcp_browse.config import DEFAULT_MAX_PAGES
 
 from .formatting import RichConsoleFormatter
+
+DEFAULT_MAX_DISPLAY = 20  # CLI display limit
 
 console = Console()
 

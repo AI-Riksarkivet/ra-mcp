@@ -181,7 +181,7 @@ def _extract_unique_documents(search_hits):
     """Extract unique document identifiers from hits."""
     unique_documents = set()
     for hit in search_hits:
-        document_id = hit.reference_code or hit.pid
+        document_id = hit.metadata.reference_code or hit.id
         unique_documents.add(document_id)
     return unique_documents
 
