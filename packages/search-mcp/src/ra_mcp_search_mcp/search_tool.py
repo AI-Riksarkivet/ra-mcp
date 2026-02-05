@@ -5,15 +5,25 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 """
 
 import logging
+from typing import List, Optional
 
-from ra_mcp_core.formatters import format_error_message
-from ra_mcp_core.utils.http_client import default_http_client
+from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
 
 from .formatter import PlainTextFormatter
 
 
 logger = logging.getLogger(__name__)
+
+
+def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+    """Format an error message with optional suggestions."""
+    formatted_lines = [f"⚠️ **Error**: {error_message}"]
+    if error_suggestions:
+        formatted_lines.append("\n**Suggestions**:")
+        for suggestion_text in error_suggestions:
+            formatted_lines.append(f"- {suggestion_text}")
+    return "\n".join(formatted_lines)
 
 
 def register_search_tool(mcp) -> None:

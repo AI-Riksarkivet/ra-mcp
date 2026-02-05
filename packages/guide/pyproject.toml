@@ -5,13 +5,13 @@ description = "Historical guide resources for Riksarkivet MCP"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "ra-mcp-core",
+    "ra-mcp-common",
     "fastmcp>=2.14.4",
 ]
 license = "Apache-2.0"
 
 [tool.uv.sources]
-ra-mcp-core = { workspace = true }
+ra-mcp-common = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

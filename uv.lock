@@ -8,7 +8,7 @@ members = [
     "ra-mcp-browse",
     "ra-mcp-browse-cli",
     "ra-mcp-browse-mcp",
-    "ra-mcp-core",
+    "ra-mcp-common",
     "ra-mcp-guide",
     "ra-mcp-search",
     "ra-mcp-search-cli",
@@ -1161,11 +1161,11 @@ name = "ra-mcp-browse"
 version = "0.2.7"
 source = { editable = "packages/browse" }
 dependencies = [
-    { name = "ra-mcp-core" },
+    { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ra-mcp-core", editable = "packages/core" }]
+requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-browse-cli"
@@ -1200,21 +1200,9 @@ requires-dist = [
 ]
 
 [[package]]
-name = "ra-mcp-core"
+name = "ra-mcp-common"
 version = "0.2.7"
-source = { editable = "packages/core" }
-dependencies = [
-    { name = "pydantic" },
-    { name = "rich" },
-    { name = "urllib3" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "rich", specifier = ">=14.3.2" },
-    { name = "urllib3", specifier = ">=2.6.3" },
-]
+source = { editable = "packages/common" }
 
 [[package]]
 name = "ra-mcp-guide"
@@ -1222,13 +1210,13 @@ version = "0.2.7"
 source = { editable = "packages/guide" }
 dependencies = [
     { name = "fastmcp" },
-    { name = "ra-mcp-core" },
+    { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=2.14.4" },
-    { name = "ra-mcp-core", editable = "packages/core" },
+    { name = "ra-mcp-common", editable = "packages/common" },
 ]
 
 [[package]]
@@ -1236,11 +1224,11 @@ name = "ra-mcp-search"
 version = "0.2.7"
 source = { editable = "packages/search" }
 dependencies = [
-    { name = "ra-mcp-core" },
+    { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ra-mcp-core", editable = "packages/core" }]
+requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-search-cli"

@@ -6,7 +6,7 @@ from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
 
 from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
-from ra_mcp_core.utils.http_client import HTTPClient
+from ra_mcp_common.utils.http_client import HTTPClient
 
 
 class OAIPMHClient:

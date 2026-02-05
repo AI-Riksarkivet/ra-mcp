@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from ra_mcp_browse.config import ALTO_NAMESPACES
-from ra_mcp_core.utils.http_client import HTTPClient
+from ra_mcp_common.utils.http_client import HTTPClient
 
 
 class ALTOClient:

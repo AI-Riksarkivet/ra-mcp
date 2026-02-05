@@ -4,13 +4,22 @@ Browse MCP tool for Riksarkivet document pages.
 Provides the browse_document tool for viewing full page transcriptions.
 """
 
-from typing import Optional
+from typing import Optional, List
 
-from ra_mcp_core.formatters import format_error_message
-from ra_mcp_core.utils.http_client import default_http_client
+from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_browse.operations import BrowseOperations
 
 from .formatter import PlainTextFormatter
+
+
+def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+    """Format an error message with optional suggestions."""
+    formatted_lines = [f"⚠️ **Error**: {error_message}"]
+    if error_suggestions:
+        formatted_lines.append("\n**Suggestions**:")
+        for suggestion_text in error_suggestions:
+            formatted_lines.append(f"- {suggestion_text}")
+    return "\n".join(formatted_lines)
 
 
 def register_browse_tool(mcp) -> None:

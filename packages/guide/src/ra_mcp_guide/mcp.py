@@ -5,9 +5,19 @@ Provides MCP resources for accessing historical documentation about Swedish arch
 """
 
 import os
+from typing import List, Optional
 
 from fastmcp import FastMCP
-from ra_mcp_core.formatters import format_error_message
+
+
+def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+    """Format an error message with optional suggestions."""
+    formatted_lines = [f"⚠️ **Error**: {error_message}"]
+    if error_suggestions:
+        formatted_lines.append("\n**Suggestions**:")
+        for suggestion_text in error_suggestions:
+            formatted_lines.append(f"- {suggestion_text}")
+    return "\n".join(formatted_lines)
 
 
 guide_mcp = FastMCP(

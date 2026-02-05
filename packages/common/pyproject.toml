@@ -1,0 +1,15 @@
+[project]
+name = "ra-mcp-common"
+version = "0.2.7"
+description = "Common utilities for Riksarkivet MCP - shared HTTP client and utilities"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+license = "Apache-2.0"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ra_mcp_common"]
