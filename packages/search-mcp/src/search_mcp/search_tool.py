@@ -27,20 +27,24 @@ def format_error_message(error_message: str, error_suggestions: Optional[List[st
 
 
 def register_search_tool(mcp) -> None:
-    """Register the search tool with the MCP server."""
+    """Register the search tools with the MCP server."""
 
     @mcp.tool(
         name="search_transcribed",
-        description="""Search for keywords in historical documents from the Swedish National Archives (Riksarkivet).
+        description="""Search AI-transcribed text in digitised historical documents from the Swedish National Archives (Riksarkivet).
 
-    This tool searches through historical documents and returns matching pages with their transcriptions.
+    This tool searches ONLY AI-transcribed text in digitised materials (not metadata fields).
+    Returns matching pages with their transcriptions from documents that have been transcribed.
     Supports advanced Solr query syntax including wildcards, fuzzy search, Boolean operators, and proximity searches.
 
     Key features:
+    - Searches full-text transcriptions of historical documents
     - Returns document metadata, page numbers, and text snippets containing the keyword
     - Provides direct links to page images and ALTO XML transcriptions
     - Supports pagination via offset parameter for comprehensive discovery
     - Advanced search syntax for precise queries
+
+    For searching document metadata (titles, names, places), use the search_metadata tool instead.
 
     Search syntax examples:
     - Basic: "Stockholm" - exact term search
@@ -117,24 +121,12 @@ def register_search_tool(mcp) -> None:
 
         The key is that proximity operators in this system work best with exactly 2 terms in quotes, and you can then combine multiple proximity searches using Boolean operators outside the quotes!
 
-    Search Modes:
-    - Transcribed text (default): Searches AI-transcribed text in digitised materials
-      → API: transcribed_text={keyword} + only_digitised_materials=true
-    - Metadata search: Searches titles, names, places, provenance in digitised materials
-      → API: text={keyword} + only_digitised_materials=true
-    - All materials: Searches metadata in all materials including non-digitised (2M+ records)
-      → API: text={keyword} + only_digitised_materials=false
-
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - transcribed_only: Search transcribed text (True) or general metadata (False) (default: True)
-    - only_digitised: Limit to digitised materials (True) or include all (False) (default: True)
     - max_results: Maximum documents to return per query (default: 25)
     - max_snippets_per_record: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
-
-    Note: transcribed_only=True requires only_digitised=True (can't search transcriptions that don't exist)
 
     Best practices:
     - Start with offset=0 and increase by 50 to discover all matches
@@ -147,45 +139,29 @@ def register_search_tool(mcp) -> None:
     async def search_transcribed(
         keyword: str,
         offset: int,
-        transcribed_only: bool = True,
-        only_digitised: bool = True,
         max_results: int = 25,
         max_snippets_per_record: int = 3,
         max_response_tokens: int = 15000,
     ) -> str:
-        search_type = "transcribed" if transcribed_only else "all fields"
-        digitised_filter = "digitised only" if only_digitised else "all materials"
+        """Search AI-transcribed text in digitised historical documents.
+
+        This tool searches only transcribed text (not metadata).
+        For metadata search, use search_metadata instead.
+        """
         logger.info(
-            f"MCP Tool: search_transcribed called with keyword='{keyword}', "
-            f"offset={offset}, type={search_type}, filter={digitised_filter}"
+            f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}"
         )
 
         try:
-            # Validate: transcribed_only requires only_digitised
-            if transcribed_only and not only_digitised:
-                error_msg = (
-                    "Error: transcribed_only=True requires only_digitised=True. "
-                    "Transcriptions only exist for digitised materials. "
-                    "Use transcribed_only=False to search metadata in non-digitised materials."
-                )
-                logger.error(error_msg)
-                return format_error_message(
-                    error_msg,
-                    [
-                        "Set only_digitised=True to search transcribed text",
-                        "Set transcribed_only=False to search all materials' metadata"
-                    ]
-                )
-
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
 
-            logger.info(f"Executing {search_type} search for '{keyword}'...")
+            logger.info(f"Executing transcribed text search for '{keyword}'...")
             search_result = search_operations.search(
                 keyword=keyword,
-                transcribed_only=transcribed_only,
-                only_digitised=only_digitised,
+                transcribed_only=True,  # Always search transcribed text
+                only_digitised=True,    # Transcriptions only exist for digitised materials
                 offset=offset,
                 max_results=max_results,
                 max_snippets_per_record=max_snippets_per_record,
@@ -212,6 +188,101 @@ def register_search_tool(mcp) -> None:
                     "Check if the service is available",
                     "Reduce max_results",
                     "Check Hugging Face logs for timeout details",
+                ],
+            )
+
+    @mcp.tool(
+        name="search_metadata",
+        description="""Search document metadata (titles, names, places, provenance) in the Swedish National Archives.
+
+    This tool searches metadata fields like document titles, personal names, place names, and archival descriptions.
+    Does NOT search full-text transcriptions - use search_transcribed for that.
+
+    Key features:
+    - Searches titles, names, places, archival descriptions, provenance
+    - Can search both digitised and non-digitised materials
+    - Returns document metadata with matching fields
+    - Supports same advanced Solr query syntax as search_transcribed
+    - Access to 2M+ records when including non-digitised materials
+
+    Search syntax (same as search_transcribed):
+    - Basic: "Stockholm" - exact term search
+    - Wildcards: "Stock*" - match patterns
+    - Fuzzy: "Stockholm~1" - find similar words
+    - Boolean: "(Stockholm AND Carpelan)" - combine terms
+    - Proximity: '"Stockholm silver"~10' - words within 10 words
+
+    Parameters:
+    - keyword: Search term or Solr query (required)
+    - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
+    - only_digitised: Limit to digitised materials (True) or include all records (False) (default: True)
+    - max_results: Maximum documents to return per query (default: 25)
+    - max_response_tokens: Maximum tokens in response (default: 15000)
+
+    When to use:
+    - Searching for person names: "Carpelan", "Gustaf*"
+    - Searching for places: "Stockholm", "Göteborg"
+    - Searching document titles or descriptions
+    - Finding non-digitised materials by metadata
+    - Broad discovery across all archival records
+
+
+    """,
+    )
+    async def search_metadata(
+        keyword: str,
+        offset: int,
+        only_digitised: bool = True,
+        max_results: int = 25,
+        max_response_tokens: int = 15000,
+    ) -> str:
+        """Search document metadata (titles, names, places, provenance).
+
+        This tool searches metadata fields, not transcribed text.
+        For transcription search, use search_transcribed instead.
+        """
+        material_scope = "digitised materials" if only_digitised else "all materials (2M+ records)"
+        logger.info(
+            f"MCP Tool: search_metadata called with keyword='{keyword}', "
+            f"offset={offset}, scope={material_scope}"
+        )
+
+        try:
+            logger.debug("Initializing search operations...")
+            search_operations = SearchOperations(http_client=default_http_client)
+            formatter = PlainTextFormatter()
+
+            logger.info(f"Executing metadata search for '{keyword}' in {material_scope}...")
+            search_result = search_operations.search(
+                keyword=keyword,
+                transcribed_only=False,  # Search metadata fields
+                only_digitised=only_digitised,
+                offset=offset,
+                max_results=max_results,
+                max_snippets_per_record=None,  # Metadata search doesn't have snippets
+            )
+
+            logger.info(f"Formatting {len(search_result.items)} search results...")
+            formatted_results = formatter.format_search_results(
+                search_result,
+                maximum_documents_to_display=max_results,
+            )
+
+            formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
+            formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
+
+            logger.info("✓ Metadata search completed successfully, returning results")
+            return formatted_results
+
+        except Exception as e:
+            logger.error(f"✗ MCP search_metadata failed: {type(e).__name__}: {e}", exc_info=True)
+            return format_error_message(
+                f"Metadata search failed: {str(e)}",
+                error_suggestions=[
+                    "Try a simpler search term",
+                    "Check if the service is available",
+                    "Reduce max_results",
+                    "Try with only_digitised=True for faster results",
                 ],
             )
 

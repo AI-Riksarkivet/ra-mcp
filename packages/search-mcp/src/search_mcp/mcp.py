@@ -15,25 +15,34 @@ search_mcp = FastMCP(
     instructions="""
     🏛️ Riksarkivet (RA) Search MCP Server
 
-    This server provides search access to transcribed historical documents from the Swedish National Archives.
+    This server provides search access to historical documents from the Swedish National Archives.
 
-    AVAILABLE TOOL:
+    AVAILABLE TOOLS:
 
-    🔍 search_transcribed - Search for keywords in transcribed materials
-       - Returns documents and pages containing the keyword (a subset of what is written on the document)
+    🔍 search_transcribed - Search AI-transcribed text in digitised documents
+       - Searches full-text transcriptions of historical documents
+       - Returns documents and pages containing the keyword with text snippets
+       - Best for: Finding specific phrases, names, or terms in document content
        - Offset parameter required to encourage comprehensive discovery
        - Provides direct links to images and ALTO XML
        - Supports advanced Solr search syntax (see SEARCH SYNTAX below)
 
+    📋 search_metadata - Search document metadata (titles, names, places)
+       - Searches metadata fields: titles, personal names, place names, descriptions
+       - Can search both digitised and non-digitised materials (2M+ records)
+       - Best for: Finding documents by person names, places, or archival descriptions
+       - Set only_digitised=False to include non-digitised materials
+       - Supports same advanced Solr search syntax
+
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
-    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide below when searching)
-    2. Continue pagination with increasing offsets (50, 100, 150...) to find all matches
+    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide below when searching) and check some metadata with search_metadata
+    2. Continue pagination with increasing offsets (50, 100, 150...) if nothing interesting pop up but prioritze transribed materials 
     3. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
        - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
        - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)
        - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
        - Period-appropriate terminology and archaic spellings
-    4. Note reference codes and page numbers from results for detailed browsing with browse tools
+    4. Note reference codes and page numbers from results for detailed browsing with browse tools, use them to go into interesting matches
 
     SEARCH SYNTAX (Solr Query Syntax):
 

@@ -131,11 +131,21 @@ class PlainTextFormatter:
         else:
             document_display = str(document_count)
 
-        lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
+        # Different summary for metadata search vs transcribed search
+        if snippet_count > 0:
+            # Transcribed text search - has page-level hits
+            lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
+        else:
+            # Metadata search - just document matches
+            lines.append(f"Found {document_display} volumes matching metadata")
         lines.append("")
 
         for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
-            if not document.transcribed_text or not document.transcribed_text.snippets:
+            # For transcribed search, skip documents without snippets
+            # For metadata search, show all documents
+            has_snippets = document.transcribed_text and document.transcribed_text.snippets
+            if snippet_count > 0 and not has_snippets:
+                # Transcribed search mode - skip docs without snippets
                 continue
 
             lines.append(f"📚 Document: {document.metadata.reference_code}")
@@ -151,47 +161,83 @@ class PlainTextFormatter:
             title_display = title[:100] + "..." if len(title) > 100 else title
             lines.append(f"📄 Title: {title_display}")
 
-            # Extract page numbers from snippets
-            page_numbers = sorted(set(
-                page.id
-                for snippet in document.transcribed_text.snippets
-                for page in snippet.pages
-            ))
-            # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
-            # Split by underscore and take the last part (the actual page number)
-            trimmed_page_numbers = []
-            for page_id in page_numbers:
-                # Split by underscore and take last part
-                parts = page_id.split('_')
-                if parts:
-                    # Get the last non-empty part and strip leading zeros
-                    last_part = parts[-1]
-                    trimmed = last_part.lstrip("0") or "0"
-                    trimmed_page_numbers.append(trimmed)
+            # For metadata search, show additional contextual information
+            if not has_snippets:
+                # Show object type
+                if document.object_type:
+                    type_info = document.object_type
+                    if document.type:
+                        type_info += f" / {document.type}"
+                    lines.append(f"🏷️  Type: {type_info}")
+
+                # Show hierarchy (archival context)
+                if document.metadata.hierarchy:
+                    hierarchy_parts = [h.caption for h in document.metadata.hierarchy[:3]]
+                    if hierarchy_parts:
+                        hierarchy_text = " → ".join(hierarchy_parts)
+                        if len(hierarchy_text) > 150:
+                            hierarchy_text = hierarchy_text[:147] + "..."
+                        lines.append(f"📂 Context: {hierarchy_text}")
+
+                # Show provenance (creator/person)
+                if document.metadata.provenance:
+                    prov = document.metadata.provenance[0]
+                    prov_text = prov.caption
+                    if prov.date:
+                        prov_text += f" ({prov.date})"
+                    lines.append(f"👤 Creator: {prov_text}")
+
+                # Show link to view online
+                if document.links and document.links.html:
+                    lines.append(f"🔗 View: {document.links.html}")
+
+                # Show IIIF manifest if available
+                if document.links and document.links.image:
+                    lines.append(f"🖼️  IIIF: {document.links.image[0]}")
+
+            # Only show pages and snippets for transcribed search (has_snippets)
+            if has_snippets:
+                # Extract page numbers from snippets
+                page_numbers = sorted(set(
+                    page.id
+                    for snippet in document.transcribed_text.snippets
+                    for page in snippet.pages
+                ))
+                # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
+                # Split by underscore and take the last part (the actual page number)
+                trimmed_page_numbers = []
+                for page_id in page_numbers:
+                    # Split by underscore and take last part
+                    parts = page_id.split('_')
+                    if parts:
+                        # Get the last non-empty part and strip leading zeros
+                        last_part = parts[-1]
+                        trimmed = last_part.lstrip("0") or "0"
+                        trimmed_page_numbers.append(trimmed)
+                    else:
+                        trimmed_page_numbers.append(page_id)
+
+                doc_snippet_count = len(document.transcribed_text.snippets)
+                total_hits = document.get_total_hits()
+                hit_label = "hit" if doc_snippet_count == 1 else "hits"
+
+                lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
+
+                # Show total hits if available and different from shown count
+                if total_hits > doc_snippet_count:
+                    lines.append(f"💡 {doc_snippet_count} {hit_label} shown ({total_hits} total)")
                 else:
-                    trimmed_page_numbers.append(page_id)
+                    lines.append(f"💡 {doc_snippet_count} {hit_label} found")
 
-            snippet_count = len(document.transcribed_text.snippets)
-            total_hits = document.get_total_hits()
-            hit_label = "hit" if snippet_count == 1 else "hits"
+                # Show first 3 snippets
+                for snippet in document.transcribed_text.snippets[:3]:
+                    snippet_text = self.highlight_search_keyword(snippet.text, search_result.keyword)
+                    if snippet.pages:
+                        page_id = snippet.pages[0].id
+                        lines.append(f"   Page {page_id}: {snippet_text}")
 
-            lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
-
-            # Show total hits if available and different from shown count
-            if total_hits > snippet_count:
-                lines.append(f"💡 {snippet_count} {hit_label} shown ({total_hits} total)")
-            else:
-                lines.append(f"💡 {snippet_count} {hit_label} found")
-
-            # Show first 3 snippets
-            for snippet in document.transcribed_text.snippets[:3]:
-                snippet_text = self.highlight_search_keyword(snippet.text, search_result.keyword)
-                if snippet.pages:
-                    page_id = snippet.pages[0].id
-                    lines.append(f"   Page {page_id}: {snippet_text}")
-
-            if len(document.transcribed_text.snippets) > 3:
-                lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
+                if len(document.transcribed_text.snippets) > 3:
+                    lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
 
             lines.append("")
 
