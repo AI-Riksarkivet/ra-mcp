@@ -215,6 +215,11 @@ class RichConsoleFormatter:
             if document.links and document.links.html:
                 content_parts.append(f"[blue]🔗 {document.links.html}[/blue]")
 
+            # Add IIIF image manifest links if available
+            if document.links and document.links.image:
+                for img_manifest in document.links.image[:1]:  # Show first image manifest
+                    content_parts.append(f"[magenta]🖼️  {img_manifest}[/magenta]")
+
             # Add snippets if available (for transcribed text searches)
             if document.transcribed_text and document.transcribed_text.snippets:
                 for snippet in document.transcribed_text.snippets[:3]:
