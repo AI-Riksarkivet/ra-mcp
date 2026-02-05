@@ -117,14 +117,24 @@ def register_search_tool(mcp) -> None:
 
         The key is that proximity operators in this system work best with exactly 2 terms in quotes, and you can then combine multiple proximity searches using Boolean operators outside the quotes!
 
+    Search Modes:
+    - Transcribed text (default): Searches AI-transcribed text in digitised materials
+      → API: transcribed_text={keyword} + only_digitised_materials=true
+    - Metadata search: Searches titles, names, places, provenance in digitised materials
+      → API: text={keyword} + only_digitised_materials=true
+    - All materials: Searches metadata in all materials including non-digitised (2M+ records)
+      → API: text={keyword} + only_digitised_materials=false
+
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - transcribed_only: Search only in transcribed text (True) or all fields including metadata (False) (default: True)
-    - only_digitised: Limit results to digitized materials with images (default: True)
-    - max_results: Maximum documents to return per query (default: 10)
+    - transcribed_only: Search transcribed text (True) or general metadata (False) (default: True)
+    - only_digitised: Limit to digitised materials (True) or include all (False) (default: True)
+    - max_results: Maximum documents to return per query (default: 25)
     - max_snippets_per_record: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
+
+    Note: transcribed_only=True requires only_digitised=True (can't search transcriptions that don't exist)
 
     Best practices:
     - Start with offset=0 and increase by 50 to discover all matches
@@ -151,6 +161,22 @@ def register_search_tool(mcp) -> None:
         )
 
         try:
+            # Validate: transcribed_only requires only_digitised
+            if transcribed_only and not only_digitised:
+                error_msg = (
+                    "Error: transcribed_only=True requires only_digitised=True. "
+                    "Transcriptions only exist for digitised materials. "
+                    "Use transcribed_only=False to search metadata in non-digitised materials."
+                )
+                logger.error(error_msg)
+                return format_error_message(
+                    error_msg,
+                    [
+                        "Set only_digitised=True to search transcribed text",
+                        "Set transcribed_only=False to search all materials' metadata"
+                    ]
+                )
+
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
