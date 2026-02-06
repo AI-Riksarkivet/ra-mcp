@@ -235,3 +235,263 @@ func (m *RaMcp) ExportSbom(
 
 	return fmt.Sprintf("SBOM exported to %s", outputPath), nil
 }
+
+// VerifyAttestations verifies SBOM and provenance attestations for a published image
+// Uses cosign to inspect attestations embedded in the OCI registry
+func (m *RaMcp) VerifyAttestations(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+) (string, error) {
+	// Use cosign container to verify attestations
+	cosignContainer := dag.Container().
+		From("gcr.io/projectsigstore/cosign:latest").
+		WithExec([]string{
+			"cosign",
+			"verify-attestation",
+			"--type", "slsaprovenance",
+			"--insecure-ignore-tlog",
+			"--insecure-ignore-sct",
+			imageRef,
+		})
+
+	output, err := cosignContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("attestation verification failed: %w", err)
+	}
+
+	return output, nil
+}
+
+// InspectAttestations inspects all attestations attached to an image
+// Shows SBOM, provenance, and other attestations without verification
+func (m *RaMcp) InspectAttestations(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine or docker.io/riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+) (string, error) {
+	// Add docker.io prefix if not present and no registry specified
+	fullRef := imageRef
+	if len(imageRef) > 0 && imageRef[0] != '/' && !containsRegistry(imageRef) {
+		fullRef = "docker.io/" + imageRef
+	}
+
+	// Use oras to discover attestations
+	orasContainer := dag.Container().
+		From("ghcr.io/oras-project/oras:v1.2.2").
+		WithExec([]string{
+			"oras",
+			"discover",
+			"--format", "tree",
+			fullRef,
+		})
+
+	output, err := orasContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to discover attestations: %w", err)
+	}
+
+	return output, nil
+}
+
+// Helper function to check if image ref contains a registry
+func containsRegistry(imageRef string) bool {
+	// Check for common patterns: contains "." or ":" before first "/"
+	for _, c := range imageRef {
+		if c == '/' {
+			return false
+		}
+		if c == '.' || c == ':' {
+			return true
+		}
+	}
+	return false
+}
+
+// InspectImageManifest inspects the OCI manifest to show all layers including attestations
+func (m *RaMcp) InspectImageManifest(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+) (string, error) {
+	// Use crane to inspect the manifest
+	craneContainer := dag.Container().
+		From("gcr.io/go-containerregistry/crane:latest").
+		WithExec([]string{
+			"crane",
+			"manifest",
+			imageRef,
+		})
+
+	output, err := craneContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to inspect manifest: %w", err)
+	}
+
+	return output, nil
+}
+
+// DownloadSbom downloads the SBOM attestation from a published image
+func (m *RaMcp) DownloadSbom(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+	// Output file path
+	// +default="./downloaded-sbom.json"
+	outputPath string,
+) (string, error) {
+	// Use cosign to download SBOM attestation
+	cosignContainer := dag.Container().
+		From("gcr.io/projectsigstore/cosign:latest").
+		WithExec([]string{
+			"cosign",
+			"download",
+			"attestation",
+			"--predicate-type", "https://spdx.dev/Document",
+			imageRef,
+		})
+
+	sbomContent, err := cosignContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to download SBOM: %w", err)
+	}
+
+	// Write to file
+	sbomFile := dag.Container().
+		From("alpine:latest").
+		WithNewFile("/sbom.json", sbomContent).
+		File("/sbom.json")
+
+	_, err = sbomFile.Export(ctx, outputPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to export SBOM: %w", err)
+	}
+
+	return fmt.Sprintf("SBOM downloaded to %s", outputPath), nil
+}
+
+// CheckAttestationCount checks how many attestations are attached to an image
+// Useful for quick verification that SBOM and provenance were published
+func (m *RaMcp) CheckAttestationCount(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+) (string, error) {
+	// Use Docker Hub API or crane to check manifest list
+	craneContainer := dag.Container().
+		From("gcr.io/go-containerregistry/crane:latest").
+		WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf("crane manifest %s | grep -o '\"mediaType\"' | wc -l", imageRef),
+		})
+
+	count, err := craneContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to count attestations: %w", err)
+	}
+
+	return fmt.Sprintf("Image %s has attestations (manifest entries: %s)", imageRef, count), nil
+}
+
+// ShowAttestationContents shows the raw contents of attestations attached to an image
+// This displays the actual SBOM and provenance data from BuildKit attestations
+func (m *RaMcp) ShowAttestationContents(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+	// Which platform's attestation to show (amd64 or arm64)
+	// +default="amd64"
+	platform string,
+) (string, error) {
+	// Add docker.io prefix if needed
+	fullRef := imageRef
+	if len(imageRef) > 0 && imageRef[0] != '/' && !containsRegistry(imageRef) {
+		fullRef = "docker.io/" + imageRef
+	}
+
+	// Use crane and jq to extract attestation manifests
+	// BuildKit stores attestations as separate manifests with annotation "vnd.docker.reference.type": "attestation-manifest"
+	// Get crane binary from official image
+	craneBinary := dag.Container().
+		From("gcr.io/go-containerregistry/crane:latest").
+		File("/ko-app/crane")
+
+	// Use alpine with jq and copy crane binary
+	craneContainer := dag.Container().
+		From("alpine:latest").
+		WithExec([]string{"apk", "add", "--no-cache", "jq"}).
+		WithFile("/usr/local/bin/crane", craneBinary).
+		WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf(`
+# Get the main manifest list
+MANIFEST=$(crane manifest %s)
+
+# Find attestation manifest digests for the specified platform
+# First get the platform image digest
+PLATFORM_DIGEST=$(echo "$MANIFEST" | jq -r '.manifests[] | select(.platform.architecture == "%s" and .platform.os == "linux") | .digest')
+
+# Then find the attestation manifest that references this platform
+ATTESTATION_DIGEST=$(echo "$MANIFEST" | jq -r --arg ref "$PLATFORM_DIGEST" '.manifests[] | select(.annotations."vnd.docker.reference.type" == "attestation-manifest" and .annotations."vnd.docker.reference.digest" == $ref) | .digest')
+
+if [ -z "$ATTESTATION_DIGEST" ]; then
+  echo "No attestation found for platform %s"
+  exit 0
+fi
+
+echo "=== Attestation Manifest for %s ==="
+echo "Digest: $ATTESTATION_DIGEST"
+echo ""
+
+# Get the attestation manifest
+ATTESTATION_MANIFEST=$(crane manifest %s@$ATTESTATION_DIGEST)
+echo "$ATTESTATION_MANIFEST" | jq .
+
+# Get the actual attestation layers
+echo ""
+echo "=== Attestation Layers ==="
+LAYERS=$(echo "$ATTESTATION_MANIFEST" | jq -r '.layers[] | .digest')
+for LAYER in $LAYERS; do
+  echo ""
+  echo "--- Layer: $LAYER ---"
+  crane blob %s@$LAYER | head -c 10000
+  echo ""
+done
+			`, fullRef, platform, platform, platform, fullRef, fullRef),
+		})
+
+	output, err := craneContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to extract attestations: %w", err)
+	}
+
+	return output, nil
+}
+
+// ListAttestationTypes lists what types of attestations are attached to an image
+func (m *RaMcp) ListAttestationTypes(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.8-alpine)
+	imageRef string,
+) (string, error) {
+	// Add docker.io prefix if needed
+	fullRef := imageRef
+	if len(imageRef) > 0 && imageRef[0] != '/' && !containsRegistry(imageRef) {
+		fullRef = "docker.io/" + imageRef
+	}
+
+	// Use crane to inspect each attestation manifest
+	craneContainer := dag.Container().
+		From("gcr.io/go-containerregistry/crane:latest").
+		WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf(`crane manifest %s | jq -r '.manifests[] | select(.annotations."vnd.docker.reference.type" == "attestation-manifest") | "Attestation for: " + .annotations."vnd.docker.reference.digest" + "\nDigest: " + .digest'`, fullRef),
+		})
+
+	output, err := craneContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to list attestations: %w", err)
+	}
+
+	return output, nil
+}
