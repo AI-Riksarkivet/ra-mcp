@@ -1,6 +1,6 @@
 [project]
 name = "ra-mcp-search-cli"
-version = "0.2.11"
+version = "0.2.12"
 description = "CLI commands for Riksarkivet search and browse"
 readme = "README.md"
 requires-python = ">=3.12"

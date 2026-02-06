@@ -1,6 +1,6 @@
 [project]
 name = "ra-mcp"
-version = "0.2.11"
+version = "0.2.12"
 description = "Riksarkivet MCP server composition and CLI"
 readme = "README.md"
 requires-python = ">=3.12"
