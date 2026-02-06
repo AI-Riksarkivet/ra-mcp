@@ -75,7 +75,7 @@ jobs:
       image: ${{ needs.build-image.outputs.image }}
       digest: ${{ needs.build-image.outputs.digest }}
       registry-username: riksarkivet  # Docker Hub username (public)
-      private-repository: false       # Repository is public
+      private-repository: true        # Workaround: SLSA generator incorrectly detects repo as private with workflow_dispatch
     secrets:
       registry-password: ${{ secrets.DOCKERHUB_SECRET }}
 
