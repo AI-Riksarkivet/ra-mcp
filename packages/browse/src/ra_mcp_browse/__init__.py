@@ -4,7 +4,7 @@ RA-MCP Browse: Browse domain for Riksarkivet document pages.
 Provides clients, operations, and models for browsing document pages.
 """
 
-__version__ = "0.2.12"
+__version__ = "0.2.13"
 
 from .clients import ALTOClient, IIIFClient, OAIPMHClient
 from .operations import BrowseOperations

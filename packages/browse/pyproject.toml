@@ -1,6 +1,6 @@
 [project]
 name = "ra-mcp-browse"
-version = "0.2.12"
+version = "0.2.13"
 description = "Browse domain for Riksarkivet document pages"
 readme = "README.md"
 requires-python = ">=3.12"
