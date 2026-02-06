@@ -17,7 +17,7 @@ jobs:
       packages: write      # For pushing to registries
       attestations: write  # For attestations
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Run Dagger checks and tests first
       #- name: Run checks and tests
