@@ -92,11 +92,11 @@ class BrowseOperations:
         Returns:
             IIIF manifest identifier or original PID if no manifest found.
         """
-        iiif_collection_info = self.iiif_client.explore_collection(persistent_identifier)
+        iiif_collection = self.iiif_client.get_collection(persistent_identifier)
 
         # Return first manifest ID if available, otherwise use PID
-        if iiif_collection_info and iiif_collection_info.get("manifests"):
-            return iiif_collection_info["manifests"][0]["id"]
+        if iiif_collection and iiif_collection.manifests:
+            return iiif_collection.manifests[0].id
 
         return persistent_identifier
 
@@ -159,25 +159,8 @@ class BrowseOperations:
             OAIPMHMetadata containing title, repository, etc. from OAI-PMH API,
             or None if not found.
         """
-        try:
-            record = self.oai_client.get_record(reference_code, "oai_ape_ead")
-
-            # Map OAI-PMH response to OAIPMHMetadata model
-            return OAIPMHMetadata(
-                identifier=record.get("identifier", reference_code),
-                title=record.get("title"),
-                unitid=record.get("unitid"),
-                repository=record.get("repository"),
-                nad_link=record.get("nad_link"),
-                datestamp=record.get("datestamp"),
-                unitdate=record.get("unitdate"),
-                description=record.get("description"),
-                iiif_manifest=record.get("iiif_manifest"),
-                iiif_image=record.get("iiif_image"),
-            )
-        except Exception:
-            # If metadata fetch fails, return None - browse will still work
-            return None
+        # Use the typed metadata method from OAI client
+        return self.oai_client.get_metadata(reference_code)
 
     def _get_page_context(
         self,

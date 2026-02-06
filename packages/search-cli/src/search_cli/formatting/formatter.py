@@ -244,7 +244,7 @@ class RichConsoleFormatter:
         records_count: int,
         total_hits: int,
         offset: int,
-        max_requested: int = None
+        max_requested: Optional[int] = None
     ) -> List[str]:
         """
         Format search summary statistics.
@@ -304,11 +304,14 @@ class RichConsoleFormatter:
         ref_code = first_doc.metadata.reference_code
 
         # Extract page numbers from snippets
-        pages = sorted(set(
-            page.id
-            for snippet in first_doc.transcribed_text.snippets
-            for page in snippet.pages
-        ))
+        if first_doc.transcribed_text and first_doc.transcribed_text.snippets:
+            pages = sorted(set(
+                page.id
+                for snippet in first_doc.transcribed_text.snippets
+                for page in snippet.pages
+            ))
+        else:
+            pages = []
         pages_trimmed = trim_page_numbers(pages[:5])
 
         lines.append("\n[dim]💡 Example: To view these hits, run:[/dim]")

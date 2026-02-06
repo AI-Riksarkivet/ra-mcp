@@ -5,6 +5,7 @@ IIIF client for Riksarkivet.
 from typing import Dict, Optional, Union, List
 
 from ra_mcp_browse.config import COLLECTION_API_BASE_URL
+from ra_mcp_browse.models import IIIFCollection, IIIFManifest
 from ra_mcp_common.utils.http_client import HTTPClient
 
 
@@ -15,7 +16,7 @@ class IIIFClient:
         self.http_client = http_client
 
     def explore_collection(self, pid: str, timeout: int = 30) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
-        """Explore IIIF collection to get manifests."""
+        """Explore IIIF collection to get manifests (legacy dict format)."""
         collection_endpoint_url = self._build_collection_url(pid)
 
         collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
@@ -26,6 +27,30 @@ class IIIFClient:
         available_manifests = self._extract_all_manifests(collection_response)
 
         return self._build_collection_result(collection_title, available_manifests, collection_endpoint_url)
+
+    def get_collection(self, pid: str, timeout: int = 30) -> Optional[IIIFCollection]:
+        """Get IIIF collection with typed model."""
+        collection_endpoint_url = self._build_collection_url(pid)
+
+        collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
+        if not collection_response:
+            return None
+
+        collection_id = collection_response.get("id", pid)
+        collection_title = self._extract_collection_title(collection_response)
+        available_manifests = self._extract_all_manifests(collection_response)
+
+        # Convert to typed models
+        manifest_models = [
+            IIIFManifest(id=m["id"], label=m.get("label"))
+            for m in available_manifests
+        ]
+
+        return IIIFCollection(
+            id=collection_id,
+            label=collection_title,
+            manifests=manifest_models
+        )
 
     def _build_collection_url(self, persistent_identifier: str) -> str:
         """Build the collection API URL."""

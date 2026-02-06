@@ -8,6 +8,19 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
+class IIIFManifest(BaseModel):
+    """IIIF manifest reference."""
+    id: str
+    label: Optional[str] = None
+
+
+class IIIFCollection(BaseModel):
+    """IIIF collection information."""
+    id: str
+    label: Optional[str] = None
+    manifests: List[IIIFManifest] = []
+
+
 class PageContext(BaseModel):
     """
     Full page context for browsing.

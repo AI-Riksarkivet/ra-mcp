@@ -124,6 +124,29 @@ uv run ruff check --fix .
 uv run ty check
 ```
 
+### Running CI Checks Locally
+
+**IMPORTANT**: Before committing code, always run CI checks locally to catch issues early.
+
+```bash
+# Run full CI pipeline (same as GitHub Actions)
+dagger call checks && dagger call test
+
+# Quick check: Run code quality checks only
+dagger call checks
+
+# Quick check: Run tests only
+dagger call test
+```
+
+**Best Practice**: Run `dagger call checks` before every commit to ensure:
+- Code is properly formatted
+- No linting errors
+- Type checking passes
+- Tests pass (when implemented)
+
+This matches exactly what runs in GitHub Actions CI, preventing failed builds.
+
 ### Debugging
 
 ```bash

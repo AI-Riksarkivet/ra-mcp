@@ -6,6 +6,7 @@ from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
 
 from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
+from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.utils.http_client import HTTPClient
 
 
@@ -17,7 +18,7 @@ class OAIPMHClient:
         self.base_url = base_url
 
     def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> Dict[str, Union[str, List, Dict]]:
-        """Get a specific record with full metadata."""
+        """Get a specific record with full metadata (raw dict format)."""
         oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
 
         xml_response_root = self._make_request(oai_request_parameters)
@@ -31,7 +32,32 @@ class OAIPMHClient:
 
         return extracted_record_data
 
-    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, str]:
+    def get_metadata(self, identifier: str) -> Optional[OAIPMHMetadata]:
+        """Get record metadata as typed OAIPMHMetadata model."""
+        try:
+            record = self.get_record(identifier, "oai_ape_ead")
+
+            # Helper to safely extract string values
+            def get_str(key: str, default: Optional[str] = None) -> Optional[str]:
+                value = record.get(key, default)
+                return value if isinstance(value, str) else default
+
+            return OAIPMHMetadata(
+                identifier=get_str("identifier", identifier) or identifier,
+                title=get_str("title"),
+                unitid=get_str("unitid"),
+                repository=get_str("repository"),
+                nad_link=get_str("nad_link"),
+                datestamp=get_str("datestamp"),
+                unitdate=get_str("unitdate"),
+                description=get_str("description"),
+                iiif_manifest=get_str("iiif_manifest"),
+                iiif_image=get_str("iiif_image"),
+            )
+        except Exception:
+            return None
+
+    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, Union[str, int]]:
         """Build OAI-PMH request parameters."""
         return {
             "verb": "GetRecord",
@@ -72,12 +98,10 @@ class OAIPMHClient:
     def extract_manifest_id(self, identifier: str) -> Optional[str]:
         """Extract PID from a record for IIIF access."""
         try:
-            retrieved_record = self.get_record(identifier, "oai_ape_ead")
-            nad_link = retrieved_record.get("nad_link")
-
-            if nad_link:
-                return self._extract_manifest_id_from_nad_link(nad_link)
-
+            # Use typed metadata to get nad_link safely
+            metadata = self.get_metadata(identifier)
+            if metadata and metadata.nad_link:
+                return self._extract_manifest_id_from_nad_link(metadata.nad_link)
             return None
         except Exception:
             return None
@@ -92,7 +116,7 @@ class OAIPMHClient:
             return manifest_id
         return ""
 
-    def _make_request(self, request_parameters: Dict[str, str]) -> ET.Element:
+    def _make_request(self, request_parameters: Dict[str, Union[str, int]]) -> ET.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
             xml_content = self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
