@@ -226,6 +226,57 @@ dagger call build-local \
   --base-image="python:3.12-alpine"
 ```
 
+### Security: SBOM and Attestations
+
+The project supports generating Software Bill of Materials (SBOM) and security scanning:
+
+**Generate SBOM (Software Bill of Materials):**
+```bash
+# Generate SBOM in SPDX format (default)
+dagger call generate-sbom-spdx --source=. --base-image="python:3.12-alpine"
+
+# Generate SBOM in CycloneDX format
+dagger call generate-sbom-cyclone-dx --source=. --base-image="python:3.12-alpine"
+
+# Export SBOM to local file
+dagger call export-sbom \
+  --source=. \
+  --base-image="python:3.12-alpine" \
+  --format="spdx-json" \
+  --output-path="./sbom.spdx.json"
+```
+
+**Vulnerability Scanning:**
+```bash
+# Scan for vulnerabilities (CRITICAL and HIGH)
+dagger call scan-ci --source=.
+
+# Scan with custom severity levels
+dagger call scan --source=. --severity="CRITICAL,HIGH,MEDIUM" --format="table"
+
+# Generate JSON scan report
+dagger call scan-json --source=. --severity="CRITICAL,HIGH"
+
+# Generate SARIF output for GitHub Security
+dagger call scan-sarif --source=. --output-path="trivy-results.sarif"
+```
+
+**Attestation Bundle:**
+```bash
+# Generate attestation bundle (SBOM + future provenance)
+dagger call generate-attestation-bundle \
+  --source=. \
+  --base-image="python:3.12-alpine" \
+  --output-dir="./attestations"
+```
+
+**Important Notes:**
+- **SBOM Generation**: Uses Trivy to scan the built container and generate SPDX or CycloneDX SBOMs
+- **Provenance**: Full SLSA provenance attestations require BuildKit integration (see [attest.go](.dagger/attest.go))
+- **GitHub Releases**: SBOMs are automatically generated and attached to releases as assets
+- **Verification**: SBOMs can be used to verify container contents and detect supply chain issues
+- **Format Support**: SPDX-JSON and CycloneDX-JSON formats are both supported
+
 ### Publishing to Docker Registry
 
 The project supports multiple base images for different use cases:
@@ -285,11 +336,49 @@ dagger call publish-docker \
 
 **GitHub Actions Publishing:**
 
-When you create a GitHub release, the workflow automatically publishes:
-1. **Alpine variant**: `riksarkivet/ra-mcp:v0.3.0-alpine` (and PyPI packages)
-2. **Wolfi variant**: `riksarkivet/ra-mcp:v0.3.0-wolfi`
+We provide **two publishing workflows**:
 
-Add more variants by editing [.github/workflows/publish.yml](.github/workflows/publish.yml).
+**Option 1: Standard Publishing** ([publish.yml](.github/workflows/publish.yml))
+- Publishes images using Dagger
+- Generates standalone SBOMs with Trivy
+- Attaches SBOMs as release assets
+
+**Option 2: With Registry Attestations** ([publish-with-attestations.yml](.github/workflows/publish-with-attestations.yml)) ✨ **RECOMMENDED**
+
+Uses `docker/build-push-action` for **native BuildKit attestation support**:
+
+1. **Publishes container images with embedded attestations:**
+   - Alpine: `riksarkivet/ra-mcp:v0.3.0-alpine`
+   - Wolfi: `riksarkivet/ra-mcp:v0.3.0-wolfi`
+   - **SBOM attestations** embedded in registry manifest
+   - **SLSA Provenance** (mode=max) embedded in registry
+
+2. **Also generates standalone SBOM files:**
+   - `sbom-v0.3.0-alpine.spdx.json` (as release asset)
+   - `sbom-v0.3.0-wolfi.spdx.json` (as release asset)
+
+3. **Publishes to PyPI** (unchanged)
+
+**Verify registry attestations:**
+```bash
+# Inspect SBOM in registry
+docker buildx imagetools inspect riksarkivet/ra-mcp:v0.3.0-alpine --format "{{json .SBOM}}"
+
+# Inspect provenance
+docker buildx imagetools inspect riksarkivet/ra-mcp:v0.3.0-alpine --format "{{json .Provenance}}"
+
+# Verify with Docker Scout
+docker scout attestation riksarkivet/ra-mcp:v0.3.0-alpine
+```
+
+**Security Benefits:**
+- ✅ Registry-native attestations (embedded in image manifest)
+- ✅ SLSA Provenance Level 3 (build process transparency)
+- ✅ SBOM attestations (dependency transparency)
+- ✅ Multi-platform builds (amd64, arm64)
+- ✅ Compliance ready (NTIA, EO 14028, SLSA)
+
+**To enable:** Rename `publish-with-attestations.yml` to `publish.yml` (backup the original first)
 
 ### Publishing to PyPI
 

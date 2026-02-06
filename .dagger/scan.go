@@ -132,3 +132,106 @@ func (m *RaMcp) ScanSarif(
 
 	return trivyContainer.File("/output/" + outputPath), nil
 }
+
+// GenerateSbom generates Software Bill of Materials (SBOM) for the container
+func (m *RaMcp) GenerateSbom(
+	ctx context.Context,
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
+	// +optional
+	source *dagger.Directory,
+	// Base image to use for the build
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
+	// SBOM format (spdx-json, cyclonedx, spdx, github)
+	// +default="spdx-json"
+	format string,
+) (*dagger.File, error) {
+	if baseImage == "" {
+		baseImage = "python:3.12-alpine"
+	}
+
+	container, err := m.Build(ctx, source, baseImage)
+	if err != nil {
+		return nil, fmt.Errorf("build failed before SBOM generation: %w", err)
+	}
+
+	tarFile := container.AsTarball()
+
+	trivyContainer := dag.Container().
+		From("aquasec/trivy:latest").
+		WithMountedFile("/image.tar", tarFile).
+		WithExec([]string{"mkdir", "-p", "/output"}).
+		WithExec([]string{
+			"trivy",
+			"image",
+			"--input", "/image.tar",
+			"--format", format,
+			"--output", "/output/sbom.json",
+		})
+
+	return trivyContainer.File("/output/sbom.json"), nil
+}
+
+// GenerateSbomSpdx generates SPDX-format SBOM
+func (m *RaMcp) GenerateSbomSpdx(
+	ctx context.Context,
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
+	// +optional
+	source *dagger.Directory,
+	// Base image to use for the build
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
+) (*dagger.File, error) {
+	return m.GenerateSbom(ctx, source, baseImage, "spdx-json")
+}
+
+// GenerateSbomCycloneDx generates CycloneDX-format SBOM
+func (m *RaMcp) GenerateSbomCycloneDx(
+	ctx context.Context,
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
+	// +optional
+	source *dagger.Directory,
+	// Base image to use for the build
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
+) (*dagger.File, error) {
+	return m.GenerateSbom(ctx, source, baseImage, "cyclonedx")
+}
+
+// ExportSbom generates and exports SBOM to a local file
+func (m *RaMcp) ExportSbom(
+	ctx context.Context,
+	// Source directory containing Dockerfile and application code
+	// +defaultPath="/"
+	// +optional
+	source *dagger.Directory,
+	// Base image to use for the build
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
+	// SBOM format (spdx-json, cyclonedx, spdx, github)
+	// +default="spdx-json"
+	format string,
+	// Output file path
+	// +default="./sbom.json"
+	outputPath string,
+) (string, error) {
+	sbomFile, err := m.GenerateSbom(ctx, source, baseImage, format)
+	if err != nil {
+		return "", err
+	}
+
+	// Export the file
+	_, err = sbomFile.Export(ctx, outputPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to export SBOM: %w", err)
+	}
+
+	return fmt.Sprintf("SBOM exported to %s", outputPath), nil
+}
