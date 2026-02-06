@@ -211,7 +211,6 @@ def register_search_tool(mcp) -> None:
     - max_response_tokens: Maximum tokens in response (default: 15000)
 
     When to use:
-    - Searching for person names: "Carpelan", "Gustaf*"
     - Searching for places: "Stockholm", "Göteborg"
     - Searching document titles or descriptions
     - Finding non-digitised materials by metadata
