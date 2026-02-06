@@ -54,21 +54,33 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Also generate standalone SBOM using Trivy (for download)
-      - name: Generate standalone SBOM
+      # Download attestations from published image (for OpenSSF Scorecard)
+      - name: Download SBOM attestation
+        if: github.event_name == 'release'
         uses: dagger/dagger-for-github@v8.2.0
         with:
           verb: call
-          args: "generate-sbom --base-image python:3.12-alpine --format spdx-json --source . export --path ./sbom.spdx.json"
+          args: "download-sbom --image-ref riksarkivet/ra-mcp:${{ github.event.release.tag_name }} --output-path ./sbom.spdx.json"
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           version: "latest"
 
-      # Upload SBOM as release asset (for easy download)
-      - name: Upload SBOM as release asset
+      - name: Download Provenance attestation
+        if: github.event_name == 'release'
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          verb: call
+          args: "download-provenance --image-ref riksarkivet/ra-mcp:${{ github.event.release.tag_name }} --output-path ./provenance.intoto.jsonl"
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          version: "latest"
+
+      # Upload attestations as release assets (for OpenSSF Scorecard compliance)
+      - name: Upload attestations as release assets
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: ./sbom.spdx.json
+          files: |
+            ./sbom.spdx.json
+            ./provenance.intoto.jsonl
 
       # Install Cosign for signing
       - name: Install Cosign

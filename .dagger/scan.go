@@ -370,6 +370,45 @@ func (m *RaMcp) DownloadSbom(
 	return fmt.Sprintf("SBOM downloaded to %s", outputPath), nil
 }
 
+// DownloadProvenance downloads the SLSA provenance attestation from a published image
+func (m *RaMcp) DownloadProvenance(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.10)
+	imageRef string,
+	// Output file path
+	// +default="./provenance.intoto.jsonl"
+	outputPath string,
+) (string, error) {
+	// Use cosign to download provenance attestation
+	cosignContainer := dag.Container().
+		From("gcr.io/projectsigstore/cosign:latest").
+		WithExec([]string{
+			"cosign",
+			"download",
+			"attestation",
+			"--predicate-type", "https://slsa.dev/provenance/v0.2",
+			imageRef,
+		})
+
+	provenanceContent, err := cosignContainer.Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to download provenance: %w", err)
+	}
+
+	// Write to file
+	provenanceFile := dag.Container().
+		From("alpine:latest").
+		WithNewFile("/provenance.intoto.jsonl", provenanceContent).
+		File("/provenance.intoto.jsonl")
+
+	_, err = provenanceFile.Export(ctx, outputPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to export provenance: %w", err)
+	}
+
+	return fmt.Sprintf("Provenance downloaded to %s", outputPath), nil
+}
+
 // CheckAttestationCount checks how many attestations are attached to an image
 // Useful for quick verification that SBOM and provenance were published
 func (m *RaMcp) CheckAttestationCount(
