@@ -1,6 +1,6 @@
 [project]
 name = "ra-mcp-search-mcp"
-version = "0.2.9"
+version = "0.2.10"
 description = "MCP tools for Riksarkivet search and browse"
 readme = "README.md"
 requires-python = ">=3.12"
