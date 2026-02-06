@@ -17,19 +17,18 @@ from .formatting import RichConsoleFormatter
 console = Console()
 
 
+def _print_renderables(renderables, console: Console):
+    for item in renderables:
+        console.print(item)
+
+
 def search(
     keyword: Annotated[
         str,
-        typer.Argument(
-            help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"
-        ),
+        typer.Argument(help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"),
     ],
-    max_results: Annotated[
-        int, typer.Option("--max", help="Maximum number of records to fetch from API (pagination size)")
-    ] = DEFAULT_MAX_RESULTS,
-    max_display: Annotated[
-        int, typer.Option("--max-display", help="Maximum number of records to display in output")
-    ] = DEFAULT_MAX_DISPLAY,
+    max_results: Annotated[int, typer.Option("--max", help="Maximum number of records to fetch from API (pagination size)")] = DEFAULT_MAX_RESULTS,
+    max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of records to display in output")] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
         Optional[int],
         typer.Option(
@@ -38,16 +37,12 @@ def search(
         ),
     ] = 3,
     transcribed_only: Annotated[
-        bool,
-        typer.Option("--transcribed-text/--text", help="Search transcribed text (default) or general text fields (metadata)")
+        bool, typer.Option("--transcribed-text/--text", help="Search transcribed text (default) or general text fields (metadata)")
     ] = True,
     only_digitised: Annotated[
-        bool,
-        typer.Option("--only-digitised-materials/--include-all-materials", help="Limit to digitised materials (default) or include all records")
+        bool, typer.Option("--only-digitised-materials/--include-all-materials", help="Limit to digitised materials (default) or include all records")
     ] = True,
-    log: Annotated[
-        bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")
-    ] = False,
+    log: Annotated[bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")] = False,
 ):
     """Search for keyword in historical documents.
 
@@ -75,22 +70,15 @@ def search(
     search_operations = SearchOperations(http_client=http_client)
     formatter = RichConsoleFormatter(console)
 
-    # Show logging status if enabled
     if log:
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
     try:
-        # Transcribed text search requires digitised materials
-        # If user wants all materials, automatically use text search
         if not only_digitised and transcribed_only:
-            console.print("[yellow]⚠️  Note: --transcribed-text requires --only-digitised-materials[/yellow]")
+            console.print("[yellow]Note: --transcribed-text requires --only-digitised-materials[/yellow]")
             console.print("[yellow]   Automatically switching to --text when --include-all-materials is used.[/yellow]\n")
             transcribed_only = False
 
-        # Use the specified max_snippets_per_record value (defaults to 3)
-        effective_max_hits_per_doc = max_snippets_per_record
-
-        # Execute search with progress indicator
         search_type = "transcribed text" if transcribed_only else "all fields"
         material_filter = "digitised materials" if only_digitised else "all materials"
 
@@ -99,9 +87,9 @@ def search(
             TextColumn("[progress.description]{task.description}"),
             console=console,
         ) as progress:
-            search_task = progress.add_task(
+            progress.add_task(
                 f"Searching {search_type} in {material_filter} for '{keyword}'...",
-                total=None
+                total=None,
             )
 
             search_result = search_operations.search(
@@ -109,51 +97,36 @@ def search(
                 transcribed_only=transcribed_only,
                 only_digitised=only_digitised,
                 max_results=max_results,
-                max_snippets_per_record=effective_max_hits_per_doc,
+                max_snippets_per_record=max_snippets_per_record,
             )
 
-            # Update with detailed results
-            snippet_count = search_result.count_snippets()
-            records_count = len(search_result.items)
-
-            # Show "100+" if we hit the max limit
-            if records_count >= search_result.max:
-                records_display = f"{records_count}+"
-            else:
-                records_display = str(records_count)
-
-            progress.update(
-                search_task,
-                description=f"✓ Found {snippet_count} page hits across {records_display} volumes",
-            )
-
-        # Format and display search results directly
-        table = formatter.format_search_results(search_result, max_display)
-        console.print(table)
-
-        # Display summary statistics
         snippet_count = search_result.count_snippets()
         records_count = len(search_result.items)
-        summary_lines = formatter.format_search_summary_stats(
-            snippet_count=snippet_count,
-            records_count=records_count,
-            total_hits=search_result.response.total_hits,
-            offset=search_result.offset,
-            max_requested=search_result.max,
+
+        console.print(formatter.format_search_results(search_result, max_display))
+
+        _print_renderables(
+            formatter.format_search_summary_stats(
+                snippet_count=snippet_count,
+                records_count=records_count,
+                total_hits=search_result.response.total_hits,
+                offset=search_result.offset,
+                max_requested=search_result.max,
+            ),
+            console,
         )
-        for line in summary_lines:
-            console.print(line)
 
-        # Display example browse command
-        example_lines = formatter.format_browse_example(search_result.items, keyword)
-        for line in example_lines:
-            console.print(line)
+        _print_renderables(
+            formatter.format_browse_example(search_result.items, keyword),
+            console,
+        )
 
-        # Display remaining documents message
-        remaining_msg = formatter.format_remaining_documents(len(search_result.items), max_display)
+        remaining_msg = formatter.format_remaining_documents(records_count, max_display)
         if remaining_msg:
             console.print(remaining_msg)
 
+    except typer.Exit:
+        raise
     except Exception as error:
         console.print(f"[red]Search failed: {error}[/red]")
         raise typer.Exit(code=1)
