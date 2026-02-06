@@ -16,16 +16,6 @@ from .formatter import PlainTextFormatter
 logger = logging.getLogger(__name__)
 
 
-def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
-    """Format an error message with optional suggestions."""
-    formatted_lines = [f"⚠️ **Error**: {error_message}"]
-    if error_suggestions:
-        formatted_lines.append("\n**Suggestions**:")
-        for suggestion_text in error_suggestions:
-            formatted_lines.append(f"- {suggestion_text}")
-    return "\n".join(formatted_lines)
-
-
 def register_search_tool(mcp) -> None:
     """Register the search tools with the MCP server."""
 
@@ -181,7 +171,8 @@ def register_search_tool(mcp) -> None:
 
         except Exception as e:
             logger.error(f"✗ MCP search_transcribed failed: {type(e).__name__}: {e}", exc_info=True)
-            return format_error_message(
+            formatter = PlainTextFormatter()
+            return formatter.format_error_message(
                 f"Search failed: {str(e)}",
                 error_suggestions=[
                     "Try a simpler search term",
@@ -276,7 +267,8 @@ def register_search_tool(mcp) -> None:
 
         except Exception as e:
             logger.error(f"✗ MCP search_metadata failed: {type(e).__name__}: {e}", exc_info=True)
-            return format_error_message(
+            formatter = PlainTextFormatter()
+            return formatter.format_error_message(
                 f"Metadata search failed: {str(e)}",
                 error_suggestions=[
                     "Try a simpler search term",

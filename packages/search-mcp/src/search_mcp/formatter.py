@@ -114,6 +114,24 @@ class PlainTextFormatter:
         except Exception:
             return ""
 
+    def format_error_message(self, error_message: str, error_suggestions: List[str] = None) -> str:
+        """
+        Format an error message with optional suggestions.
+
+        Args:
+            error_message: The error message to display
+            error_suggestions: Optional list of suggestion strings
+
+        Returns:
+            Formatted error message with suggestions
+        """
+        formatted_lines = [f"⚠️ **Error**: {error_message}"]
+        if error_suggestions:
+            formatted_lines.append("\n**Suggestions**:")
+            for suggestion_text in error_suggestions:
+                formatted_lines.append(f"- {suggestion_text}")
+        return "\n".join(formatted_lines)
+
     def format_no_results_message(self, search_result) -> str:
         """
         Generate appropriate message when no results are found.
