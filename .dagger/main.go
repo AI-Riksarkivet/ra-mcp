@@ -37,7 +37,7 @@ func (m *RaMcp) withUv(container *dagger.Container) *dagger.Container {
 
 // buildWithUv builds a container and adds uv tooling to it
 func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dagger.Container, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, "python:3.12-alpine")
 	if err != nil {
 		return nil, err
 	}

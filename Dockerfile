@@ -1,4 +1,8 @@
-FROM python:3.12-alpine as builder
+ARG BASE_IMAGE=python:3.12-alpine
+ARG BUILDER_IMAGE=${BASE_IMAGE}
+ARG PRODUCTION_IMAGE=${BASE_IMAGE}
+
+FROM ${BUILDER_IMAGE} as builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /usr/local/bin/
 WORKDIR /app
@@ -11,13 +15,19 @@ COPY README.md LICENSE ./
 # Sync workspace packages
 RUN uv sync --frozen --no-cache --no-dev
 
-FROM python:3.12-alpine as production
+FROM ${PRODUCTION_IMAGE} as production
 
-# Upgrade all packages to fix CVEs (including busybox CVE-2025-60877)
-RUN apk upgrade --no-cache
-
-# Install minimal runtime dependencies (ca-certificates for HTTPS, libgcc for cryptography)
-RUN apk add --no-cache ca-certificates libgcc
+# Install runtime dependencies based on base image
+# Alpine uses apk, Wolfi/Chainguard use apk, Debian uses apt
+RUN if command -v apk >/dev/null 2>&1; then \
+        apk upgrade --no-cache && \
+        apk add --no-cache ca-certificates libgcc; \
+    elif command -v apt-get >/dev/null 2>&1; then \
+        apt-get update && \
+        apt-get upgrade -y && \
+        apt-get install -y --no-install-recommends ca-certificates && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # Remove pip and setuptools to eliminate CVE-2025-8869 and CVE-2026-1703
 # We use uv for all package management, so pip is not needed at runtime

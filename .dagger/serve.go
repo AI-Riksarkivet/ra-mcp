@@ -20,7 +20,7 @@ func (m *RaMcp) Serve(
 	// +default="0.0.0.0"
 	host string,
 ) (*dagger.Service, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, "")
 	if err != nil {
 		return nil, err
 	}

@@ -31,6 +31,9 @@ func (m *RaMcp) BuildLocal(
 	// Image repository name
 	// +default="riksarkivet/ra-mcp"
 	imageRepository string,
+	// Base image for builder and production stages
+	// +default="python:3.12-alpine"
+	baseImage string,
 	// Environment variables for build customization (KEY=VALUE format)
 	// +default=[]
 	envVars []string,
@@ -38,7 +41,21 @@ func (m *RaMcp) BuildLocal(
 	// +default="docker.io"
 	registry string,
 ) (*dagger.Container, error) {
-	buildArgs := parseBuildArgs(registry, envVars)
+	// Add BASE_IMAGE to build args
+	buildArgs := []dagger.BuildArg{
+		{Name: "REGISTRY", Value: registry},
+		{Name: "BASE_IMAGE", Value: baseImage},
+	}
+
+	// Append any additional environment variables
+	for _, envVar := range envVars {
+		if parts := strings.Split(envVar, "="); len(parts) == 2 {
+			buildArgs = append(buildArgs, dagger.BuildArg{
+				Name:  parts[0],
+				Value: parts[1],
+			})
+		}
+	}
 
 	container := dag.Container().
 		Build(source, dagger.ContainerBuildOpts{
@@ -55,6 +72,13 @@ func (m *RaMcp) Build(
 	// Source directory containing Dockerfile and application code
 	// +defaultPath="/"
 	source *dagger.Directory,
+	// Base image for builder and production stages
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
 ) (*dagger.Container, error) {
-	return m.BuildLocal(ctx, source, DefaultImageRepo, []string{}, DefaultRegistry)
+	if baseImage == "" {
+		baseImage = "python:3.12-alpine"
+	}
+	return m.BuildLocal(ctx, source, DefaultImageRepo, baseImage, []string{}, DefaultRegistry)
 }

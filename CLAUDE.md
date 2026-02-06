@@ -208,34 +208,88 @@ export PYPI_TOKEN="your-pypi-token"
 ### Build Commands
 
 ```bash
-# Build container image locally
-dagger call build
+# Build container image locally (default: Alpine)
+dagger call build --source=.
+
+# Build with specific base image
+dagger call build --source=. --base-image="python:3.12-alpine"
+dagger call build --source=. --base-image="cgr.dev/chainguard/python:latest-dev"
+dagger call build --source=. --base-image="python:3.12-slim"
 
 # Run tests (currently skipped until test suite exists)
-dagger call test
+dagger call test --source=.
 
 # Build with custom settings
-dagger call build-local
+dagger call build-local \
+  --source=. \
+  --image-repository="riksarkivet/ra-mcp" \
+  --base-image="python:3.12-alpine"
 ```
 
 ### Publishing to Docker Registry
 
+The project supports multiple base images for different use cases:
+
+**Supported Base Images:**
+- `python:3.12-alpine` - Lightweight Alpine Linux (default)
+- `cgr.dev/chainguard/python:latest-dev` - Wolfi-based Chainguard image (minimal CVEs)
+- `cgr.dev/chainguard/python:latest` - Chainguard production image
+- `python:3.12-slim` - Debian slim variant
+- Any Python 3.12+ image with pip support
+
+**Publishing Examples:**
+
 ```bash
-# Publish with explicit tag
+# Publish Alpine variant with explicit tag
 dagger call publish-docker \
   --docker-username=env:DOCKER_USERNAME \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
-  --tag="v0.2.0" \
+  --tag="v0.3.0" \
+  --base-image="python:3.12-alpine" \
+  --tag-suffix="-alpine" \
   --source=.
+# Result: riksarkivet/ra-mcp:v0.3.0-alpine
+
+# Publish Wolfi/Chainguard variant
+dagger call publish-docker \
+  --docker-username=env:DOCKER_USERNAME \
+  --docker-password=env:DOCKER_PASSWORD \
+  --image-repository="riksarkivet/ra-mcp" \
+  --tag="v0.3.0" \
+  --base-image="cgr.dev/chainguard/python:latest-dev" \
+  --tag-suffix="-wolfi" \
+  --source=.
+# Result: riksarkivet/ra-mcp:v0.3.0-wolfi
+
+# Publish Debian slim variant
+dagger call publish-docker \
+  --docker-username=env:DOCKER_USERNAME \
+  --docker-password=env:DOCKER_PASSWORD \
+  --image-repository="riksarkivet/ra-mcp" \
+  --tag="v0.3.0" \
+  --base-image="python:3.12-slim" \
+  --tag-suffix="-slim" \
+  --source=.
+# Result: riksarkivet/ra-mcp:v0.3.0-slim
 
 # Auto-tag from pyproject.toml version (prefixes with "v")
 dagger call publish-docker \
   --docker-username=env:DOCKER_USERNAME \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
+  --base-image="python:3.12-alpine" \
+  --tag-suffix="-alpine" \
   --source=.
 ```
+
+**GitHub Actions Publishing:**
+
+When you create a GitHub release, the workflow automatically publishes:
+1. **Alpine variant**: `riksarkivet/ra-mcp:v0.3.0-alpine` (and PyPI packages)
+2. **Wolfi variant**: `riksarkivet/ra-mcp:v0.3.0-wolfi`
+
+Add more variants by editing [.github/workflows/publish.yml](.github/workflows/publish.yml).
 
 ### Publishing to PyPI
 

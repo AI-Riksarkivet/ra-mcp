@@ -35,7 +35,7 @@ func (m *RaMcp) Scan(
 	exitCode int,
 ) (string, error) {
 	// Build the container first
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, "")
 	if err != nil {
 		return "", fmt.Errorf("build failed before scanning: %w", err)
 	}
@@ -111,7 +111,7 @@ func (m *RaMcp) ScanSarif(
 	// +default="trivy-results.sarif"
 	outputPath string,
 ) (*dagger.File, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, "")
 	if err != nil {
 		return nil, fmt.Errorf("build failed before scanning: %w", err)
 	}

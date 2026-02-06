@@ -1121,7 +1121,7 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.2.7"
+version = "0.2.8"
 source = { editable = "." }
 dependencies = [
     { name = "ra-mcp-browse-cli" },

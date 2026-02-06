@@ -11,7 +11,7 @@ func (m *RaMcp) Test(
 	// +optional
 	source *dagger.Directory,
 ) (string, error) {
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, "")
 	if err != nil {
 		return "", err
 	}

@@ -9,13 +9,18 @@ import (
 // testAndBuild runs tests and builds the container if tests pass
 // NOTE: Tests are currently skipped until test suite is implemented
 func (m *RaMcp) testAndBuild(ctx context.Context, source *dagger.Directory, operation string) (*dagger.Container, error) {
+	return m.testAndBuildWithBase(ctx, source, "python:3.12-alpine", operation)
+}
+
+// testAndBuildWithBase runs tests and builds the container with specified base image
+func (m *RaMcp) testAndBuildWithBase(ctx context.Context, source *dagger.Directory, baseImage string, operation string) (*dagger.Container, error) {
 	// Skip tests for now
 	// _, err := m.Test(ctx, source)
 	// if err != nil {
 	// 	return nil, fmt.Errorf("tests failed, aborting %s: %w", operation, err)
 	// }
 
-	container, err := m.Build(ctx, source)
+	container, err := m.Build(ctx, source, baseImage)
 	if err != nil {
 		return nil, fmt.Errorf("build failed during %s: %w", operation, err)
 	}
@@ -50,6 +55,13 @@ func (m *RaMcp) PublishDocker(
 	// Image tag (if empty, will use version from pyproject.toml with "v" prefix)
 	// +optional
 	tag string,
+	// Base image for the build (e.g., python:3.12-alpine, cgr.dev/chainguard/python:latest-dev)
+	// +default="python:3.12-alpine"
+	// +optional
+	baseImage string,
+	// Tag suffix to append (e.g., "-alpine", "-wolfi", "-chainguard")
+	// +optional
+	tagSuffix string,
 	// +default="docker.io"
 	registry string,
 	// Docker username for authentication (use env: prefix for environment variables)
@@ -62,12 +74,21 @@ func (m *RaMcp) PublishDocker(
 	// +optional
 	skipValidation bool,
 ) (string, error) {
+	if baseImage == "" {
+		baseImage = "python:3.12-alpine"
+	}
+
 	resolvedTag, err := m.resolveTag(ctx, source, tag, skipValidation)
 	if err != nil {
 		return "", err
 	}
 
-	container, err := m.testAndBuild(ctx, source, "Docker publish")
+	// Append tag suffix if provided (e.g., v0.3.0-alpine)
+	if tagSuffix != "" {
+		resolvedTag = resolvedTag + tagSuffix
+	}
+
+	container, err := m.testAndBuildWithBase(ctx, source, baseImage, "Docker publish")
 	if err != nil {
 		return "", err
 	}
