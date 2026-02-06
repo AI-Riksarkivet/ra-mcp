@@ -129,7 +129,7 @@ func (m *RaMcp) PublishPypi(
 	// +optional
 	buildArgs []string,
 ) (string, error) {
-	_, err := m.Test(ctx, source)
+	_, err := m.Test(ctx, source, "python:3.12-alpine")
 	if err != nil {
 		return "", fmt.Errorf("tests failed, aborting PyPI publish: %w", err)
 	}
