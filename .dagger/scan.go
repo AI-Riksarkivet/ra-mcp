@@ -409,6 +409,74 @@ func (m *RaMcp) DownloadProvenance(
 	return fmt.Sprintf("Provenance downloaded to %s", outputPath), nil
 }
 
+// ExtractProvenanceAttestation extracts the real SLSA provenance attestation from a BuildKit image
+func (m *RaMcp) ExtractProvenanceAttestation(
+	ctx context.Context,
+	// Container image reference (e.g., riksarkivet/ra-mcp:v0.2.11)
+	imageRef string,
+	// Output file path
+	// +default="./provenance.intoto.jsonl"
+	outputPath string,
+) (*dagger.File, error) {
+	// Add docker.io prefix if needed
+	fullRef := imageRef
+	if len(imageRef) > 0 && imageRef[0] != '/' && !containsRegistry(imageRef) {
+		fullRef = "docker.io/" + imageRef
+	}
+
+	// Get crane binary
+	craneBinary := dag.Container().
+		From("gcr.io/go-containerregistry/crane:latest").
+		File("/ko-app/crane")
+
+	// Use crane and jq to extract provenance from BuildKit attestations
+	extractContainer := dag.Container().
+		From("alpine:latest").
+		WithExec([]string{"apk", "add", "--no-cache", "jq"}).
+		WithFile("/usr/local/bin/crane", craneBinary).
+		WithExec([]string{
+			"sh", "-c",
+			fmt.Sprintf(`
+# Get the manifest list
+MANIFEST=$(crane manifest %s)
+
+# Find attestation manifest for amd64 platform
+ATTESTATION_DIGEST=$(echo "$MANIFEST" | jq -r '.manifests[] | select(.annotations."vnd.docker.reference.type" == "attestation-manifest") | .digest' | head -1)
+
+if [ -z "$ATTESTATION_DIGEST" ]; then
+  echo "Error: No attestation manifest found"
+  exit 1
+fi
+
+# Get attestation manifest
+ATT_MANIFEST=$(crane manifest %s@$ATTESTATION_DIGEST)
+
+# Find provenance layer
+PROV_DIGEST=$(echo "$ATT_MANIFEST" | jq -r '.layers[] | select(.annotations."in-toto.io/predicate-type" == "https://slsa.dev/provenance/v0.2") | .digest')
+
+if [ -z "$PROV_DIGEST" ]; then
+  echo "Error: No provenance layer found"
+  exit 1
+fi
+
+# Download provenance blob
+crane blob %s@$PROV_DIGEST > /provenance.intoto.jsonl
+echo "Provenance extracted successfully"
+			`, fullRef, fullRef, fullRef),
+		})
+
+	// Get the provenance file
+	provenanceFile := extractContainer.File("/provenance.intoto.jsonl")
+
+	// Export to output path
+	_, err := provenanceFile.Export(ctx, outputPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to export provenance: %w", err)
+	}
+
+	return provenanceFile, nil
+}
+
 // CheckAttestationCount checks how many attestations are attached to an image
 // Useful for quick verification that SBOM and provenance were published
 func (m *RaMcp) CheckAttestationCount(
