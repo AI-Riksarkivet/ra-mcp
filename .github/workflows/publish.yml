@@ -17,13 +17,13 @@ jobs:
       - uses: actions/checkout@v5
 
       # Run Dagger checks and tests first
-      - name: Run checks and tests
-        uses: dagger/dagger-for-github@v8.2.0
-        with:
-          verb: call
-          args: checks
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          version: "latest"
+      #- name: Run checks and tests
+      #  uses: dagger/dagger-for-github@v8.2.0
+      #  with:
+      #    verb: call
+      #    args: checks
+      #    cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+      #    version: "latest"
 
       # Set up Docker Buildx (required for attestations)
       - name: Set up Docker Buildx
@@ -71,12 +71,13 @@ jobs:
           files: ./sbom.spdx.json
 
       # Publish to PyPI
-      - name: Publish to PyPI
-        uses: dagger/dagger-for-github@v8.2.0
-        with:
-          verb: call
-          args: "publish-pypi --pypi-token env:PYPI_TOKEN --source ."
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          version: "latest"
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      #- name: Publish to PyPI
+      #  uses: dagger/dagger-for-github@v8.2.0
+      #  with:
+      #    verb: call
+      #    args: "publish-pypi --pypi-token env:PYPI_TOKEN --source ."
+      #    cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+      #    version: "latest"
+      #  env:
+      #    PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+#

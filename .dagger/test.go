@@ -8,6 +8,7 @@ import (
 // Test runs the test suite using the built container
 func (m *RaMcp) Test(
 	ctx context.Context,
+	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
 ) (string, error) {
@@ -17,6 +18,6 @@ func (m *RaMcp) Test(
 	}
 
 	return container.
-		WithExec([]string{"uv", "run", "pytest", "--cov=src/ra_mcp", "--cov-report=term"}).
+		WithExec([]string{"uv", "run", "pytest", "--cov=packages", "--cov-report=term"}).
 		Stdout(ctx)
 }
