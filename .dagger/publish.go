@@ -48,8 +48,7 @@ func (m *RaMcp) resolveTag(ctx context.Context, source *dagger.Directory, tag st
 }
 
 // PublishDocker builds, tests, and publishes container image to registry with authentication
-// NOTE: For SBOM and provenance attestations, use PublishWithAttestations instead
-// This function publishes the container image only, without attestations
+// SBOM and provenance attestations are handled by docker/build-push-action in the GitHub Actions workflow
 func (m *RaMcp) PublishDocker(
 	ctx context.Context,
 	// +default="riksarkivet/ra-mcp"

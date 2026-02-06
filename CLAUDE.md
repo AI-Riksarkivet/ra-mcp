@@ -8,44 +8,87 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Architecture
 
-The project is organized as a **uv workspace** with three modular packages:
+The project is organized as a **uv workspace** with eight modular packages plus a root server:
 
 ```
 ra-mcp/
+├── src/ra_mcp_server/          # Root: Server composition and main CLI
+│   ├── server.py               # FastMCP composition entry point
+│   └── cli/app.py              # Typer CLI root (ra command)
 ├── packages/
-│   ├── core/           # ra-mcp-core: Models, config, clients, formatters, utils
-│   ├── search/         # ra-mcp-search: MCP tools, services, CLI commands
-│   └── server/         # ra-mcp-server: Server composition, main CLI
-├── pyproject.toml      # Workspace configuration
-└── uv.lock            # Shared lockfile
+│   ├── common/                 # ra-mcp-common: Shared HTTP client and utilities
+│   ├── search/                 # ra-mcp-search: Search domain (models, clients, operations)
+│   ├── browse/                 # ra-mcp-browse: Browse domain (models, clients, operations)
+│   ├── search-mcp/             # ra-mcp-search-mcp: MCP tools for search
+│   ├── browse-mcp/             # ra-mcp-browse-mcp: MCP tool for browse
+│   ├── search-cli/             # ra-mcp-search-cli: CLI command for search
+│   ├── browse-cli/             # ra-mcp-browse-cli: CLI command for browse
+│   └── guide-mcp/              # ra-mcp-guide-mcp: MCP resources for historical guides
+├── resources/                  # Historical guide markdown files
+├── pyproject.toml              # Workspace configuration
+└── uv.lock                     # Shared lockfile
 ```
 
 ### Package Structure
 
-**ra-mcp-core** (no internal dependencies):
-- [config.py](packages/core/src/ra_mcp_core/config.py): API URLs and configuration constants
-- [models.py](packages/core/src/ra_mcp_core/models.py): Pydantic data models (SearchHit, SearchResult, BrowseResult)
-- [clients/](packages/core/src/ra_mcp_core/clients/): API clients (SearchAPI, ALTOClient, OAIPMHClient, IIIFClient)
-- [formatters/](packages/core/src/ra_mcp_core/formatters/): Output formatters (PlainTextFormatter, RichConsoleFormatter)
-- [utils/](packages/core/src/ra_mcp_core/utils/): HTTP client, page utilities, URL generation
+**ra-mcp-common** (no internal dependencies):
+- [http_client.py](packages/common/src/ra_mcp_common/utils/http_client.py): Centralized urllib-based HTTP client with logging
 
-**ra-mcp-search** (depends on core):
-- [mcp.py](packages/search/src/ra_mcp_search/mcp.py): MCP tools (`search_transcribed`, `browse_document`) and resources
-- [services/](packages/search/src/ra_mcp_search/services/): Business logic (SearchOperations, BrowseOperations, display services)
-- [cli/](packages/search/src/ra_mcp_search/cli/): CLI commands for search and browse
+**ra-mcp-search** (depends on common):
+- [config.py](packages/search/src/ra_mcp_search/config.py): Search API URL and constants
+- [models.py](packages/search/src/ra_mcp_search/models.py): Pydantic models (SearchRecord, RecordsResponse, SearchResult)
+- [clients/search_client.py](packages/search/src/ra_mcp_search/clients/search_client.py): SearchAPI client
+- [operations/search_operations.py](packages/search/src/ra_mcp_search/operations/search_operations.py): Search business logic
 
-**ra-mcp-server** (depends on search):
-- [server.py](packages/server/src/ra_mcp_server/server.py): FastMCP composition server
-- [cli/app.py](packages/server/src/ra_mcp_server/cli/app.py): Main CLI entry point with serve command
+**ra-mcp-browse** (depends on common):
+- [config.py](packages/browse/src/ra_mcp_browse/config.py): Browse API URLs and constants
+- [models.py](packages/browse/src/ra_mcp_browse/models.py): Pydantic models (BrowseResult, PageContext)
+- [clients/](packages/browse/src/ra_mcp_browse/clients/): API clients (ALTOClient, IIIFClient, OAIPMHClient)
+- [operations/browse_operations.py](packages/browse/src/ra_mcp_browse/operations/browse_operations.py): Browse business logic
+- [url_generator.py](packages/browse/src/ra_mcp_browse/url_generator.py): URL construction helpers
+
+**ra-mcp-search-mcp** (depends on search + fastmcp):
+- [mcp.py](packages/search-mcp/src/search_mcp/mcp.py): FastMCP server setup and instructions
+- [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py): `search_transcribed` and `search_metadata` MCP tools
+- [formatter.py](packages/search-mcp/src/search_mcp/formatter.py): Search result formatting for LLM output
+
+**ra-mcp-browse-mcp** (depends on browse + fastmcp):
+- [mcp.py](packages/browse-mcp/src/browse_mcp/mcp.py): FastMCP server setup and instructions
+- [browse_tool.py](packages/browse-mcp/src/browse_mcp/browse_tool.py): `browse_document` MCP tool
+- [formatter.py](packages/browse-mcp/src/browse_mcp/formatter.py): Browse result formatting for LLM output
+
+**ra-mcp-search-cli** (depends on search + typer + rich):
+- [app.py](packages/search-cli/src/search_cli/app.py): Typer sub-app
+- [search_cmd.py](packages/search-cli/src/search_cli/search_cmd.py): `ra search` CLI command
+- [formatting/](packages/search-cli/src/search_cli/formatting/): CLI output formatting
+
+**ra-mcp-browse-cli** (depends on browse + typer + rich):
+- [app.py](packages/browse-cli/src/browse_cli/app.py): Typer sub-app
+- [browse_cmd.py](packages/browse-cli/src/browse_cli/browse_cmd.py): `ra browse` CLI command
+- [formatting/](packages/browse-cli/src/browse_cli/formatting/): CLI output formatting
+
+**ra-mcp-guide-mcp** (depends on common + fastmcp):
+- [mcp.py](packages/guide-mcp/src/guide_mcp/mcp.py): MCP resources for historical guides from `resources/`
+
+**Root package — ra-mcp** (depends on all MCP and CLI packages):
+- [server.py](src/ra_mcp_server/server.py): FastMCP composition server (imports search, browse, guide modules)
+- [cli/app.py](src/ra_mcp_server/cli/app.py): Main Typer CLI entry point (`ra` command)
 
 ### Package Dependencies
 
 ```
-ra-mcp-core          (no internal deps)
+ra-mcp-common              (no internal deps)
        ↑
-ra-mcp-search        (depends on core)
+ra-mcp-search              (depends on common)
+ra-mcp-browse              (depends on common)
        ↑
-ra-mcp-server        (depends on search, composes MCP servers)
+ra-mcp-search-mcp          (depends on search + fastmcp)
+ra-mcp-browse-mcp          (depends on browse + fastmcp)
+ra-mcp-guide-mcp           (depends on common + fastmcp)
+ra-mcp-search-cli          (depends on search + typer + rich)
+ra-mcp-browse-cli          (depends on browse + typer + rich)
+       ↑
+ra-mcp (root)              (composes all MCP and CLI packages)
 ```
 
 ## Development Workflow
@@ -101,15 +144,16 @@ uv run ra browse --help
 # Run all tests (when tests exist)
 uv run pytest
 
-# Run with coverage
-uv run pytest --cov=ra_mcp_core --cov=ra_mcp_search --cov=ra_mcp_server --cov-report=html
+# Run with coverage (requires pytest-cov)
+uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search --cov=ra_mcp_browse --cov-report=html
 
 # Run specific package tests
-uv run pytest packages/core/tests/ -v
+uv run pytest packages/common/tests/ -v
 uv run pytest packages/search/tests/ -v
+uv run pytest packages/browse/tests/ -v
 ```
 
-**Note**: The Dagger pipeline currently skips tests until the test suite is implemented. See [.dagger/publish.go:12-16](.dagger/publish.go).
+**Note**: The Dagger pipeline currently accepts zero tests as success until the test suite is implemented.
 
 ### Code Quality
 
@@ -261,19 +305,10 @@ dagger call scan-json --source=. --severity="CRITICAL,HIGH"
 dagger call scan-sarif --source=. --output-path="trivy-results.sarif"
 ```
 
-**Attestation Bundle:**
-```bash
-# Generate attestation bundle (SBOM + future provenance)
-dagger call generate-attestation-bundle \
-  --source=. \
-  --base-image="python:3.12-alpine" \
-  --output-dir="./attestations"
-```
-
 **Important Notes:**
 - **SBOM Generation**: Uses Trivy to scan the built container and generate SPDX or CycloneDX SBOMs
-- **Provenance**: Full SLSA provenance attestations require BuildKit integration (see [attest.go](.dagger/attest.go))
-- **GitHub Releases**: SBOMs are automatically generated and attached to releases as assets
+- **Provenance**: SLSA provenance is generated by BuildKit during the GitHub Actions publish workflow
+- **GitHub Releases**: SBOMs and provenance are automatically generated and attached to releases as assets
 - **Verification**: SBOMs can be used to verify container contents and detect supply chain issues
 - **Format Support**: SPDX-JSON and CycloneDX-JSON formats are both supported
 
@@ -336,16 +371,7 @@ dagger call publish-docker \
 
 **GitHub Actions Publishing:**
 
-We provide **two publishing workflows**:
-
-**Option 1: Standard Publishing** ([publish.yml](.github/workflows/publish.yml))
-- Publishes images using Dagger
-- Generates standalone SBOMs with Trivy
-- Attaches SBOMs as release assets
-
-**Option 2: With Registry Attestations** ([publish-with-attestations.yml](.github/workflows/publish-with-attestations.yml)) ✨ **RECOMMENDED**
-
-Uses `docker/build-push-action` for **native BuildKit attestation support**:
+The publishing workflow ([publish.yml](.github/workflows/publish.yml)) uses `docker/build-push-action` for **native BuildKit attestation support**:
 
 1. **Publishes container images with embedded attestations:**
    - Alpine: `riksarkivet/ra-mcp:v0.3.0-alpine`
@@ -356,8 +382,6 @@ Uses `docker/build-push-action` for **native BuildKit attestation support**:
 2. **Also generates standalone SBOM files:**
    - `sbom-v0.3.0-alpine.spdx.json` (as release asset)
    - `sbom-v0.3.0-wolfi.spdx.json` (as release asset)
-
-3. **Publishes to PyPI** (unchanged)
 
 **Verify registry attestations:**
 ```bash
@@ -372,13 +396,11 @@ docker scout attestation riksarkivet/ra-mcp:v0.3.0-alpine
 ```
 
 **Security Benefits:**
-- ✅ Registry-native attestations (embedded in image manifest)
-- ✅ SLSA Provenance Level 3 (build process transparency)
-- ✅ SBOM attestations (dependency transparency)
-- ✅ Multi-platform builds (amd64, arm64)
-- ✅ Compliance ready (NTIA, EO 14028, SLSA)
-
-**To enable:** Rename `publish-with-attestations.yml` to `publish.yml` (backup the original first)
+- Registry-native attestations (embedded in image manifest)
+- SLSA Provenance Level 3 (build process transparency)
+- SBOM attestations (dependency transparency)
+- Multi-platform builds (amd64, arm64)
+- Compliance ready (NTIA, EO 14028, SLSA)
 
 ### Publishing to PyPI
 
@@ -462,81 +484,68 @@ Add to `claude_desktop_config.json`:
 
 ### Adding a New MCP Tool
 
-1. Edit [mcp.py](packages/search/src/ra_mcp_search/mcp.py) or create a new tool file in the search package
-2. Use `@search_mcp.tool()` decorator with comprehensive description
+1. Create a new tool file in the appropriate MCP package (e.g., [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py))
+2. Define a `register_*_tool(mcp)` function that uses `@mcp.tool()` decorator
 3. Add detailed docstring with examples and parameter documentation
-4. If creating a new MCP module, import it in [server.py](packages/server/src/ra_mcp_server/server.py):
+4. Call the register function from the package's [mcp.py](packages/search-mcp/src/search_mcp/mcp.py)
 
+Example pattern (from [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py)):
 ```python
-# In server.py
-from ra_mcp_new_module.mcp import new_mcp
-
-async def setup_server():
-    await main_server.import_server(search_mcp)
-    await main_server.import_server(new_mcp, prefix="prefix")  # Optional prefix
+def register_search_tool(mcp: FastMCP):
+    @mcp.tool()
+    async def search_transcribed(keyword: str, offset: int, ...) -> str:
+        """Tool description for LLM understanding."""
+        ...
 ```
 
-### Adding a New MCP Resource
+### Adding a New MCP Module
 
-Resources provide static or dynamic content to MCP clients:
+To add a new module (e.g., `ra-mcp-metadata`):
+
+1. Create domain package: `packages/metadata/` with models, clients, operations
+2. Create MCP package: `packages/metadata-mcp/` with tool registration
+3. Optionally create CLI package: `packages/metadata-cli/`
+4. Register in [server.py](src/ra_mcp_server/server.py) `AVAILABLE_MODULES`:
 
 ```python
-@search_mcp.resource("riksarkivet://my-resource/{param}")
-def get_my_resource(param: str) -> str:
-    """
-    Description of what this resource provides.
+from metadata_mcp.mcp import metadata_mcp
 
-    Args:
-        param: Parameter description
-
-    Returns:
-        Resource content as string
-    """
-    return f"Content for {param}"
+AVAILABLE_MODULES = {
+    ...
+    "metadata": {
+        "server": metadata_mcp,
+        "description": "Advanced metadata search and filtering",
+        "default": False,
+    },
+}
 ```
+
+5. Add dependencies to root `pyproject.toml`
 
 ### Adding API Clients
 
-1. Create new client in [packages/core/src/ra_mcp_core/clients/](packages/core/src/ra_mcp_core/clients/)
-2. Follow existing patterns (see [alto_client.py](packages/core/src/ra_mcp_core/clients/alto_client.py))
-3. Use the centralized HTTPClient from utils
+1. Create new client in the appropriate domain package (e.g., [packages/browse/src/ra_mcp_browse/clients/](packages/browse/src/ra_mcp_browse/clients/))
+2. Follow existing patterns (see [alto_client.py](packages/browse/src/ra_mcp_browse/clients/alto_client.py))
+3. Use the centralized HTTPClient from `ra_mcp_common.utils`
 4. Add comprehensive error handling
 5. Use dependency injection for HTTP client
 
-### Adding a New Package/Module
+### Adding a New MCP Resource
 
-To add a new MCP module (e.g., `ra-mcp-metadata`):
+Resources provide static or dynamic content to MCP clients (see [guide_mcp/mcp.py](packages/guide-mcp/src/guide_mcp/mcp.py) for examples):
 
-1. Create the package structure:
-   ```bash
-   mkdir -p packages/metadata/src/ra_mcp_metadata/{services,cli}
-   mkdir -p packages/metadata/tests
-   ```
-
-2. Create `packages/metadata/pyproject.toml`:
-   ```toml
-   [project]
-   name = "ra-mcp-metadata"
-   version = "0.2.7"
-   dependencies = ["ra-mcp-core"]
-
-   [tool.uv.sources]
-   ra-mcp-core = { workspace = true }
-
-   [build-system]
-   requires = ["hatchling"]
-   build-backend = "hatchling.build"
-   ```
-
-3. Add MCP tools in `mcp.py`, CLI commands in `cli/`
-4. Import into server's composition
-5. Register CLI sub-app if needed
+```python
+@mcp.resource("riksarkivet://my-resource/{param}")
+def get_my_resource(param: str) -> str:
+    """Description of what this resource provides."""
+    return f"Content for {param}"
+```
 
 ### Updating Dependencies
 
 ```bash
 # Add new dependency to a package
-cd packages/core && uv add package-name
+cd packages/common && uv add package-name
 
 # Add development dependency (root)
 uv add --dev package-name
@@ -615,9 +624,6 @@ curl "https://data.riksarkivet.se/api/records?q=Stockholm&rows=1"
 tail -f ra_mcp_api.log
 ```
 
-**Debugging on Hugging Face:**
-See [DEBUGGING.md](DEBUGGING.md) for comprehensive guide on debugging timeout and API issues when deployed to Hugging Face Spaces.
-
 ## MCP Specification Reference
 
 For detailed information about the Model Context Protocol specification, implementation details, or when clarification is needed about MCP-specific features, refer to the official documentation:
@@ -644,7 +650,7 @@ For detailed information about the Model Context Protocol specification, impleme
 
 **Issue**: Tests not running
 - Test infrastructure is being set up - see [Testing](#testing) section
-- Dagger currently skips tests in publish pipeline
+- Dagger currently accepts zero tests as passing
 
 ### Getting Help
 
@@ -669,6 +675,7 @@ When working with this codebase:
 2. **Read full context**: Use the Read tool on complete files, not just snippets
 3. **Prefer modifications**: Edit existing code rather than creating new files
 4. **Check types**: The project uses type hints - maintain them in all code
-5. **Follow patterns**: Match existing code style and patterns (see [packages/search/src/ra_mcp_search/services/](packages/search/src/ra_mcp_search/services/))
+5. **Follow patterns**: Match existing code style and patterns (see [packages/search/src/ra_mcp_search/operations/](packages/search/src/ra_mcp_search/operations/))
 6. **Document thoroughly**: MCP tools need excellent documentation for LLM understanding
-7. **Workspace awareness**: Changes to core affect both search and server packages
+7. **Workspace awareness**: Changes to common affect all packages; changes to search affect search-mcp and search-cli
+8. **Layered architecture**: Domain logic lives in search/browse packages; MCP wrappers in *-mcp packages; CLI in *-cli packages

@@ -7,6 +7,6 @@ Domain-specific code is in respective packages:
 - Browse: ra_mcp_browse
 """
 
-__version__ = "0.2.7"
+__version__ = "0.2.12"
 
 __all__ = []
