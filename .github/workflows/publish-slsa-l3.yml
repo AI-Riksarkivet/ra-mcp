@@ -74,7 +74,7 @@ jobs:
     with:
       image: ${{ needs.build-image.outputs.image }}
       digest: ${{ needs.build-image.outputs.digest }}
-      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-username: riksarkivet  # Docker Hub username (public)
     secrets:
       registry-password: ${{ secrets.DOCKERHUB_SECRET }}
 
