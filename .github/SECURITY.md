@@ -40,12 +40,23 @@ dagger call export-sbom --format spdx-json --output-path ./sbom.spdx.json
 
 ## Security Features
 
-- ✅ SBOM generation (SPDX format)
-- ✅ SLSA provenance attestations (Level 2-3)
+- ✅ SBOM generation (SPDX 2.3 format)
+- ✅ SLSA provenance attestations (Level 2)
 - ✅ Cosign image signing (keyless with Sigstore)
+- ✅ OpenSSF Scorecard monitoring
 - ✅ Alpine-based minimal images
 - ✅ Multi-platform support (amd64, arm64)
 - ✅ Automated vulnerability scanning
+
+## SLSA Build Level 2
+
+This project achieves [SLSA Build Level 2](https://slsa.dev/spec/v1.0/levels#build-l2) through:
+- ✅ **Provenance generated**: BuildKit generates signed provenance attestations
+- ✅ **Authenticated provenance**: GitHub OIDC provides cryptographic identity
+- ✅ **Service-generated**: Built on GitHub-hosted runners
+- ✅ **Non-falsifiable**: Provenance signed and verifiable
+
+**Note**: Level 3 requires isolated, ephemeral build environments which standard GitHub Actions runners don't provide. To achieve Level 3, we would need to use `slsa-framework/slsa-github-generator` with dedicated hardened runners.
 
 ## Image Signing and Verification
 

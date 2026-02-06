@@ -20,7 +20,8 @@
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
 [![Secret Leaks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml)
 
-[![SLSA Level 3](https://img.shields.io/badge/SLSA-Level%202--3-blue?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMyA3VjEyQzMgMTYuNTUgNi44NCAxOS43NCAxMiAyMUMxNy4xNiAxOS43NCAyMSAxNi41NSAyMSAxMlY3TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://slsa.dev/)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/AI-Riksarkivet/ra-mcp/badge)](https://scorecard.dev/viewer/?uri=github.com/AI-Riksarkivet/ra-mcp)
+[![SLSA 2](https://img.shields.io/badge/SLSA-Level%202-blue?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMyA3VjEyQzMgMTYuNTUgNi44NCAxOS43NCAxMiAyMUMxNy4xNiAxOS43NCAyMSAxNi41NSAyMSAxMlY3TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://slsa.dev/spec/v1.0/levels#build-l2)
 [![Signed with Sigstore](https://img.shields.io/badge/Sigstore-Signed-purple?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMyA3VjEyQzMgMTYuNTUgNi44NCAxOS43NCAxMiAyMUMxNy4xNiAxOS43NCAyMSAxNi41NSAyMSAxMlY3TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://www.sigstore.dev/)
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-green)](https://github.com/AI-Riksarkivet/ra-mcp/releases/latest)
 
