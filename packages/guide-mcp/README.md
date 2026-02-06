@@ -1,22 +1,21 @@
-# ra-mcp-guide
+# ra-mcp-guide-mcp
 
-Historical guide resources for the Riksarkivet MCP server.
+MCP resources for Riksarkivet historical guides and documentation.
 
-Provides MCP resources for accessing historical documentation about Swedish archives,
-including table of contents and detailed guide sections.
+## MCP Resources
 
-## Features
+- `riksarkivet://contents/table_of_contents` — Complete guide index
+- `riksarkivet://guide/{filename}` — Individual guide sections (e.g., `01_Domstolar.md`)
 
-- Access to historical guide documentation
-- Table of contents resource
-- Individual guide section resources
-- Markdown-formatted historical content
+## Components
 
-## Resources
+- **mcp.py**: FastMCP server with resource registration, loads markdown files from `resources/`
 
-- `riksarkivet://contents/table_of_contents` - Complete guide index
-- `riksarkivet://guide/{filename}` - Specific guide sections (e.g., '01_Domstolar.md')
+## Dependencies
 
-## Part of ra-mcp workspace
+- `ra-mcp-common`: Shared utilities
+- `fastmcp`: MCP server framework
 
-This package is part of the ra-mcp workspace and depends on ra-mcp-core.
+## Part of ra-mcp
+
+Imported by the root server via `FastMCP.import_server()`.

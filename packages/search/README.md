@@ -1,36 +1,18 @@
 # ra-mcp-search
 
-Search and browse MCP tools for Riksarkivet - provides MCP tools for searching and browsing transcribed historical documents from the Swedish National Archives.
-
-## Installation
-
-```bash
-pip install ra-mcp-search
-```
+Search domain package for Riksarkivet transcribed documents.
 
 ## Components
 
-- **mcp**: MCP tools (`search_transcribed`, `browse_document`) and resources
-- **services**: Business logic (SearchOperations, BrowseOperations, display services)
-- **cli**: CLI commands for search and browse
+- **models.py**: Pydantic models (`SearchRecord`, `RecordsResponse`, `SearchResult`)
+- **clients/search_client.py**: `SearchAPI` client for the Riksarkivet records API
+- **operations/search_operations.py**: Search business logic
+- **config.py**: API URL and default constants
 
-## MCP Tools
+## Dependencies
 
-### search_transcribed
+- `ra-mcp-common`: Shared HTTP client
 
-Search for keywords in transcribed historical documents. Supports advanced Solr query syntax including wildcards, fuzzy search, Boolean operators, and proximity searches.
+## Part of ra-mcp
 
-### browse_document
-
-Browse specific pages of a document by reference code and view full transcriptions.
-
-## CLI Usage
-
-```bash
-# Search for documents
-ra search "Stockholm"
-ra search "trolldom" --max 50
-
-# Browse specific documents
-ra browse "SE/RA/420422/01" --page "5,7,9"
-```
+Used by `ra-mcp-search-mcp` (MCP tools) and `ra-mcp-search-cli` (CLI command).

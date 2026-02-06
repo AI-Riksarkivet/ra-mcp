@@ -1,29 +1,17 @@
-# ra-mcp-core
+# ra-mcp-common
 
-Core library for Riksarkivet MCP - provides models, configuration, API clients, formatters, and utilities shared across all ra-mcp packages.
-
-## Installation
-
-```bash
-pip install ra-mcp-core
-```
+Shared HTTP client and utilities for all ra-mcp packages.
 
 ## Components
 
-- **config**: API URLs and configuration constants
-- **models**: Pydantic data models (SearchHit, SearchResult, BrowseResult, etc.)
-- **clients**: API clients for Riksarkivet services (SearchAPI, ALTOClient, OAIPMHClient, IIIFClient)
-- **formatters**: Output formatters (PlainTextFormatter, RichConsoleFormatter)
-- **utils**: Utility modules (HTTPClient, page_utils, url_generator)
+- **utils/http_client.py**: Centralized urllib-based HTTP client with configurable logging and timeouts
 
-## Usage
+## Environment Variables
 
-```python
-from ra_mcp_core import SearchHit, SearchResult
-from ra_mcp_core.clients import SearchAPI
-from ra_mcp_core.utils.http_client import default_http_client
+- `RA_MCP_LOG_API`: Enable API call logging to `ra_mcp_api.log`
+- `RA_MCP_LOG_LEVEL`: Set logging level (DEBUG, INFO, WARNING, ERROR)
+- `RA_MCP_TIMEOUT`: Override default request timeout in seconds
 
-# Use the search API
-search_api = SearchAPI(http_client=default_http_client)
-hits, total = search_api.search_transcribed_text("Stockholm", max_results=10)
-```
+## Part of ra-mcp
+
+This package has no internal dependencies and is used by all other ra-mcp packages.

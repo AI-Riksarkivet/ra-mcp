@@ -1,14 +1,21 @@
 # ra-mcp-browse
 
-Browse domain for Riksarkivet document pages.
+Browse domain package for Riksarkivet document pages.
 
-## Features
+## Components
 
-- ALTO XML client for transcription fetching
-- IIIF client for image manifests
-- OAI-PMH client for metadata retrieval
-- Browse operations for page viewing
+- **models.py**: Pydantic models (`BrowseResult`, `PageContext`, `OAIPMHMetadata`)
+- **clients/alto_client.py**: ALTO XML transcription parser
+- **clients/iiif_client.py**: IIIF collection and manifest client
+- **clients/oai_pmh_client.py**: OAI-PMH metadata client
+- **operations/browse_operations.py**: Browse business logic
+- **url_generator.py**: URL construction for bildvisning, IIIF images, and ALTO XML
+- **config.py**: API URLs, namespaces, and default constants
 
 ## Dependencies
 
-- `ra-mcp-core`: HTTP client and generic utilities
+- `ra-mcp-common`: Shared HTTP client
+
+## Part of ra-mcp
+
+Used by `ra-mcp-browse-mcp` (MCP tool) and `ra-mcp-browse-cli` (CLI command).

@@ -1,17 +1,23 @@
 # ra-mcp-search-mcp
 
-MCP tools for searching and browsing Riksarkivet transcribed documents.
+MCP tools for searching Riksarkivet transcribed documents.
 
-## Features
+## MCP Tools
 
-- **search_transcribed**: Search for keywords in transcribed historical documents
-- **browse_document**: Browse specific pages by reference code
+- **search_transcribed**: Search AI-transcribed text in digitised documents with advanced Solr query syntax
+- **search_metadata**: Search document metadata (titles, names, places, descriptions)
 
-## Usage
+## Components
 
-These tools are exposed via the MCP server composition in the server package.
+- **mcp.py**: FastMCP server setup and LLM instructions
+- **search_tool.py**: Tool registration and implementation
+- **formatter.py**: Search result formatting for LLM output
 
 ## Dependencies
 
-- `ra-mcp-search`: Core search operations and formatters
+- `ra-mcp-search`: Search domain logic
 - `fastmcp`: MCP server framework
+
+## Part of ra-mcp
+
+Imported by the root server via `FastMCP.import_server()`.

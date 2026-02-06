@@ -1,26 +1,23 @@
 # ra-mcp-search-cli
 
-CLI commands for searching and browsing Riksarkivet transcribed documents.
-
-## Features
-
-- **search**: Search for keywords in transcribed materials
-- **browse**: Browse specific pages by reference code
+CLI command for searching Riksarkivet transcribed documents.
 
 ## Usage
 
-These commands are integrated into the main `ra` CLI via the server package.
-
 ```bash
-# Search for documents
 ra search "Stockholm"
-
-# Browse specific pages
-ra browse "SE/RA/123" --page 5
+ra search "trolldom" --max 50
+ra search "(Stockholm AND trolldom)" --max 25
 ```
+
+## Components
+
+- **app.py**: Typer sub-app registration
+- **search_cmd.py**: `ra search` command implementation
+- **formatting/**: Rich console output formatting
 
 ## Dependencies
 
-- `ra-mcp-search`: Core search operations and formatters
+- `ra-mcp-search`: Search domain logic
 - `typer`: CLI framework
-- `rich`: Terminal output formatting
+- `rich`: Terminal formatting
