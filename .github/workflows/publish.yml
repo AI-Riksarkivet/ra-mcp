@@ -70,6 +70,18 @@ jobs:
         with:
           files: ./sbom.spdx.json
 
+      # Install Cosign for signing
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+
+      # Sign the container images with keyless signing
+      - name: Sign container images
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          echo "Signing riksarkivet/ra-mcp@${DIGEST}"
+          cosign sign --yes riksarkivet/ra-mcp@${DIGEST}
+
       # Publish to PyPI
       #- name: Publish to PyPI
       #  uses: dagger/dagger-for-github@v8.2.0

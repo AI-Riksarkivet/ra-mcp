@@ -42,9 +42,29 @@ dagger call export-sbom --format spdx-json --output-path ./sbom.spdx.json
 
 - ✅ SBOM generation (SPDX format)
 - ✅ SLSA provenance attestations (Level 2-3)
+- ✅ Cosign image signing (keyless with Sigstore)
 - ✅ Alpine-based minimal images
 - ✅ Multi-platform support (amd64, arm64)
 - ✅ Automated vulnerability scanning
+
+## Image Signing and Verification
+
+All images are signed with Cosign using keyless signing (Sigstore).
+
+### Verify Image Signature
+
+```bash
+# Verify signature (requires Cosign)
+cosign verify riksarkivet/ra-mcp:v0.2.9 \
+  --certificate-identity-regexp "^https://github.com/AI-Riksarkivet/ra-mcp/" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+# Verify attestations
+cosign verify-attestation riksarkivet/ra-mcp:v0.2.9 \
+  --type slsaprovenance \
+  --certificate-identity-regexp "^https://github.com/AI-Riksarkivet/ra-mcp/" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
 
 ## Vulnerability Scanning
 
