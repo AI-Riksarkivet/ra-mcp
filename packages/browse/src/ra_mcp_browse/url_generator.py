@@ -5,10 +5,7 @@ URL generation utilities for Riksarkivet resources.
 import urllib.parse
 from typing import Optional
 
-# URL constants for generating links
-ALTO_BASE_URL = "https://sok.riksarkivet.se/dokument/alto"
-BILDVISNING_BASE_URL = "https://sok.riksarkivet.se/bildvisning"
-IIIF_IMAGE_BASE_URL = "https://lbiiif.riksarkivet.se/arkis"
+from .config import ALTO_BASE_URL, BILDVISNING_BASE_URL, IIIF_IMAGE_BASE_URL
 
 
 def remove_arkis_prefix(manifest_id: str) -> str:
