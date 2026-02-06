@@ -1,6 +1,6 @@
 [project]
 name = "ra-mcp-guide-mcp"
-version = "0.2.8"
+version = "0.2.9"
 description = "MCP resources for Riksarkivet historical guides and documentation"
 readme = "README.md"
 requires-python = ">=3.12"
