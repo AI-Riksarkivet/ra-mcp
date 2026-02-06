@@ -75,6 +75,7 @@ jobs:
       image: ${{ needs.build-image.outputs.image }}
       digest: ${{ needs.build-image.outputs.digest }}
       registry-username: riksarkivet  # Docker Hub username (public)
+      private-repository: false       # Repository is public
     secrets:
       registry-password: ${{ secrets.DOCKERHUB_SECRET }}
 
