@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: riksarkivet/ra-mcp
-  tag: ""  # defaults to appVersion
+  tag: "latest"  # defaults to appVersion
   pullPolicy: IfNotPresent
 
 service:
