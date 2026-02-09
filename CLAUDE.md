@@ -597,14 +597,11 @@ git tag v0.X.Y && git push --tags
 **To cut a new release:**
 
 ```bash
-# 1. Bump version in pyproject.toml
-# 2. Commit the version bump
-git commit -m "chore: bump version to 0.X.Y"
-
-# 3. Tag and push
-git tag v0.X.Y
-git push && git push --tags
+# One command: bumps pyproject.toml, commits, tags, and pushes
+make release VERSION=0.5.0
 ```
+
+This runs: `sed` version update → `git commit` → `git tag v0.5.0` → `git push && git push --tags`.
 
 **How it works:**
 - [release.yml](.github/workflows/release.yml) triggers on `v*` tag pushes

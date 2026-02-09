@@ -1,4 +1,4 @@
-.PHONY: install serve serve-http inspect format lint typecheck check test ci changelog clean
+.PHONY: install serve serve-http inspect format lint typecheck check test ci changelog release clean
 
 # Install dependencies
 install:
@@ -43,6 +43,19 @@ ci:
 # Generate changelog from conventional commits
 changelog:
 	uvx git-cliff --output CHANGELOG.md
+
+# Cut a release: make release VERSION=0.5.0
+release:
+ifndef VERSION
+	$(error VERSION is required. Usage: make release VERSION=0.5.0)
+endif
+	@echo "Releasing v$(VERSION)..."
+	sed -i 's/^version = ".*"/version = "$(VERSION)"/' pyproject.toml
+	git add pyproject.toml
+	git commit -m "chore: bump version to $(VERSION)"
+	git tag "v$(VERSION)"
+	git push && git push --tags
+	@echo "Done. release.yml will create the GitHub Release."
 
 # Clean build artifacts
 clean:
