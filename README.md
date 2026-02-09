@@ -17,6 +17,7 @@
 > - Contributions and feedback are welcome as we work toward stability
 
 [![Tests](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/codeql.yml)
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
 [![Secret Leaks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml)
 
