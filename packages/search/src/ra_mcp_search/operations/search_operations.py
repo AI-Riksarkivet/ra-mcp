@@ -5,13 +5,17 @@ Handles keyword searching.
 
 from typing import Optional
 
-from ra_mcp_common.telemetry import get_tracer
+from opentelemetry.trace import StatusCode
+
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 from ..clients import SearchAPI
 from ..models import SearchResult
 
 _tracer = get_tracer("ra_mcp.search_operations")
+_meter = get_meter("ra_mcp.search_operations")
+_search_counter = _meter.create_counter("ra_mcp.search.requests", description="Search operations executed")
 
 
 class SearchOperations:
@@ -61,6 +65,7 @@ class SearchOperations:
         Returns:
             SearchResult containing documents, total count, and metadata.
         """
+        search_type = "transcribed" if transcribed_only else "metadata"
         with _tracer.start_as_current_span(
             "SearchOperations.search",
             attributes={
@@ -70,23 +75,32 @@ class SearchOperations:
                 "search.max_results": max_results,
             },
         ) as span:
-            # Execute search using API parameter names
-            response = self.search_api.search(
-                transcribed_text=keyword if transcribed_only else None,
-                text=keyword if not transcribed_only else None,
-                only_digitised_materials=only_digitised,
-                max=max_results,
-                offset=offset,
-                max_snippets_per_record=max_snippets_per_record,
-                sort=sort,
-                year_min=year_min,
-                year_max=year_max,
-                name=name,
-                place=place,
-            )
+            try:
+                # Execute search using API parameter names
+                response = self.search_api.search(
+                    transcribed_text=keyword if transcribed_only else None,
+                    text=keyword if not transcribed_only else None,
+                    only_digitised_materials=only_digitised,
+                    max=max_results,
+                    offset=offset,
+                    max_snippets_per_record=max_snippets_per_record,
+                    sort=sort,
+                    year_min=year_min,
+                    year_max=year_max,
+                    name=name,
+                    place=place,
+                )
 
-            span.set_attribute("search.total_hits", response.total_hits)
-            return SearchResult(response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record)
+                span.set_attribute("search.total_hits", response.total_hits)
+                _search_counter.add(1, {"search.type": search_type, "search.status": "success"})
+                return SearchResult(
+                    response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record
+                )
+            except Exception as e:
+                span.set_status(StatusCode.ERROR, str(e))
+                span.record_exception(e)
+                _search_counter.add(1, {"search.type": search_type, "search.status": "error"})
+                raise
 
     def search_transcribed(
         self,

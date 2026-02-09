@@ -152,10 +152,11 @@ def setup_server(server: FastMCP, enabled_modules: List[str]):
             logger.warning(f"⚠ Unknown module '{module_name}' - skipping")
             continue
 
-        module = AVAILABLE_MODULES[module_name]
+        module_config = AVAILABLE_MODULES[module_name]
+        module_server: FastMCP = module_config["server"]  # type: ignore[assignment]
         try:
-            server.mount(module["server"], namespace=module_name)
-            logger.info(f"✓ Mounted {module['server'].name} (namespace={module_name})")
+            server.mount(module_server, namespace=module_name)
+            logger.info(f"✓ Mounted {module_server.name} (namespace={module_name})")
             _mounted_modules.append(module_name)
         except Exception as e:
             logger.error(f"✗ Failed to mount {module_name}: {e}")
