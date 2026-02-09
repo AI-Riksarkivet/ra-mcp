@@ -31,8 +31,8 @@ RUN if command -v apk >/dev/null 2>&1; then \
 
 # Remove pip and setuptools to eliminate CVE-2025-8869 and CVE-2026-1703
 # We use uv for all package management, so pip is not needed at runtime
-RUN pip uninstall -y pip setuptools wheel || true && \
-    rm -rf /usr/local/lib/python3.12/site-packages/pip* \
+# Use rm -rf directly instead of invoking pip to avoid executing a potentially vulnerable binary
+RUN rm -rf /usr/local/lib/python3.12/site-packages/pip* \
            /usr/local/lib/python3.12/site-packages/setuptools* \
            /usr/local/lib/python3.12/site-packages/wheel* \
            /usr/local/bin/pip* 2>/dev/null || true
