@@ -109,7 +109,7 @@ docker run -p 7860:7860 riksarkivet/ra-mcp:latest
 
 ```bash
 helm install ra-mcp charts/ra-mcp \
-  --set image.tag=v0.4.1-alpine \
+  --set image.tag=v0.4.2-alpine \
   --set opentelemetry.enabled=true
 ```
 
