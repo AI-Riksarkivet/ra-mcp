@@ -1,0 +1,56 @@
+replicaCount: 1
+
+image:
+  repository: riksarkivet/ra-mcp
+  tag: ""  # defaults to appVersion
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 7860
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 256Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+env:
+  RA_MCP_LOG_LEVEL: "INFO"
+
+opentelemetry:
+  enabled: false
+  endpoint: "http://localhost:4317"
+  protocol: "grpc"
+  serviceName: "ra-mcp"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]

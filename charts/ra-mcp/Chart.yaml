@@ -1,0 +1,12 @@
+apiVersion: v2
+name: ra-mcp
+description: MCP server providing access to transcribed historical documents from the Swedish National Archives (Riksarkivet)
+type: application
+version: 0.1.0
+appVersion: "0.3.0"
+home: https://github.com/AI-Riksarkivet/ra-mcp
+sources:
+  - https://github.com/AI-Riksarkivet/ra-mcp
+maintainers:
+  - name: AI-Riksarkivet
+    url: https://github.com/AI-Riksarkivet
