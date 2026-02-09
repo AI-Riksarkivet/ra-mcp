@@ -106,11 +106,15 @@ class OAIPMHClient:
             try:
                 # Use typed metadata to get nad_link safely
                 metadata = self.get_metadata(identifier)
-                if metadata and metadata.nad_link:
-                    return self._extract_manifest_id_from_nad_link(metadata.nad_link)
-                return None
+                return self.manifest_id_from_metadata(metadata)
             except Exception:
                 return None
+
+    def manifest_id_from_metadata(self, metadata: Optional[OAIPMHMetadata]) -> Optional[str]:
+        """Extract manifest ID from already-fetched metadata (no HTTP call)."""
+        if metadata and metadata.nad_link:
+            return self._extract_manifest_id_from_nad_link(metadata.nad_link)
+        return None
 
     def _extract_manifest_id_from_nad_link(self, nad_link_url: str) -> str:
         """Extract Manifest ID from NAD link URL."""

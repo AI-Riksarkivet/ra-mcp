@@ -64,10 +64,9 @@ class BrowseOperations:
                 "browse.pages_requested": pages,
             },
         ) as span:
-            manifest_id = self.oai_client.extract_manifest_id(reference_code)
-
-            # Always fetch OAI-PMH metadata (works for both digitised and non-digitised)
-            oai_metadata = self._fetch_oai_metadata(reference_code)
+            # Fetch OAI-PMH metadata once and derive manifest ID from it
+            oai_metadata = self.oai_client.get_metadata(reference_code)
+            manifest_id = self.oai_client.manifest_id_from_metadata(oai_metadata)
 
             if not manifest_id:
                 # No manifest = non-digitised material
@@ -168,19 +167,6 @@ class BrowseOperations:
 
             span.set_attribute("browse.pages_fetched", len(page_contexts))
             return page_contexts
-
-    def _fetch_oai_metadata(self, reference_code: str) -> Optional[OAIPMHMetadata]:
-        """Fetch OAI-PMH metadata for a document.
-
-        Args:
-            reference_code: Document reference code to get metadata for.
-
-        Returns:
-            OAIPMHMetadata containing title, repository, etc. from OAI-PMH API,
-            or None if not found.
-        """
-        # Use the typed metadata method from OAI client
-        return self.oai_client.get_metadata(reference_code)
 
     def _get_page_context(
         self,
