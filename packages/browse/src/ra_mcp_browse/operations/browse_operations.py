@@ -5,15 +5,21 @@ Handles document browsing, page fetching, and metadata retrieval.
 
 from typing import List, Optional
 
-from ra_mcp_common.telemetry import get_tracer
+from opentelemetry.trace import StatusCode
+
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 from ..clients import IIIFClient, ALTOClient, OAIPMHClient
-from ..models import BrowseResult, OAIPMHMetadata, PageContext
+from ..models import BrowseResult, PageContext
 from ..utils import parse_page_range
 from .. import url_generator
 
 _tracer = get_tracer("ra_mcp.browse_operations")
+_meter = get_meter("ra_mcp.browse_operations")
+_browse_counter = _meter.create_counter("ra_mcp.browse.requests", description="Browse operations executed")
+_pages_histogram = _meter.create_histogram("ra_mcp.browse.pages", description="Pages returned per browse request")
+_empty_pages_counter = _meter.create_counter("ra_mcp.browse.empty_pages", description="Blank pages encountered")
 
 
 class BrowseOperations:
@@ -64,31 +70,46 @@ class BrowseOperations:
                 "browse.pages_requested": pages,
             },
         ) as span:
-            # Fetch OAI-PMH metadata once and derive manifest ID from it
-            oai_metadata = self.oai_client.get_metadata(reference_code)
-            manifest_id = self.oai_client.manifest_id_from_metadata(oai_metadata)
+            try:
+                # Fetch OAI-PMH metadata once and derive manifest ID from it
+                oai_metadata = self.oai_client.get_metadata(reference_code)
+                manifest_id = self.oai_client.manifest_id_from_metadata(oai_metadata)
 
-            if not manifest_id:
-                # No manifest = non-digitised material
-                # Return metadata but no page contexts
-                span.set_attribute("browse.pages_returned", 0)
+                if not manifest_id:
+                    # No manifest = non-digitised material
+                    # Return metadata but no page contexts
+                    span.set_attribute("browse.pages_returned", 0)
+                    _browse_counter.add(1, {"browse.status": "success"})
+                    _pages_histogram.record(0)
+                    return BrowseResult(
+                        contexts=[],
+                        reference_code=reference_code,
+                        pages_requested=pages,
+                        oai_metadata=oai_metadata,
+                    )
+
+                page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
+
+                # Count empty pages (blank but digitised)
+                empty_count = sum(1 for ctx in page_contexts if not ctx.full_text)
+                if empty_count:
+                    _empty_pages_counter.add(empty_count)
+
+                span.set_attribute("browse.pages_returned", len(page_contexts))
+                _browse_counter.add(1, {"browse.status": "success"})
+                _pages_histogram.record(len(page_contexts))
                 return BrowseResult(
-                    contexts=[],
+                    contexts=page_contexts,
                     reference_code=reference_code,
                     pages_requested=pages,
+                    manifest_id=manifest_id,
                     oai_metadata=oai_metadata,
                 )
-
-            page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
-
-            span.set_attribute("browse.pages_returned", len(page_contexts))
-            return BrowseResult(
-                contexts=page_contexts,
-                reference_code=reference_code,
-                pages_requested=pages,
-                manifest_id=manifest_id,
-                oai_metadata=oai_metadata,
-            )
+            except Exception as e:
+                span.set_status(StatusCode.ERROR, str(e))
+                span.record_exception(e)
+                _browse_counter.add(1, {"browse.status": "error"})
+                raise
 
     def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
         """Resolve IIIF manifest identifier from persistent identifier.
