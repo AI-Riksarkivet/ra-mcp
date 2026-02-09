@@ -133,6 +133,7 @@ def create_server(enabled_modules: List[str]) -> FastMCP:
 
 # Global server instance (configured in main)
 main_server = None
+_mounted_modules: List[str] = []
 
 
 def setup_server(server: FastMCP, enabled_modules: List[str]):
@@ -145,7 +146,7 @@ def setup_server(server: FastMCP, enabled_modules: List[str]):
     logger.info("Setting up server composition...")
     logger.info(f"Enabled modules: {', '.join(enabled_modules)}")
 
-    mounted_count = 0
+    _mounted_modules.clear()
     for module_name in enabled_modules:
         if module_name not in AVAILABLE_MODULES:
             logger.warning(f"⚠ Unknown module '{module_name}' - skipping")
@@ -155,14 +156,14 @@ def setup_server(server: FastMCP, enabled_modules: List[str]):
         try:
             server.mount(module["server"], namespace=module_name)
             logger.info(f"✓ Mounted {module['server'].name} (namespace={module_name})")
-            mounted_count += 1
+            _mounted_modules.append(module_name)
         except Exception as e:
             logger.error(f"✗ Failed to mount {module_name}: {e}")
 
-    if mounted_count == 0:
+    if not _mounted_modules:
         logger.warning("⚠ No modules were successfully mounted!")
     else:
-        logger.info(f"Server composition complete. {mounted_count} module(s) mounted.")
+        logger.info(f"Server composition complete. {len(_mounted_modules)} module(s) mounted.")
 
 
 def setup_custom_routes(server: FastMCP):
@@ -179,6 +180,12 @@ def setup_custom_routes(server: FastMCP):
     @server.custom_route("/health", methods=["GET"])
     async def health(_):
         return JSONResponse({"status": "ok"})
+
+    @server.custom_route("/ready", methods=["GET"])
+    async def ready(_):
+        if _mounted_modules:
+            return JSONResponse({"status": "ready", "modules": _mounted_modules})
+        return JSONResponse({"status": "not ready", "modules": []}, status_code=503)
 
 
 def run_server(
