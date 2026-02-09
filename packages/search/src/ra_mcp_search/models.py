@@ -14,20 +14,24 @@ from pydantic import BaseModel, ConfigDict, Field
 # API Response Models (matching Riksarkivet Search API structure)
 # ============================================================================
 
+
 class ArchivalInstitution(BaseModel):
     """Archival institution information."""
+
     caption: str
     uri: str
 
 
 class HierarchyLevel(BaseModel):
     """Hierarchy level in archival structure."""
+
     caption: str
     uri: str
 
 
 class Provenance(BaseModel):
     """Provenance information."""
+
     caption: str
     uri: Optional[str] = None  # URI is optional in some API responses
     date: Optional[str] = None
@@ -35,6 +39,7 @@ class Provenance(BaseModel):
 
 class Metadata(BaseModel):
     """Document metadata from API."""
+
     model_config = ConfigDict(populate_by_name=True)
 
     reference_code: str = Field(alias="referenceCode")
@@ -48,6 +53,7 @@ class Metadata(BaseModel):
 
 class PageInfo(BaseModel):
     """Page information from snippet."""
+
     id: str
     width: Optional[int] = None
     height: Optional[int] = None
@@ -55,6 +61,7 @@ class PageInfo(BaseModel):
 
 class Snippet(BaseModel):
     """Text snippet with search match."""
+
     text: str
     score: float
     pages: List[PageInfo]
@@ -64,15 +71,16 @@ class Snippet(BaseModel):
 
 class TranscribedText(BaseModel):
     """Transcribed text information."""
+
     num_total: int = Field(alias="numTotal")
     snippets: List[Snippet]
 
     model_config = ConfigDict(populate_by_name=True)
 
 
-
 class DocumentLinks(BaseModel):
     """Links from API _links field."""
+
     self: Optional[str] = None
     html: Optional[str] = None
     image: Optional[List[str]] = None
@@ -84,9 +92,9 @@ class DocumentLinks(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-
 class SearchRecord(BaseModel):
     """Record from search API matching JSON structure (objectType: Record, type: Volume)."""
+
     id: str
     object_type: str = Field(alias="objectType")
     type: str
@@ -96,7 +104,6 @@ class SearchRecord(BaseModel):
     links: Optional[DocumentLinks] = Field(None, alias="_links")
 
     model_config = ConfigDict(populate_by_name=True)
-
 
     def get_manifest_url(self) -> Optional[str]:
         """Get manifest URL from links."""
@@ -125,12 +132,14 @@ class SearchRecord(BaseModel):
 # API Search Response
 # ============================================================================
 
+
 class RecordsResponse(BaseModel):
     """
     Search API response matching /api/records endpoint.
 
     Maps to the full API response structure from /api/records.
     """
+
     items: List[SearchRecord]
     total_hits: int = Field(alias="totalHits")
     hits: Optional[int] = None  # Number of records returned in this response
@@ -152,6 +161,7 @@ class SearchResult(BaseModel):
     Wraps RecordsResponse with the search parameters used to execute the search.
     Parameter names match the Search API specification.
     """
+
     response: RecordsResponse
     transcribed_text: str  # Search keyword (API parameter name)
     max: int  # Maximum results per page (API parameter name)

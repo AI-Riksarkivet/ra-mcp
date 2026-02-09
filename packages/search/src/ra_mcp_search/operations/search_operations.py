@@ -31,6 +31,11 @@ class SearchOperations:
         offset: int = 0,
         max_results: int = 10,
         max_snippets_per_record: Optional[int] = None,
+        sort: str = "relevance",
+        year_min: Optional[int] = None,
+        year_max: Optional[int] = None,
+        name: Optional[str] = None,
+        place: Optional[str] = None,
     ) -> SearchResult:
         """Search for records in document collections.
 
@@ -44,6 +49,11 @@ class SearchOperations:
             offset: Number of results to skip for pagination.
             max_results: Maximum number of documents to return.
             max_snippets_per_record: Limit snippets per document (None for unlimited).
+            sort: Sort order — one of: relevance, timeAsc, timeDesc, alphaAsc, alphaDesc.
+            year_min: Filter results to this start year or later.
+            year_max: Filter results to this end year or earlier.
+            name: Search by person name (can combine with keyword).
+            place: Search by place name (can combine with keyword).
 
         Returns:
             SearchResult containing documents, total count, and metadata.
@@ -55,16 +65,15 @@ class SearchOperations:
             only_digitised_materials=only_digitised,
             max=max_results,
             offset=offset,
-            max_snippets_per_record=max_snippets_per_record
+            max_snippets_per_record=max_snippets_per_record,
+            sort=sort,
+            year_min=year_min,
+            year_max=year_max,
+            name=name,
+            place=place,
         )
 
-        return SearchResult(
-            response=response,
-            transcribed_text=keyword,
-            max=max_results,
-            offset=offset,
-            max_snippets_per_record=max_snippets_per_record
-        )
+        return SearchResult(response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record)
 
     def search_transcribed(
         self,
@@ -88,10 +97,5 @@ class SearchOperations:
             SearchResult containing documents, total count, and metadata.
         """
         return self.search(
-            keyword=keyword,
-            transcribed_only=True,
-            only_digitised=True,
-            offset=offset,
-            max_results=max_results,
-            max_snippets_per_record=max_snippets_per_record
+            keyword=keyword, transcribed_only=True, only_digitised=True, offset=offset, max_results=max_results, max_snippets_per_record=max_snippets_per_record
         )

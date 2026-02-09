@@ -5,7 +5,7 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
@@ -117,6 +117,9 @@ def register_search_tool(mcp) -> None:
     - max_results: Maximum documents to return per query (default: 25)
     - max_snippets_per_record: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
+    - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
+    - year_min: Optional start year to filter results (e.g. 1700)
+    - year_max: Optional end year to filter results (e.g. 1750)
 
     Best practices:
     - Start with offset=0 and increase by 50 to discover all matches
@@ -124,6 +127,8 @@ def register_search_tool(mcp) -> None:
     - Use wildcards (*) for word variations: "troll*" finds "trolldom", "trolleri", "trollkona"
     - Use fuzzy search (~) for historical spelling variants
     - Use browse_document tool to view full page transcriptions of interesting results
+    - Use year_min/year_max to narrow results to a specific time period
+    - Use sort="timeAsc" to find earliest mentions, sort="timeDesc" for most recent
     """,
     )
     async def search_transcribed(
@@ -132,15 +137,16 @@ def register_search_tool(mcp) -> None:
         max_results: int = 25,
         max_snippets_per_record: int = 3,
         max_response_tokens: int = 15000,
+        sort: str = "relevance",
+        year_min: Optional[int] = None,
+        year_max: Optional[int] = None,
     ) -> str:
         """Search AI-transcribed text in digitised historical documents.
 
         This tool searches only transcribed text (not metadata).
         For metadata search, use search_metadata instead.
         """
-        logger.info(
-            f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}"
-        )
+        logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}")
 
         try:
             logger.debug("Initializing search operations...")
@@ -151,10 +157,13 @@ def register_search_tool(mcp) -> None:
             search_result = search_operations.search(
                 keyword=keyword,
                 transcribed_only=True,  # Always search transcribed text
-                only_digitised=True,    # Transcriptions only exist for digitised materials
+                only_digitised=True,  # Transcriptions only exist for digitised materials
                 offset=offset,
                 max_results=max_results,
                 max_snippets_per_record=max_snippets_per_record,
+                sort=sort,
+                year_min=year_min,
+                year_max=year_max,
             )
 
             logger.info(f"Formatting {len(search_result.items)} search results...")
@@ -195,6 +204,7 @@ def register_search_tool(mcp) -> None:
     - Returns document metadata with matching fields
     - Supports same advanced Solr query syntax as search_transcribed
     - Access to 2M+ records when including non-digitised materials
+    - Targeted search by person name or place name via dedicated fields
 
     Search syntax (same as search_transcribed):
     - Basic: "Stockholm" - exact term search
@@ -204,19 +214,30 @@ def register_search_tool(mcp) -> None:
     - Proximity: '"Stockholm silver"~10' - words within 10 words
 
     Parameters:
-    - keyword: Search term or Solr query (required)
+    - keyword: General free-text search across all metadata fields (maps to the API 'text' parameter). Required.
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
     - only_digitised: Limit to digitised materials (True) or include all records (False) (default: True)
     - max_results: Maximum documents to return per query (default: 25)
     - max_response_tokens: Maximum tokens in response (default: 15000)
+    - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
+    - year_min: Optional start year to filter results (e.g. 1700)
+    - year_max: Optional end year to filter results (e.g. 1750)
+    - name: Search by person name in the dedicated name field (e.g. "Nobel", "Linné"). Can be combined with keyword and place.
+    - place: Search by place name in the dedicated place field (e.g. "Stockholm", "Göteborg"). Can be combined with keyword and name.
+
+    Combining parameters:
+    - keyword + name + place can all be used together for precise filtering
+    - Example: keyword="inventarium", name="Nobel", place="Stockholm" finds inventory documents mentioning Nobel in Stockholm
+    - Use name/place for targeted searches instead of putting everything in keyword
 
     When to use:
-    - Searching for places: "Stockholm", "Göteborg"
-    - Searching document titles or descriptions
+    - Searching for places: use the place parameter for targeted results
+    - Searching for people: use the name parameter
+    - Searching document titles or descriptions: use keyword
     - Finding non-digitised materials by metadata
     - Broad discovery across all archival records
-
-
+    - Time-ordered results: use sort="timeAsc" or sort="timeDesc"
+    - Narrowing by date range: use year_min/year_max
     """,
     )
     async def search_metadata(
@@ -225,6 +246,11 @@ def register_search_tool(mcp) -> None:
         only_digitised: bool = True,
         max_results: int = 25,
         max_response_tokens: int = 15000,
+        sort: str = "relevance",
+        year_min: Optional[int] = None,
+        year_max: Optional[int] = None,
+        name: Optional[str] = None,
+        place: Optional[str] = None,
     ) -> str:
         """Search document metadata (titles, names, places, provenance).
 
@@ -232,10 +258,7 @@ def register_search_tool(mcp) -> None:
         For transcription search, use search_transcribed instead.
         """
         material_scope = "digitised materials" if only_digitised else "all materials (2M+ records)"
-        logger.info(
-            f"MCP Tool: search_metadata called with keyword='{keyword}', "
-            f"offset={offset}, scope={material_scope}"
-        )
+        logger.info(f"MCP Tool: search_metadata called with keyword='{keyword}', offset={offset}, scope={material_scope}")
 
         try:
             logger.debug("Initializing search operations...")
@@ -250,6 +273,11 @@ def register_search_tool(mcp) -> None:
                 offset=offset,
                 max_results=max_results,
                 max_snippets_per_record=None,  # Metadata search doesn't have snippets
+                sort=sort,
+                year_min=year_min,
+                year_max=year_max,
+                name=name,
+                place=place,
             )
 
             logger.info(f"Formatting {len(search_result.items)} search results...")

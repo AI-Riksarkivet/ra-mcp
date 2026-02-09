@@ -34,6 +34,11 @@ class SearchAPI:
         max: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
         max_snippets_per_record: Optional[int] = None,
+        sort: str = "relevance",
+        year_min: Optional[int] = None,
+        year_max: Optional[int] = None,
+        name: Optional[str] = None,
+        place: Optional[str] = None,
     ) -> RecordsResponse:
         """
         Search for records using various search parameters.
@@ -48,6 +53,11 @@ class SearchAPI:
             max: Maximum number of records to return (API parameter name)
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
+            sort: Sort order — one of: relevance, timeAsc, timeDesc, alphaAsc, alphaDesc
+            year_min: Filter results to this start year or later
+            year_max: Filter results to this end year or earlier
+            name: Search by person name (API field, can combine with text)
+            place: Search by place name (API field, can combine with text)
 
         Returns:
             RecordsResponse with all API fields populated
@@ -58,12 +68,11 @@ class SearchAPI:
         # Validate parameters
         if transcribed_text and not only_digitised_materials:
             raise ValueError(
-                "transcribed_text search requires only_digitised_materials=True. "
-                "Use text parameter instead of transcribed_text to search all materials."
+                "transcribed_text search requires only_digitised_materials=True. Use text parameter instead of transcribed_text to search all materials."
             )
 
-        if not text and not transcribed_text:
-            raise ValueError("Must provide either 'text' or 'transcribed_text' parameter")
+        if not text and not transcribed_text and not name and not place:
+            raise ValueError("Must provide at least one search parameter: 'text', 'transcribed_text', 'name', or 'place'")
 
         search_term = transcribed_text or text
         search_type = "transcribed" if transcribed_text else "general"
@@ -74,7 +83,7 @@ class SearchAPI:
             params = {
                 "max": max,
                 "offset": offset,
-                "sort": "relevance",
+                "sort": sort,
             }
 
             if only_digitised_materials:
@@ -85,11 +94,16 @@ class SearchAPI:
             elif text:
                 params["text"] = text
 
-            response_data = self.http_client.get_json(
-                SEARCH_API_BASE_URL,
-                params=params,
-                timeout=REQUEST_TIMEOUT
-            )
+            if name:
+                params["name"] = name
+            if place:
+                params["place"] = place
+            if year_min is not None:
+                params["year_min"] = year_min
+            if year_max is not None:
+                params["year_max"] = year_max
+
+            response_data = self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
             # Parse entire API response with Pydantic
             response = RecordsResponse(**response_data)
@@ -98,10 +112,7 @@ class SearchAPI:
             if max_snippets_per_record:
                 self._limit_snippets(response, max_snippets_per_record)
 
-            self.logger.info(
-                f"✓ Search completed: {response.count_snippets()} snippets "
-                f"from {len(response.items)} records ({response.total_hits} total)"
-            )
+            self.logger.info(f"✓ Search completed: {response.count_snippets()} snippets from {len(response.items)} records ({response.total_hits} total)")
 
             return response
 
@@ -131,11 +142,7 @@ class SearchAPI:
             RecordsResponse with all API fields populated
         """
         return self.search(
-            transcribed_text=transcribed_text,
-            only_digitised_materials=True,
-            max=max,
-            offset=offset,
-            max_snippets_per_record=max_snippets_per_record
+            transcribed_text=transcribed_text, only_digitised_materials=True, max=max, offset=offset, max_snippets_per_record=max_snippets_per_record
         )
 
     def _limit_snippets(self, response: RecordsResponse, max_snippets: int) -> None:
