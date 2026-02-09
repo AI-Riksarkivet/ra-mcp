@@ -1,4 +1,4 @@
-.PHONY: install serve serve-http inspect format lint typecheck check test ci clean
+.PHONY: install serve serve-http inspect format lint typecheck check test ci changelog clean
 
 # Install dependencies
 install:
@@ -39,6 +39,10 @@ test:
 ci:
 	dagger call checks
 	dagger call test
+
+# Generate changelog from conventional commits
+changelog:
+	uvx git-cliff --output CHANGELOG.md
 
 # Clean build artifacts
 clean:
