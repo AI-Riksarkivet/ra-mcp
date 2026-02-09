@@ -17,11 +17,11 @@ jobs:
       packages: write      # For pushing to registries
       attestations: write  # For attestations
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       # Run Dagger checks and tests first
       #- name: Run checks and tests
-      #  uses: dagger/dagger-for-github@v8.2.0
+      #  uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
       #  with:
       #    verb: call
       #    args: checks
@@ -30,11 +30,11 @@ jobs:
 
       # Set up Docker Buildx (required for attestations)
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       # Login to Docker Hub
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_SECRET }}
@@ -42,7 +42,7 @@ jobs:
       # Build and push with native BuildKit attestations
       - name: Build and push Alpine with attestations
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
           context: .
           push: true
@@ -60,7 +60,7 @@ jobs:
       # Generate SBOM locally using Dagger (for Scorecard compliance)
       - name: Generate standalone SBOM
         if: github.event_name == 'release'
-        uses: dagger/dagger-for-github@v8.2.0
+        uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
         with:
           verb: call
           args: "generate-sbom --base-image python:3.12-alpine --format spdx-json --source . export --path ./sbom.spdx.json"
@@ -70,7 +70,7 @@ jobs:
       # Extract real provenance attestation from published image using Dagger
       - name: Extract provenance from image
         if: github.event_name == 'release'
-        uses: dagger/dagger-for-github@v8.2.0
+        uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
         with:
           verb: call
           args: "extract-provenance-attestation --image-ref riksarkivet/ra-mcp:${{ github.event.release.tag_name }} export --path ./provenance.intoto.jsonl"
@@ -80,7 +80,7 @@ jobs:
       # Upload attestations as release assets (for OpenSSF Scorecard compliance)
       - name: Upload attestations as release assets
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           files: |
             ./sbom.spdx.json
@@ -88,7 +88,7 @@ jobs:
 
       # Install Cosign for signing
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.7.0
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
 
       # Sign the container images with keyless signing
       - name: Sign container images
@@ -100,7 +100,7 @@ jobs:
 
       # Publish to PyPI
       #- name: Publish to PyPI
-      #  uses: dagger/dagger-for-github@v8.2.0
+      #  uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
       #  with:
       #    verb: call
       #    args: "publish-pypi --pypi-token env:PYPI_TOKEN --source ."
@@ -108,4 +108,3 @@ jobs:
       #    version: "latest"
       #  env:
       #    PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-#

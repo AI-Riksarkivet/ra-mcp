@@ -4,7 +4,7 @@ ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
 FROM ${BUILDER_IMAGE} as builder
 
-COPY --from=ghcr.io/astral-sh/uv:0.5.13 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5.13@sha256:ea61e006cfec0e8d81fae901ad703e09d2c6cf1aa58abcb6507d124b50286f9f /uv /uvx /usr/local/bin/
 WORKDIR /app
 
 # Copy workspace configuration and all packages
