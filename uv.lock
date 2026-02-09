@@ -1116,7 +1116,7 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "opentelemetry-exporter-otlp" },
@@ -1157,7 +1157,7 @@ dev = [
 
 [[package]]
 name = "ra-mcp-browse"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/browse" }
 dependencies = [
     { name = "ra-mcp-common" },
@@ -1168,7 +1168,7 @@ requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-browse-cli"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/browse-cli" }
 dependencies = [
     { name = "ra-mcp-browse" },
@@ -1185,7 +1185,7 @@ requires-dist = [
 
 [[package]]
 name = "ra-mcp-browse-mcp"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/browse-mcp" }
 dependencies = [
     { name = "fastmcp" },
@@ -1200,7 +1200,7 @@ requires-dist = [
 
 [[package]]
 name = "ra-mcp-common"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/common" }
 dependencies = [
     { name = "opentelemetry-api" },
@@ -1211,7 +1211,7 @@ requires-dist = [{ name = "opentelemetry-api", specifier = ">=1.28.0" }]
 
 [[package]]
 name = "ra-mcp-guide-mcp"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/guide-mcp" }
 dependencies = [
     { name = "fastmcp" },
@@ -1226,7 +1226,7 @@ requires-dist = [
 
 [[package]]
 name = "ra-mcp-search"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/search" }
 dependencies = [
     { name = "ra-mcp-common" },
@@ -1237,7 +1237,7 @@ requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-search-cli"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/search-cli" }
 dependencies = [
     { name = "ra-mcp-search" },
@@ -1254,7 +1254,7 @@ requires-dist = [
 
 [[package]]
 name = "ra-mcp-search-mcp"
-version = "0.2.13"
+version = "0.3.0"
 source = { editable = "packages/search-mcp" }
 dependencies = [
     { name = "fastmcp" },
