@@ -3,7 +3,6 @@ Main CLI entry point for ra-mcp.
 """
 
 import os
-import sys
 from typing import Optional, Annotated
 
 import typer
@@ -78,7 +77,7 @@ def serve(
         ra serve --list-modules               # List available modules
         ra serve --port 8000 --log            # HTTP server with API logging
     """
-    from ..server import main as server_main, AVAILABLE_MODULES
+    from ..server import run_server, AVAILABLE_MODULES
 
     # Handle --list-modules
     if list_modules:
@@ -93,29 +92,15 @@ def serve(
         os.environ["RA_MCP_LOG_API"] = "1"
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
-    # Prepare arguments for server
-    original_argv = sys.argv
-    server_args = ["ra-mcp-server"]
-
     if port:
         console.print(f"[blue]Starting MCP server with HTTP/SSE transport on {host}:{port}[/blue]")
-        server_args.extend(["--http", "--port", str(port), "--host", host])
     else:
         console.print("[blue]Starting MCP server with stdio transport[/blue]")
 
     if modules:
         console.print(f"[dim]Enabled modules: {modules}[/dim]")
-        server_args.extend(["--modules", modules])
 
-    if verbose:
-        server_args.append("--verbose")
-
-    sys.argv = server_args
-
-    try:
-        server_main()
-    finally:
-        sys.argv = original_argv
+    run_server(http=port is not None, port=port or 8000, host=host, verbose=verbose, modules=modules)
 
 
 @app.callback()

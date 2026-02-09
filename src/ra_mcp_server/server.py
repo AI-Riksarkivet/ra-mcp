@@ -178,14 +178,53 @@ def setup_custom_routes(server: FastMCP):
         return FileResponse("assets/index.html")
 
 
-def main():
-    """Main entry point for the server."""
+def run_server(
+    *,
+    http: bool = False,
+    port: int = 8000,
+    host: str = "0.0.0.0",
+    verbose: bool = False,
+    modules: str | None = None,
+):
+    """Run the MCP server with the given configuration.
+
+    Args:
+        http: Use HTTP/SSE transport instead of stdio.
+        port: Port for HTTP transport.
+        host: Host for HTTP transport.
+        verbose: Enable verbose logging.
+        modules: Comma-separated list of modules to enable.
+    """
     init_telemetry()
     atexit.register(shutdown_telemetry)
 
     global main_server
 
-    # Get default modules
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
+        logger.debug("Verbose logging enabled")
+
+    default_modules = [name for name, info in AVAILABLE_MODULES.items() if info["default"]]
+    enabled_modules = [m.strip() for m in modules.split(",") if m.strip()] if modules else default_modules
+
+    logger.info("Initializing Riksarkivet MCP Server...")
+
+    main_server = create_server(enabled_modules)
+    setup_custom_routes(main_server)
+    asyncio.run(setup_server(main_server, enabled_modules))
+
+    if http:
+        logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{host}:{port}")
+        main_server.run(transport="streamable-http", host=host, port=port, path="/mcp")
+    else:
+        logger.info("Starting Riksarkivet MCP stdio server")
+        logger.info("Mode: Direct integration with Claude Desktop")
+        main_server.run(transport="stdio")
+
+
+def main():
+    """CLI entry point for direct invocation (e.g., python -m ra_mcp_server.server)."""
     default_modules = [name for name, info in AVAILABLE_MODULES.items() if info["default"]]
 
     parser = argparse.ArgumentParser(
@@ -204,11 +243,7 @@ Examples:
     )
     parser.add_argument("--http", action="store_true", help="Use HTTP/SSE transport instead of stdio")
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)")
-    parser.add_argument(
-        "--host",
-        default="0.0.0.0",
-        help="Host for HTTP transport (default: 0.0.0.0)",
-    )
+    parser.add_argument("--host", default="0.0.0.0", help="Host for HTTP transport (default: 0.0.0.0)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
     parser.add_argument(
         "--modules",
@@ -216,15 +251,10 @@ Examples:
         default=",".join(default_modules),
         help=f"Comma-separated list of modules to enable (default: {','.join(default_modules)})",
     )
-    parser.add_argument(
-        "--list-modules",
-        action="store_true",
-        help="List available modules and exit",
-    )
+    parser.add_argument("--list-modules", action="store_true", help="List available modules and exit")
 
     args = parser.parse_args()
 
-    # Handle --list-modules
     if args.list_modules:
         print("Available modules:")
         for name, info in AVAILABLE_MODULES.items():
@@ -232,32 +262,7 @@ Examples:
             print(f"  {name:12} - {info['description']}{default_marker}")
         return
 
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-        logging.getLogger().setLevel(logging.DEBUG)
-        logger.debug("Verbose logging enabled")
-
-    # Parse enabled modules
-    enabled_modules = [m.strip() for m in args.modules.split(",") if m.strip()]
-
-    logger.info("Initializing Riksarkivet MCP Server...")
-
-    # Create server with dynamic instructions
-    main_server = create_server(enabled_modules)
-
-    # Setup custom routes
-    setup_custom_routes(main_server)
-
-    # Import selected modules
-    asyncio.run(setup_server(main_server, enabled_modules))
-
-    if args.http:
-        logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{args.host}:{args.port}")
-        main_server.run(transport="streamable-http", host=args.host, port=args.port, path="/mcp")
-    else:
-        logger.info("Starting Riksarkivet MCP stdio server")
-        logger.info("Mode: Direct integration with Claude Desktop")
-        main_server.run(transport="stdio")
+    run_server(http=args.http, port=args.port, host=args.host, verbose=args.verbose, modules=args.modules)
 
 
 if __name__ == "__main__":
