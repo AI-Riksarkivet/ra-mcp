@@ -35,7 +35,7 @@ env:
 
 opentelemetry:
   enabled: false
-  endpoint: "http://localhost:4317"
+  endpoint: "http://otel-collector:4317"
   protocol: "grpc"
   serviceName: "ra-mcp"
 
