@@ -15,7 +15,6 @@ Environment variables for debugging:
 - RA_MCP_TIMEOUT: Override default timeout in seconds (default: 60)
 """
 
-import asyncio
 import atexit
 import logging
 import argparse
@@ -136,17 +135,17 @@ def create_server(enabled_modules: List[str]) -> FastMCP:
 main_server = None
 
 
-async def setup_server(server: FastMCP, enabled_modules: List[str]):
-    """Setup server composition by importing selected tool servers.
+def setup_server(server: FastMCP, enabled_modules: List[str]):
+    """Setup server composition by mounting selected tool servers.
 
     Args:
         server: The FastMCP server instance to configure.
-        enabled_modules: List of module names to import.
+        enabled_modules: List of module names to mount.
     """
     logger.info("Setting up server composition...")
     logger.info(f"Enabled modules: {', '.join(enabled_modules)}")
 
-    imported_count = 0
+    mounted_count = 0
     for module_name in enabled_modules:
         if module_name not in AVAILABLE_MODULES:
             logger.warning(f"⚠ Unknown module '{module_name}' - skipping")
@@ -154,16 +153,16 @@ async def setup_server(server: FastMCP, enabled_modules: List[str]):
 
         module = AVAILABLE_MODULES[module_name]
         try:
-            await server.import_server(module["server"])
-            logger.info(f"✓ Imported {module['server'].name}")
-            imported_count += 1
+            server.mount(module["server"], namespace=module_name)
+            logger.info(f"✓ Mounted {module['server'].name} (namespace={module_name})")
+            mounted_count += 1
         except Exception as e:
-            logger.error(f"✗ Failed to import {module_name}: {e}")
+            logger.error(f"✗ Failed to mount {module_name}: {e}")
 
-    if imported_count == 0:
-        logger.warning("⚠ No modules were successfully imported!")
+    if mounted_count == 0:
+        logger.warning("⚠ No modules were successfully mounted!")
     else:
-        logger.info(f"Server composition complete. {imported_count} module(s) imported.")
+        logger.info(f"Server composition complete. {mounted_count} module(s) mounted.")
 
 
 def setup_custom_routes(server: FastMCP):
@@ -216,7 +215,7 @@ def run_server(
 
     main_server = create_server(enabled_modules)
     setup_custom_routes(main_server)
-    asyncio.run(setup_server(main_server, enabled_modules))
+    setup_server(main_server, enabled_modules)
 
     if http:
         logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{host}:{port}")

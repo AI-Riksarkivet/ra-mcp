@@ -20,7 +20,7 @@ def register_search_tool(mcp) -> None:
     """Register the search tools with the MCP server."""
 
     @mcp.tool(
-        name="search_transcribed",
+        name="transcribed",
         version="1.0",
         timeout=30.0,
         tags={"search"},
@@ -206,7 +206,7 @@ def register_search_tool(mcp) -> None:
             )
 
     @mcp.tool(
-        name="search_metadata",
+        name="metadata",
         version="1.0",
         timeout=30.0,
         tags={"search"},

@@ -29,7 +29,7 @@ def register_browse_tool(mcp) -> None:
     """Register the browse tool with the MCP server."""
 
     @mcp.tool(
-        name="browse_document",
+        name="document",
         version="1.0",
         timeout=60.0,
         tags={"browse"},
