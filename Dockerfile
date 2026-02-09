@@ -2,7 +2,7 @@ ARG BASE_IMAGE=python:3.12-alpine
 ARG BUILDER_IMAGE=${BASE_IMAGE}
 ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
-FROM ${BUILDER_IMAGE} as builder
+FROM ${BUILDER_IMAGE} AS builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.5.13@sha256:ea61e006cfec0e8d81fae901ad703e09d2c6cf1aa58abcb6507d124b50286f9f /uv /uvx /usr/local/bin/
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY README.md LICENSE ./
 # Sync workspace packages
 RUN uv sync --frozen --no-cache --no-dev
 
-FROM ${PRODUCTION_IMAGE} as production
+FROM ${PRODUCTION_IMAGE} AS production
 
 # Install runtime dependencies based on base image
 # Alpine uses apk, Wolfi/Chainguard use apk, Debian uses apt
