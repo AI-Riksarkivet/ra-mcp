@@ -10,6 +10,7 @@ WORKDIR /app
 # Copy workspace configuration and all packages
 COPY pyproject.toml uv.lock ./
 COPY packages/ ./packages/
+COPY src/ ./src/
 COPY README.md LICENSE ./
 
 # Sync workspace packages
@@ -45,6 +46,7 @@ WORKDIR /app
 
 # Copy only what's needed at runtime
 COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/src /app/src
 COPY --from=builder /app/packages /app/packages
 COPY assets/index.html ./assets/index.html
 COPY resources/ ./resources/
