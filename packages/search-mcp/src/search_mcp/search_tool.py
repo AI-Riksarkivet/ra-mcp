@@ -23,6 +23,7 @@ def register_search_tool(mcp) -> None:
         name="search_transcribed",
         timeout=30.0,
         tags={"search"},
+        annotations={"readOnlyHint": True, "openWorldHint": True},
         description="""Search AI-transcribed text in digitised historical documents from the Swedish National Archives (Riksarkivet).
 
     This tool searches ONLY AI-transcribed text in digitised materials (not metadata fields).
@@ -207,6 +208,7 @@ def register_search_tool(mcp) -> None:
         name="search_metadata",
         timeout=30.0,
         tags={"search"},
+        annotations={"readOnlyHint": True, "openWorldHint": True},
         description="""Search document metadata (titles, names, places, provenance) in the Swedish National Archives.
 
     This tool searches metadata fields like document titles, personal names, place names, and archival descriptions.
