@@ -26,11 +26,20 @@ from ra_mcp_common.telemetry import get_tracer, get_meter
 logger = logging.getLogger(__name__)
 
 
-class HTTPClient:
-    """Centralized HTTP client using urllib with comprehensive logging."""
+_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+_DEFAULT_MAX_RETRIES = 3
+_DEFAULT_BACKOFF_BASE = 0.5
 
-    def __init__(self, user_agent: str = "Transcribed-Search-Browser/1.0"):
+
+class HTTPClient:
+    """Centralized HTTP client using urllib with comprehensive logging and retry."""
+
+    def __init__(
+        self, user_agent: str = "Transcribed-Search-Browser/1.0", max_retries: int = _DEFAULT_MAX_RETRIES, backoff_base: float = _DEFAULT_BACKOFF_BASE
+    ):
         self.user_agent = user_agent
+        self.max_retries = max_retries
+        self.backoff_base = backoff_base
         self.logger = logging.getLogger("ra_mcp.http_client")
         self.debug_console = os.getenv("RA_MCP_LOG_API")
 
@@ -64,6 +73,40 @@ class HTTPClient:
             console_handler = logging.StreamHandler(sys.stderr)
             console_handler.setFormatter(logging.Formatter("%(levelname)s - %(name)s - %(message)s"))
             self.logger.addHandler(console_handler)
+
+    def _execute_with_retry(self, request, timeout, url):
+        """Execute a request with exponential backoff retry on transient errors.
+
+        Returns the response object (caller must read content within context).
+        Raises on non-retryable errors or after all retries exhausted.
+        """
+        last_exception = None
+        for attempt in range(self.max_retries):
+            try:
+                response = urlopen(request, timeout=timeout)
+                if response.status in _RETRYABLE_STATUS_CODES:
+                    wait = self.backoff_base * (2**attempt)
+                    self.logger.warning(f"Retryable status {response.status} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                    response.close()
+                    time.sleep(wait)
+                    last_exception = Exception(f"HTTP {response.status}")
+                    continue
+                return response
+            except HTTPError as e:
+                if e.code in _RETRYABLE_STATUS_CODES:
+                    wait = self.backoff_base * (2**attempt)
+                    self.logger.warning(f"Retryable HTTP {e.code} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                    time.sleep(wait)
+                    last_exception = e
+                    continue
+                raise
+            except (TimeoutError, URLError) as e:
+                wait = self.backoff_base * (2**attempt)
+                self.logger.warning(f"Retryable {type(e).__name__} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                time.sleep(wait)
+                last_exception = e
+                continue
+        raise last_exception
 
     def get_json(
         self,
@@ -118,7 +161,7 @@ class HTTPClient:
 
             try:
                 self.logger.debug(f"Opening connection to {url}...")
-                with urlopen(request, timeout=timeout) as response:
+                with self._execute_with_retry(request, timeout, url) as response:
                     self.logger.debug(f"Connection established, status: {response.status}")
 
                     if response.status != 200:
@@ -241,7 +284,7 @@ class HTTPClient:
             start_time = time.perf_counter()
 
             try:
-                with urlopen(request, timeout=timeout) as response:
+                with self._execute_with_retry(request, timeout, url) as response:
                     if response.status != 200:
                         raise Exception(f"HTTP {response.status}")
 
@@ -314,7 +357,7 @@ class HTTPClient:
             start_time = time.perf_counter()
 
             try:
-                with urlopen(request, timeout=timeout) as response:
+                with self._execute_with_retry(request, timeout, url) as response:
                     duration = time.perf_counter() - start_time
                     span.set_attribute("http.response.status_code", response.status)
 
