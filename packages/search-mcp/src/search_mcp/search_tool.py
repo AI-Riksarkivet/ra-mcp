@@ -21,6 +21,7 @@ def register_search_tool(mcp) -> None:
 
     @mcp.tool(
         name="search_transcribed",
+        timeout=30.0,
         description="""Search AI-transcribed text in digitised historical documents from the Swedish National Archives (Riksarkivet).
 
     This tool searches ONLY AI-transcribed text in digitised materials (not metadata fields).
@@ -150,7 +151,9 @@ def register_search_tool(mcp) -> None:
         if not keyword or not keyword.strip():
             return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
         if offset < 0:
-            return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+            return PlainTextFormatter().format_error_message(
+                f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"]
+            )
         if year_min is not None and year_max is not None and year_min > year_max:
             return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
 
@@ -201,6 +204,7 @@ def register_search_tool(mcp) -> None:
 
     @mcp.tool(
         name="search_metadata",
+        timeout=30.0,
         description="""Search document metadata (titles, names, places, provenance) in the Swedish National Archives.
 
     This tool searches metadata fields like document titles, personal names, place names, and archival descriptions.
@@ -269,7 +273,9 @@ def register_search_tool(mcp) -> None:
         if not keyword or not keyword.strip():
             return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
         if offset < 0:
-            return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+            return PlainTextFormatter().format_error_message(
+                f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"]
+            )
         if year_min is not None and year_max is not None and year_min > year_max:
             return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
 
