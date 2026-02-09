@@ -21,6 +21,7 @@ def register_search_tool(mcp) -> None:
 
     @mcp.tool(
         name="search_transcribed",
+        version="1.0",
         timeout=30.0,
         tags={"search"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
@@ -206,6 +207,7 @@ def register_search_tool(mcp) -> None:
 
     @mcp.tool(
         name="search_metadata",
+        version="1.0",
         timeout=30.0,
         tags={"search"},
         annotations={"readOnlyHint": True, "openWorldHint": True},

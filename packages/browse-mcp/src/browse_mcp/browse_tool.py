@@ -30,6 +30,7 @@ def register_browse_tool(mcp) -> None:
 
     @mcp.tool(
         name="browse_document",
+        version="1.0",
         timeout=60.0,
         tags={"browse"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
