@@ -39,6 +39,11 @@ opentelemetry:
   protocol: "grpc"
   serviceName: "ra-mcp"
 
+podDisruptionBudget:
+  enabled: false
+  # minAvailable: 1
+  maxUnavailable: 1
+
 nodeSelector: {}
 tolerations: []
 affinity: {}

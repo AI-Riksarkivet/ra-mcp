@@ -80,7 +80,7 @@ class HTTPClient:
         Returns the response object (caller must read content within context).
         Raises on non-retryable errors or after all retries exhausted.
         """
-        last_exception = None
+        last_exception: Exception = Exception("All retries exhausted")
         for attempt in range(self.max_retries):
             try:
                 response = urlopen(request, timeout=timeout)
