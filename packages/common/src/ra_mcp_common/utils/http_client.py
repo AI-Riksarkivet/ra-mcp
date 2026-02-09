@@ -34,9 +34,11 @@ _DEFAULT_BACKOFF_BASE = 0.5
 class HTTPClient:
     """Centralized HTTP client using urllib with comprehensive logging and retry."""
 
-    def __init__(
-        self, user_agent: str = "Transcribed-Search-Browser/1.0", max_retries: int = _DEFAULT_MAX_RETRIES, backoff_base: float = _DEFAULT_BACKOFF_BASE
-    ):
+    def __init__(self, user_agent: str | None = None, max_retries: int = _DEFAULT_MAX_RETRIES, backoff_base: float = _DEFAULT_BACKOFF_BASE):
+        if user_agent is None:
+            from importlib.metadata import version
+
+            user_agent = f"ra-mcp/{version('ra-mcp-common')}"
         self.user_agent = user_agent
         self.max_retries = max_retries
         self.backoff_base = backoff_base
