@@ -88,7 +88,7 @@ jobs:
 
       # Install Cosign for signing
       - name: Install Cosign
-        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
       # Sign the container images with keyless signing
       - name: Sign container images
