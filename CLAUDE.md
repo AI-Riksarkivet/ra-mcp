@@ -624,6 +624,77 @@ curl "https://data.riksarkivet.se/api/records?q=Stockholm&rows=1"
 tail -f ra_mcp_api.log
 ```
 
+## Observability & Telemetry
+
+### Architecture
+
+The project has a two-layer OpenTelemetry instrumentation strategy:
+
+1. **FastMCP built-in instrumentation (automatic)**: FastMCP 3.0+ has native OTel support. It automatically creates spans for all `tools/call`, `resources/read`, `prompts/get`, and `delegate` operations with MCP semantic convention attributes. **Do NOT add manual spans to MCP tool handlers** — FastMCP already covers them.
+
+2. **Manual instrumentation (project code)**: Domain operations, API clients, and the HTTP client have manual spans and metrics via `ra_mcp_common.telemetry.get_tracer()`.
+
+### How it works
+
+- OTel SDK is initialized only in the root package (`src/ra_mcp_server/telemetry.py`), gated on `RA_MCP_OTEL_ENABLED=true`
+- All sub-packages use only `opentelemetry-api` (no-op when SDK absent)
+- FastMCP uses the same global `TracerProvider`, so its automatic spans and project manual spans form a unified trace tree
+- Module-level tracers: `get_tracer("ra_mcp.<component>")` from `ra_mcp_common.telemetry`
+
+### Trace tree (MCP tool call)
+
+```
+tools/call search_transcribed          ← FastMCP (automatic)
+└── delegate search_transcribed        ← FastMCP (composed server)
+    └── tools/call search_transcribed  ← FastMCP (local provider)
+        └── SearchOperations.search    ← manual span
+            └── SearchAPI.search       ← manual span
+                └── HTTP GET           ← manual span
+```
+
+### Environment variables
+
+```bash
+RA_MCP_OTEL_ENABLED=true              # Master switch (default: false)
+OTEL_EXPORTER_OTLP_ENDPOINT=...       # Collector endpoint (default: http://localhost:4317)
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc      # grpc or http/protobuf (default: grpc)
+OTEL_SERVICE_NAME=ra-mcp              # Service name (default: ra-mcp)
+RA_MCP_OTEL_LOG_BRIDGE=true           # Bridge Python logging to OTel (default: true)
+```
+
+### What's instrumented manually
+
+| Component | Tracer name | Spans | Metrics |
+|-----------|-------------|-------|---------|
+| HTTP client | `ra_mcp.http_client` | `HTTP GET` | request count, error count, duration, response size |
+| Search API | `ra_mcp.search_api` | `SearchAPI.search` | — |
+| Search ops | `ra_mcp.search_operations` | `SearchOperations.search` | — |
+| Browse ops | `ra_mcp.browse_operations` | `browse_document`, `_fetch_page_contexts` | — |
+| ALTO client | `ra_mcp.alto_client` | `ALTOClient.fetch_content` | — |
+| IIIF client | `ra_mcp.iiif_client` | `IIIFClient.get_collection` | — |
+| OAI-PMH client | `ra_mcp.oai_pmh_client` | `get_record`, `get_metadata`, `extract_manifest_id` | — |
+| Search CLI | `ra_mcp.cli.search` | `cli.search` | — |
+| Browse CLI | `ra_mcp.cli.browse` | `cli.browse` | — |
+
+### Error recording pattern
+
+Follow the HTTP client pattern (the gold standard in this codebase):
+
+```python
+except SomeError as e:
+    span.set_status(StatusCode.ERROR, str(e))
+    span.record_exception(e)
+    self._error_counter.add(1, {"error.type": type(e).__name__})
+    raise
+```
+
+### Verify telemetry
+
+```bash
+# Run full telemetry verification (starts Jaeger, exercises CLI, checks trace tree)
+dagger call verify-telemetry --source=.
+```
+
 ## MCP Specification Reference
 
 For detailed information about the Model Context Protocol specification, implementation details, or when clarification is needed about MCP-specific features, refer to the official documentation:
