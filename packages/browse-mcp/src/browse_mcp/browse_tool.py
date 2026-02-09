@@ -31,6 +31,7 @@ def register_browse_tool(mcp) -> None:
     @mcp.tool(
         name="browse_document",
         timeout=60.0,
+        tags={"browse"},
         description="""Browse specific pages of a document by reference code and view full transcriptions.
 
     This tool retrieves complete page transcriptions from historical documents in Swedish.
