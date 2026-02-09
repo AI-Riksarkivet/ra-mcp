@@ -2,8 +2,11 @@
 Plain text formatter for MCP/LLM output without any Rich markup.
 """
 
+import logging
 import re
 from typing import List, Optional
+
+logger = logging.getLogger("ra_mcp.search_mcp.formatter")
 
 
 class PlainTextFormatter:
@@ -111,7 +114,8 @@ class PlainTextFormatter:
                 manifest_id = iiif_manifest_url[start_idx:end_idx]
                 return f"https://sok.riksarkivet.se/bildvisning/{manifest_id}"
             return ""
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to convert IIIF manifest URL to bildvisning: %s: %s", iiif_manifest_url, e)
             return ""
 
     def format_error_message(self, error_message: str, error_suggestions: Optional[List[str]] = None) -> str:

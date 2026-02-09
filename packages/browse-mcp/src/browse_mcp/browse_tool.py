@@ -4,12 +4,15 @@ Browse MCP tool for Riksarkivet document pages.
 Provides the browse_document tool for viewing full page transcriptions.
 """
 
+import logging
 from typing import Optional, List
 
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_browse.operations import BrowseOperations
 
 from .formatter import PlainTextFormatter
+
+logger = logging.getLogger(__name__)
 
 
 def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
@@ -94,6 +97,12 @@ def register_browse_tool(mcp) -> None:
         - browse_document("SE/RA/420422/01", "1-10") - View pages 1 through 10
         - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
         """
+        # Input validation
+        if not reference_code or not reference_code.strip():
+            return format_error_message("reference_code must not be empty", error_suggestions=["Provide a document reference code, e.g. 'SE/RA/420422/01'"])
+        if not pages or not pages.strip():
+            return format_error_message("pages must not be empty", error_suggestions=["Specify pages like '1-5', '1,3,5', or '7'"])
+
         try:
             browse_operations = BrowseOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
@@ -116,6 +125,7 @@ def register_browse_tool(mcp) -> None:
             return formatter.format_browse_results(browse_result, highlight_term)
 
         except Exception as e:
+            logger.error("MCP browse_document failed: %s: %s", type(e).__name__, e, exc_info=True)
             return format_error_message(
                 f"Browse failed: {str(e)}",
                 error_suggestions=[

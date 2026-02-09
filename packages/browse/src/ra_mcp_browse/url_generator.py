@@ -2,10 +2,13 @@
 URL generation utilities for Riksarkivet resources.
 """
 
+import logging
 import urllib.parse
 from typing import Optional
 
 from .config import ALTO_BASE_URL, BILDVISNING_BASE_URL, IIIF_IMAGE_BASE_URL
+
+logger = logging.getLogger("ra_mcp.url_generator")
 
 
 def remove_arkis_prefix(manifest_id: str) -> str:
@@ -53,7 +56,8 @@ def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
             first_4_chars = manifest_id[:4]
             return f"{ALTO_BASE_URL}/{first_4_chars}/{manifest_id}/{manifest_id}_{padded_page}.xml"
         return None
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to generate ALTO URL for manifest=%s page=%s: %s", manifest_id, page_number, e)
         return None
 
 
@@ -71,7 +75,8 @@ def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
         clean_manifest_id = remove_arkis_prefix(manifest_id)
         padded_page = format_page_number(page_number)
         return f"{IIIF_IMAGE_BASE_URL}!{clean_manifest_id}_{padded_page}/full/max/0/default.jpg"
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to generate IIIF image URL for manifest=%s page=%s: %s", manifest_id, page_number, e)
         return None
 
 
@@ -95,5 +100,6 @@ def bildvisning_url(manifest_id: str, page_number: str, search_term: Optional[st
             encoded_term = urllib.parse.quote(search_term.strip())
             return f"{base_url}#?q={encoded_term}"
         return base_url
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to generate bildvisning URL for manifest=%s page=%s: %s", manifest_id, page_number, e)
         return None

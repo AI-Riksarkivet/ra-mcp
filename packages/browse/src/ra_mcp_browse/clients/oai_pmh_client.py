@@ -2,13 +2,18 @@
 OAI-PMH client for Riksarkivet.
 """
 
+import logging
 from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
+
+from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
 from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.utils.http_client import HTTPClient
+
+logger = logging.getLogger("ra_mcp.oai_pmh_client")
 
 _tracer = get_tracer("ra_mcp.oai_pmh_client")
 
@@ -38,7 +43,7 @@ class OAIPMHClient:
 
     def get_metadata(self, identifier: str) -> Optional[OAIPMHMetadata]:
         """Get record metadata as typed OAIPMHMetadata model."""
-        with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}):
+        with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
             try:
                 record = self.get_record(identifier, "oai_ape_ead")
 
@@ -59,7 +64,10 @@ class OAIPMHClient:
                     iiif_manifest=get_str("iiif_manifest"),
                     iiif_image=get_str("iiif_image"),
                 )
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to get OAI-PMH metadata for %s: %s", identifier, e)
+                span.set_status(StatusCode.ERROR, str(e))
+                span.record_exception(e)
                 return None
 
     def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, Union[str, int]]:
@@ -102,12 +110,15 @@ class OAIPMHClient:
 
     def extract_manifest_id(self, identifier: str) -> Optional[str]:
         """Extract PID from a record for IIIF access."""
-        with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}):
+        with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}) as span:
             try:
                 # Use typed metadata to get nad_link safely
                 metadata = self.get_metadata(identifier)
                 return self.manifest_id_from_metadata(metadata)
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to extract manifest ID for %s: %s", identifier, e)
+                span.set_status(StatusCode.ERROR, str(e))
+                span.record_exception(e)
                 return None
 
     def manifest_id_from_metadata(self, metadata: Optional[OAIPMHMetadata]) -> Optional[str]:

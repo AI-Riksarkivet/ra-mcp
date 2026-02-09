@@ -2,12 +2,15 @@
 IIIF client for Riksarkivet.
 """
 
+import logging
 from typing import Dict, Optional, Union, List
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import COLLECTION_API_BASE_URL
 from ra_mcp_browse.models import IIIFCollection, IIIFManifest
 from ra_mcp_common.utils.http_client import HTTPClient
+
+logger = logging.getLogger("ra_mcp.iiif_client")
 
 _tracer = get_tracer("ra_mcp.iiif_client")
 
@@ -61,9 +64,7 @@ class IIIFClient:
         try:
             return self.http_client.get_json(collection_url, timeout=timeout_seconds)
         except Exception as e:
-            # Log the error before returning None
-            if hasattr(self.http_client, "logger") and self.http_client.logger:
-                self.http_client.logger.error(f"Failed to fetch IIIF collection data from {collection_url}: {str(e)}")
+            logger.warning("Failed to fetch IIIF collection from %s: %s", collection_url, e)
             return None
 
     def _extract_collection_title(self, collection_data: Dict) -> str:

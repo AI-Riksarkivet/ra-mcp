@@ -146,6 +146,14 @@ def register_search_tool(mcp) -> None:
         This tool searches only transcribed text (not metadata).
         For metadata search, use search_metadata instead.
         """
+        # Input validation
+        if not keyword or not keyword.strip():
+            return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
+        if offset < 0:
+            return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+        if year_min is not None and year_max is not None and year_min > year_max:
+            return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
+
         logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}")
 
         try:
@@ -257,6 +265,14 @@ def register_search_tool(mcp) -> None:
         This tool searches metadata fields, not transcribed text.
         For transcription search, use search_transcribed instead.
         """
+        # Input validation
+        if not keyword or not keyword.strip():
+            return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
+        if offset < 0:
+            return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+        if year_min is not None and year_max is not None and year_min > year_max:
+            return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
+
         material_scope = "digitised materials" if only_digitised else "all materials (2M+ records)"
         logger.info(f"MCP Tool: search_metadata called with keyword='{keyword}', offset={offset}, scope={material_scope}")
 

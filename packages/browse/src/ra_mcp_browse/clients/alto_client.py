@@ -6,12 +6,17 @@ XML documents from the Swedish National Archives. ALTO is a standardized XML for
 storing layout and text information of scanned documents.
 """
 
+import logging
 import xml.etree.ElementTree as ET
 from typing import Optional
+
+from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import ALTO_NAMESPACES
 from ra_mcp_common.utils.http_client import HTTPClient
+
+logger = logging.getLogger("ra_mcp.alto_client")
 
 _tracer = get_tracer("ra_mcp.alto_client")
 
@@ -74,7 +79,10 @@ class ALTOClient:
             # Parse XML
             try:
                 xml_root = ET.fromstring(xml_content)
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to parse ALTO XML from %s: %s", alto_url, e)
+                span.set_status(StatusCode.ERROR, f"XML parse error: {e}")
+                span.record_exception(e)
                 span.set_attribute("alto.result", "parse_error")
                 return None
 
