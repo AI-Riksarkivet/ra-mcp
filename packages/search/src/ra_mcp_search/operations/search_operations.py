@@ -16,6 +16,7 @@ from ..models import SearchResult
 _tracer = get_tracer("ra_mcp.search_operations")
 _meter = get_meter("ra_mcp.search_operations")
 _search_counter = _meter.create_counter("ra_mcp.search.requests", description="Search operations executed")
+_results_histogram = _meter.create_histogram("ra_mcp.search.results", description="Number of results returned per search")
 
 
 class SearchOperations:
@@ -93,6 +94,7 @@ class SearchOperations:
 
                 span.set_attribute("search.total_hits", response.total_hits)
                 _search_counter.add(1, {"search.type": search_type, "search.status": "success"})
+                _results_histogram.record(response.total_hits, {"search.type": search_type})
                 return SearchResult(
                     response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record
                 )
