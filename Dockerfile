@@ -55,9 +55,9 @@ USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 
-# Health check via Python import (lightweight)
+# Health check via /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import sys" || exit 1
+    CMD python -c "from urllib.request import urlopen; urlopen('http://localhost:7860/health')" || exit 1
 
 EXPOSE 7860
 CMD ["ra", "serve", "--host", "0.0.0.0", "--port", "7860"]

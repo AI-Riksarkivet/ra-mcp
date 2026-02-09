@@ -22,7 +22,7 @@ import argparse
 import os
 import sys
 from typing import List
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, JSONResponse
 from fastmcp import FastMCP
 
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
@@ -176,6 +176,10 @@ def setup_custom_routes(server: FastMCP):
     @server.custom_route("/", methods=["GET"])
     async def root(_):
         return FileResponse("assets/index.html")
+
+    @server.custom_route("/health", methods=["GET"])
+    async def health(_):
+        return JSONResponse({"status": "ok"})
 
 
 def run_server(
