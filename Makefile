@@ -1,26 +1,47 @@
-# Rh  the project
-run:
-	uv sync
-	uv pip install -e .
-	uv run fastmcp dev src/oxenstierna/server.py
+.PHONY: install serve serve-http inspect format lint typecheck check test ci clean
 
-# Build the project
-build:
-    uv sync
+# Install dependencies
+install:
+	uv sync
+
+# Run MCP server (stdio transport)
+serve:
+	uv run ra serve
+
+# Run MCP server (HTTP/SSE transport)
+serve-http:
+	uv run ra serve --port 8000
+
+# Open MCP Inspector
+inspect:
+	npx @modelcontextprotocol/inspector uv run ra serve
+
+# Format code
+format:
+	uv run ruff format .
+
+# Lint and auto-fix
+lint:
+	uv run ruff check --fix .
+
+# Type check
+typecheck:
+	uvx ty check
+
+# Local code quality checks (format + lint + typecheck)
+check: format lint typecheck
 
 # Run tests
-test: build
-    uv run --frozen pytest -xvs tests
+test:
+	uv run pytest
 
-# Run ty type checker on all files
-typecheck:
-    uv run --frozen ty check
+# Run full CI pipeline via Dagger (same as GitHub Actions)
+ci:
+	dagger call checks
+	dagger call test
 
-
-publish:
-	@VERSION=$$(uv version --short); \
-	dagger call publish-docker \
-		--docker-password=env:DOCKER_PASSWORD \
-		--image-repository="riksarkivet/ra-mcp" \
-		--tag="v$$VERSION" \
-		--source=.
+# Clean build artifacts
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type d -name .ruff_cache -exec rm -rf {} +
+	rm -rf dist/ build/ *.egg-info
