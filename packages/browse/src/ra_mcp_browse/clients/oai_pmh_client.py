@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_common.telemetry import get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
 from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.utils.http_client import HTTPClient
@@ -16,6 +16,8 @@ from ra_mcp_common.utils.http_client import HTTPClient
 logger = logging.getLogger("ra_mcp.oai_pmh_client")
 
 _tracer = get_tracer("ra_mcp.oai_pmh_client")
+_meter = get_meter("ra_mcp.oai_pmh_client")
+_fetch_counter = _meter.create_counter("ra_mcp.oai_pmh.fetches", description="OAI-PMH metadata fetch outcomes")
 
 
 class OAIPMHClient:
@@ -52,6 +54,7 @@ class OAIPMHClient:
                     value = record.get(key, default)
                     return value if isinstance(value, str) else default
 
+                _fetch_counter.add(1, {"oai_pmh.result": "success"})
                 return OAIPMHMetadata(
                     identifier=get_str("identifier", identifier) or identifier,
                     title=get_str("title"),
@@ -68,6 +71,7 @@ class OAIPMHClient:
                 logger.warning("Failed to get OAI-PMH metadata for %s: %s", identifier, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
+                _fetch_counter.add(1, {"oai_pmh.result": "error"})
                 return None
 
     def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, Union[str, int]]:

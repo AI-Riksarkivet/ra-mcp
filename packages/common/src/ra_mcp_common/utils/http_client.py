@@ -59,6 +59,7 @@ class HTTPClient:
         self._error_counter = meter.create_counter("ra_mcp.http.errors", description="HTTP request errors")
         self._duration_histogram = meter.create_histogram("ra_mcp.http.request.duration", unit="s", description="HTTP request duration")
         self._response_size_histogram = meter.create_histogram("ra_mcp.http.response.size", unit="By", description="HTTP response body size")
+        self._retry_counter = meter.create_counter("ra_mcp.http.retries", description="HTTP request retry attempts")
 
         logger.info(f"HTTPClient initialized with user agent: {self.user_agent}")
 
@@ -90,6 +91,7 @@ class HTTPClient:
                     wait = self.backoff_base * (2**attempt)
                     self.logger.warning(f"Retryable status {response.status} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
                     response.close()
+                    self._retry_counter.add(1, {"retry.reason": str(response.status)})
                     time.sleep(wait)
                     last_exception = Exception(f"HTTP {response.status}")
                     continue
@@ -98,6 +100,7 @@ class HTTPClient:
                 if e.code in _RETRYABLE_STATUS_CODES:
                     wait = self.backoff_base * (2**attempt)
                     self.logger.warning(f"Retryable HTTP {e.code} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                    self._retry_counter.add(1, {"retry.reason": str(e.code)})
                     time.sleep(wait)
                     last_exception = e
                     continue
@@ -105,6 +108,7 @@ class HTTPClient:
             except (TimeoutError, URLError) as e:
                 wait = self.backoff_base * (2**attempt)
                 self.logger.warning(f"Retryable {type(e).__name__} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                self._retry_counter.add(1, {"retry.reason": type(e).__name__})
                 time.sleep(wait)
                 last_exception = e
                 continue

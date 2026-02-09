@@ -12,13 +12,15 @@ from typing import Optional
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_common.telemetry import get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_browse.config import ALTO_NAMESPACES
 from ra_mcp_common.utils.http_client import HTTPClient
 
 logger = logging.getLogger("ra_mcp.alto_client")
 
 _tracer = get_tracer("ra_mcp.alto_client")
+_meter = get_meter("ra_mcp.alto_client")
+_fetch_counter = _meter.create_counter("ra_mcp.alto.fetches", description="ALTO XML fetch outcomes")
 
 
 class ALTOClient:
@@ -74,6 +76,7 @@ class ALTOClient:
             xml_content = self.http_client.get_content(alto_url, timeout=timeout, headers=headers)
             if not xml_content:
                 span.set_attribute("alto.result", "not_found")
+                _fetch_counter.add(1, {"alto.result": "not_found"})
                 return None
 
             # Parse XML
@@ -84,13 +87,16 @@ class ALTOClient:
                 span.set_status(StatusCode.ERROR, f"XML parse error: {e}")
                 span.record_exception(e)
                 span.set_attribute("alto.result", "parse_error")
+                _fetch_counter.add(1, {"alto.result": "parse_error"})
                 return None
 
             # Extract and combine text
             text = self._extract_text_from_alto(xml_root)
             result = text if text else ""
-            span.set_attribute("alto.result", "success" if text else "empty")
+            result_type = "success" if text else "empty"
+            span.set_attribute("alto.result", result_type)
             span.set_attribute("alto.text_length", len(result))
+            _fetch_counter.add(1, {"alto.result": result_type})
             # Return empty string if ALTO exists but has no text (vs None for 404)
             return result
 
