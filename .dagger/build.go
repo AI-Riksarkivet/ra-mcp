@@ -6,22 +6,6 @@ import (
 	"strings"
 )
 
-// parseBuildArgs converts environment variable strings to BuildArg slices
-func parseBuildArgs(registry string, envVars []string) []dagger.BuildArg {
-	buildArgs := []dagger.BuildArg{{Name: "REGISTRY", Value: registry}}
-
-	for _, envVar := range envVars {
-		if parts := strings.Split(envVar, "="); len(parts) == 2 {
-			buildArgs = append(buildArgs, dagger.BuildArg{
-				Name:  parts[0],
-				Value: parts[1],
-			})
-		}
-	}
-
-	return buildArgs
-}
-
 // BuildLocal builds using Dockerfile from a local directory with custom environment variables
 func (m *RaMcp) BuildLocal(
 	ctx context.Context,
