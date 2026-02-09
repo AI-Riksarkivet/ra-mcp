@@ -5,142 +5,129 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-02-09
 
 ### Added
-
 - Add Helm chart for Kubernetes deployment
 - Add /health endpoint and update probes
+- Add tool timeouts to prevent indefinite hangs
+- Add tags to tools for filtering and categorization
+- Add read-only and open-world annotations to tools
+- Add version baselines to all tools
+- Add /ready endpoint and separate liveness from readiness
 
 ### CI/CD
-
 - Upgrade actions/checkout to v5 across all workflows
 
 ### Changed
-
 - Replace sys.argv manipulation with direct function parameters
+- Replace import_server with namespaced mount
 
 ### Fixed
-
 - Add tmp volume and chart icon
 - Use importlib.metadata for version single source of truth
 - Remove pip via rm instead of invoking pip uninstall
 
 ### Miscellaneous
-
 - Rewrite Makefile to match current project structure
 - Remove unused parseBuildArgs function
 - Add PEP 561 py.typed markers to all packages
+- Add git-cliff changelog generation
+- Bump version to 0.4.0
+
 ## [0.3.0] - 2026-02-09
 
 ### Added
-
 - Add sort, date range, name, and place search parameters
 - Add OpenTelemetry instrumentation and upgrade to FastMCP 3.0
 - Add trace tree display to verify-telemetry output
 
 ### CI/CD
-
 - Add CodeQL workflow for SAST analysis
 - Add workflow_dispatch trigger
 - Pin all GitHub Actions and container images by SHA hash
 
 ### Changed
-
 - Import URL constants from config instead of duplicating them
 - Simplify browse command logic
 - Simplify search command logic
 
 ### Documentation
-
 - Update package READMEs to match current architecture
 - Add observability and telemetry section to CLAUDE.md
 - Add CodeQL badge to README
 
 ### Fixed
-
 - Add error logging, span recording, and input validation
 
 ### Miscellaneous
-
 - Remove accidentally committed build artifacts
 - Bump version to 0.3.0
 
 ### Performance
-
 - Eliminate duplicate OAI-PMH request in browse_document
+
 ## [0.2.13] - 2026-02-06
 
 ### Changed
-
 - Move error formatting to formatter class
 
 ### Documentation
-
 - Add Python tooling and quality badges
 - Remove duplicate person name search example
 
 ### Fixed
-
 - Add explicit top-level permissions for least privilege
 - Rebuild test infrastructure to support missing test suite
 
 ### Miscellaneous
-
 - Add Dependabot configuration for automated updates
 - Update docs to match 8-package architecture, align versions, remove dead dagger code
 - Bump version to 0.2.13
+
 ## [0.2.12] - 2026-02-06
 
 ### Added
-
 - Extract real BuildKit attestations for Scorecard
 
 ### Miscellaneous
-
 - Bump version to 0.2.12
+
 ## [0.2.11] - 2026-02-06
 
 ### Added
-
 - Add OpenSSF Scorecard and accurate SLSA level
 - Export attestations as release assets for Scorecard
 
 ### Documentation
-
 - Add SLSA, Sigstore, and SBOM badges to README
 
 ### Miscellaneous
-
 - Bump version to 0.2.11
+
 ## [0.2.10] - 2026-02-06
 
 ### Added
-
 - Add Cosign image signing with keyless signing
 
 ### Fixed
-
 - Correct SBOM export to write file to workspace
 
 ### Miscellaneous
-
 - Bump version to 0.2.10
+
 ## [0.2.9] - 2026-02-06
 
 ### Added
-
 - Add attestation verification and inspection tools
 - Add SLSA Level 3 attestations with signing
 - Unify publish workflows to single Alpine-only workflow
 
 ### Documentation
-
 - Remove ATTESTATIONS.md documentation
 - Simplify SECURITY.md and sync lockfile
 
 ### Fixed
-
 - Resolve SLSA L3 workflow secrets syntax error
 - Set private-repository false for SLSA L3 workflow
 - Workaround SLSA generator private repo detection bug
@@ -148,15 +135,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable checks and PyPI publishing in workflow
 
 ### Miscellaneous
-
 - Bump version to 0.2.9 for SLSA L3 release
 - Remove experimental SLSA L3 workflow
 - Revert version to 0.2.8
 - Bump version to 0.2.9
+
 ## [0.2.8] - 2026-02-06
 
 ### Added
-
 - Add comprehensive CLI interface and refactor ra_core into modular architecture (**BREAKING**)
 - Establish project constitution v2.0.0 (**BREAKING**)
 - Add project infrastructure and governance framework
@@ -188,12 +174,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add comprehensive SBOM and attestation support
 
 ### Build
-
 - Add project scaffolding and development tools
 - Improve dagger pipeline and dockerfile optimization
 
 ### Changed
-
 - Eliminate code duplication between CLI and MCP interfaces
 - Move PID resolution to PageContextService
 - Split DisplayService into interface-specific services
@@ -252,7 +236,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add typed models and fix all type checking errors
 
 ### Documentation
-
 - Consolidate tool documentation into root README
 - Rewrite README with user-focused structure and professional tone
 - Consolidate API documentation and data sources sections
@@ -292,7 +275,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update search tool documentation with new search modes
 
 ### Fixed
-
 - Correct import and method references for CLI functionality
 - Improve search context display and page number formatting
 - Fix manifest ID handling and remove broken PID conversion
@@ -315,11 +297,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable PyPI publishing, focus on Docker releases only
 
 ### Miscellaneous
-
 - Remove obsolete ra_tools.py wrapper
 - Upgrade fastmcp and dependencies
 - Add conventional commit slash command
 - Bump version to 0.2.0 and improve publish workflow (**BREAKING**)
 - Remove unused demo directory
 - Bump version to 0.2.1
+
 

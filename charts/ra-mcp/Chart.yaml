@@ -3,7 +3,7 @@ name: ra-mcp
 description: MCP server providing access to transcribed historical documents from the Swedish National Archives (Riksarkivet)
 type: application
 version: 0.1.0
-appVersion: "0.3.0"
+appVersion: "0.4.0"
 icon: https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/assets/ra.svg
 home: https://github.com/AI-Riksarkivet/ra-mcp
 sources:
