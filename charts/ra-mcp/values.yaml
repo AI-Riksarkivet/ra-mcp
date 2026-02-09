@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: riksarkivet/ra-mcp
   tag: "latest"  # set to "" to use appVersion from Chart.yaml
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: ClusterIP
