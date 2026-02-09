@@ -11,6 +11,8 @@ dependencies = [
     "ra-mcp-browse-cli",
     "ra-mcp-guide-mcp",
     "starlette>=0.52.1",
+    "opentelemetry-sdk>=1.28.0",
+    "opentelemetry-exporter-otlp>=1.28.0",
 ]
 license = "Apache-2.0"
 keywords = [

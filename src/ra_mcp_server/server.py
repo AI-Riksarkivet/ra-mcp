@@ -16,13 +16,16 @@ Environment variables for debugging:
 """
 
 import asyncio
+import atexit
 import logging
 import argparse
 import os
 import sys
-from typing import List, Dict, Any
+from typing import List
 from starlette.responses import FileResponse
 from fastmcp import FastMCP
+
+from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
 
 # Import available modules (lazy imports handled in setup)
 from search_mcp.mcp import search_mcp
@@ -169,6 +172,7 @@ def setup_custom_routes(server: FastMCP):
     Args:
         server: The FastMCP server instance to add routes to.
     """
+
     @server.custom_route("/", methods=["GET"])
     async def root(_):
         return FileResponse("assets/index.html")
@@ -176,6 +180,9 @@ def setup_custom_routes(server: FastMCP):
 
 def main():
     """Main entry point for the server."""
+    init_telemetry()
+    atexit.register(shutdown_telemetry)
+
     global main_server
 
     # Get default modules

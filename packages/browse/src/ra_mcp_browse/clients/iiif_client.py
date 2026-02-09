@@ -4,9 +4,12 @@ IIIF client for Riksarkivet.
 
 from typing import Dict, Optional, Union, List
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import COLLECTION_API_BASE_URL
 from ra_mcp_browse.models import IIIFCollection, IIIFManifest
 from ra_mcp_common.utils.http_client import HTTPClient
+
+_tracer = get_tracer("ra_mcp.iiif_client")
 
 
 class IIIFClient:
@@ -30,27 +33,24 @@ class IIIFClient:
 
     def get_collection(self, pid: str, timeout: int = 30) -> Optional[IIIFCollection]:
         """Get IIIF collection with typed model."""
-        collection_endpoint_url = self._build_collection_url(pid)
+        with _tracer.start_as_current_span("IIIFClient.get_collection", attributes={"iiif.pid": pid}) as span:
+            collection_endpoint_url = self._build_collection_url(pid)
 
-        collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
-        if not collection_response:
-            return None
+            collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
+            if not collection_response:
+                span.set_attribute("iiif.result", "not_found")
+                return None
 
-        collection_id = collection_response.get("id", pid)
-        collection_title = self._extract_collection_title(collection_response)
-        available_manifests = self._extract_all_manifests(collection_response)
+            collection_id = collection_response.get("id", pid)
+            collection_title = self._extract_collection_title(collection_response)
+            available_manifests = self._extract_all_manifests(collection_response)
 
-        # Convert to typed models
-        manifest_models = [
-            IIIFManifest(id=m["id"], label=m.get("label"))
-            for m in available_manifests
-        ]
+            # Convert to typed models
+            manifest_models = [IIIFManifest(id=m["id"], label=m.get("label")) for m in available_manifests]
 
-        return IIIFCollection(
-            id=collection_id,
-            label=collection_title,
-            manifests=manifest_models
-        )
+            span.set_attribute("iiif.manifests_found", len(manifest_models))
+
+            return IIIFCollection(id=collection_id, label=collection_title, manifests=manifest_models)
 
     def _build_collection_url(self, persistent_identifier: str) -> str:
         """Build the collection API URL."""

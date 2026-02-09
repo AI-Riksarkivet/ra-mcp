@@ -4,7 +4,7 @@ Creates actual Rich objects (Tables, Panels) for console display.
 """
 
 import re
-from typing import List, Dict, Union, Optional, Any
+from typing import List, Union, Optional, Any
 from rich.table import Table
 from rich.panel import Panel
 from rich.console import Console, Group
@@ -154,11 +154,7 @@ class RichConsoleFormatter:
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
             # Extract unique page numbers from all snippets
-            pages = sorted(set(
-                page.id
-                for snippet in document.transcribed_text.snippets
-                for page in snippet.pages
-            ))
+            pages = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
             pages_trimmed = trim_page_numbers(pages)
             pages_str = ",".join(pages_trimmed)
 
@@ -168,7 +164,9 @@ class RichConsoleFormatter:
             hit_label = "hit" if snippet_count == 1 else "hits"
 
             if total_hits > snippet_count:
-                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
+                institution_and_ref += (
+                    f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
+                )
             else:
                 institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
 
@@ -231,13 +229,7 @@ class RichConsoleFormatter:
 
         return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-    def format_search_summary_stats(
-        self,
-        snippet_count: int,
-        records_count: int,
-        total_hits: int,
-        offset: int
-    ) -> List[str]:
+    def format_search_summary_stats(self, snippet_count: int, records_count: int, total_hits: int, offset: int) -> List[str]:
         """
         Format search summary statistics.
 
@@ -251,9 +243,7 @@ class RichConsoleFormatter:
             List of formatted summary lines
         """
         lines = []
-        lines.append(
-            f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_count}[/bold] volumes"
-        )
+        lines.append(f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_count}[/bold] volumes")
 
         if total_hits > records_count:
             lines.append(f"[dim]   (Total {total_hits} hits available, showing from offset {offset})[/dim]")
@@ -289,11 +279,7 @@ class RichConsoleFormatter:
 
         # Extract page numbers from snippets
         if first_doc.transcribed_text and first_doc.transcribed_text.snippets:
-            pages = sorted(set(
-                page.id
-                for snippet in first_doc.transcribed_text.snippets
-                for page in snippet.pages
-            ))
+            pages = sorted(set(page.id for snippet in first_doc.transcribed_text.snippets for page in snippet.pages))
         else:
             pages = []
         pages_trimmed = trim_page_numbers(pages[:5])

@@ -3,7 +3,7 @@ Plain text formatter for MCP/LLM output without any Rich markup.
 """
 
 import re
-from typing import List
+from typing import List, Optional
 
 
 class PlainTextFormatter:
@@ -114,7 +114,7 @@ class PlainTextFormatter:
         except Exception:
             return ""
 
-    def format_error_message(self, error_message: str, error_suggestions: List[str] = None) -> str:
+    def format_error_message(self, error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
         """
         Format an error message with optional suggestions.
 

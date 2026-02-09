@@ -9,8 +9,11 @@ storing layout and text information of scanned documents.
 import xml.etree.ElementTree as ET
 from typing import Optional
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import ALTO_NAMESPACES
 from ra_mcp_common.utils.http_client import HTTPClient
+
+_tracer = get_tracer("ra_mcp.alto_client")
 
 
 class ALTOClient:
@@ -60,22 +63,28 @@ class ALTOClient:
             >>> client.fetch_content("https://sok.riksarkivet.se/dokument/alto/SE_RA_123.xml")
             'Anno 1676 den 15 Januarii förekom för Rätten...'
         """
-        # Fetch raw XML content
-        headers = {"Accept": "application/xml, text/xml, */*"}
-        xml_content = self.http_client.get_content(alto_url, timeout=timeout, headers=headers)
-        if not xml_content:
-            return None
+        with _tracer.start_as_current_span("ALTOClient.fetch_content", attributes={"alto.url": alto_url}) as span:
+            # Fetch raw XML content
+            headers = {"Accept": "application/xml, text/xml, */*"}
+            xml_content = self.http_client.get_content(alto_url, timeout=timeout, headers=headers)
+            if not xml_content:
+                span.set_attribute("alto.result", "not_found")
+                return None
 
-        # Parse XML
-        try:
-            xml_root = ET.fromstring(xml_content)
-        except Exception:
-            return None
+            # Parse XML
+            try:
+                xml_root = ET.fromstring(xml_content)
+            except Exception:
+                span.set_attribute("alto.result", "parse_error")
+                return None
 
-        # Extract and combine text
-        text = self._extract_text_from_alto(xml_root)
-        # Return empty string if ALTO exists but has no text (vs None for 404)
-        return text if text else ""
+            # Extract and combine text
+            text = self._extract_text_from_alto(xml_root)
+            result = text if text else ""
+            span.set_attribute("alto.result", "success" if text else "empty")
+            span.set_attribute("alto.text_length", len(result))
+            # Return empty string if ALTO exists but has no text (vs None for 404)
+            return result
 
     def _extract_text_with_pattern(
         self,

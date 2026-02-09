@@ -5,9 +5,12 @@ OAI-PMH client for Riksarkivet.
 from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
 from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.utils.http_client import HTTPClient
+
+_tracer = get_tracer("ra_mcp.oai_pmh_client")
 
 
 class OAIPMHClient:
@@ -19,43 +22,45 @@ class OAIPMHClient:
 
     def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> Dict[str, Union[str, List, Dict]]:
         """Get a specific record with full metadata (raw dict format)."""
-        oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
+        with _tracer.start_as_current_span("OAIPMHClient.get_record", attributes={"oai.identifier": identifier}):
+            oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
 
-        xml_response_root = self._make_request(oai_request_parameters)
-        oai_record_element = self._extract_record_from_response(xml_response_root)
+            xml_response_root = self._make_request(oai_request_parameters)
+            oai_record_element = self._extract_record_from_response(xml_response_root)
 
-        extracted_record_data = self._build_basic_record_result(oai_record_element, metadata_prefix)
+            extracted_record_data = self._build_basic_record_result(oai_record_element, metadata_prefix)
 
-        if metadata_prefix == "oai_ape_ead":
-            ead_metadata = self._extract_ead_metadata(oai_record_element)
-            extracted_record_data.update(ead_metadata)
+            if metadata_prefix == "oai_ape_ead":
+                ead_metadata = self._extract_ead_metadata(oai_record_element)
+                extracted_record_data.update(ead_metadata)
 
-        return extracted_record_data
+            return extracted_record_data
 
     def get_metadata(self, identifier: str) -> Optional[OAIPMHMetadata]:
         """Get record metadata as typed OAIPMHMetadata model."""
-        try:
-            record = self.get_record(identifier, "oai_ape_ead")
+        with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}):
+            try:
+                record = self.get_record(identifier, "oai_ape_ead")
 
-            # Helper to safely extract string values
-            def get_str(key: str, default: Optional[str] = None) -> Optional[str]:
-                value = record.get(key, default)
-                return value if isinstance(value, str) else default
+                # Helper to safely extract string values
+                def get_str(key: str, default: Optional[str] = None) -> Optional[str]:
+                    value = record.get(key, default)
+                    return value if isinstance(value, str) else default
 
-            return OAIPMHMetadata(
-                identifier=get_str("identifier", identifier) or identifier,
-                title=get_str("title"),
-                unitid=get_str("unitid"),
-                repository=get_str("repository"),
-                nad_link=get_str("nad_link"),
-                datestamp=get_str("datestamp"),
-                unitdate=get_str("unitdate"),
-                description=get_str("description"),
-                iiif_manifest=get_str("iiif_manifest"),
-                iiif_image=get_str("iiif_image"),
-            )
-        except Exception:
-            return None
+                return OAIPMHMetadata(
+                    identifier=get_str("identifier", identifier) or identifier,
+                    title=get_str("title"),
+                    unitid=get_str("unitid"),
+                    repository=get_str("repository"),
+                    nad_link=get_str("nad_link"),
+                    datestamp=get_str("datestamp"),
+                    unitdate=get_str("unitdate"),
+                    description=get_str("description"),
+                    iiif_manifest=get_str("iiif_manifest"),
+                    iiif_image=get_str("iiif_image"),
+                )
+            except Exception:
+                return None
 
     def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, Union[str, int]]:
         """Build OAI-PMH request parameters."""
@@ -97,14 +102,15 @@ class OAIPMHClient:
 
     def extract_manifest_id(self, identifier: str) -> Optional[str]:
         """Extract PID from a record for IIIF access."""
-        try:
-            # Use typed metadata to get nad_link safely
-            metadata = self.get_metadata(identifier)
-            if metadata and metadata.nad_link:
-                return self._extract_manifest_id_from_nad_link(metadata.nad_link)
-            return None
-        except Exception:
-            return None
+        with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}):
+            try:
+                # Use typed metadata to get nad_link safely
+                metadata = self.get_metadata(identifier)
+                if metadata and metadata.nad_link:
+                    return self._extract_manifest_id_from_nad_link(metadata.nad_link)
+                return None
+            except Exception:
+                return None
 
     def _extract_manifest_id_from_nad_link(self, nad_link_url: str) -> str:
         """Extract Manifest ID from NAD link URL."""

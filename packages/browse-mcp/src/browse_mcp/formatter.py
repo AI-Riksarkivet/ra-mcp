@@ -219,17 +219,13 @@ class PlainTextFormatter:
             # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
                 # Extract page numbers from snippets
-                page_numbers = sorted(set(
-                    page.id
-                    for snippet in document.transcribed_text.snippets
-                    for page in snippet.pages
-                ))
+                page_numbers = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
                 # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
                 # Split by underscore and take the last part (the actual page number)
                 trimmed_page_numbers = []
                 for page_id in page_numbers:
                     # Split by underscore and take last part
-                    parts = page_id.split('_')
+                    parts = page_id.split("_")
                     if parts:
                         # Get the last non-empty part and strip leading zeros
                         last_part = parts[-1]

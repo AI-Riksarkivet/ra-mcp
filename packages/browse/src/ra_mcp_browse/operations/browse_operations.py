@@ -5,12 +5,15 @@ Handles document browsing, page fetching, and metadata retrieval.
 
 from typing import List, Optional
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 from ..clients import IIIFClient, ALTOClient, OAIPMHClient
 from ..models import BrowseResult, OAIPMHMetadata, PageContext
 from ..utils import parse_page_range
 from .. import url_generator
+
+_tracer = get_tracer("ra_mcp.browse_operations")
 
 
 class BrowseOperations:
@@ -54,30 +57,39 @@ class BrowseOperations:
             and persistent identifiers. Returns empty contexts if document
             not found or no valid pages.
         """
-        manifest_id = self.oai_client.extract_manifest_id(reference_code)
+        with _tracer.start_as_current_span(
+            "BrowseOperations.browse_document",
+            attributes={
+                "browse.reference_code": reference_code,
+                "browse.pages_requested": pages,
+            },
+        ) as span:
+            manifest_id = self.oai_client.extract_manifest_id(reference_code)
 
-        # Always fetch OAI-PMH metadata (works for both digitised and non-digitised)
-        oai_metadata = self._fetch_oai_metadata(reference_code)
+            # Always fetch OAI-PMH metadata (works for both digitised and non-digitised)
+            oai_metadata = self._fetch_oai_metadata(reference_code)
 
-        if not manifest_id:
-            # No manifest = non-digitised material
-            # Return metadata but no page contexts
+            if not manifest_id:
+                # No manifest = non-digitised material
+                # Return metadata but no page contexts
+                span.set_attribute("browse.pages_returned", 0)
+                return BrowseResult(
+                    contexts=[],
+                    reference_code=reference_code,
+                    pages_requested=pages,
+                    oai_metadata=oai_metadata,
+                )
+
+            page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
+
+            span.set_attribute("browse.pages_returned", len(page_contexts))
             return BrowseResult(
-                contexts=[],
+                contexts=page_contexts,
                 reference_code=reference_code,
                 pages_requested=pages,
+                manifest_id=manifest_id,
                 oai_metadata=oai_metadata,
             )
-
-        page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
-
-        return BrowseResult(
-            contexts=page_contexts,
-            reference_code=reference_code,
-            pages_requested=pages,
-            manifest_id=manifest_id,
-            oai_metadata=oai_metadata,
-        )
 
     def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
         """Resolve IIIF manifest identifier from persistent identifier.
@@ -126,28 +138,36 @@ class BrowseOperations:
         Returns:
             List of page context objects with transcribed text and metadata.
         """
-        # Parse and limit page numbers
-        page_numbers = parse_page_range(page_specification)[:maximum_pages]
+        with _tracer.start_as_current_span(
+            "BrowseOperations._fetch_page_contexts",
+            attributes={
+                "browse.manifest_id": manifest_identifier,
+                "browse.page_spec": page_specification,
+            },
+        ) as span:
+            # Parse and limit page numbers
+            page_numbers = parse_page_range(page_specification)[:maximum_pages]
 
-        # Fetch context for each page
-        page_contexts = []
-        consecutive_failures = 0
-        MAX_CONSECUTIVE_FAILURES = 3  # Try at least 3 pages before giving up
+            # Fetch context for each page
+            page_contexts = []
+            consecutive_failures = 0
+            MAX_CONSECUTIVE_FAILURES = 3  # Try at least 3 pages before giving up
 
-        for page_number in page_numbers:
-            page_context = self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
-            if page_context:
-                page_contexts.append(page_context)
-                consecutive_failures = 0  # Reset counter on success
-            else:
-                consecutive_failures += 1
-                # Early exit optimization: if first 3 pages all fail with 404, assume not transcribed
-                # Note: blank pages (200 OK but empty) are treated as successful page_context,
-                # so this only exits early when ALTO files don't exist (404 errors)
-                if consecutive_failures >= MAX_CONSECUTIVE_FAILURES and not page_contexts:
-                    break
+            for page_number in page_numbers:
+                page_context = self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
+                if page_context:
+                    page_contexts.append(page_context)
+                    consecutive_failures = 0  # Reset counter on success
+                else:
+                    consecutive_failures += 1
+                    # Early exit optimization: if first 3 pages all fail with 404, assume not transcribed
+                    # Note: blank pages (200 OK but empty) are treated as successful page_context,
+                    # so this only exits early when ALTO files don't exist (404 errors)
+                    if consecutive_failures >= MAX_CONSECUTIVE_FAILURES and not page_contexts:
+                        break
 
-        return page_contexts
+            span.set_attribute("browse.pages_fetched", len(page_contexts))
+            return page_contexts
 
     def _fetch_oai_metadata(self, reference_code: str) -> Optional[OAIPMHMetadata]:
         """Fetch OAI-PMH metadata for a document.

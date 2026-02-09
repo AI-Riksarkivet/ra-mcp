@@ -109,15 +109,11 @@ def register_browse_tool(mcp) -> None:
             if not browse_result.contexts:
                 # Check if we have metadata to display for non-digitised materials
                 if browse_result.oai_metadata:
-                    # Format metadata-only result
-                    result = formatter.format_browse_results(browse_result, highlight_term)
-                    return result
+                    return formatter.format_browse_results(browse_result, highlight_term)
                 else:
                     return _generate_no_pages_found_message(reference_code)
 
-            result = formatter.format_browse_results(browse_result, highlight_term)
-            # PlainTextFormatter always returns string
-            return result
+            return formatter.format_browse_results(browse_result, highlight_term)
 
         except Exception as e:
             return format_error_message(

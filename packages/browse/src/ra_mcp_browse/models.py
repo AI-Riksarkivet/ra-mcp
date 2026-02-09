@@ -10,12 +10,14 @@ from pydantic import BaseModel
 
 class IIIFManifest(BaseModel):
     """IIIF manifest reference."""
+
     id: str
     label: Optional[str] = None
 
 
 class IIIFCollection(BaseModel):
     """IIIF collection information."""
+
     id: str
     label: Optional[str] = None
     manifests: List[IIIFManifest] = []
@@ -27,6 +29,7 @@ class PageContext(BaseModel):
 
     Contains transcribed text, ALTO XML URL, and image URLs for a single page.
     """
+
     page_number: int
     page_id: str
     reference_code: str
@@ -42,6 +45,7 @@ class OAIPMHMetadata(BaseModel):
 
     Maps to EAD metadata fields returned by the OAI-PMH API.
     """
+
     identifier: str  # Record identifier (e.g., "SE/RA/310187/1")
     title: Optional[str] = None  # EAD unittitle
     unitid: Optional[str] = None  # EAD unitid
@@ -60,6 +64,7 @@ class BrowseResult(BaseModel):
 
     Contains page contexts, manifest ID, and optional OAI-PMH metadata.
     """
+
     contexts: List[PageContext]
     reference_code: str
     pages_requested: str

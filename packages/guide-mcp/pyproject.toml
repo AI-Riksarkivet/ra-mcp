@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ra-mcp-common",
-    "fastmcp>=2.14.4",
+    "fastmcp>=3.0.0b2",
 ]
 license = "Apache-2.0"
 

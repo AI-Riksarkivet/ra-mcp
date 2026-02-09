@@ -125,7 +125,12 @@ def main_callback():
 
     Search and browse transcribed historical documents from the Swedish National Archives.
     """
-    pass
+    import atexit
+
+    from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
+
+    init_telemetry()
+    atexit.register(shutdown_telemetry)
 
 
 if __name__ == "__main__":

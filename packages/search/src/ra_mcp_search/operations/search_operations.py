@@ -5,10 +5,13 @@ Handles keyword searching.
 
 from typing import Optional
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 from ..clients import SearchAPI
 from ..models import SearchResult
+
+_tracer = get_tracer("ra_mcp.search_operations")
 
 
 class SearchOperations:
@@ -58,22 +61,32 @@ class SearchOperations:
         Returns:
             SearchResult containing documents, total count, and metadata.
         """
-        # Execute search using API parameter names
-        response = self.search_api.search(
-            transcribed_text=keyword if transcribed_only else None,
-            text=keyword if not transcribed_only else None,
-            only_digitised_materials=only_digitised,
-            max=max_results,
-            offset=offset,
-            max_snippets_per_record=max_snippets_per_record,
-            sort=sort,
-            year_min=year_min,
-            year_max=year_max,
-            name=name,
-            place=place,
-        )
+        with _tracer.start_as_current_span(
+            "SearchOperations.search",
+            attributes={
+                "search.keyword": keyword,
+                "search.transcribed_only": transcribed_only,
+                "search.offset": offset,
+                "search.max_results": max_results,
+            },
+        ) as span:
+            # Execute search using API parameter names
+            response = self.search_api.search(
+                transcribed_text=keyword if transcribed_only else None,
+                text=keyword if not transcribed_only else None,
+                only_digitised_materials=only_digitised,
+                max=max_results,
+                offset=offset,
+                max_snippets_per_record=max_snippets_per_record,
+                sort=sort,
+                year_min=year_min,
+                year_max=year_max,
+                name=name,
+                place=place,
+            )
 
-        return SearchResult(response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record)
+            span.set_attribute("search.total_hits", response.total_hits)
+            return SearchResult(response=response, transcribed_text=keyword, max=max_results, offset=offset, max_snippets_per_record=max_snippets_per_record)
 
     def search_transcribed(
         self,

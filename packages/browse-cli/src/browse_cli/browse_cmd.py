@@ -8,10 +8,13 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
 from ra_mcp_browse.operations import BrowseOperations
 
 from .formatting import RichConsoleFormatter
+
+_tracer = get_tracer("ra_mcp.cli.browse")
 
 
 console = Console()
@@ -61,40 +64,47 @@ def browse(
 
     requested_pages = page if page is not None else pages
 
-    try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            progress.add_task("Loading document...", total=None)
+    with _tracer.start_as_current_span(
+        "cli.browse",
+        attributes={
+            "browse.reference_code": reference_code,
+            "browse.pages": requested_pages or "1-20",
+        },
+    ):
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                progress.add_task("Loading document...", total=None)
 
-            browse_result = browse_operations.browse_document(
-                reference_code=reference_code,
-                pages=requested_pages or "1-20",
+                browse_result = browse_operations.browse_document(
+                    reference_code=reference_code,
+                    pages=requested_pages or "1-20",
+                    highlight_term=search_term,
+                    max_pages=max_display,
+                )
+
+            if not browse_result.contexts and not browse_result.oai_metadata:
+                console.print(f"[yellow]No pages found for '{reference_code}'[/yellow]")
+                console.print("\n[dim]Suggestions:[/dim]")
+                console.print("[dim]- Check the reference code format[/dim]")
+                console.print("[dim]- Verify the document has transcribed pages[/dim]")
+                console.print("[dim]- Try different page numbers[/dim]")
+                raise typer.Exit(code=1)
+
+            has_pages = bool(browse_result.contexts)
+            renderables = formatter.format_browse_results(
+                browse_result,
                 highlight_term=search_term,
-                max_pages=max_display,
+                show_links=show_links,
+                show_success_message=has_pages,
             )
+            _print_renderables(renderables, console)
 
-        if not browse_result.contexts and not browse_result.oai_metadata:
-            console.print(f"[yellow]No pages found for '{reference_code}'[/yellow]")
-            console.print("\n[dim]Suggestions:[/dim]")
-            console.print("[dim]- Check the reference code format[/dim]")
-            console.print("[dim]- Verify the document has transcribed pages[/dim]")
-            console.print("[dim]- Try different page numbers[/dim]")
+        except typer.Exit:
+            raise
+        except Exception as error:
+            console.print(f"[red]Browse failed: {error}[/red]")
             raise typer.Exit(code=1)
-
-        has_pages = bool(browse_result.contexts)
-        renderables = formatter.format_browse_results(
-            browse_result,
-            highlight_term=search_term,
-            show_links=show_links,
-            show_success_message=has_pages,
-        )
-        _print_renderables(renderables, console)
-
-    except typer.Exit:
-        raise
-    except Exception as error:
-        console.print(f"[red]Browse failed: {error}[/red]")
-        raise typer.Exit(code=1)

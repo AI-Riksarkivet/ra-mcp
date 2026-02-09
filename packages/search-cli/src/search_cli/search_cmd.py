@@ -8,11 +8,14 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
 from ra_mcp_search.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
 from ra_mcp_search.operations import SearchOperations
 
 from .formatting import RichConsoleFormatter
+
+_tracer = get_tracer("ra_mcp.cli.search")
 
 console = Console()
 
@@ -73,60 +76,61 @@ def search(
     if log:
         console.print("[dim]API logging enabled - check ra_mcp_api.log[/dim]")
 
-    try:
-        if not only_digitised and transcribed_only:
-            console.print("[yellow]Note: --transcribed-text requires --only-digitised-materials[/yellow]")
-            console.print("[yellow]   Automatically switching to --text when --include-all-materials is used.[/yellow]\n")
-            transcribed_only = False
+    with _tracer.start_as_current_span("cli.search", attributes={"search.keyword": keyword}):
+        try:
+            if not only_digitised and transcribed_only:
+                console.print("[yellow]Note: --transcribed-text requires --only-digitised-materials[/yellow]")
+                console.print("[yellow]   Automatically switching to --text when --include-all-materials is used.[/yellow]\n")
+                transcribed_only = False
 
-        search_type = "transcribed text" if transcribed_only else "all fields"
-        material_filter = "digitised materials" if only_digitised else "all materials"
+            search_type = "transcribed text" if transcribed_only else "all fields"
+            material_filter = "digitised materials" if only_digitised else "all materials"
 
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
-        ) as progress:
-            progress.add_task(
-                f"Searching {search_type} in {material_filter} for '{keyword}'...",
-                total=None,
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                progress.add_task(
+                    f"Searching {search_type} in {material_filter} for '{keyword}'...",
+                    total=None,
+                )
+
+                search_result = search_operations.search(
+                    keyword=keyword,
+                    transcribed_only=transcribed_only,
+                    only_digitised=only_digitised,
+                    max_results=max_results,
+                    max_snippets_per_record=max_snippets_per_record,
+                )
+
+            snippet_count = search_result.count_snippets()
+            records_count = len(search_result.items)
+
+            console.print(formatter.format_search_results(search_result, max_display))
+
+            _print_renderables(
+                formatter.format_search_summary_stats(
+                    snippet_count=snippet_count,
+                    records_count=records_count,
+                    total_hits=search_result.response.total_hits,
+                    offset=search_result.offset,
+                    max_requested=search_result.max,
+                ),
+                console,
             )
 
-            search_result = search_operations.search(
-                keyword=keyword,
-                transcribed_only=transcribed_only,
-                only_digitised=only_digitised,
-                max_results=max_results,
-                max_snippets_per_record=max_snippets_per_record,
+            _print_renderables(
+                formatter.format_browse_example(search_result.items, keyword),
+                console,
             )
 
-        snippet_count = search_result.count_snippets()
-        records_count = len(search_result.items)
+            remaining_msg = formatter.format_remaining_documents(records_count, max_display)
+            if remaining_msg:
+                console.print(remaining_msg)
 
-        console.print(formatter.format_search_results(search_result, max_display))
-
-        _print_renderables(
-            formatter.format_search_summary_stats(
-                snippet_count=snippet_count,
-                records_count=records_count,
-                total_hits=search_result.response.total_hits,
-                offset=search_result.offset,
-                max_requested=search_result.max,
-            ),
-            console,
-        )
-
-        _print_renderables(
-            formatter.format_browse_example(search_result.items, keyword),
-            console,
-        )
-
-        remaining_msg = formatter.format_remaining_documents(records_count, max_display)
-        if remaining_msg:
-            console.print(remaining_msg)
-
-    except typer.Exit:
-        raise
-    except Exception as error:
-        console.print(f"[red]Search failed: {error}[/red]")
-        raise typer.Exit(code=1)
+        except typer.Exit:
+            raise
+        except Exception as error:
+            console.print(f"[red]Search failed: {error}[/red]")
+            raise typer.Exit(code=1)

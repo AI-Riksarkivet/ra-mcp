@@ -8,10 +8,15 @@ with direct Pydantic response parsing.
 import logging
 from typing import Optional
 
+from opentelemetry.trace import StatusCode
+
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 from ra_mcp_search.config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
 from ra_mcp_search.models import RecordsResponse
+
+_tracer = get_tracer("ra_mcp.search_api")
 
 
 class SearchAPI:
@@ -78,47 +83,60 @@ class SearchAPI:
         search_type = "transcribed" if transcribed_text else "general"
         self.logger.info(f"Starting {search_type} search: keyword='{search_term}', max={max}, offset={offset}")
 
-        try:
-            # Build search parameters
-            params = {
-                "max": max,
-                "offset": offset,
-                "sort": sort,
-            }
+        with _tracer.start_as_current_span(
+            "SearchAPI.search",
+            attributes={
+                "search.type": search_type,
+                "search.keyword": search_term or "",
+                "search.offset": offset,
+                "search.max_results": max,
+            },
+        ) as span:
+            try:
+                # Build search parameters
+                params = {
+                    "max": max,
+                    "offset": offset,
+                    "sort": sort,
+                }
 
-            if only_digitised_materials:
-                params["only_digitised_materials"] = "true"
+                if only_digitised_materials:
+                    params["only_digitised_materials"] = "true"
 
-            if transcribed_text:
-                params["transcribed_text"] = transcribed_text
-            elif text:
-                params["text"] = text
+                if transcribed_text:
+                    params["transcribed_text"] = transcribed_text
+                elif text:
+                    params["text"] = text
 
-            if name:
-                params["name"] = name
-            if place:
-                params["place"] = place
-            if year_min is not None:
-                params["year_min"] = year_min
-            if year_max is not None:
-                params["year_max"] = year_max
+                if name:
+                    params["name"] = name
+                if place:
+                    params["place"] = place
+                if year_min is not None:
+                    params["year_min"] = year_min
+                if year_max is not None:
+                    params["year_max"] = year_max
 
-            response_data = self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
+                response_data = self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
-            # Parse entire API response with Pydantic
-            response = RecordsResponse(**response_data)
+                # Parse entire API response with Pydantic
+                response = RecordsResponse(**response_data)
 
-            # Apply client-side snippet limiting if requested
-            if max_snippets_per_record:
-                self._limit_snippets(response, max_snippets_per_record)
+                # Apply client-side snippet limiting if requested
+                if max_snippets_per_record:
+                    self._limit_snippets(response, max_snippets_per_record)
 
-            self.logger.info(f"✓ Search completed: {response.count_snippets()} snippets from {len(response.items)} records ({response.total_hits} total)")
+                self.logger.info(f"✓ Search completed: {response.count_snippets()} snippets from {len(response.items)} records ({response.total_hits} total)")
 
-            return response
+                span.set_attribute("search.total_hits", response.total_hits)
+                span.set_attribute("search.result_count", len(response.items))
+                return response
 
-        except Exception as error:
-            self.logger.error(f"✗ Search failed: {type(error).__name__}: {error}")
-            raise
+            except Exception as error:
+                span.set_status(StatusCode.ERROR, str(error))
+                span.record_exception(error)
+                self.logger.error(f"✗ Search failed: {type(error).__name__}: {error}")
+                raise
 
     def search_transcribed_text(
         self,
