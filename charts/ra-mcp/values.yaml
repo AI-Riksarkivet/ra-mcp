@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: riksarkivet/ra-mcp
-  tag: "latest"  # defaults to appVersion
+  tag: "latest"  # set to "" to use appVersion from Chart.yaml
   pullPolicy: IfNotPresent
 
 service:
