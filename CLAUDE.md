@@ -584,6 +584,44 @@ git push
 - `chore`: Maintenance tasks
 - `perf`: Performance improvements
 
+### Releasing
+
+Releases are automated via GitHub Actions. The workflow chain is:
+
+```
+git tag v0.X.Y && git push --tags
+  → release.yml: generates changelog with git-cliff, creates GitHub Release
+    → publish.yml: triggers on release:published, builds & pushes Docker images
+```
+
+**To cut a new release:**
+
+```bash
+# 1. Bump version in pyproject.toml
+# 2. Commit the version bump
+git commit -m "chore: bump version to 0.X.Y"
+
+# 3. Tag and push
+git tag v0.X.Y
+git push && git push --tags
+```
+
+**How it works:**
+- [release.yml](.github/workflows/release.yml) triggers on `v*` tag pushes
+- Installs `git-cliff` and runs `git cliff --latest --strip header` to generate notes for the tagged version
+- Creates a GitHub Release with those notes via `softprops/action-gh-release`
+- Release notes include commit links back to GitHub (configured in [cliff.toml](cliff.toml))
+- The existing [publish.yml](.github/workflows/publish.yml) triggers on `release: [published]` to build and push Docker images
+
+**Local changelog generation:**
+```bash
+# Full changelog to CHANGELOG.md
+make changelog
+
+# Preview release notes for the latest tag
+uvx git-cliff --latest --strip header
+```
+
 ### Debugging Tips
 
 **Environment Variables for Debugging:**
