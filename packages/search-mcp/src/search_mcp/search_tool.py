@@ -7,10 +7,11 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 import logging
 from typing import Optional
 
+from fastmcp import Context
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
 
-from .formatter import PlainTextFormatter
+from .formatter import PlainTextFormatter, _page_id_to_number
 
 
 logger = logging.getLogger(__name__)
@@ -124,6 +125,12 @@ def register_search_tool(mcp) -> None:
     - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
     - year_min: Optional start year to filter results (e.g. 1700)
     - year_max: Optional end year to filter results (e.g. 1750)
+    - dedup: Session deduplication (default: True). When True, documents/pages already shown in this session are compacted or skipped. Set to False to force full results.
+
+    IMPORTANT - Avoid redundant calls:
+    - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
+    - If you already have search results or page transcriptions in your conversation context, reference that data directly instead of calling this tool again.
+    - Only call again when you need NEW information: a different query, different offset, or different parameters.
 
     Best practices:
     - Start with offset=0 and increase by 50 to discover all matches
@@ -144,6 +151,8 @@ def register_search_tool(mcp) -> None:
         sort: str = "relevance",
         year_min: Optional[int] = None,
         year_max: Optional[int] = None,
+        dedup: bool = True,
+        ctx: Optional[Context] = None,
     ) -> str:
         """Search AI-transcribed text in digitised historical documents.
 
@@ -180,11 +189,24 @@ def register_search_tool(mcp) -> None:
                 year_max=year_max,
             )
 
+            # Load session state for dedup
+            seen: dict[str, list[int]] | None = None
+            if dedup and ctx is not None:
+                seen = await ctx.get_state("seen_search") or {}
+                logger.info("[search_transcribed] Dedup state loaded: %d documents previously seen", len(seen))
+
             logger.info(f"Formatting {len(search_result.items)} search results...")
             formatted_results = formatter.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,
+                seen_pages=seen,
             )
+
+            # Update session state with only the documents actually scanned by the formatter
+            if dedup and ctx is not None:
+                updated = _update_seen_search_state(seen or {}, search_result, max_displayed=formatter.items_scanned)
+                await ctx.set_state("seen_search", updated)
+                logger.info("[search_transcribed] Dedup state saved: %d documents now tracked", len(updated))
 
             formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
             formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
@@ -247,6 +269,12 @@ def register_search_tool(mcp) -> None:
     - keyword + name + place can all be used together for precise filtering
     - Example: keyword="inventarium", name="Nobel", place="Stockholm" finds inventory documents mentioning Nobel in Stockholm
     - Use name/place for targeted searches instead of putting everything in keyword
+    - dedup: Session deduplication (default: True). When True, documents already shown in this session are compacted or skipped. Set to False to force full results.
+
+    IMPORTANT - Avoid redundant calls:
+    - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
+    - If you already have search results in your conversation context, reference that data directly instead of calling this tool again.
+    - Only call again when you need NEW information: a different query, different offset, or different parameters.
 
     When to use:
     - Searching for places: use the place parameter for targeted results
@@ -269,6 +297,8 @@ def register_search_tool(mcp) -> None:
         year_max: Optional[int] = None,
         name: Optional[str] = None,
         place: Optional[str] = None,
+        dedup: bool = True,
+        ctx: Optional[Context] = None,
     ) -> str:
         """Search document metadata (titles, names, places, provenance).
 
@@ -308,11 +338,24 @@ def register_search_tool(mcp) -> None:
                 place=place,
             )
 
+            # Load session state for dedup
+            seen: dict[str, list[int]] | None = None
+            if dedup and ctx is not None:
+                seen = await ctx.get_state("seen_search") or {}
+                logger.info("[search_metadata] Dedup state loaded: %d documents previously seen", len(seen))
+
             logger.info(f"Formatting {len(search_result.items)} search results...")
             formatted_results = formatter.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,
+                seen_pages=seen,
             )
+
+            # Update session state with only the documents actually scanned by the formatter
+            if dedup and ctx is not None:
+                updated = _update_seen_search_state(seen or {}, search_result, max_displayed=formatter.items_scanned)
+                await ctx.set_state("seen_search", updated)
+                logger.info("[search_metadata] Dedup state saved: %d documents now tracked", len(updated))
 
             formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
             formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
@@ -404,3 +447,28 @@ def _append_pagination_info_if_needed(formatted_results, search_result, offset, 
         formatted_results += f"\n💡 Use `offset={pagination_info['next_offset']}` to see the next {max_results} documents"
 
     return formatted_results
+
+
+def _update_seen_search_state(seen: dict[str, list[int]], search_result, max_displayed: int) -> dict[str, list[int]]:
+    """Merge page numbers from search results into the seen-state dict.
+
+    Only tracks documents that were actually displayed (up to max_displayed),
+    not all documents returned by the API. This prevents marking unseen
+    documents as "seen" when the API returns more items than are shown.
+
+    For each document in the result, extracts page numbers from snippet page IDs
+    and merges them into the existing seen set for that reference code.
+    Documents without snippets (metadata-only) are recorded with an empty list.
+    """
+    for document in search_result.items[:max_displayed]:
+        ref_code = document.metadata.reference_code
+        existing = set(seen.get(ref_code, []))
+
+        if document.transcribed_text and document.transcribed_text.snippets:
+            for snippet in document.transcribed_text.snippets:
+                for page in snippet.pages:
+                    existing.add(_page_id_to_number(page.id))
+        # Store as sorted list (JSON-serializable)
+        seen[ref_code] = sorted(existing)
+
+    return seen

@@ -74,6 +74,12 @@ search_mcp = FastMCP(
     4. Review hit summaries to identify most relevant documents across all searches
     5. Use browse tools (separate server) for detailed examination of specific pages
 
+    SESSION MEMORY & AVOIDING REDUNDANT CALLS:
+    - These tools track what they have shown you in this session. Re-calling the same search returns compact stubs for already-seen documents, saving tokens.
+    - PREFER referencing data already in your conversation context over re-calling a tool. If you already have search results with reference codes, page numbers, or snippets, use them directly.
+    - Only call a search tool again when you need genuinely NEW information: a different keyword, different offset, or different parameters.
+    - Pass dedup=False to any tool if you truly need full results repeated.
+
     All tools return rich, formatted text optimized for LLM understanding.
     """,
 )

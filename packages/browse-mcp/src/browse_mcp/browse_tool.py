@@ -7,6 +7,7 @@ Provides the browse_document tool for viewing full page transcriptions.
 import logging
 from typing import Optional, List
 
+from fastmcp import Context
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_browse.operations import BrowseOperations
 
@@ -72,6 +73,12 @@ def register_browse_tool(mcp) -> None:
     - pages: Page specification - single ("5"), range ("1-10"), or comma-separated ("5,7,9")
     - highlight_term: Optional keyword to highlight in the transcription
     - max_pages: Maximum number of pages to retrieve (default: 20)
+    - dedup: Session deduplication (default: True). When True, pages already shown in this session are replaced with a one-liner stub. Set to False to force full transcriptions.
+
+    IMPORTANT - Avoid redundant calls:
+    - This tool remembers which pages it has shown you in this session. Re-browsing the same pages returns stubs instead of full text.
+    - If you already have page transcriptions in your conversation context, reference that data directly instead of calling this tool again.
+    - Only call again when you need pages you haven't seen yet, or set dedup=False if you truly need the full text again.
 
     Examples:
     - browse_document("SE/RA/420422/01", "5") - View full transcription of page 5
@@ -87,6 +94,8 @@ def register_browse_tool(mcp) -> None:
         pages: str,
         highlight_term: Optional[str] = None,
         max_pages: int = 20,
+        dedup: bool = True,
+        ctx: Optional[Context] = None,
     ) -> str:
         """
         Browse specific pages of a document by reference code.
@@ -119,14 +128,37 @@ def register_browse_tool(mcp) -> None:
                 max_pages=max_pages,
             )
 
+            # Load session state for dedup
+            seen_page_numbers: set[int] | None = None
+            if dedup and ctx is not None:
+                seen_browse: dict[str, list[int]] = await ctx.get_state("seen_browse") or {}
+                seen_page_numbers = set(seen_browse.get(reference_code, []))
+                logger.info(
+                    "[browse] Dedup state loaded: %d documents tracked, %d pages previously seen for %s",
+                    len(seen_browse),
+                    len(seen_page_numbers),
+                    reference_code,
+                )
+
             if not browse_result.contexts:
                 # Check if we have metadata to display for non-digitised materials
                 if browse_result.oai_metadata:
-                    return formatter.format_browse_results(browse_result, highlight_term)
+                    return formatter.format_browse_results(browse_result, highlight_term, seen_page_numbers=seen_page_numbers)
                 else:
                     return _generate_no_pages_found_message(reference_code)
 
-            return formatter.format_browse_results(browse_result, highlight_term)
+            result = formatter.format_browse_results(browse_result, highlight_term, seen_page_numbers=seen_page_numbers)
+
+            # Update session state with newly shown pages
+            if dedup and ctx is not None:
+                all_pages = set(seen_browse.get(reference_code, []))
+                for context in browse_result.contexts:
+                    all_pages.add(context.page_number)
+                seen_browse[reference_code] = sorted(all_pages)
+                await ctx.set_state("seen_browse", seen_browse)
+                logger.info("[browse] Dedup state saved: %s now has %d pages tracked", reference_code, len(all_pages))
+
+            return result
 
         except Exception as e:
             logger.error("MCP browse_document failed: %s: %s", type(e).__name__, e, exc_info=True)

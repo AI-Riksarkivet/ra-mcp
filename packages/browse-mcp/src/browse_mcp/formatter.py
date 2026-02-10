@@ -275,6 +275,7 @@ class PlainTextFormatter:
         highlight_term=None,
         show_links: bool = False,
         show_success_message: bool = True,
+        seen_page_numbers: set[int] | None = None,
     ) -> str:
         """
         Format browse results as plain text with emojis for MCP/LLM consumption.
@@ -284,6 +285,8 @@ class PlainTextFormatter:
             highlight_term: Optional term to highlight in text
             show_links: Whether to show ALTO/Image/Bildvisning links
             show_success_message: Whether to show success message (ignored in plain text)
+            seen_page_numbers: Optional set of page numbers already shown in this session.
+                               When provided, previously-shown pages get a one-liner stub.
 
         Returns:
             Formatted plain text browse results
@@ -333,6 +336,8 @@ class PlainTextFormatter:
         if not browse_result.contexts:
             return f"No page contexts found for {browse_result.reference_code}"
 
+        seen = seen_page_numbers or set()
+
         lines.append(f"📚 Document: {browse_result.reference_code}")
 
         # Add OAI-PMH metadata if available
@@ -367,10 +372,21 @@ class PlainTextFormatter:
             if metadata.nad_link:
                 lines.append(f"🔗 NAD Link: {metadata.nad_link}")
 
-        lines.append(f"📖 Pages loaded: {len(browse_result.contexts)}")
+        # Summary line with dedup info
+        new_count = sum(1 for c in browse_result.contexts if c.page_number not in seen)
+        reseen_count = len(browse_result.contexts) - new_count
+        if seen and reseen_count > 0:
+            lines.append(f"📖 Pages loaded: {len(browse_result.contexts)} ({new_count} new, {reseen_count} previously shown)")
+        else:
+            lines.append(f"📖 Pages loaded: {len(browse_result.contexts)}")
         lines.append("")
 
         for context in browse_result.contexts:
+            if context.page_number in seen:
+                lines.append(f"📄 Page {context.page_number} (previously shown in this session)")
+                lines.append("")
+                continue
+
             lines.append(f"📄 Page {context.page_number}")
             lines.append("─" * 40)
 

@@ -37,6 +37,12 @@ browse_mcp = FastMCP(
     3. Use browse_document() to retrieve full transcriptions
     4. Examine context around interesting passages
 
+    SESSION MEMORY & AVOIDING REDUNDANT CALLS:
+    - This tool tracks which pages it has shown you in this session. Re-browsing the same pages returns one-liner stubs instead of full transcriptions, saving tokens.
+    - PREFER referencing page transcriptions already in your conversation context over re-calling this tool. If you already have the text of a page, use it directly.
+    - Only call browse_document again when you need pages you haven't seen yet.
+    - Pass dedup=False if you truly need full transcriptions repeated.
+
     All tools return rich, formatted text optimized for LLM understanding.
     """,
 )

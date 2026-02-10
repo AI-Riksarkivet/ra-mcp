@@ -9,6 +9,19 @@ from typing import List, Optional
 logger = logging.getLogger("ra_mcp.search_mcp.formatter")
 
 
+def _page_id_to_number(page_id: str) -> int:
+    """Extract the numeric page number from a page ID like '_00066' or '_H0000459_00005'.
+
+    Splits by underscore and takes the last non-empty part, stripping leading zeros.
+    """
+    parts = page_id.split("_")
+    if parts:
+        last_part = parts[-1]
+        trimmed = last_part.lstrip("0") or "0"
+        return int(trimmed)
+    return int(page_id)
+
+
 class PlainTextFormatter:
     """Formatter that produces plain text without any Rich markup."""
 
@@ -150,22 +163,33 @@ class PlainTextFormatter:
             return f"No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}"
         return f"No results found for '{search_result.keyword}'. make sure to use \"\" "
 
-    def format_search_results(self, search_result, maximum_documents_to_display: int = 20) -> str:
+    def format_search_results(
+        self,
+        search_result,
+        maximum_documents_to_display: int = 20,
+        seen_pages: Optional[dict[str, list[int]]] = None,
+    ) -> str:
         """
         Format search results as plain text with emojis for MCP/LLM consumption.
 
         Args:
             search_result: SearchResult containing documents and metadata
             maximum_documents_to_display: Maximum number of documents to display
+            seen_pages: Optional dict mapping reference_code to list of already-seen page numbers.
+                        When provided, documents/snippets that were already shown are compacted or skipped.
 
         Returns:
             Formatted plain text search results
         """
         if not search_result.items:
+            self.items_scanned = 0
             return self.format_no_results_message(search_result)
 
         lines = []
         snippet_count = search_result.count_snippets()
+        skipped_count = 0
+        displayed_count = 0
+        items_scanned = 0
 
         # Show "100+" if we hit the max limit, indicating more are available
         document_count = len(search_result.items)
@@ -183,7 +207,12 @@ class PlainTextFormatter:
             lines.append(f"Found {document_display} volumes matching metadata")
         lines.append("")
 
-        for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
+        # Iterate all items — skipped (deduped) docs don't count against the display limit
+        for idx, document in enumerate(search_result.items):
+            if displayed_count >= maximum_documents_to_display:
+                break
+            items_scanned = idx + 1
+
             # For transcribed search, skip documents without snippets
             # For metadata search, show all documents
             has_snippets = document.transcribed_text and document.transcribed_text.snippets
@@ -191,7 +220,35 @@ class PlainTextFormatter:
                 # Transcribed search mode - skip docs without snippets
                 continue
 
-            lines.append(f"📚 Document: {document.metadata.reference_code}")
+            ref_code = document.metadata.reference_code
+
+            # --- Dedup logic ---
+            if seen_pages is not None and ref_code in seen_pages:
+                prev_page_nums = set(seen_pages.get(ref_code, []))
+
+                if has_snippets:
+                    # Filter to snippets with at least one unseen page
+                    new_snippets = [
+                        s for s in document.transcribed_text.snippets if any(_page_id_to_number(p.id) not in prev_page_nums for p in s.pages)
+                    ]
+                    if not new_snippets:
+                        skipped_count += 1
+                        continue
+                    # Compact format: header + only new snippets
+                    lines.append(f"📚 Document: {ref_code} (previously shown — new pages only)")
+                    self._format_compact_snippets(lines, new_snippets, search_result.keyword)
+                    lines.append("")
+                    displayed_count += 1
+                    continue
+                else:
+                    # Metadata-only: already seen this ref_code
+                    skipped_count += 1
+                    continue
+
+            # --- Full rendering (existing behavior) ---
+            displayed_count += 1
+
+            lines.append(f"📚 Document: {ref_code}")
 
             if document.metadata.archival_institution:
                 institution = document.metadata.archival_institution[0].caption
@@ -245,21 +302,9 @@ class PlainTextFormatter:
 
             # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
-                # Extract page numbers from snippets
+                # Extract page numbers from snippets using shared helper
                 page_numbers = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
-                # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
-                # Split by underscore and take the last part (the actual page number)
-                trimmed_page_numbers = []
-                for page_id in page_numbers:
-                    # Split by underscore and take last part
-                    parts = page_id.split("_")
-                    if parts:
-                        # Get the last non-empty part and strip leading zeros
-                        last_part = parts[-1]
-                        trimmed = last_part.lstrip("0") or "0"
-                        trimmed_page_numbers.append(trimmed)
-                    else:
-                        trimmed_page_numbers.append(page_id)
+                trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
 
                 doc_snippet_count = len(document.transcribed_text.snippets)
                 total_hits = document.get_total_hits()
@@ -285,12 +330,31 @@ class PlainTextFormatter:
 
             lines.append("")
 
-        total_document_count = len(search_result.items)
-        if total_document_count > maximum_documents_to_display:
-            remaining_documents = total_document_count - maximum_documents_to_display
-            lines.append(f"... and {remaining_documents} more documents")
+        if skipped_count > 0:
+            lines.append(f"({skipped_count} previously shown document(s) omitted)")
+            lines.append("")
+
+        # Track how many items were scanned so the caller can limit state updates
+        self.items_scanned = items_scanned
+
+        total_remaining = len(search_result.items) - items_scanned
+        if total_remaining > 0:
+            lines.append(f"... and {total_remaining} more documents")
 
         return "\n".join(lines)
+
+    def _format_compact_snippets(self, lines: list[str], snippets: list, keyword: str) -> None:
+        """Render snippets compactly for a previously-seen document (new pages only)."""
+        page_numbers = sorted(set(page.id for snippet in snippets for page in snippet.pages))
+        trimmed = [str(_page_id_to_number(pid)) for pid in page_numbers]
+        lines.append(f"📖 New pages: {', '.join(trimmed)}")
+        for snippet in snippets[:3]:
+            snippet_text = self.highlight_search_keyword(snippet.text, keyword)
+            if snippet.pages:
+                page_id = snippet.pages[0].id
+                lines.append(f"   Page {page_id}: {snippet_text}")
+        if len(snippets) > 3:
+            lines.append(f"   ...and {len(snippets) - 3} more pages with hits")
 
     def format_browse_results(
         self,
