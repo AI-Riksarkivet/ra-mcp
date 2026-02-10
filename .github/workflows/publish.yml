@@ -19,6 +19,17 @@ jobs:
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
+      # Determine image tag: use release tag if available, else read from pyproject.toml
+      - name: Determine version tag
+        id: version
+        run: |
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            VERSION=$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+            echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+
       # Run Dagger checks and tests first
       #- name: Run checks and tests
       #  uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
@@ -47,7 +58,7 @@ jobs:
           context: .
           push: true
           tags: |
-            riksarkivet/ra-mcp:${{ github.event.release.tag_name }}
+            riksarkivet/ra-mcp:${{ steps.version.outputs.tag }}
             riksarkivet/ra-mcp:latest
           build-args: |
             BASE_IMAGE=python:3.12-alpine
@@ -73,7 +84,7 @@ jobs:
         uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
         with:
           verb: call
-          args: "extract-provenance-attestation --image-ref riksarkivet/ra-mcp:${{ github.event.release.tag_name }} export --path ./provenance.intoto.jsonl"
+          args: "extract-provenance-attestation --image-ref riksarkivet/ra-mcp:${{ steps.version.outputs.tag }} export --path ./provenance.intoto.jsonl"
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           version: "latest"
 
