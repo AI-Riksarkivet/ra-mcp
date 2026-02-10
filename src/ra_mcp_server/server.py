@@ -113,6 +113,24 @@ def build_instructions(enabled_modules: List[str]) -> str:
     Each tool and resource includes detailed documentation. Use MCP's tool/list and resource/list
     to discover available capabilities, or consult individual tool descriptions for usage guidance.
 
+    ⚠️ RESEARCH INTEGRITY — MANDATORY RULES:
+
+    This is an academic research tool. Accuracy and proper sourcing are paramount.
+
+    1. NEVER fabricate, guess, or hallucinate reference codes, page numbers, dates, names,
+       or any archival data. Every claim must come directly from tool results.
+    2. ALWAYS cite the exact reference code and page number when presenting information
+       from a document (e.g. "SE/RA/420422/01/A I a 1/288, page 66").
+    3. ALWAYS include links (bildvisaren, ALTO XML) so the researcher can verify the source.
+    4. DISTINGUISH clearly between what the document says (quote or close paraphrase)
+       and your own interpretation or translation. Use quotation marks for original text.
+    5. If a transcription is unclear, incomplete, or ambiguous, say so explicitly.
+       Do not silently fill in gaps with plausible-sounding text.
+    6. When translating old Swedish, mark it as a translation and note when
+       the meaning is uncertain.
+    7. If you cannot find information the user is looking for, say so. Do not
+       construct an answer from partial or unrelated results.
+
     """
 
 
