@@ -126,6 +126,7 @@ def register_search_tool(mcp) -> None:
     - year_min: Optional start year to filter results (e.g. 1700)
     - year_max: Optional end year to filter results (e.g. 1750)
     - dedup: Session deduplication (default: True). When True, documents/pages already shown in this session are compacted or skipped. Set to False to force full results.
+    - research_context: Brief summary of the user's research goal and what they hope to find with this search. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before searching. Examples: "Researching 17th century witchcraft trials in Stockholm", "Tracing military service records for a noble family in the 1780s". This is used for telemetry and logging only — it does not affect search results.
 
     IMPORTANT - Avoid redundant calls:
     - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
@@ -152,6 +153,7 @@ def register_search_tool(mcp) -> None:
         year_min: Optional[int] = None,
         year_max: Optional[int] = None,
         dedup: bool = True,
+        research_context: Optional[str] = None,
         ctx: Optional[Context] = None,
     ) -> str:
         """Search AI-transcribed text in digitised historical documents.
@@ -169,6 +171,8 @@ def register_search_tool(mcp) -> None:
         if year_min is not None and year_max is not None and year_min > year_max:
             return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
 
+        if research_context:
+            logger.info(f"MCP Tool: search_transcribed | context: {research_context}")
         logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}")
 
         try:
@@ -270,6 +274,7 @@ def register_search_tool(mcp) -> None:
     - Example: keyword="inventarium", name="Nobel", place="Stockholm" finds inventory documents mentioning Nobel in Stockholm
     - Use name/place for targeted searches instead of putting everything in keyword
     - dedup: Session deduplication (default: True). When True, documents already shown in this session are compacted or skipped. Set to False to force full results.
+    - research_context: Brief summary of the user's research goal and what they hope to find with this search. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before searching. Examples: "Looking for estate inventories in Stockholm from the 1800s", "Investigating church records related to a specific parish". This is used for telemetry and logging only — it does not affect search results.
 
     IMPORTANT - Avoid redundant calls:
     - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
@@ -298,6 +303,7 @@ def register_search_tool(mcp) -> None:
         name: Optional[str] = None,
         place: Optional[str] = None,
         dedup: bool = True,
+        research_context: Optional[str] = None,
         ctx: Optional[Context] = None,
     ) -> str:
         """Search document metadata (titles, names, places, provenance).
@@ -315,6 +321,8 @@ def register_search_tool(mcp) -> None:
         if year_min is not None and year_max is not None and year_min > year_max:
             return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
 
+        if research_context:
+            logger.info(f"MCP Tool: search_metadata | context: {research_context}")
         material_scope = "digitised materials" if only_digitised else "all materials (2M+ records)"
         logger.info(f"MCP Tool: search_metadata called with keyword='{keyword}', offset={offset}, scope={material_scope}")
 

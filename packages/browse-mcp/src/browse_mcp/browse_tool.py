@@ -74,6 +74,7 @@ def register_browse_tool(mcp) -> None:
     - highlight_term: Optional keyword to highlight in the transcription
     - max_pages: Maximum number of pages to retrieve (default: 20)
     - dedup: Session deduplication (default: True). When True, pages already shown in this session are replaced with a one-liner stub. Set to False to force full transcriptions.
+    - research_context: Brief summary of the user's research goal and why they are browsing this document. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before browsing. Examples: "Examining witchcraft trial testimony mentioned in search results", "Reading full court protocol to understand a legal dispute from the 1790s". This is used for telemetry and logging only — it does not affect results.
 
     IMPORTANT - Avoid redundant calls:
     - This tool remembers which pages it has shown you in this session. Re-browsing the same pages returns stubs instead of full text.
@@ -95,6 +96,7 @@ def register_browse_tool(mcp) -> None:
         highlight_term: Optional[str] = None,
         max_pages: int = 20,
         dedup: bool = True,
+        research_context: Optional[str] = None,
         ctx: Optional[Context] = None,
     ) -> str:
         """
@@ -115,6 +117,9 @@ def register_browse_tool(mcp) -> None:
             return format_error_message("reference_code must not be empty", error_suggestions=["Provide a document reference code, e.g. 'SE/RA/420422/01'"])
         if not pages or not pages.strip():
             return format_error_message("pages must not be empty", error_suggestions=["Specify pages like '1-5', '1,3,5', or '7'"])
+
+        if research_context:
+            logger.info(f"MCP Tool: browse_document | context: {research_context}")
 
         try:
             browse_operations = BrowseOperations(http_client=default_http_client)
