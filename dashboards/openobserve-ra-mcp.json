@@ -1,0 +1,544 @@
+{
+  "version": 2,
+  "dashboardId": "ra_mcp_7340282901",
+  "title": "ra-mcp — Riksarkivet MCP Server",
+  "description": "Observability for the ra-mcp MCP server. Metrics via OpenTelemetry OTLP. Counter panels use increase() so Y-axis shows actual counts per time bucket (not tiny per-second rates). NOTE: Metric names use OTel-to-Prometheus mapping (dots to underscores). If queries return no data, check OpenObserve Metrics explorer for actual stored names — counters may need a _total suffix.",
+  "role": "",
+  "owner": "",
+  "created": "2026-02-10T00:00:00.000Z",
+  "panels": [
+    {
+      "id": "Panel_ID0110",
+      "type": "area",
+      "title": "Upstream API Calls",
+      "description": "Total HTTP requests the MCP server made to Riksarkivet's APIs (Search API, ALTO XML, IIIF, OAI-PMH) in each time bucket. Y-axis: number of requests. A value of 12 means 12 HTTP calls were made in that time window.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_http_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "requests",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 0, "w": 4, "h": 5, "i": 1}
+    },
+    {
+      "id": "Panel_ID0210",
+      "type": "area",
+      "title": "Upstream API Errors",
+      "description": "Number of failed HTTP calls to Riksarkivet's APIs per time bucket (timeouts, connection refused, 4xx/5xx). Y-axis: error count. A spike means the upstream APIs are having issues.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_http_errors[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_errors",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "errors",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 4, "y": 0, "w": 4, "h": 5, "i": 2}
+    },
+    {
+      "id": "Panel_ID0310",
+      "type": "area",
+      "title": "MCP Tool: Search Calls",
+      "description": "Number of times LLM clients called the search_transcribed or search_metadata MCP tools per time bucket. Y-axis: call count. Each call = one user or agent searching the archive. A value of 5 means 5 searches happened in that window.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_search_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_search_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "searches",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 8, "y": 0, "w": 4, "h": 5, "i": 3}
+    },
+    {
+      "id": "Panel_ID0410",
+      "type": "area",
+      "title": "MCP Tool: Browse Calls",
+      "description": "Number of times LLM clients called the browse_document MCP tool per time bucket. Y-axis: call count. Each call = one request to view document page transcriptions.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_browse_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_browse_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "browses",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 5, "w": 4, "h": 5, "i": 4}
+    },
+    {
+      "id": "Panel_ID0510",
+      "type": "area",
+      "title": "Upstream API Retries",
+      "description": "Number of automatic HTTP retry attempts per time bucket. Y-axis: retry count. High values indicate flaky upstream connections or rate limiting by Riksarkivet's APIs.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_http_retries[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_retries",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "retries",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 4, "y": 5, "w": 4, "h": 5, "i": 5}
+    },
+    {
+      "id": "Panel_ID0610",
+      "type": "area",
+      "title": "Blank Pages Found",
+      "description": "Number of digitised pages that turned out blank (cover pages, empty pages) per time bucket. Y-axis: page count. Normal for document starts/ends — only concerning if it's the majority of browsed pages.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(increase(ra_mcp_browse_empty_pages[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_browse_empty_pages",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "empty pages",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 8, "y": 5, "w": 4, "h": 5, "i": 6}
+    },
+    {
+      "id": "Panel_ID0710",
+      "type": "line",
+      "title": "Search Tool Usage: Transcribed vs Metadata",
+      "description": "Search tool calls broken down by type per time bucket. 'transcribed' = full-text search in AI-transcribed document pages. 'metadata' = search in document titles, names, and places. Y-axis: call count per type. Shows which search tool LLM clients prefer.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(search_type) (increase(ra_mcp_search_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_search_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "{search_type}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 10, "w": 6, "h": 7, "i": 7}
+    },
+    {
+      "id": "Panel_ID0810",
+      "type": "line",
+      "title": "Search Outcomes: Success vs Error",
+      "description": "Did search tool calls succeed or fail? 'success' = results returned to the LLM client. 'error' = the search operation failed (upstream API down, timeout, parse error). Y-axis: count per outcome. Errors here mean users aren't getting search results.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(search_status) (increase(ra_mcp_search_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_search_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "{search_status}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 6, "y": 10, "w": 6, "h": 7, "i": 8}
+    },
+    {
+      "id": "Panel_ID0910",
+      "type": "line",
+      "title": "Page Transcription Fetches (ALTO XML)",
+      "description": "Outcome of fetching page transcriptions from Riksarkivet's ALTO XML service per time bucket. 'success' = got text. 'empty' = page exists but has no text (blank page). 'not_found' = page not digitised. 'parse_error' = XML was malformed. Y-axis: fetch count per outcome.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(alto_result) (increase(ra_mcp_alto_fetches[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_alto_fetches",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "{alto_result}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 17, "w": 6, "h": 7, "i": 9}
+    },
+    {
+      "id": "Panel_ID1010",
+      "type": "line",
+      "title": "Browse & Metadata Fetch Outcomes",
+      "description": "Two metrics combined. Browse: did the browse_document operation succeed or fail? OAI-PMH: did fetching document metadata (title, dates, description) from Riksarkivet's OAI-PMH service succeed? Y-axis: count per outcome.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(browse_status) (increase(ra_mcp_browse_requests[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_browse_requests",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "browse:{browse_status}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        },
+        {
+          "query": "sum by(oai_pmh_result) (increase(ra_mcp_oai_pmh_fetches[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_oai_pmh_fetches",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "oai-pmh:{oai_pmh_result}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 6, "y": 17, "w": 6, "h": 7, "i": 10}
+    },
+    {
+      "id": "Panel_ID1110",
+      "type": "line",
+      "title": "Upstream API Latency (seconds)",
+      "description": "How long HTTP calls to Riksarkivet's APIs take. p50 = typical request (half are faster). p95 = slow requests (only 5% are slower). p99 = worst case. If p95 climbs above 5s, users will notice delays. Y-axis: response time in seconds.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "unit": "seconds",
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "histogram_quantile(0.5, sum(rate(ra_mcp_http_request_duration_bucket[5m])) by (le))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_request_duration",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "p50 (typical)",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        },
+        {
+          "query": "histogram_quantile(0.95, sum(rate(ra_mcp_http_request_duration_bucket[5m])) by (le))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_request_duration",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "p95 (slow)",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        },
+        {
+          "query": "histogram_quantile(0.99, sum(rate(ra_mcp_http_request_duration_bucket[5m])) by (le))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_request_duration",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "p99 (worst)",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 24, "w": 6, "h": 7, "i": 11}
+    },
+    {
+      "id": "Panel_ID1210",
+      "type": "line",
+      "title": "Upstream API Response Size (bytes)",
+      "description": "How large the HTTP responses are from Riksarkivet's APIs. Avg = typical payload size. p95 = large responses (full ALTO XML pages, big search result sets). Y-axis: bytes. Useful for estimating bandwidth and spotting unexpectedly large payloads.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "unit": "bytes",
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum(rate(ra_mcp_http_response_size_sum[5m])) / sum(rate(ra_mcp_http_response_size_count[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_response_size",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "avg",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        },
+        {
+          "query": "histogram_quantile(0.95, sum(rate(ra_mcp_http_response_size_bucket[5m])) by (le))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_response_size",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "p95",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 6, "y": 24, "w": 6, "h": 7, "i": 12}
+    },
+    {
+      "id": "Panel_ID1310",
+      "type": "line",
+      "title": "Upstream API Errors Breakdown",
+      "description": "What kind of errors occur when calling Riksarkivet's APIs? Each line = one error type. TimeoutError = API too slow. HTTPError = got 4xx/5xx status. URLError = DNS or connection failure. Y-axis: error count per type.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(error_type) (increase(ra_mcp_http_errors[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_errors",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "{error_type}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 0, "y": 31, "w": 6, "h": 7, "i": 13}
+    },
+    {
+      "id": "Panel_ID1410",
+      "type": "line",
+      "title": "Upstream API Retries Breakdown",
+      "description": "Why is the server retrying HTTP calls? Each line = one retry reason. '429' = rate limited by Riksarkivet. '503' = upstream service unavailable. 'TimeoutError' = request timed out. Y-axis: retry count per reason.",
+      "config": {
+        "show_legends": true,
+        "legends_position": null,
+        "base_map": {"type": "osm"},
+        "map_view": {"zoom": 1, "lat": 0, "lng": 0}
+      },
+      "queryType": "promql",
+      "queries": [
+        {
+          "query": "sum by(retry_reason) (increase(ra_mcp_http_retries[5m]))",
+          "customQuery": true,
+          "fields": {
+            "stream": "ra_mcp_http_retries",
+            "stream_type": "metrics",
+            "x": [],
+            "y": [],
+            "z": [],
+            "filter": []
+          },
+          "config": {
+            "promql_legend": "{retry_reason}",
+            "layer_type": "scatter",
+            "weight_fixed": 1
+          }
+        }
+      ],
+      "layout": {"x": 6, "y": 31, "w": 6, "h": 7, "i": 14}
+    }
+  ],
+  "variables": null
+}
