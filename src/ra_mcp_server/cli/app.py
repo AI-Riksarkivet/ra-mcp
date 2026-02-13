@@ -3,13 +3,14 @@ Main CLI entry point for ra-mcp.
 """
 
 import os
-from typing import Optional, Annotated
+from typing import Annotated
 
 import typer
 from rich.console import Console
 
-from search_cli import search_app
 from browse_cli import browse_app
+from search_cli import search_app
+
 
 console = Console()
 
@@ -51,13 +52,13 @@ for command in browse_app.registered_commands:
 @app.command()
 def serve(
     port: Annotated[
-        Optional[int],
+        int | None,
         typer.Option(help="Port for HTTP/SSE transport (enables HTTP mode)"),
     ] = None,
     host: Annotated[str, typer.Option(help="Host for HTTP transport")] = "localhost",
     log: Annotated[bool, typer.Option("--log", help="Enable API call logging to ra_mcp_api.log")] = False,
     modules: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(help="Comma-separated list of modules to enable (e.g., search,browse,guide)"),
     ] = None,
     list_modules: Annotated[
@@ -77,7 +78,7 @@ def serve(
         ra serve --list-modules               # List available modules
         ra serve --port 8000 --log            # HTTP server with API logging
     """
-    from ..server import run_server, AVAILABLE_MODULES
+    from ..server import AVAILABLE_MODULES, run_server
 
     # Handle --list-modules
     if list_modules:

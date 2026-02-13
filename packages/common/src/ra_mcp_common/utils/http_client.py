@@ -13,14 +13,13 @@ import logging
 import os
 import sys
 import time
-from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.error import URLError, HTTPError
-from typing import Dict, Optional, Union
+from urllib.request import Request, urlopen
 
 from opentelemetry.trace import SpanKind, StatusCode
 
-from ra_mcp_common.telemetry import get_tracer, get_meter
+from ra_mcp_common.telemetry import get_meter, get_tracer
 
 
 logger = logging.getLogger(__name__)
@@ -117,10 +116,10 @@ class HTTPClient:
     def get_json(
         self,
         url: str,
-        params: Optional[Dict[str, Union[str, int]]] = None,
+        params: dict[str, str | int] | None = None,
         timeout: int = 30,
-        headers: Optional[Dict[str, str]] = None,
-    ) -> Dict:
+        headers: dict[str, str] | None = None,
+    ) -> dict:
         """
         Make a GET request and return JSON response.
 
@@ -245,9 +244,9 @@ class HTTPClient:
     def get_xml(
         self,
         url: str,
-        params: Optional[Dict[str, Union[str, int]]] = None,
+        params: dict[str, str | int] | None = None,
         timeout: int = 30,
-        headers: Optional[Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
     ) -> bytes:
         """
         Make a GET request and return XML response as bytes.
@@ -332,7 +331,7 @@ class HTTPClient:
                 else:
                     raise Exception(f"URL Error: {e.reason}") from e
 
-    def get_content(self, url: str, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> Optional[bytes]:
+    def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
         """
         Make a GET request and return raw content.
         Returns None on 404 or errors.
@@ -400,7 +399,7 @@ class HTTPClient:
                 return None
             except Exception as e:
                 duration = time.perf_counter() - start_time
-                self.logger.error(f"GET {url} - ERROR: {str(e)}")
+                self.logger.error(f"GET {url} - ERROR: {e!s}")
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
                 self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": type(e).__name__})

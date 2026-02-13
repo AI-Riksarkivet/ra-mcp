@@ -4,7 +4,7 @@ Plain text formatter for MCP/LLM output without any Rich markup.
 
 import logging
 import re
-from typing import List
+
 
 logger = logging.getLogger("ra_mcp.browse_mcp.formatter")
 
@@ -18,8 +18,8 @@ class PlainTextFormatter:
 
     def format_table(
         self,
-        column_headers: List[str],
-        table_rows: List[List[str]],
+        column_headers: list[str],
+        table_rows: list[list[str]],
         table_title: str = "",
     ) -> str:
         """
@@ -39,7 +39,7 @@ class PlainTextFormatter:
             formatted_lines.append("")
 
         # Calculate column widths
-        all_table_rows = [column_headers] + table_rows
+        all_table_rows = [column_headers, *table_rows]
         column_widths = [max(len(str(row[column_index])) for row in all_table_rows) for column_index in range(len(column_headers))]
 
         # Format header
@@ -165,7 +165,7 @@ class PlainTextFormatter:
             lines.append(f"Found {document_display} volumes matching metadata")
         lines.append("")
 
-        for idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
+        for _idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
             # For transcribed search, skip documents without snippets
             # For metadata search, show all documents
             has_snippets = document.transcribed_text and document.transcribed_text.snippets
@@ -223,7 +223,7 @@ class PlainTextFormatter:
             # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
                 # Extract page numbers from snippets
-                page_numbers = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
+                page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
                 # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
                 # Split by underscore and take the last part (the actual page number)
                 trimmed_page_numbers = []

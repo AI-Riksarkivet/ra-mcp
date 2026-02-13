@@ -3,17 +3,16 @@ Browse operations for viewing document pages.
 Handles document browsing, page fetching, and metadata retrieval.
 """
 
-from typing import List, Optional
-
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
-from ..clients import IIIFClient, ALTOClient, OAIPMHClient
+from .. import url_generator
+from ..clients import ALTOClient, IIIFClient, OAIPMHClient
 from ..models import BrowseResult, PageContext
 from ..utils import parse_page_range
-from .. import url_generator
+
 
 _tracer = get_tracer("ra_mcp.browse_operations")
 _meter = get_meter("ra_mcp.browse_operations")
@@ -43,7 +42,7 @@ class BrowseOperations:
         self,
         reference_code: str,
         pages: str,
-        highlight_term: Optional[str] = None,
+        highlight_term: str | None = None,
         max_pages: int = 20,
     ) -> BrowseResult:
         """Browse specific pages of a document.
@@ -138,8 +137,8 @@ class BrowseOperations:
         page_specification: str,
         maximum_pages: int,
         reference_code: str,
-        highlight_keyword: Optional[str],
-    ) -> List:
+        highlight_keyword: str | None,
+    ) -> list:
         """Fetch page contexts for specified page numbers.
 
         Retrieves full page content for each specified page number,
@@ -194,8 +193,8 @@ class BrowseOperations:
         manifest_id: str,
         page_number: str,
         reference_code: str = "",
-        search_term: Optional[str] = None,
-    ) -> Optional[PageContext]:
+        search_term: str | None = None,
+    ) -> PageContext | None:
         """Get full page context for a specific page using manifest ID for ALTO URL generation.
 
         Args:

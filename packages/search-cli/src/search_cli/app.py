@@ -6,6 +6,7 @@ import typer
 
 from .search_cmd import search
 
+
 search_app = typer.Typer(
     name="search",
     help="Search transcribed historical documents from the Swedish National Archives.",

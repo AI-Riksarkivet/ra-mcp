@@ -15,6 +15,7 @@ Environment variables:
 import logging
 import os
 
+
 _initialized = False
 _providers: list = []
 
@@ -34,12 +35,12 @@ def init_telemetry() -> None:
     if _initialized or not _is_enabled():
         return
 
-    from opentelemetry import trace, metrics
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry import metrics, trace
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
     service_name = os.getenv("OTEL_SERVICE_NAME", "ra-mcp")
     resource = Resource.create({"service.name": service_name})
@@ -47,11 +48,11 @@ def init_telemetry() -> None:
     protocol = os.getenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
 
     if protocol == "http/protobuf":
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
         from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
     else:
-        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
         from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
     # Traces
     tracer_provider = TracerProvider(resource=resource)

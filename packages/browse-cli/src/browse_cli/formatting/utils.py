@@ -2,8 +2,6 @@
 Shared formatting utilities used across different formatters.
 """
 
-from typing import List
-
 
 def trim_page_number(page_number: str) -> str:
     """
@@ -18,7 +16,7 @@ def trim_page_number(page_number: str) -> str:
     return page_number.lstrip("_0") or "0"
 
 
-def trim_page_numbers(page_numbers: List[str]) -> List[str]:
+def trim_page_numbers(page_numbers: list[str]) -> list[str]:
     """
     Remove leading zeros from multiple page numbers.
 
@@ -51,7 +49,7 @@ def truncate_text(text: str, max_length: int, add_ellipsis: bool = True) -> str:
     return text[:max_length]
 
 
-def format_example_browse_command(reference_code: str, page_numbers: List[str], search_term: str = "") -> str:
+def format_example_browse_command(reference_code: str, page_numbers: list[str], search_term: str = "") -> str:
     """
     Format an example browse command for display.
 

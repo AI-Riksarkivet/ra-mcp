@@ -4,18 +4,20 @@ Creates actual Rich objects (Tables, Panels) for console display.
 """
 
 import re
-from typing import List, Union, Optional, Any
-from rich.table import Table
-from rich.panel import Panel
-from rich.console import Console, Group
+from typing import Any
 
-from ra_mcp_browse.models import PageContext, BrowseResult
-from ra_mcp_search.models import SearchResult, SearchRecord
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.table import Table
+
+from ra_mcp_browse.models import BrowseResult, PageContext
+from ra_mcp_search.models import SearchRecord, SearchResult
+
 from .utils import (
+    format_example_browse_command,
     trim_page_number,
     trim_page_numbers,
     truncate_text,
-    format_example_browse_command,
 )
 
 
@@ -25,7 +27,7 @@ class RichConsoleFormatter:
     This formatter is used by DisplayService for CLI display.
     """
 
-    def __init__(self, console: Optional[Console] = None):
+    def __init__(self, console: Console | None = None):
         """
         Initialize the Rich formatter.
 
@@ -42,8 +44,8 @@ class RichConsoleFormatter:
 
     def format_table(
         self,
-        column_headers: List[str],
-        table_rows: List[List[str]],
+        column_headers: list[str],
+        table_rows: list[list[str]],
         table_title: str = "",
     ) -> Table:
         """
@@ -121,7 +123,7 @@ class RichConsoleFormatter:
             text_content,
         )
 
-    def format_search_results(self, search_result: SearchResult, max_display: int = 20) -> Union[Table, str]:
+    def format_search_results(self, search_result: SearchResult, max_display: int = 20) -> Table | str:
         """
         Format search results as a Rich Table for CLI display.
 
@@ -143,7 +145,7 @@ class RichConsoleFormatter:
             expand=True,
         )
 
-        for idx, document in enumerate(search_result.items[:max_display]):
+        for _idx, document in enumerate(search_result.items[:max_display]):
             if not document.transcribed_text or not document.transcribed_text.snippets:
                 continue
 
@@ -154,7 +156,7 @@ class RichConsoleFormatter:
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
             # Extract unique page numbers from all snippets
-            pages = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
+            pages = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
             pages_trimmed = trim_page_numbers(pages)
             pages_str = ",".join(pages_trimmed)
 
@@ -229,7 +231,7 @@ class RichConsoleFormatter:
 
         return self.format_panel("\n".join(page_content), panel_title=panel_title, panel_border_style="green")
 
-    def format_search_summary_stats(self, snippet_count: int, records_count: int, total_hits: int, offset: int) -> List[str]:
+    def format_search_summary_stats(self, snippet_count: int, records_count: int, total_hits: int, offset: int) -> list[str]:
         """
         Format search summary statistics.
 
@@ -250,7 +252,7 @@ class RichConsoleFormatter:
 
         return lines
 
-    def format_browse_example(self, documents: List[SearchRecord], keyword: str) -> List[str]:
+    def format_browse_example(self, documents: list[SearchRecord], keyword: str) -> list[str]:
         """
         Format an example browse command.
 
@@ -279,7 +281,7 @@ class RichConsoleFormatter:
 
         # Extract page numbers from snippets
         if first_doc.transcribed_text and first_doc.transcribed_text.snippets:
-            pages = sorted(set(page.id for snippet in first_doc.transcribed_text.snippets for page in snippet.pages))
+            pages = sorted({page.id for snippet in first_doc.transcribed_text.snippets for page in snippet.pages})
         else:
             pages = []
         pages_trimmed = trim_page_numbers(pages[:5])
@@ -323,10 +325,10 @@ class RichConsoleFormatter:
     def format_browse_results(
         self,
         browse_result: BrowseResult,
-        highlight_term: Optional[str] = None,
+        highlight_term: str | None = None,
         show_links: bool = False,
         show_success_message: bool = True,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """
         Format browse results as grouped Rich panels with metadata for CLI display.
 

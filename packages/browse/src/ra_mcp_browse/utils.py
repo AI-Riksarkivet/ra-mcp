@@ -2,10 +2,8 @@
 Page range parsing utilities.
 """
 
-from typing import List, Optional
 
-
-def parse_page_range(page_range: Optional[str], total_pages: int = 1000) -> List[int]:
+def parse_page_range(page_range: str | None, total_pages: int = 1000) -> list[int]:
     """Parse page range string and return list of page numbers.
 
     Args:
@@ -60,4 +58,4 @@ def parse_page_range(page_range: Optional[str], total_pages: int = 1000) -> List
     if not pages and invalid_parts:
         raise ValueError(f"Invalid page specification: {', '.join(invalid_parts)}. Use numbers like '1-5' or '1,3,5'.")
 
-    return sorted(list(set(pages)))
+    return sorted(set(pages))

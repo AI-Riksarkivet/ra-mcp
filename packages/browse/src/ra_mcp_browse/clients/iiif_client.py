@@ -3,12 +3,12 @@ IIIF client for Riksarkivet.
 """
 
 import logging
-from typing import Dict, Optional, Union, List
 
-from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_browse.config import COLLECTION_API_BASE_URL
 from ra_mcp_browse.models import IIIFCollection, IIIFManifest
+from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+
 
 logger = logging.getLogger("ra_mcp.iiif_client")
 
@@ -21,7 +21,7 @@ class IIIFClient:
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
 
-    def explore_collection(self, pid: str, timeout: int = 30) -> Optional[Dict[str, Union[str, List[Dict[str, str]]]]]:
+    def explore_collection(self, pid: str, timeout: int = 30) -> dict[str, str | list[dict[str, str]]] | None:
         """Explore IIIF collection to get manifests (legacy dict format)."""
         collection_endpoint_url = self._build_collection_url(pid)
 
@@ -34,7 +34,7 @@ class IIIFClient:
 
         return self._build_collection_result(collection_title, available_manifests, collection_endpoint_url)
 
-    def get_collection(self, pid: str, timeout: int = 30) -> Optional[IIIFCollection]:
+    def get_collection(self, pid: str, timeout: int = 30) -> IIIFCollection | None:
         """Get IIIF collection with typed model."""
         with _tracer.start_as_current_span("IIIFClient.get_collection", attributes={"iiif.pid": pid}) as span:
             collection_endpoint_url = self._build_collection_url(pid)
@@ -59,7 +59,7 @@ class IIIFClient:
         """Build the collection API URL."""
         return f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
 
-    def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> Optional[Dict]:
+    def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> dict | None:
         """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
             return self.http_client.get_json(collection_url, timeout=timeout_seconds)
@@ -67,12 +67,12 @@ class IIIFClient:
             logger.warning("Failed to fetch IIIF collection from %s: %s", collection_url, e)
             return None
 
-    def _extract_collection_title(self, collection_data: Dict) -> str:
+    def _extract_collection_title(self, collection_data: dict) -> str:
         """Extract title from collection data."""
         collection_label = collection_data.get("label", {})
         return self._extract_iiif_label(collection_label, "Unknown Collection")
 
-    def _extract_all_manifests(self, collection_data: Dict) -> List[Dict[str, str]]:
+    def _extract_all_manifests(self, collection_data: dict) -> list[dict[str, str]]:
         """Extract all manifests from collection items."""
         extracted_manifests = []
         collection_items = collection_data.get("items", [])
@@ -84,11 +84,11 @@ class IIIFClient:
 
         return extracted_manifests
 
-    def _is_manifest_item(self, item: Dict) -> bool:
+    def _is_manifest_item(self, item: dict) -> bool:
         """Check if an item is a manifest."""
         return item.get("type") == "Manifest"
 
-    def _process_manifest_item(self, manifest_item: Dict) -> Dict[str, str]:
+    def _process_manifest_item(self, manifest_item: dict) -> dict[str, str]:
         """Process a single manifest item into structured data."""
         manifest_label = self._extract_manifest_label(manifest_item)
         manifest_endpoint_url = manifest_item.get("id", "")
@@ -100,7 +100,7 @@ class IIIFClient:
             "url": manifest_endpoint_url,
         }
 
-    def _extract_manifest_label(self, manifest_item: Dict) -> str:
+    def _extract_manifest_label(self, manifest_item: dict) -> str:
         """Extract label from manifest item."""
         item_label = manifest_item.get("label", {})
         return self._extract_iiif_label(item_label, "Untitled")
@@ -118,7 +118,7 @@ class IIIFClient:
 
         return url_segments[-1] if url_segments else ""
 
-    def _build_collection_result(self, title: str, manifests: List[Dict[str, str]], collection_url: str) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+    def _build_collection_result(self, title: str, manifests: list[dict[str, str]], collection_url: str) -> dict[str, str | list[dict[str, str]]]:
         """Build the final collection result structure."""
         return {
             "title": title,
@@ -126,7 +126,7 @@ class IIIFClient:
             "collection_url": collection_url,
         }
 
-    def _extract_iiif_label(self, label_object: Union[str, Dict, List], default_value: str = "Unknown") -> str:
+    def _extract_iiif_label(self, label_object: str | dict | list, default_value: str = "Unknown") -> str:
         """Smart IIIF label extraction supporting all language map formats."""
         if not label_object:
             return default_value
@@ -141,7 +141,7 @@ class IIIFClient:
 
         return str(label_object) if label_object else default_value
 
-    def _extract_label_from_language_map(self, language_map: Dict) -> Optional[str]:
+    def _extract_label_from_language_map(self, language_map: dict) -> str | None:
         """Extract label from IIIF language map."""
         preferred_languages = ["sv", "en", "none"]
 
@@ -157,7 +157,7 @@ class IIIFClient:
 
         return None
 
-    def _extract_value_from_language_entry(self, language_entry: Union[str, List]) -> str:
+    def _extract_value_from_language_entry(self, language_entry: str | list) -> str:
         """Extract string value from language entry."""
         if isinstance(language_entry, list) and language_entry:
             return str(language_entry[0])

@@ -4,7 +4,6 @@ Data models for Riksarkivet browse operations.
 Models for browsing document pages with full text and metadata.
 """
 
-from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -12,15 +11,15 @@ class IIIFManifest(BaseModel):
     """IIIF manifest reference."""
 
     id: str
-    label: Optional[str] = None
+    label: str | None = None
 
 
 class IIIFCollection(BaseModel):
     """IIIF collection information."""
 
     id: str
-    label: Optional[str] = None
-    manifests: List[IIIFManifest] = []
+    label: str | None = None
+    manifests: list[IIIFManifest] = []
 
 
 class PageContext(BaseModel):
@@ -47,15 +46,15 @@ class OAIPMHMetadata(BaseModel):
     """
 
     identifier: str  # Record identifier (e.g., "SE/RA/310187/1")
-    title: Optional[str] = None  # EAD unittitle
-    unitid: Optional[str] = None  # EAD unitid
-    repository: Optional[str] = None  # EAD repository name
-    nad_link: Optional[str] = None  # Link to bildvisning (dao[@xlink:role="TEXT"])
-    datestamp: Optional[str] = None  # Last modified timestamp
-    unitdate: Optional[str] = None  # EAD unitdate - date range of the document
-    description: Optional[str] = None  # EAD scopecontent - detailed description
-    iiif_manifest: Optional[str] = None  # IIIF manifest URL (dao[@xlink:role="MANIFEST"])
-    iiif_image: Optional[str] = None  # Direct IIIF image URL (dao[@xlink:role="IMAGE"])
+    title: str | None = None  # EAD unittitle
+    unitid: str | None = None  # EAD unitid
+    repository: str | None = None  # EAD repository name
+    nad_link: str | None = None  # Link to bildvisning (dao[@xlink:role="TEXT"])
+    datestamp: str | None = None  # Last modified timestamp
+    unitdate: str | None = None  # EAD unitdate - date range of the document
+    description: str | None = None  # EAD scopecontent - detailed description
+    iiif_manifest: str | None = None  # IIIF manifest URL (dao[@xlink:role="MANIFEST"])
+    iiif_image: str | None = None  # Direct IIIF image URL (dao[@xlink:role="IMAGE"])
 
 
 class BrowseResult(BaseModel):
@@ -65,8 +64,8 @@ class BrowseResult(BaseModel):
     Contains page contexts, manifest ID, and optional OAI-PMH metadata.
     """
 
-    contexts: List[PageContext]
+    contexts: list[PageContext]
     reference_code: str
     pages_requested: str
-    manifest_id: Optional[str] = None  # IIIF manifest ID (e.g., "R0001203")
-    oai_metadata: Optional[OAIPMHMetadata] = None  # Metadata from OAI-PMH API
+    manifest_id: str | None = None  # IIIF manifest ID (e.g., "R0001203")
+    oai_metadata: OAIPMHMetadata | None = None  # Metadata from OAI-PMH API

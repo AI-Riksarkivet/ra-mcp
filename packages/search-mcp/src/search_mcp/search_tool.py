@@ -5,9 +5,9 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 """
 
 import logging
-from typing import Optional
 
 from fastmcp import Context
+
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
 
@@ -150,11 +150,11 @@ def register_search_tool(mcp) -> None:
         max_snippets_per_record: int = 3,
         max_response_tokens: int = 15000,
         sort: str = "relevance",
-        year_min: Optional[int] = None,
-        year_max: Optional[int] = None,
+        year_min: int | None = None,
+        year_max: int | None = None,
         dedup: bool = True,
-        research_context: Optional[str] = None,
-        ctx: Optional[Context] = None,
+        research_context: str | None = None,
+        ctx: Context | None = None,
     ) -> str:
         """Search AI-transcribed text in digitised historical documents.
 
@@ -222,7 +222,7 @@ def register_search_tool(mcp) -> None:
             logger.error(f"✗ MCP search_transcribed failed: {type(e).__name__}: {e}", exc_info=True)
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
-                f"Search failed: {str(e)}",
+                f"Search failed: {e!s}",
                 error_suggestions=[
                     "Try a simpler search term",
                     "Check if the service is available",
@@ -298,13 +298,13 @@ def register_search_tool(mcp) -> None:
         max_results: int = 25,
         max_response_tokens: int = 15000,
         sort: str = "relevance",
-        year_min: Optional[int] = None,
-        year_max: Optional[int] = None,
-        name: Optional[str] = None,
-        place: Optional[str] = None,
+        year_min: int | None = None,
+        year_max: int | None = None,
+        name: str | None = None,
+        place: str | None = None,
         dedup: bool = True,
-        research_context: Optional[str] = None,
-        ctx: Optional[Context] = None,
+        research_context: str | None = None,
+        ctx: Context | None = None,
     ) -> str:
         """Search document metadata (titles, names, places, provenance).
 
@@ -375,7 +375,7 @@ def register_search_tool(mcp) -> None:
             logger.error(f"✗ MCP search_metadata failed: {type(e).__name__}: {e}", exc_info=True)
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
-                f"Metadata search failed: {str(e)}",
+                f"Metadata search failed: {e!s}",
                 error_suggestions=[
                     "Try a simpler search term",
                     "Check if the service is available",

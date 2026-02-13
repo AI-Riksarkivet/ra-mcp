@@ -7,13 +7,15 @@ and the CLI entry point.
 
 from importlib.metadata import version
 
+
 __version__ = version("ra-mcp")
 
-from .server import main_server, setup_server, run_server, main
+from .server import main, main_server, run_server, setup_server
+
 
 __all__ = [
-    "main_server",
-    "setup_server",
-    "run_server",
     "main",
+    "main_server",
+    "run_server",
+    "setup_server",
 ]

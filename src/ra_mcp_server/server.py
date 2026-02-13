@@ -15,21 +15,21 @@ Environment variables for debugging:
 - RA_MCP_TIMEOUT: Override default timeout in seconds (default: 60)
 """
 
+import argparse
 import atexit
 import logging
-import argparse
 import os
 import sys
-from typing import List
-from starlette.responses import FileResponse, JSONResponse
-from fastmcp import FastMCP
 
+from fastmcp import FastMCP
+from starlette.responses import FileResponse, JSONResponse
+
+from browse_mcp.mcp import browse_mcp
+from guide_mcp.mcp import guide_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
 
 # Import available modules (lazy imports handled in setup)
 from search_mcp.mcp import search_mcp
-from browse_mcp.mcp import browse_mcp
-from guide_mcp.mcp import guide_mcp
 
 
 # Registry of available modules
@@ -83,7 +83,7 @@ def setup_logging():
 logger = setup_logging()
 
 
-def build_instructions(enabled_modules: List[str]) -> str:
+def build_instructions(enabled_modules: list[str]) -> str:
     """Build dynamic instructions based on enabled modules.
 
     Args:
@@ -149,7 +149,7 @@ def build_instructions(enabled_modules: List[str]) -> str:
     """
 
 
-def create_server(enabled_modules: List[str]) -> FastMCP:
+def create_server(enabled_modules: list[str]) -> FastMCP:
     """Create a FastMCP server with dynamic instructions.
 
     Args:
@@ -166,10 +166,10 @@ def create_server(enabled_modules: List[str]) -> FastMCP:
 
 # Global server instance (configured in main)
 main_server = None
-_mounted_modules: List[str] = []
+_mounted_modules: list[str] = []
 
 
-def setup_server(server: FastMCP, enabled_modules: List[str]):
+def setup_server(server: FastMCP, enabled_modules: list[str]):
     """Setup server composition by mounting selected tool servers.
 
     Args:

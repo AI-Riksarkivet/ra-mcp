@@ -6,7 +6,8 @@ Models are designed to closely match the Search API JSON structure.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -33,8 +34,8 @@ class Provenance(BaseModel):
     """Provenance information."""
 
     caption: str
-    uri: Optional[str] = None  # URI is optional in some API responses
-    date: Optional[str] = None
+    uri: str | None = None  # URI is optional in some API responses
+    date: str | None = None
 
 
 class Metadata(BaseModel):
@@ -43,20 +44,20 @@ class Metadata(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     reference_code: str = Field(alias="referenceCode")
-    date: Optional[str] = None
-    hierarchy: Optional[List[HierarchyLevel]] = None
-    archival_institution: Optional[List[ArchivalInstitution]] = Field(None, alias="archivalInstitution")
-    provenance: Optional[List[Provenance]] = None
-    note: Optional[str] = None
-    only_digitised_materials: Optional[bool] = Field(None, alias="onlyDigitisedMaterials")
+    date: str | None = None
+    hierarchy: list[HierarchyLevel] | None = None
+    archival_institution: list[ArchivalInstitution] | None = Field(None, alias="archivalInstitution")
+    provenance: list[Provenance] | None = None
+    note: str | None = None
+    only_digitised_materials: bool | None = Field(None, alias="onlyDigitisedMaterials")
 
 
 class PageInfo(BaseModel):
     """Page information from snippet."""
 
     id: str
-    width: Optional[int] = None
-    height: Optional[int] = None
+    width: int | None = None
+    height: int | None = None
 
 
 class Snippet(BaseModel):
@@ -64,16 +65,16 @@ class Snippet(BaseModel):
 
     text: str
     score: float
-    pages: List[PageInfo]
-    regions: Optional[List[Any]] = None
-    highlights: Optional[List[Any]] = None
+    pages: list[PageInfo]
+    regions: list[Any] | None = None
+    highlights: list[Any] | None = None
 
 
 class TranscribedText(BaseModel):
     """Transcribed text information."""
 
     num_total: int = Field(alias="numTotal")
-    snippets: List[Snippet]
+    snippets: list[Snippet]
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -81,13 +82,13 @@ class TranscribedText(BaseModel):
 class DocumentLinks(BaseModel):
     """Links from API _links field."""
 
-    self: Optional[str] = None
-    html: Optional[str] = None
-    image: Optional[List[str]] = None
-    rdf_xml: Optional[str] = Field(None, alias="rdf/xml")
-    json_ld: Optional[str] = Field(None, alias="json-ld")
-    ead_ra: Optional[str] = Field(None, alias="ead/ra")
-    ead_ape: Optional[str] = Field(None, alias="ead/ape")
+    self: str | None = None
+    html: str | None = None
+    image: list[str] | None = None
+    rdf_xml: str | None = Field(None, alias="rdf/xml")
+    json_ld: str | None = Field(None, alias="json-ld")
+    ead_ra: str | None = Field(None, alias="ead/ra")
+    ead_ape: str | None = Field(None, alias="ead/ape")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -98,14 +99,14 @@ class SearchRecord(BaseModel):
     id: str
     object_type: str = Field(alias="objectType")
     type: str
-    caption: Optional[str] = None
+    caption: str | None = None
     metadata: Metadata
-    transcribed_text: Optional[TranscribedText] = Field(None, alias="transcribedText")
-    links: Optional[DocumentLinks] = Field(None, alias="_links")
+    transcribed_text: TranscribedText | None = Field(None, alias="transcribedText")
+    links: DocumentLinks | None = Field(None, alias="_links")
 
     model_config = ConfigDict(populate_by_name=True)
 
-    def get_manifest_url(self) -> Optional[str]:
+    def get_manifest_url(self) -> str | None:
         """Get manifest URL from links."""
         if self.links and self.links.image:
             return self.links.image[0] if self.links.image else None
@@ -140,12 +141,12 @@ class RecordsResponse(BaseModel):
     Maps to the full API response structure from /api/records.
     """
 
-    items: List[SearchRecord]
+    items: list[SearchRecord]
     total_hits: int = Field(alias="totalHits")
-    hits: Optional[int] = None  # Number of records returned in this response
-    offset: Optional[int] = None  # Pagination offset from query
-    facets: Optional[List[Dict[str, Any]]] = None  # Faceted search results (list of facet objects)
-    links: Optional[Dict[str, str]] = Field(None, alias="_links")  # HATEOAS links
+    hits: int | None = None  # Number of records returned in this response
+    offset: int | None = None  # Pagination offset from query
+    facets: list[dict[str, Any]] | None = None  # Faceted search results (list of facet objects)
+    links: dict[str, str] | None = Field(None, alias="_links")  # HATEOAS links
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -166,10 +167,10 @@ class SearchResult(BaseModel):
     transcribed_text: str  # Search keyword (API parameter name)
     max: int  # Maximum results per page (API parameter name)
     offset: int  # Pagination offset (API parameter name)
-    max_snippets_per_record: Optional[int] = None  # Client-side snippet limiting (not an API parameter)
+    max_snippets_per_record: int | None = None  # Client-side snippet limiting (not an API parameter)
 
     @property
-    def items(self) -> List[SearchRecord]:
+    def items(self) -> list[SearchRecord]:
         """Get records from response."""
         return self.response.items
 

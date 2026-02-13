@@ -72,11 +72,30 @@ ra-mcp-browse-cli = { workspace = true }
 ra-mcp-browse-mcp = { workspace = true }
 ra-mcp-guide-mcp = { workspace = true }
 
-[tool.ruff.lint]
-ignore = []
-
 [tool.ruff]
 line-length = 160
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes (unused imports, undefined names)
+    "W",      # pycodestyle warnings
+    "I",      # isort (import sorting)
+    "UP",     # pyupgrade (modern Python syntax)
+    "B",      # bugbear (common pitfalls)
+    "S",      # bandit (security)
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "RUF",    # ruff-specific
+]
+ignore = [
+    "E501",   # line-too-long — MCP tool docstrings are intentionally long for LLM context
+    "S104",   # bind-all-interfaces — intentional for server
+    "S310",   # url-open — http_client's purpose is to open URLs
+    "S110",   # try-except-pass — acceptable in shutdown/cleanup code
+    "S314",   # xml-parse — XML from Riksarkivet APIs is trusted; defusedxml is a separate decision
+    "SIM108", # ternary — if/else blocks are often more readable
+]
 
 [tool.ruff.format]
 quote-style = "double"

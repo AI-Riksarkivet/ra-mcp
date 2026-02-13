@@ -5,18 +5,19 @@ Provides the browse_document tool for viewing full page transcriptions.
 """
 
 import logging
-from typing import Optional, List
 
 from fastmcp import Context
-from ra_mcp_common.utils.http_client import default_http_client
+
 from ra_mcp_browse.operations import BrowseOperations
+from ra_mcp_common.utils.http_client import default_http_client
 
 from .formatter import PlainTextFormatter
+
 
 logger = logging.getLogger(__name__)
 
 
-def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+def format_error_message(error_message: str, error_suggestions: list[str] | None = None) -> str:
     """Format an error message with optional suggestions."""
     formatted_lines = [f"⚠️ **Error**: {error_message}"]
     if error_suggestions:
@@ -93,11 +94,11 @@ def register_browse_tool(mcp) -> None:
     async def browse_document(
         reference_code: str,
         pages: str,
-        highlight_term: Optional[str] = None,
+        highlight_term: str | None = None,
         max_pages: int = 20,
         dedup: bool = True,
-        research_context: Optional[str] = None,
-        ctx: Optional[Context] = None,
+        research_context: str | None = None,
+        ctx: Context | None = None,
     ) -> str:
         """
         Browse specific pages of a document by reference code.
@@ -168,7 +169,7 @@ def register_browse_tool(mcp) -> None:
         except Exception as e:
             logger.error("MCP browse_document failed: %s: %s", type(e).__name__, e, exc_info=True)
             return format_error_message(
-                f"Browse failed: {str(e)}",
+                f"Browse failed: {e!s}",
                 error_suggestions=[
                     "Check the reference code format",
                     "Verify page numbers are valid",

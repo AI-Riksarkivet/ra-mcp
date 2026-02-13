@@ -4,9 +4,9 @@ URL generation utilities for Riksarkivet resources.
 
 import logging
 import urllib.parse
-from typing import Optional
 
 from .config import ALTO_BASE_URL, BILDVISNING_BASE_URL, IIIF_IMAGE_BASE_URL
+
 
 logger = logging.getLogger("ra_mcp.url_generator")
 
@@ -39,7 +39,7 @@ def format_page_number(page_number: str) -> str:
     return clean_page.zfill(5)
 
 
-def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
+def alto_url(manifest_id: str, page_number: str) -> str | None:
     """Generate ALTO URL from manifest ID and page number.
 
     Args:
@@ -61,7 +61,7 @@ def alto_url(manifest_id: str, page_number: str) -> Optional[str]:
         return None
 
 
-def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
+def iiif_image_url(manifest_id: str, page_number: str) -> str | None:
     """Generate IIIF image URL from manifest ID and page number.
 
     Args:
@@ -80,7 +80,7 @@ def iiif_image_url(manifest_id: str, page_number: str) -> Optional[str]:
         return None
 
 
-def bildvisning_url(manifest_id: str, page_number: str, search_term: Optional[str] = None) -> Optional[str]:
+def bildvisning_url(manifest_id: str, page_number: str, search_term: str | None = None) -> str | None:
     """Generate bildvisning URL with optional search highlighting.
 
     Args:

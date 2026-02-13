@@ -2,7 +2,7 @@
 Search command for CLI.
 """
 
-from typing import Optional, Annotated
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -10,10 +10,11 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
-from ra_mcp_search.config import DEFAULT_MAX_RESULTS, DEFAULT_MAX_DISPLAY
+from ra_mcp_search.config import DEFAULT_MAX_DISPLAY, DEFAULT_MAX_RESULTS
 from ra_mcp_search.operations import SearchOperations
 
 from .formatting import RichConsoleFormatter
+
 
 _tracer = get_tracer("ra_mcp.cli.search")
 
@@ -33,7 +34,7 @@ def search(
     max_results: Annotated[int, typer.Option("--max", help="Maximum number of records to fetch from API (pagination size)")] = DEFAULT_MAX_RESULTS,
     max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of records to display in output")] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
-        Optional[int],
+        int | None,
         typer.Option(
             "--max-hits-per-vol",
             help="Limit hits per volume (useful for broad searches across many volumes). Default: 3 hits per volume",
@@ -133,4 +134,4 @@ def search(
             raise
         except Exception as error:
             console.print(f"[red]Search failed: {error}[/red]")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from error

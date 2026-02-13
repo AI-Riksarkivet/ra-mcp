@@ -4,7 +4,7 @@ Plain text formatter for MCP/LLM output without any Rich markup.
 
 import logging
 import re
-from typing import List, Optional
+
 
 logger = logging.getLogger("ra_mcp.search_mcp.formatter")
 
@@ -31,8 +31,8 @@ class PlainTextFormatter:
 
     def format_table(
         self,
-        column_headers: List[str],
-        table_rows: List[List[str]],
+        column_headers: list[str],
+        table_rows: list[list[str]],
         table_title: str = "",
     ) -> str:
         """
@@ -52,7 +52,7 @@ class PlainTextFormatter:
             formatted_lines.append("")
 
         # Calculate column widths
-        all_table_rows = [column_headers] + table_rows
+        all_table_rows = [column_headers, *table_rows]
         column_widths = [max(len(str(row[column_index])) for row in all_table_rows) for column_index in range(len(column_headers))]
 
         # Format header
@@ -131,7 +131,7 @@ class PlainTextFormatter:
             logger.warning("Failed to convert IIIF manifest URL to bildvisning: %s: %s", iiif_manifest_url, e)
             return ""
 
-    def format_error_message(self, error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+    def format_error_message(self, error_message: str, error_suggestions: list[str] | None = None) -> str:
         """
         Format an error message with optional suggestions.
 
@@ -167,7 +167,7 @@ class PlainTextFormatter:
         self,
         search_result,
         maximum_documents_to_display: int = 20,
-        seen_pages: Optional[dict[str, list[int]]] = None,
+        seen_pages: dict[str, list[int]] | None = None,
     ) -> str:
         """
         Format search results as plain text with emojis for MCP/LLM consumption.
@@ -228,9 +228,7 @@ class PlainTextFormatter:
 
                 if has_snippets:
                     # Filter to snippets with at least one unseen page
-                    new_snippets = [
-                        s for s in document.transcribed_text.snippets if any(_page_id_to_number(p.id) not in prev_page_nums for p in s.pages)
-                    ]
+                    new_snippets = [s for s in document.transcribed_text.snippets if any(_page_id_to_number(p.id) not in prev_page_nums for p in s.pages)]
                     if not new_snippets:
                         skipped_count += 1
                         continue
@@ -303,7 +301,7 @@ class PlainTextFormatter:
             # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
                 # Extract page numbers from snippets using shared helper
-                page_numbers = sorted(set(page.id for snippet in document.transcribed_text.snippets for page in snippet.pages))
+                page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
                 trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
 
                 doc_snippet_count = len(document.transcribed_text.snippets)
@@ -345,7 +343,7 @@ class PlainTextFormatter:
 
     def _format_compact_snippets(self, lines: list[str], snippets: list, keyword: str) -> None:
         """Render snippets compactly for a previously-seen document (new pages only)."""
-        page_numbers = sorted(set(page.id for snippet in snippets for page in snippet.pages))
+        page_numbers = sorted({page.id for snippet in snippets for page in snippet.pages})
         trimmed = [str(_page_id_to_number(pid)) for pid in page_numbers]
         lines.append(f"📖 New pages: {', '.join(trimmed)}")
         for snippet in snippets[:3]:

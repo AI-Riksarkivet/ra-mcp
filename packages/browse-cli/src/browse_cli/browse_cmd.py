@@ -2,17 +2,18 @@
 Browse command for CLI.
 """
 
-from typing import Optional, Annotated
+from typing import Annotated
 
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from ra_mcp_browse.operations import BrowseOperations
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
-from ra_mcp_browse.operations import BrowseOperations
 
 from .formatting import RichConsoleFormatter
+
 
 _tracer = get_tracer("ra_mcp.cli.browse")
 
@@ -28,14 +29,14 @@ def _print_renderables(renderables, console: Console):
 def browse(
     reference_code: Annotated[str, typer.Argument(help="Document reference code from search results (e.g., 'SE/RA/420422/01')")],
     pages: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(help='Page specification: single ("5"), range ("1-10"), or list ("5,7,9"). Alias: --page'),
     ] = None,
     page: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(help='Page specification: single ("5"), range ("1-10"), or list ("5,7,9"). Shorthand for --pages'),
     ] = None,
-    search_term: Annotated[Optional[str], typer.Option("--search-term", help="Highlight keyword in transcribed text (case-insensitive)")] = None,
+    search_term: Annotated[str | None, typer.Option("--search-term", help="Highlight keyword in transcribed text (case-insensitive)")] = None,
     max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of pages to display in output")] = 20,
     log: Annotated[bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")] = False,
     show_links: Annotated[
@@ -107,4 +108,4 @@ def browse(
             raise
         except Exception as error:
             console.print(f"[red]Browse failed: {error}[/red]")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from error

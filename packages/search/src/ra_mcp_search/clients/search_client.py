@@ -6,15 +6,14 @@ with direct Pydantic response parsing.
 """
 
 import logging
-from typing import Optional
 
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
-
-from ra_mcp_search.config import SEARCH_API_BASE_URL, REQUEST_TIMEOUT, DEFAULT_MAX_RESULTS
+from ra_mcp_search.config import DEFAULT_MAX_RESULTS, REQUEST_TIMEOUT, SEARCH_API_BASE_URL
 from ra_mcp_search.models import RecordsResponse
+
 
 _tracer = get_tracer("ra_mcp.search_api")
 
@@ -33,17 +32,17 @@ class SearchAPI:
 
     def search(
         self,
-        text: Optional[str] = None,
-        transcribed_text: Optional[str] = None,
+        text: str | None = None,
+        transcribed_text: str | None = None,
         only_digitised_materials: bool = True,
         max: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
-        max_snippets_per_record: Optional[int] = None,
+        max_snippets_per_record: int | None = None,
         sort: str = "relevance",
-        year_min: Optional[int] = None,
-        year_max: Optional[int] = None,
-        name: Optional[str] = None,
-        place: Optional[str] = None,
+        year_min: int | None = None,
+        year_max: int | None = None,
+        name: str | None = None,
+        place: str | None = None,
     ) -> RecordsResponse:
         """
         Search for records using various search parameters.
@@ -143,7 +142,7 @@ class SearchAPI:
         transcribed_text: str,
         max: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
-        max_snippets_per_record: Optional[int] = None,
+        max_snippets_per_record: int | None = None,
     ) -> RecordsResponse:
         """
         Search for keyword in transcribed materials (convenience method).

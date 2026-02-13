@@ -5,12 +5,11 @@ Provides MCP resources for accessing historical documentation about Swedish arch
 """
 
 import os
-from typing import List, Optional
 
 from fastmcp import FastMCP
 
 
-def format_error_message(error_message: str, error_suggestions: Optional[List[str]] = None) -> str:
+def format_error_message(error_message: str, error_suggestions: list[str] | None = None) -> str:
     """Format an error message with optional suggestions."""
     formatted_lines = [f"⚠️ **Error**: {error_message}"]
     if error_suggestions:
@@ -68,7 +67,7 @@ def get_table_of_contents() -> str:
         )
     except Exception as e:
         return format_error_message(
-            f"Failed to load table of contents: {str(e)}",
+            f"Failed to load table of contents: {e!s}",
             error_suggestions=[
                 "Check file permissions",
                 "Verify file encoding is UTF-8",
@@ -99,7 +98,7 @@ def get_guide_content(filename: str) -> str:
 
     except Exception as e:
         return format_error_message(
-            f"Failed to load guide content '{filename}': {str(e)}",
+            f"Failed to load guide content '{filename}': {e!s}",
             error_suggestions=[
                 "Check file permissions",
                 "Verify file encoding is UTF-8",
@@ -164,7 +163,7 @@ def _load_markdown_file(filename):
 
     for markdown_path in possible_paths:
         if os.path.exists(markdown_path):
-            with open(markdown_path, "r", encoding="utf-8") as f:
+            with open(markdown_path, encoding="utf-8") as f:
                 return f.read()
 
     # Default path for error message

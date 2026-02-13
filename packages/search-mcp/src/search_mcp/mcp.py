@@ -36,7 +36,7 @@ search_mcp = FastMCP(
 
     SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
     1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide below when searching) and check some metadata with search_metadata
-    2. Continue pagination with increasing offsets (50, 100, 150...) if nothing interesting pop up but prioritze transribed materials 
+    2. Continue pagination with increasing offsets (50, 100, 150...) if nothing interesting pop up but prioritze transribed materials
     3. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
        - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
        - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)

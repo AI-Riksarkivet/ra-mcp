@@ -8,13 +8,13 @@ storing layout and text information of scanned documents.
 
 import logging
 import xml.etree.ElementTree as ET
-from typing import Optional
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_browse.config import ALTO_NAMESPACES
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+
 
 logger = logging.getLogger("ra_mcp.alto_client")
 
@@ -49,7 +49,7 @@ class ALTOClient:
         """
         self.http_client = http_client
 
-    def fetch_content(self, alto_url: str, timeout: int = 10) -> Optional[str]:
+    def fetch_content(self, alto_url: str, timeout: int = 10) -> str | None:
         """
         Fetch and parse an ALTO XML file to extract full text content.
 
@@ -104,8 +104,8 @@ class ALTOClient:
         self,
         xml_root: ET.Element,
         xpath: str,
-        namespaces: Optional[dict] = None,
-    ) -> Optional[str]:
+        namespaces: dict | None = None,
+    ) -> str | None:
         """
         Extract text content from XML using XPath pattern.
 
@@ -120,7 +120,7 @@ class ALTOClient:
         text_segments = [element.get("CONTENT", "") for element in xml_root.findall(xpath, namespaces or {}) if element.get("CONTENT", "")]
         return " ".join(text_segments).strip() or None if text_segments else None
 
-    def _extract_text_from_alto(self, xml_root: ET.Element) -> Optional[str]:
+    def _extract_text_from_alto(self, xml_root: ET.Element) -> str | None:
         """
         Extract and combine all text content from ALTO XML root element.
 

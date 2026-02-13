@@ -3,15 +3,15 @@ OAI-PMH client for Riksarkivet.
 """
 
 import logging
-from typing import Dict, Optional, Union, List
 import xml.etree.ElementTree as ET
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_common.telemetry import get_meter, get_tracer
-from ra_mcp_browse.config import OAI_BASE_URL, NAMESPACES
+from ra_mcp_browse.config import NAMESPACES, OAI_BASE_URL
 from ra_mcp_browse.models import OAIPMHMetadata
+from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+
 
 logger = logging.getLogger("ra_mcp.oai_pmh_client")
 
@@ -27,7 +27,7 @@ class OAIPMHClient:
         self.http_client = http_client
         self.base_url = base_url
 
-    def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> Dict[str, Union[str, List, Dict]]:
+    def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> dict[str, str | list | dict]:
         """Get a specific record with full metadata (raw dict format)."""
         with _tracer.start_as_current_span("OAIPMHClient.get_record", attributes={"oai.identifier": identifier}):
             oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
@@ -43,14 +43,14 @@ class OAIPMHClient:
 
             return extracted_record_data
 
-    def get_metadata(self, identifier: str) -> Optional[OAIPMHMetadata]:
+    def get_metadata(self, identifier: str) -> OAIPMHMetadata | None:
         """Get record metadata as typed OAIPMHMetadata model."""
         with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
             try:
                 record = self.get_record(identifier, "oai_ape_ead")
 
                 # Helper to safely extract string values
-                def get_str(key: str, default: Optional[str] = None) -> Optional[str]:
+                def get_str(key: str, default: str | None = None) -> str | None:
                     value = record.get(key, default)
                     return value if isinstance(value, str) else default
 
@@ -74,7 +74,7 @@ class OAIPMHClient:
                 _fetch_counter.add(1, {"oai_pmh.result": "error"})
                 return None
 
-    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> Dict[str, Union[str, int]]:
+    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> dict[str, str | int]:
         """Build OAI-PMH request parameters."""
         return {
             "verb": "GetRecord",
@@ -89,7 +89,7 @@ class OAIPMHClient:
             raise Exception("No record found in OAI-PMH response")
         return record_elements[0]
 
-    def _build_basic_record_result(self, record_element: ET.Element, metadata_format: str) -> Dict[str, Union[str, List, Dict]]:
+    def _build_basic_record_result(self, record_element: ET.Element, metadata_format: str) -> dict[str, str | list | dict]:
         """Build basic record result from header information."""
         record_header = self._parse_header_information(record_element)
 
@@ -99,7 +99,7 @@ class OAIPMHClient:
             "metadata_format": metadata_format,
         }
 
-    def _parse_header_information(self, record_element: ET.Element) -> Dict[str, str]:
+    def _parse_header_information(self, record_element: ET.Element) -> dict[str, str]:
         """Parse header information from record element."""
         oai_ns = "{http://www.openarchives.org/OAI/2.0/}"
         header_elements = record_element.findall(f"./{oai_ns}header")
@@ -112,7 +112,7 @@ class OAIPMHClient:
             "datestamp": self._get_text(header_element, f"{oai_ns}datestamp") or "",
         }
 
-    def extract_manifest_id(self, identifier: str) -> Optional[str]:
+    def extract_manifest_id(self, identifier: str) -> str | None:
         """Extract PID from a record for IIIF access."""
         with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}) as span:
             try:
@@ -125,7 +125,7 @@ class OAIPMHClient:
                 span.record_exception(e)
                 return None
 
-    def manifest_id_from_metadata(self, metadata: Optional[OAIPMHMetadata]) -> Optional[str]:
+    def manifest_id_from_metadata(self, metadata: OAIPMHMetadata | None) -> str | None:
         """Extract manifest ID from already-fetched metadata (no HTTP call)."""
         if metadata and metadata.nad_link:
             return self._extract_manifest_id_from_nad_link(metadata.nad_link)
@@ -141,7 +141,7 @@ class OAIPMHClient:
             return manifest_id
         return ""
 
-    def _make_request(self, request_parameters: Dict[str, Union[str, int]]) -> ET.Element:
+    def _make_request(self, request_parameters: dict[str, str | int]) -> ET.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
             xml_content = self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
@@ -169,7 +169,7 @@ class OAIPMHClient:
             error_message = error_elements[0].text or "No error message"
             raise Exception(f"OAI-PMH Error [{error_code}]: {error_message}")
 
-    def _extract_ead_metadata(self, record_element: ET.Element) -> Dict[str, Union[str, List, Dict]]:
+    def _extract_ead_metadata(self, record_element: ET.Element) -> dict[str, str | list | dict]:
         """Extract metadata from EAD format."""
         ead_metadata_element = self._extract_ead_element_from_record(record_element)
 
@@ -212,7 +212,7 @@ class OAIPMHClient:
 
         return extracted_metadata
 
-    def _extract_ead_element_from_record(self, record_element: ET.Element) -> Optional[ET.Element]:
+    def _extract_ead_element_from_record(self, record_element: ET.Element) -> ET.Element | None:
         """Extract EAD element from record."""
         ead_ns = NAMESPACES["ead"]
         ead_elements = record_element.findall(f".//{{{ead_ns}}}ead")
@@ -287,7 +287,7 @@ class OAIPMHClient:
         self,
         element: ET.Element,
         tag_path: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get text from element using tag path (with namespace)."""
         matches = element.findall(tag_path)
         if matches and matches[0].text:

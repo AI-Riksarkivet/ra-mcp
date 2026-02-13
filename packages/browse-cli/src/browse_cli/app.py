@@ -6,6 +6,7 @@ import typer
 
 from .browse_cmd import browse
 
+
 browse_app = typer.Typer(
     name="browse",
     help="Browse document pages from the Swedish National Archives.",

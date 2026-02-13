@@ -5,7 +5,7 @@ Returns no-op instances when no SDK is configured (zero overhead).
 All packages get these helpers transitively through ra-mcp-common.
 """
 
-from opentelemetry import trace, metrics
+from opentelemetry import metrics, trace
 
 
 def get_tracer(name: str) -> trace.Tracer:

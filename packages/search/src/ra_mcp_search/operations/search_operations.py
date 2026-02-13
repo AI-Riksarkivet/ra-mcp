@@ -3,8 +3,6 @@ Search operations that can be used by both CLI and MCP interfaces.
 Handles keyword searching.
 """
 
-from typing import Optional
-
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_meter, get_tracer
@@ -12,6 +10,7 @@ from ra_mcp_common.utils.http_client import HTTPClient
 
 from ..clients import SearchAPI
 from ..models import SearchResult
+
 
 _tracer = get_tracer("ra_mcp.search_operations")
 _meter = get_meter("ra_mcp.search_operations")
@@ -38,12 +37,12 @@ class SearchOperations:
         only_digitised: bool = True,
         offset: int = 0,
         max_results: int = 10,
-        max_snippets_per_record: Optional[int] = None,
+        max_snippets_per_record: int | None = None,
         sort: str = "relevance",
-        year_min: Optional[int] = None,
-        year_max: Optional[int] = None,
-        name: Optional[str] = None,
-        place: Optional[str] = None,
+        year_min: int | None = None,
+        year_max: int | None = None,
+        name: str | None = None,
+        place: str | None = None,
     ) -> SearchResult:
         """Search for records in document collections.
 
@@ -109,7 +108,7 @@ class SearchOperations:
         keyword: str,
         offset: int = 0,
         max_results: int = 10,
-        max_snippets_per_record: Optional[int] = None,
+        max_snippets_per_record: int | None = None,
     ) -> SearchResult:
         """Search for transcribed text across document collections (convenience method).
 
