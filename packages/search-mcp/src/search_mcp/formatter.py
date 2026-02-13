@@ -145,8 +145,7 @@ class PlainTextFormatter:
         formatted_lines = [f"⚠️ **Error**: {error_message}"]
         if error_suggestions:
             formatted_lines.append("\n**Suggestions**:")
-            for suggestion_text in error_suggestions:
-                formatted_lines.append(f"- {suggestion_text}")
+            formatted_lines.extend(f"- {suggestion_text}" for suggestion_text in error_suggestions)
         return "\n".join(formatted_lines)
 
     def format_no_results_message(self, search_result) -> str:
@@ -304,9 +303,8 @@ class PlainTextFormatter:
                     lines.append("")
                     displayed_count += 1
                     continue
-                else:
-                    skipped_count += 1
-                    continue
+                skipped_count += 1
+                continue
 
             # --- Full rendering ---
             displayed_count += 1

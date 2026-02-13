@@ -187,8 +187,7 @@ class RichConsoleFormatter:
             content_parts.append(f"[blue]🔗 {document.links.html}[/blue]")
 
         if document.links and document.links.image:
-            for img_manifest in document.links.image[:1]:
-                content_parts.append(f"[magenta]🖼️  {img_manifest}[/magenta]")
+            content_parts.extend(f"[magenta]🖼️  {img_manifest}[/magenta]" for img_manifest in document.links.image[:1])
 
         if document.transcribed_text and document.transcribed_text.snippets:
             for snippet in document.transcribed_text.snippets[:3]:

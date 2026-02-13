@@ -227,10 +227,9 @@ class HTTPClient:
 
                 if isinstance(e, HTTPError):
                     raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
-                elif isinstance(e, URLError):
+                if isinstance(e, URLError):
                     raise Exception(f"URL Error: {e.reason}") from e
-                else:
-                    raise Exception(f"Invalid JSON response: {e}") from e
+                raise Exception(f"Invalid JSON response: {e}") from e
 
             except Exception as e:
                 duration = time.perf_counter() - start_time
@@ -328,8 +327,7 @@ class HTTPClient:
 
                 if isinstance(e, HTTPError):
                     raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
-                else:
-                    raise Exception(f"URL Error: {e.reason}") from e
+                raise Exception(f"URL Error: {e.reason}") from e
 
     def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
         """

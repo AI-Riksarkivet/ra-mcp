@@ -49,12 +49,6 @@ AVAILABLE_MODULES = {
         "description": "Access historical documentation and archival guides",
         "default": True,
     },
-    # Future modules can be added here:
-    # "metadata": {
-    #     "server": metadata_mcp,
-    #     "description": "Advanced metadata search and filtering",
-    #     "default": False,
-    # },
 }
 
 

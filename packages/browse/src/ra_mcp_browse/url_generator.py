@@ -21,7 +21,7 @@ def remove_arkis_prefix(manifest_id: str) -> str:
         Manifest ID without arkis! prefix
     """
 
-    return manifest_id[6:] if manifest_id.startswith("arkis!") else manifest_id
+    return manifest_id.removeprefix("arkis!")
 
 
 def format_page_number(page_number: str) -> str:

@@ -35,7 +35,7 @@ class SearchAPI:
         text: str | None = None,
         transcribed_text: str | None = None,
         only_digitised_materials: bool = True,
-        max: int = DEFAULT_MAX_RESULTS,
+        max_results: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
         max_snippets_per_record: int | None = None,
         sort: str = "relevance",
@@ -54,7 +54,7 @@ class SearchAPI:
             text: General free-text search across all fields
             transcribed_text: Search specifically in AI-transcribed text (requires only_digitised_materials=True)
             only_digitised_materials: Limit results to digitized materials (default: True)
-            max: Maximum number of records to return (API parameter name)
+            max_results: Maximum number of records to return
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
             sort: Sort order — one of: relevance, timeAsc, timeDesc, alphaAsc, alphaDesc
@@ -80,7 +80,7 @@ class SearchAPI:
 
         search_term = transcribed_text or text
         search_type = "transcribed" if transcribed_text else "general"
-        self.logger.info(f"Starting {search_type} search: keyword='{search_term}', max={max}, offset={offset}")
+        self.logger.info(f"Starting {search_type} search: keyword='{search_term}', max={max_results}, offset={offset}")
 
         with _tracer.start_as_current_span(
             "SearchAPI.search",
@@ -88,13 +88,13 @@ class SearchAPI:
                 "search.type": search_type,
                 "search.keyword": search_term or "",
                 "search.offset": offset,
-                "search.max_results": max,
+                "search.max_results": max_results,
             },
         ) as span:
             try:
                 # Build search parameters
                 params = {
-                    "max": max,
+                    "max": max_results,
                     "offset": offset,
                     "sort": sort,
                 }
@@ -140,7 +140,7 @@ class SearchAPI:
     def search_transcribed_text(
         self,
         transcribed_text: str,
-        max: int = DEFAULT_MAX_RESULTS,
+        max_results: int = DEFAULT_MAX_RESULTS,
         offset: int = 0,
         max_snippets_per_record: int | None = None,
     ) -> RecordsResponse:
@@ -151,7 +151,7 @@ class SearchAPI:
 
         Args:
             transcribed_text: Search term or Solr query (API parameter name)
-            max: Maximum number of records to return (API parameter name)
+            max_results: Maximum number of records to return
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
 
@@ -159,7 +159,11 @@ class SearchAPI:
             RecordsResponse with all API fields populated
         """
         return self.search(
-            transcribed_text=transcribed_text, only_digitised_materials=True, max=max, offset=offset, max_snippets_per_record=max_snippets_per_record
+            transcribed_text=transcribed_text,
+            only_digitised_materials=True,
+            max_results=max_results,
+            offset=offset,
+            max_snippets_per_record=max_snippets_per_record,
         )
 
     def _limit_snippets(self, response: RecordsResponse, max_snippets: int) -> None:

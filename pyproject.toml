@@ -88,6 +88,14 @@ select = [
     "SIM",    # flake8-simplify
     "RUF",    # ruff-specific
     "C901",   # mccabe complexity
+    "RET",    # flake8-return
+    "PERF",   # perflint
+    "FURB",   # refurb
+    "ERA",    # eradicate (commented-out code)
+    "T20",    # flake8-print
+    "A",      # flake8-builtins
+    "PTH",    # flake8-use-pathlib
+    "EM",     # flake8-errmsg
 ]
 ignore = [
     "E501",   # line-too-long — MCP tool docstrings are intentionally long for LLM context
@@ -96,7 +104,14 @@ ignore = [
     "S110",   # try-except-pass — acceptable in shutdown/cleanup code
     "S314",   # xml-parse — XML from Riksarkivet APIs is trusted; defusedxml is a separate decision
     "SIM108", # ternary — if/else blocks are often more readable
+    "RET504", # unnecessary-assign — useful for readability/debugging
+    "EM101",  # raw-string-in-exception — too noisy, low value
+    "EM102",  # f-string-in-exception — too noisy, low value
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"src/ra_mcp_server/server.py" = ["T201"]
+"packages/common/src/ra_mcp_common/utils/http_client.py" = ["T201"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15

@@ -81,7 +81,7 @@ class SearchOperations:
                     transcribed_text=keyword if transcribed_only else None,
                     text=keyword if not transcribed_only else None,
                     only_digitised_materials=only_digitised,
-                    max=max_results,
+                    max_results=max_results,
                     offset=offset,
                     max_snippets_per_record=max_snippets_per_record,
                     sort=sort,

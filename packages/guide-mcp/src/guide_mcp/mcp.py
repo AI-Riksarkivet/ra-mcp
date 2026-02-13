@@ -4,7 +4,7 @@ Riksarkivet Historical Guide MCP Server.
 Provides MCP resources for accessing historical documentation about Swedish archives.
 """
 
-import os
+from pathlib import Path
 
 from fastmcp import FastMCP
 
@@ -14,8 +14,7 @@ def format_error_message(error_message: str, error_suggestions: list[str] | None
     formatted_lines = [f"⚠️ **Error**: {error_message}"]
     if error_suggestions:
         formatted_lines.append("\n**Suggestions**:")
-        for suggestion_text in error_suggestions:
-            formatted_lines.append(f"- {suggestion_text}")
+        formatted_lines.extend(f"- {suggestion_text}" for suggestion_text in error_suggestions)
     return "\n".join(formatted_lines)
 
 
@@ -120,21 +119,23 @@ def _generate_invalid_filename_message():
     )
 
 
+_CURRENT_DIR = Path(__file__).parent
+
+
 def _check_file_exists(filename):
     """Check if the markdown file exists."""
-    filename = os.path.basename(filename)
-    current_dir = os.path.dirname(__file__)
-    markdown_path = os.path.join(current_dir, "..", "..", "..", "..", "resources", filename)
-    if not os.path.exists(markdown_path):
+    safe_name = Path(filename).name
+    markdown_path = _CURRENT_DIR / ".." / ".." / ".." / ".." / "resources" / safe_name
+    if not markdown_path.exists():
         # Try alternative paths for different package layouts
         alt_paths = [
-            os.path.join(current_dir, "..", "..", "..", "..", "..", "resources", filename),
-            os.path.join(current_dir, "..", "..", "..", "..", "..", "markdown", filename),
+            _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "resources" / safe_name,
+            _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "markdown" / safe_name,
         ]
         for alt_path in alt_paths:
-            if os.path.exists(alt_path):
+            if alt_path.exists():
                 return True
-    return os.path.exists(markdown_path)
+    return markdown_path.exists()
 
 
 def _generate_file_not_found_message(filename):
@@ -151,20 +152,18 @@ def _generate_file_not_found_message(filename):
 
 def _load_markdown_file(filename):
     """Load content from a markdown file."""
-    filename = os.path.basename(filename)
-    current_dir = os.path.dirname(__file__)
+    safe_name = Path(filename).name
 
     # Try multiple possible paths
     possible_paths = [
-        os.path.join(current_dir, "..", "..", "..", "..", "resources", filename),
-        os.path.join(current_dir, "..", "..", "..", "..", "..", "resources", filename),
-        os.path.join(current_dir, "..", "..", "..", "..", "..", "markdown", filename),
+        _CURRENT_DIR / ".." / ".." / ".." / ".." / "resources" / safe_name,
+        _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "resources" / safe_name,
+        _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "markdown" / safe_name,
     ]
 
     for markdown_path in possible_paths:
-        if os.path.exists(markdown_path):
-            with open(markdown_path, encoding="utf-8") as f:
-                return f.read()
+        if markdown_path.exists():
+            return markdown_path.read_text(encoding="utf-8")
 
     # Default path for error message
-    raise FileNotFoundError(f"Could not find {filename} in any expected location")
+    raise FileNotFoundError(f"Could not find {safe_name} in any expected location")

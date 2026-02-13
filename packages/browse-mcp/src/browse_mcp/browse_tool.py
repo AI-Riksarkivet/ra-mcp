@@ -22,8 +22,7 @@ def format_error_message(error_message: str, error_suggestions: list[str] | None
     formatted_lines = [f"⚠️ **Error**: {error_message}"]
     if error_suggestions:
         formatted_lines.append("\n**Suggestions**:")
-        for suggestion_text in error_suggestions:
-            formatted_lines.append(f"- {suggestion_text}")
+        formatted_lines.extend(f"- {suggestion_text}" for suggestion_text in error_suggestions)
     return "\n".join(formatted_lines)
 
 
@@ -150,8 +149,7 @@ def register_browse_tool(mcp) -> None:
                 # Check if we have metadata to display for non-digitised materials
                 if browse_result.oai_metadata:
                     return formatter.format_browse_results(browse_result, highlight_term, seen_page_numbers=seen_page_numbers)
-                else:
-                    return _generate_no_pages_found_message(reference_code)
+                return _generate_no_pages_found_message(reference_code)
 
             result = formatter.format_browse_results(browse_result, highlight_term, seen_page_numbers=seen_page_numbers)
 
