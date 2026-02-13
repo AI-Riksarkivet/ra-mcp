@@ -121,6 +121,89 @@ class RichConsoleFormatter:
             text_content,
         )
 
+    def _build_institution_column(self, document: SearchRecord) -> str:
+        """Build the left column string with institution, reference, pages, and date."""
+        institution_and_ref = ""
+        if document.metadata.archival_institution:
+            institution = document.metadata.archival_institution[0].caption
+            institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
+
+        if document.transcribed_text and document.transcribed_text.snippets:
+            pages = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
+            pages_trimmed = trim_page_numbers(pages)
+            pages_str = ",".join(pages_trimmed)
+
+            snippet_count = len(document.transcribed_text.snippets)
+            total_hits = document.get_total_hits()
+            hit_label = "hit" if snippet_count == 1 else "hits"
+
+            if total_hits > snippet_count:
+                institution_and_ref += (
+                    f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
+                )
+            else:
+                institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
+        else:
+            institution_and_ref += f'📚 "{document.metadata.reference_code}"\n💡 [dim]Metadata match[/dim]'
+
+        if document.metadata.date:
+            institution_and_ref += f"\n📅 [dim]{document.metadata.date}[/dim]"
+
+        return institution_and_ref
+
+    def _build_content_column(self, document: SearchRecord, keyword: str) -> str:
+        """Build the right column string with title, metadata, links, and snippets."""
+        title_text = truncate_text(document.get_title(), 50)
+        content_parts = []
+
+        if title_text and title_text.strip() and title_text != "(No title)":
+            content_parts.append(f"[bold blue]{title_text}[/bold blue]")
+        else:
+            content_parts.append("[bright_black](No title)[/bright_black]")
+
+        type_info = f"{document.object_type}"
+        if document.type:
+            type_info += f" / {document.type}"
+        content_parts.append(f"[yellow]🏷️  {type_info}[/yellow]")
+
+        if document.metadata.hierarchy:
+            hierarchy_parts = [h.caption for h in document.metadata.hierarchy]
+            if hierarchy_parts:
+                hierarchy_text = " → ".join(hierarchy_parts[:3])
+                content_parts.append(f"[cyan]📂 {truncate_text(hierarchy_text, 150)}[/cyan]")
+
+        if document.metadata.provenance:
+            prov = document.metadata.provenance[0]
+            prov_text = prov.caption
+            if prov.date:
+                prov_text += f" ({prov.date})"
+            content_parts.append(f"[green]👤 {truncate_text(prov_text, 100)}[/green]")
+
+        if document.metadata.note:
+            note_text = truncate_text(document.metadata.note, 250)
+            content_parts.append(f"[dim]📝 {note_text}[/dim]")
+
+        if document.links and document.links.html:
+            content_parts.append(f"[blue]🔗 {document.links.html}[/blue]")
+
+        if document.links and document.links.image:
+            for img_manifest in document.links.image[:1]:
+                content_parts.append(f"[magenta]🖼️  {img_manifest}[/magenta]")
+
+        if document.transcribed_text and document.transcribed_text.snippets:
+            for snippet in document.transcribed_text.snippets[:3]:
+                snippet_text = truncate_text(snippet.text, 150)
+                snippet_text = self.highlight_search_keyword(snippet_text, keyword)
+
+                if snippet.pages:
+                    trimmed_page = trim_page_number(snippet.pages[0].id)
+                    content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet_text}[/italic]")
+
+            if len(document.transcribed_text.snippets) > 3:
+                content_parts.append(f"[dim]...and {len(document.transcribed_text.snippets) - 3} more pages with hits[/dim]")
+
+        return "\n".join(content_parts)
+
     def format_search_results(self, search_result: SearchResult, max_display: int = 20) -> Table | str:
         """
         Format search results as a Rich Table for CLI display.
@@ -144,96 +227,9 @@ class RichConsoleFormatter:
         )
 
         for _idx, document in enumerate(search_result.items[:max_display]):
-            # Build institution and reference column
-            institution_and_ref = ""
-            if document.metadata.archival_institution:
-                institution = document.metadata.archival_institution[0].caption
-                institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
-
-            # Handle records with transcribed text snippets
-            if document.transcribed_text and document.transcribed_text.snippets:
-                # Extract unique page numbers from all snippets
-                pages = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
-                pages_trimmed = trim_page_numbers(pages)
-                pages_str = ",".join(pages_trimmed)
-
-                # Show snippet count vs total hits
-                snippet_count = len(document.transcribed_text.snippets)
-                total_hits = document.get_total_hits()
-                hit_label = "hit" if snippet_count == 1 else "hits"
-
-                if total_hits > snippet_count:
-                    institution_and_ref += (
-                        f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} shown ({total_hits} total)[/dim]'
-                    )
-                else:
-                    institution_and_ref += f'📚 "{document.metadata.reference_code}" --page "{pages_str}"\n💡 [dim]{snippet_count} {hit_label} found[/dim]'
-            else:
-                # For metadata-only results (no transcription snippets)
-                institution_and_ref += f'📚 "{document.metadata.reference_code}"\n💡 [dim]Metadata match[/dim]'
-
-            if document.metadata.date:
-                institution_and_ref += f"\n📅 [dim]{document.metadata.date}[/dim]"
-
-            # Build content column
-            title_text = truncate_text(document.get_title(), 50)
-            content_parts = []
-
-            if title_text and title_text.strip() and title_text != "(No title)":
-                content_parts.append(f"[bold blue]{title_text}[/bold blue]")
-            else:
-                content_parts.append("[bright_black](No title)[/bright_black]")
-
-            # Add object type and type
-            type_info = f"{document.object_type}"
-            if document.type:
-                type_info += f" / {document.type}"
-            content_parts.append(f"[yellow]🏷️  {type_info}[/yellow]")
-
-            # Add hierarchy information for metadata searches
-            if document.metadata.hierarchy:
-                hierarchy_parts = [h.caption for h in document.metadata.hierarchy]
-                if hierarchy_parts:
-                    hierarchy_text = " → ".join(hierarchy_parts[:3])  # Show up to 3 levels
-                    content_parts.append(f"[cyan]📂 {truncate_text(hierarchy_text, 150)}[/cyan]")
-
-            # Add provenance (creator) information
-            if document.metadata.provenance:
-                prov = document.metadata.provenance[0]
-                prov_text = prov.caption
-                if prov.date:
-                    prov_text += f" ({prov.date})"
-                content_parts.append(f"[green]👤 {truncate_text(prov_text, 100)}[/green]")
-
-            # Add note if available (useful for metadata searches)
-            if document.metadata.note:
-                note_text = truncate_text(document.metadata.note, 250)
-                content_parts.append(f"[dim]📝 {note_text}[/dim]")
-
-            # Add link to view on Riksarkivet website
-            if document.links and document.links.html:
-                content_parts.append(f"[blue]🔗 {document.links.html}[/blue]")
-
-            # Add IIIF image manifest links if available
-            if document.links and document.links.image:
-                for img_manifest in document.links.image[:1]:  # Show first image manifest
-                    content_parts.append(f"[magenta]🖼️  {img_manifest}[/magenta]")
-
-            # Add snippets if available (for transcribed text searches)
-            if document.transcribed_text and document.transcribed_text.snippets:
-                for snippet in document.transcribed_text.snippets[:3]:
-                    snippet_text = truncate_text(snippet.text, 150)
-                    snippet_text = self.highlight_search_keyword(snippet_text, search_result.keyword)
-
-                    # Get first page number for this snippet
-                    if snippet.pages:
-                        trimmed_page = trim_page_number(snippet.pages[0].id)
-                        content_parts.append(f"[dim]Page {trimmed_page}:[/dim] [italic]{snippet_text}[/italic]")
-
-                if len(document.transcribed_text.snippets) > 3:
-                    content_parts.append(f"[dim]...and {len(document.transcribed_text.snippets) - 3} more pages with hits[/dim]")
-
-            table.add_row(institution_and_ref, "\n".join(content_parts))
+            institution_and_ref = self._build_institution_column(document)
+            content = self._build_content_column(document, search_result.keyword)
+            table.add_row(institution_and_ref, content)
 
         return table
 

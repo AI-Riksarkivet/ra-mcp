@@ -322,6 +322,114 @@ class RichConsoleFormatter:
             return f"[yellow]No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}[/yellow]"
         return f"[yellow]No results found for '{search_result.keyword}'. Make sure to use \"\" for exact phrases.[/yellow]"
 
+    def _format_non_digitised_panel(self, browse_result: BrowseResult) -> list[Any]:
+        """Format metadata panel for non-digitised materials."""
+        output: list[Any] = []
+        output.append("[yellow]⚠️  This material is not digitised or transcribed - no page images or text available.[/yellow]")
+        output.append("[dim]Showing metadata only:[/dim]\n")
+
+        metadata = browse_result.oai_metadata
+        if metadata is None:
+            return output
+        metadata_parts = []
+        metadata_parts.append(f"[bold blue]📄 Reference Code:[/bold blue] {browse_result.reference_code}")
+
+        if metadata.title and metadata.title != "(No title)":
+            metadata_parts.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+
+        if metadata.unitdate:
+            metadata_parts.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
+
+        if metadata.repository:
+            metadata_parts.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
+
+        if metadata.unitid and metadata.unitid != browse_result.reference_code:
+            metadata_parts.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
+
+        if metadata.description:
+            desc = metadata.description
+            if len(desc) > 300:
+                desc = desc[:297] + "..."
+            metadata_parts.append(f"[blue]📝 Description:[/blue] {desc}")
+
+        if metadata.nad_link:
+            metadata_parts.append(f"[blue]🔗 View Online:[/blue] {metadata.nad_link}")
+
+        if metadata.iiif_manifest:
+            metadata_parts.append(f"[magenta]🖼️  IIIF Manifest:[/magenta] {metadata.iiif_manifest}")
+
+        if metadata.iiif_image:
+            metadata_parts.append(f"[cyan]🎨 Preview Image:[/cyan] {metadata.iiif_image}")
+
+        if metadata.datestamp:
+            metadata_parts.append(f"[dim]🕒 Last Updated:[/dim] {metadata.datestamp}")
+
+        panel = Panel(
+            "\n".join(metadata_parts),
+            title="[yellow]Non-Digitised Material[/yellow]",
+            border_style="yellow",
+        )
+        output.append(panel)
+        return output
+
+    def _format_group_metadata(self, renderables: list[Any], metadata, ref_code: str) -> None:
+        """Format OAI-PMH metadata section at the top of a grouped panel."""
+        left_content = []
+        left_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
+
+        if metadata.title and metadata.title != "(No title)":
+            left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
+
+        if metadata.unitdate:
+            left_content.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
+
+        if metadata.repository:
+            left_content.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
+
+        if metadata.unitid and metadata.unitid != ref_code:
+            left_content.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
+
+        if metadata.description:
+            desc = metadata.description
+            if len(desc) > 200:
+                desc = desc[:197] + "..."
+            left_content.append(f"[dim]📝 {desc}[/dim]")
+
+        renderables.append("\n".join(left_content))
+
+        if metadata.nad_link:
+            renderables.append(f"[blue]🔗 NAD Link:[/blue] [dim]{metadata.nad_link}[/dim]")
+
+        renderables.append("")
+
+    def _format_page_content(self, panel_content: list[str], context: PageContext, highlight_term: str | None, show_links: bool, is_last: bool) -> None:
+        """Render a single page: separator, text, optional links, spacing."""
+        if show_links:
+            panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+        elif context.bildvisning_url:
+            panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
+        else:
+            panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+
+        if context.full_text.strip():
+            display_text = context.full_text
+            if highlight_term:
+                display_text = self.highlight_search_keyword(display_text, highlight_term)
+            panel_content.append(f"[italic]{display_text}[/italic]")
+        else:
+            panel_content.append("[dim italic](Empty page - no transcribed text)[/dim italic]")
+
+        if show_links:
+            panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
+            panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
+            if context.image_url:
+                panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
+            if context.bildvisning_url:
+                panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
+
+        if not is_last:
+            panel_content.append("")
+
     def format_browse_results(
         self,
         browse_result: BrowseResult,
@@ -341,161 +449,38 @@ class RichConsoleFormatter:
         Returns:
             List containing optional success message and panel objects
         """
-        output = []
-
-        # Handle non-digitised materials (no pages but has metadata)
         if not browse_result.contexts and browse_result.oai_metadata:
-            output.append("[yellow]⚠️  This material is not digitised or transcribed - no page images or text available.[/yellow]")
-            output.append("[dim]Showing metadata only:[/dim]\n")
+            return self._format_non_digitised_panel(browse_result)
 
-            # Display metadata for non-digitised material
-            metadata = browse_result.oai_metadata
-            metadata_parts = []
-            metadata_parts.append(f"[bold blue]📄 Reference Code:[/bold blue] {browse_result.reference_code}")
-
-            if metadata.title and metadata.title != "(No title)":
-                metadata_parts.append(f"[blue]📋 Title:[/blue] {metadata.title}")
-
-            if metadata.unitdate:
-                metadata_parts.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
-
-            if metadata.repository:
-                metadata_parts.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
-
-            if metadata.unitid and metadata.unitid != browse_result.reference_code:
-                metadata_parts.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
-
-            if metadata.description:
-                # Truncate long descriptions
-                desc = metadata.description
-                if len(desc) > 300:
-                    desc = desc[:297] + "..."
-                metadata_parts.append(f"[blue]📝 Description:[/blue] {desc}")
-
-            if metadata.nad_link:
-                metadata_parts.append(f"[blue]🔗 View Online:[/blue] {metadata.nad_link}")
-
-            if metadata.iiif_manifest:
-                metadata_parts.append(f"[magenta]🖼️  IIIF Manifest:[/magenta] {metadata.iiif_manifest}")
-
-            if metadata.iiif_image:
-                metadata_parts.append(f"[cyan]🎨 Preview Image:[/cyan] {metadata.iiif_image}")
-
-            if metadata.datestamp:
-                metadata_parts.append(f"[dim]🕒 Last Updated:[/dim] {metadata.datestamp}")
-
-            panel = Panel(
-                "\n".join(metadata_parts),
-                title="[yellow]Non-Digitised Material[/yellow]",
-                border_style="yellow",
-            )
-            output.append(panel)
-            return output
+        output: list[Any] = []
 
         if show_success_message and browse_result.contexts:
             output.append(f"[green]Successfully loaded {len(browse_result.contexts)} pages[/green]")
 
         # Group page contexts by reference code
-        grouped_contexts = {}
+        grouped_contexts: dict[str, list[PageContext]] = {}
         for context in browse_result.contexts:
             ref_code = context.reference_code
             if ref_code not in grouped_contexts:
                 grouped_contexts[ref_code] = []
             grouped_contexts[ref_code].append(context)
 
-        # Display results grouped by document
         for ref_code, contexts in grouped_contexts.items():
-            # Sort pages by page number
             sorted_contexts = sorted(contexts, key=lambda c: c.page_number)
+            renderables: list[Any] = []
 
-            renderables = []
-
-            # Add OAI-PMH metadata at the top of the panel if available
             if browse_result.oai_metadata:
-                metadata = browse_result.oai_metadata
-
-                # Create left column content (basic info)
-                left_content = []
-                left_content.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
-
-                # Display title
-                if metadata.title and metadata.title != "(No title)":
-                    left_content.append(f"[blue]📋 Title:[/blue] {metadata.title}")
-
-                # Display date range
-                if metadata.unitdate:
-                    left_content.append(f"[blue]📅 Date Range:[/blue] {metadata.unitdate}")
-
-                # Display repository
-                if metadata.repository:
-                    left_content.append(f"[blue]🏛️  Repository:[/blue] {metadata.repository}")
-
-                # Display unitid
-                if metadata.unitid and metadata.unitid != ref_code:
-                    left_content.append(f"[blue]🔖 Unit ID:[/blue] {metadata.unitid}")
-
-                # Display description if available
-                if metadata.description:
-                    # Truncate very long descriptions for transcribed materials
-                    desc = metadata.description
-                    if len(desc) > 200:
-                        desc = desc[:197] + "..."
-                    left_content.append(f"[dim]📝 {desc}[/dim]")
-
-                # Display metadata content
-                renderables.append("\n".join(left_content))
-
-                # Display NAD link if available
-                if metadata.nad_link:
-                    renderables.append(f"[blue]🔗 NAD Link:[/blue] [dim]{metadata.nad_link}[/dim]")
-
-                renderables.append("")
+                self._format_group_metadata(renderables, browse_result.oai_metadata, ref_code)
             else:
-                # If no metadata available, just show the document header
                 renderables.append(f"[bold blue]📄 Volume:[/bold blue] {ref_code}")
                 renderables.append("")
 
-            panel_content = []
+            panel_content: list[str] = []
+            for i, context in enumerate(sorted_contexts):
+                self._format_page_content(panel_content, context, highlight_term, show_links, is_last=(i == len(sorted_contexts) - 1))
 
-            for context in sorted_contexts:
-                # Add page separator with optional bildvisning link
-                if show_links:
-                    # When showing all links below, keep simple separator
-                    panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
-                else:
-                    # When not showing links section, include bildvisning link in separator
-                    if context.bildvisning_url:
-                        panel_content.append(f"[dim]────── Page {context.page_number} | [/dim][link]{context.bildvisning_url}[/link][dim] ──────[/dim]")
-                    else:
-                        panel_content.append(f"[dim]────── Page {context.page_number} ──────[/dim]")
+            renderables.extend(panel_content)
 
-                # Add page content with highlighting
-                if context.full_text.strip():  # Page has text content
-                    display_text = context.full_text
-                    if highlight_term:
-                        display_text = self.highlight_search_keyword(display_text, highlight_term)
-                    panel_content.append(f"[italic]{display_text}[/italic]")
-                else:  # Blank page
-                    panel_content.append("[dim italic](Empty page - no transcribed text)[/dim italic]")
-
-                # Add links if requested
-                if show_links:
-                    panel_content.append("\n[bold cyan]🔗 Links:[/bold cyan]")
-                    panel_content.append(f"     [dim]📝 ALTO XML:[/dim] [link]{context.alto_url}[/link]")
-                    if context.image_url:
-                        panel_content.append(f"     [dim]🖼️  Image:[/dim] [link]{context.image_url}[/link]")
-                    if context.bildvisning_url:
-                        panel_content.append(f"     [dim]👁️  Bildvisning:[/dim] [link]{context.bildvisning_url}[/link]")
-
-                # Add spacing between pages (except for the last one)
-                if context != sorted_contexts[-1]:
-                    panel_content.append("")
-
-            # Add page content to renderables
-            for line in panel_content:
-                renderables.append(line)
-
-            # Create the grouped panel using Rich Group
             panel_group = Group(*renderables)
             grouped_panel = Panel(
                 panel_group,
@@ -503,7 +488,7 @@ class RichConsoleFormatter:
                 border_style="green",
                 padding=(1, 1),
             )
-            output.append("")  # Add spacing before the panel
+            output.append("")
             output.append(grouped_panel)
 
         return output

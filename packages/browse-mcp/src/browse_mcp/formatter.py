@@ -9,6 +9,19 @@ import re
 logger = logging.getLogger("ra_mcp.browse_mcp.formatter")
 
 
+def _page_id_to_number(page_id: str) -> int:
+    """Extract the numeric page number from a page ID like '_00066' or '_H0000459_00005'.
+
+    Splits by underscore and takes the last non-empty part, stripping leading zeros.
+    """
+    parts = page_id.split("_")
+    if parts:
+        last_part = parts[-1]
+        trimmed = last_part.lstrip("0") or "0"
+        return int(trimmed)
+    return int(page_id)
+
+
 class PlainTextFormatter:
     """Formatter that produces plain text without any Rich markup."""
 
@@ -132,6 +145,75 @@ class PlainTextFormatter:
             return f"No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}"
         return f"No results found for '{search_result.keyword}'. make sure to use \"\" "
 
+    def _format_document_header(self, lines: list[str], document) -> None:
+        """Emit ref_code, institution, date, and title lines for a document."""
+        lines.append(f"📚 Document: {document.metadata.reference_code}")
+
+        if document.metadata.archival_institution:
+            institution = document.metadata.archival_institution[0].caption
+            lines.append(f"🏛️  Institution: {institution}")
+
+        if document.metadata.date:
+            lines.append(f"📅 Date: {document.metadata.date}")
+
+        title = document.get_title()
+        title_display = title[:100] + "..." if len(title) > 100 else title
+        lines.append(f"📄 Title: {title_display}")
+
+    def _format_metadata_fields(self, lines: list[str], document) -> None:
+        """Emit type, hierarchy, provenance, link, and IIIF lines for metadata-only documents."""
+        if document.object_type:
+            type_info = document.object_type
+            if document.type:
+                type_info += f" / {document.type}"
+            lines.append(f"🏷️  Type: {type_info}")
+
+        if document.metadata.hierarchy:
+            hierarchy_parts = [h.caption for h in document.metadata.hierarchy[:3]]
+            if hierarchy_parts:
+                hierarchy_text = " → ".join(hierarchy_parts)
+                if len(hierarchy_text) > 150:
+                    hierarchy_text = hierarchy_text[:147] + "..."
+                lines.append(f"📂 Context: {hierarchy_text}")
+
+        if document.metadata.provenance:
+            prov = document.metadata.provenance[0]
+            prov_text = prov.caption
+            if prov.date:
+                prov_text += f" ({prov.date})"
+            lines.append(f"👤 Creator: {prov_text}")
+
+        if document.links and document.links.html:
+            lines.append(f"🔗 View: {document.links.html}")
+
+        if document.links and document.links.image:
+            lines.append(f"🖼️  IIIF: {document.links.image[0]}")
+
+    def _format_document_snippets(self, lines: list[str], document, keyword: str) -> None:
+        """Emit page numbers, hit counts, and first 3 snippets for a transcribed document."""
+        page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
+        trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
+
+        doc_snippet_count = len(document.transcribed_text.snippets)
+        total_hits = document.get_total_hits()
+        hit_label = "hit" if doc_snippet_count == 1 else "hits"
+
+        lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
+
+        if total_hits > doc_snippet_count:
+            lines.append(f"💡 {doc_snippet_count} {hit_label} shown ({total_hits} total)")
+        else:
+            lines.append(f"💡 {doc_snippet_count} {hit_label} found")
+
+        for snippet in document.transcribed_text.snippets[:3]:
+            snippet_text = self.highlight_search_keyword(snippet.text, keyword)
+            if snippet.pages:
+                page_id = snippet.pages[0].id
+                lines.append(f"   Page {page_id}: {snippet_text}")
+
+        if len(document.transcribed_text.snippets) > 3:
+            lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
+
     def format_search_results(self, search_result, maximum_documents_to_display: int = 20) -> str:
         """
         Format search results as plain text with emojis for MCP/LLM consumption.
@@ -156,109 +238,24 @@ class PlainTextFormatter:
         else:
             document_display = str(document_count)
 
-        # Different summary for metadata search vs transcribed search
         if snippet_count > 0:
-            # Transcribed text search - has page-level hits
             lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
         else:
-            # Metadata search - just document matches
             lines.append(f"Found {document_display} volumes matching metadata")
         lines.append("")
 
         for _idx, document in enumerate(search_result.items[:maximum_documents_to_display]):
-            # For transcribed search, skip documents without snippets
-            # For metadata search, show all documents
             has_snippets = document.transcribed_text and document.transcribed_text.snippets
             if snippet_count > 0 and not has_snippets:
-                # Transcribed search mode - skip docs without snippets
                 continue
 
-            lines.append(f"📚 Document: {document.metadata.reference_code}")
+            self._format_document_header(lines, document)
 
-            if document.metadata.archival_institution:
-                institution = document.metadata.archival_institution[0].caption
-                lines.append(f"🏛️  Institution: {institution}")
-
-            if document.metadata.date:
-                lines.append(f"📅 Date: {document.metadata.date}")
-
-            title = document.get_title()
-            title_display = title[:100] + "..." if len(title) > 100 else title
-            lines.append(f"📄 Title: {title_display}")
-
-            # For metadata search, show additional contextual information
             if not has_snippets:
-                # Show object type
-                if document.object_type:
-                    type_info = document.object_type
-                    if document.type:
-                        type_info += f" / {document.type}"
-                    lines.append(f"🏷️  Type: {type_info}")
+                self._format_metadata_fields(lines, document)
 
-                # Show hierarchy (archival context)
-                if document.metadata.hierarchy:
-                    hierarchy_parts = [h.caption for h in document.metadata.hierarchy[:3]]
-                    if hierarchy_parts:
-                        hierarchy_text = " → ".join(hierarchy_parts)
-                        if len(hierarchy_text) > 150:
-                            hierarchy_text = hierarchy_text[:147] + "..."
-                        lines.append(f"📂 Context: {hierarchy_text}")
-
-                # Show provenance (creator/person)
-                if document.metadata.provenance:
-                    prov = document.metadata.provenance[0]
-                    prov_text = prov.caption
-                    if prov.date:
-                        prov_text += f" ({prov.date})"
-                    lines.append(f"👤 Creator: {prov_text}")
-
-                # Show link to view online
-                if document.links and document.links.html:
-                    lines.append(f"🔗 View: {document.links.html}")
-
-                # Show IIIF manifest if available
-                if document.links and document.links.image:
-                    lines.append(f"🖼️  IIIF: {document.links.image[0]}")
-
-            # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
-                # Extract page numbers from snippets
-                page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
-                # Extract just the numeric part from page IDs like "_00066" or "_H0000459_00005"
-                # Split by underscore and take the last part (the actual page number)
-                trimmed_page_numbers = []
-                for page_id in page_numbers:
-                    # Split by underscore and take last part
-                    parts = page_id.split("_")
-                    if parts:
-                        # Get the last non-empty part and strip leading zeros
-                        last_part = parts[-1]
-                        trimmed = last_part.lstrip("0") or "0"
-                        trimmed_page_numbers.append(trimmed)
-                    else:
-                        trimmed_page_numbers.append(page_id)
-
-                doc_snippet_count = len(document.transcribed_text.snippets)
-                total_hits = document.get_total_hits()
-                hit_label = "hit" if doc_snippet_count == 1 else "hits"
-
-                lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
-
-                # Show total hits if available and different from shown count
-                if total_hits > doc_snippet_count:
-                    lines.append(f"💡 {doc_snippet_count} {hit_label} shown ({total_hits} total)")
-                else:
-                    lines.append(f"💡 {doc_snippet_count} {hit_label} found")
-
-                # Show first 3 snippets
-                for snippet in document.transcribed_text.snippets[:3]:
-                    snippet_text = self.highlight_search_keyword(snippet.text, search_result.keyword)
-                    if snippet.pages:
-                        page_id = snippet.pages[0].id
-                        lines.append(f"   Page {page_id}: {snippet_text}")
-
-                if len(document.transcribed_text.snippets) > 3:
-                    lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
+                self._format_document_snippets(lines, document, search_result.keyword)
 
             lines.append("")
 
@@ -268,6 +265,71 @@ class PlainTextFormatter:
             lines.append(f"... and {remaining_documents} more documents")
 
         return "\n".join(lines)
+
+    def _format_non_digitised_metadata(self, lines: list[str], browse_result) -> bool:
+        """Format metadata for non-digitised materials. Returns True if handled (early return)."""
+        if browse_result.contexts or not browse_result.oai_metadata:
+            return False
+
+        lines.append("⚠️ This material is not digitised or transcribed - no page images or text available.")
+        lines.append("Showing metadata only:")
+        lines.append("")
+
+        metadata = browse_result.oai_metadata
+        lines.append(f"📄 Reference Code: {browse_result.reference_code}")
+
+        if metadata.title and metadata.title != "(No title)":
+            lines.append(f"📋 Title: {metadata.title}")
+
+        if metadata.unitdate:
+            lines.append(f"📅 Date Range: {metadata.unitdate}")
+
+        if metadata.repository:
+            lines.append(f"🏛️  Repository: {metadata.repository}")
+
+        if metadata.unitid and metadata.unitid != browse_result.reference_code:
+            lines.append(f"🔖 Unit ID: {metadata.unitid}")
+
+        if metadata.description:
+            lines.append(f"📝 Description: {metadata.description}")
+
+        if metadata.nad_link:
+            lines.append(f"🔗 View Online: {metadata.nad_link}")
+
+        if metadata.iiif_manifest:
+            bildvisaren_url = self._iiif_manifest_to_bildvisaren(metadata.iiif_manifest)
+            if bildvisaren_url:
+                lines.append(f"🖼️  View Images: {bildvisaren_url}")
+            else:
+                lines.append(f"🖼️  IIIF Manifest: {metadata.iiif_manifest}")
+
+        if metadata.iiif_image:
+            lines.append(f"🎨 Preview Image: {metadata.iiif_image}")
+
+        return True
+
+    def _format_oai_metadata(self, lines: list[str], metadata, ref_code: str) -> None:
+        """Format OAI-PMH metadata section for a digitised document."""
+        if metadata.title and metadata.title != "(No title)":
+            lines.append(f"📋 Title: {metadata.title}")
+
+        if metadata.unitdate:
+            lines.append(f"📅 Date Range: {metadata.unitdate}")
+
+        if metadata.repository:
+            lines.append(f"🏛️  Repository: {metadata.repository}")
+
+        if metadata.unitid and metadata.unitid != ref_code:
+            lines.append(f"🔖 Unit ID: {metadata.unitid}")
+
+        if metadata.description:
+            desc = metadata.description
+            if len(desc) > 200:
+                desc = desc[:197] + "..."
+            lines.append(f"📝 {desc}")
+
+        if metadata.nad_link:
+            lines.append(f"🔗 NAD Link: {metadata.nad_link}")
 
     def format_browse_results(
         self,
@@ -291,46 +353,9 @@ class PlainTextFormatter:
         Returns:
             Formatted plain text browse results
         """
-        lines = []
+        lines: list[str] = []
 
-        # Handle non-digitised materials (no pages but has metadata)
-        if not browse_result.contexts and browse_result.oai_metadata:
-            lines.append("⚠️ This material is not digitised or transcribed - no page images or text available.")
-            lines.append("Showing metadata only:")
-            lines.append("")
-
-            metadata = browse_result.oai_metadata
-            lines.append(f"📄 Reference Code: {browse_result.reference_code}")
-
-            if metadata.title and metadata.title != "(No title)":
-                lines.append(f"📋 Title: {metadata.title}")
-
-            if metadata.unitdate:
-                lines.append(f"📅 Date Range: {metadata.unitdate}")
-
-            if metadata.repository:
-                lines.append(f"🏛️  Repository: {metadata.repository}")
-
-            if metadata.unitid and metadata.unitid != browse_result.reference_code:
-                lines.append(f"🔖 Unit ID: {metadata.unitid}")
-
-            if metadata.description:
-                lines.append(f"📝 Description: {metadata.description}")
-
-            if metadata.nad_link:
-                lines.append(f"🔗 View Online: {metadata.nad_link}")
-
-            if metadata.iiif_manifest:
-                bildvisaren_url = self._iiif_manifest_to_bildvisaren(metadata.iiif_manifest)
-                if bildvisaren_url:
-                    lines.append(f"🖼️  View Images: {bildvisaren_url}")
-                else:
-                    # Fallback to IIIF manifest if conversion fails
-                    lines.append(f"🖼️  IIIF Manifest: {metadata.iiif_manifest}")
-
-            if metadata.iiif_image:
-                lines.append(f"🎨 Preview Image: {metadata.iiif_image}")
-
+        if self._format_non_digitised_metadata(lines, browse_result):
             return "\n".join(lines)
 
         if not browse_result.contexts:
@@ -340,37 +365,8 @@ class PlainTextFormatter:
 
         lines.append(f"📚 Document: {browse_result.reference_code}")
 
-        # Add OAI-PMH metadata if available
         if browse_result.oai_metadata:
-            metadata = browse_result.oai_metadata
-
-            # Display title
-            if metadata.title and metadata.title != "(No title)":
-                lines.append(f"📋 Title: {metadata.title}")
-
-            # Display date range
-            if metadata.unitdate:
-                lines.append(f"📅 Date Range: {metadata.unitdate}")
-
-            # Display repository
-            if metadata.repository:
-                lines.append(f"🏛️  Repository: {metadata.repository}")
-
-            # Display unitid
-            if metadata.unitid and metadata.unitid != browse_result.reference_code:
-                lines.append(f"🔖 Unit ID: {metadata.unitid}")
-
-            # Display description if available
-            if metadata.description:
-                # Truncate long descriptions for readability
-                desc = metadata.description
-                if len(desc) > 200:
-                    desc = desc[:197] + "..."
-                lines.append(f"📝 {desc}")
-
-            # Display NAD link
-            if metadata.nad_link:
-                lines.append(f"🔗 NAD Link: {metadata.nad_link}")
+            self._format_oai_metadata(lines, browse_result.oai_metadata, browse_result.reference_code)
 
         # Summary line with dedup info
         new_count = sum(1 for c in browse_result.contexts if c.page_number not in seen)
@@ -390,13 +386,12 @@ class PlainTextFormatter:
             lines.append(f"📄 Page {context.page_number}")
             lines.append("─" * 40)
 
-            # Handle blank pages vs pages with content
-            if context.full_text.strip():  # Page has text content
+            if context.full_text.strip():
                 display_text = context.full_text
                 if highlight_term:
                     display_text = self.highlight_search_keyword(display_text, highlight_term)
                 lines.append(display_text)
-            else:  # Blank page
+            else:
                 lines.append("(Empty page - no transcribed text)")
 
             lines.append("")

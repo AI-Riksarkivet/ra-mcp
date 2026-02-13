@@ -17,6 +17,17 @@ from .formatter import PlainTextFormatter, _page_id_to_number
 logger = logging.getLogger(__name__)
 
 
+def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None) -> str | None:
+    """Validate common search inputs. Returns an error string or None if valid."""
+    if not keyword or not keyword.strip():
+        return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
+    if offset < 0:
+        return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+    if year_min is not None and year_max is not None and year_min > year_max:
+        return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
+    return None
+
+
 def register_search_tool(mcp) -> None:
     """Register the search tools with the MCP server."""
 
@@ -161,15 +172,9 @@ def register_search_tool(mcp) -> None:
         This tool searches only transcribed text (not metadata).
         For metadata search, use search_metadata instead.
         """
-        # Input validation
-        if not keyword or not keyword.strip():
-            return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
-        if offset < 0:
-            return PlainTextFormatter().format_error_message(
-                f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"]
-            )
-        if year_min is not None and year_max is not None and year_min > year_max:
-            return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
+        validation_error = _validate_search_input(keyword, offset, year_min, year_max)
+        if validation_error:
+            return validation_error
 
         if research_context:
             logger.info(f"MCP Tool: search_transcribed | context: {research_context}")
@@ -311,15 +316,9 @@ def register_search_tool(mcp) -> None:
         This tool searches metadata fields, not transcribed text.
         For transcription search, use search_transcribed instead.
         """
-        # Input validation
-        if not keyword or not keyword.strip():
-            return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
-        if offset < 0:
-            return PlainTextFormatter().format_error_message(
-                f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"]
-            )
-        if year_min is not None and year_max is not None and year_min > year_max:
-            return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
+        validation_error = _validate_search_input(keyword, offset, year_min, year_max)
+        if validation_error:
+            return validation_error
 
         if research_context:
             logger.info(f"MCP Tool: search_metadata | context: {research_context}")

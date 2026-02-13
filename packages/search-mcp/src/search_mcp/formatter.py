@@ -163,6 +163,79 @@ class PlainTextFormatter:
             return f"No more results found for '{search_result.keyword}' at offset {search_result.offset}. Total results: {search_result.total_hits}"
         return f"No results found for '{search_result.keyword}'. make sure to use \"\" "
 
+    def _format_document_header(self, lines: list[str], document) -> None:
+        """Emit ref_code, institution, date, and title lines for a document."""
+        lines.append(f"📚 Document: {document.metadata.reference_code}")
+
+        if document.metadata.archival_institution:
+            institution = document.metadata.archival_institution[0].caption
+            lines.append(f"🏛️  Institution: {institution}")
+
+        if document.metadata.date:
+            lines.append(f"📅 Date: {document.metadata.date}")
+
+        title = document.get_title()
+        title_display = title[:100] + "..." if len(title) > 100 else title
+        lines.append(f"📄 Title: {title_display}")
+
+    def _format_metadata_fields(self, lines: list[str], document) -> None:
+        """Emit type, hierarchy, provenance, link, and IIIF lines for metadata-only documents."""
+        if document.object_type:
+            type_info = document.object_type
+            if document.type:
+                type_info += f" / {document.type}"
+            lines.append(f"🏷️  Type: {type_info}")
+
+        if document.metadata.hierarchy:
+            hierarchy_parts = [h.caption for h in document.metadata.hierarchy[:3]]
+            if hierarchy_parts:
+                hierarchy_text = " → ".join(hierarchy_parts)
+                if len(hierarchy_text) > 150:
+                    hierarchy_text = hierarchy_text[:147] + "..."
+                lines.append(f"📂 Context: {hierarchy_text}")
+
+        if document.metadata.provenance:
+            prov = document.metadata.provenance[0]
+            prov_text = prov.caption
+            if prov.date:
+                prov_text += f" ({prov.date})"
+            lines.append(f"👤 Creator: {prov_text}")
+
+        if document.links and document.links.html:
+            lines.append(f"🔗 View: {document.links.html}")
+
+        if document.links and document.links.image:
+            bildvisaren_url = self._iiif_manifest_to_bildvisaren(document.links.image[0])
+            if bildvisaren_url:
+                lines.append(f"🖼️  View Images: {bildvisaren_url}")
+            else:
+                lines.append(f"🖼️  IIIF: {document.links.image[0]}")
+
+    def _format_document_snippets(self, lines: list[str], document, keyword: str) -> None:
+        """Emit page numbers, hit counts, and first 3 snippets for a transcribed document."""
+        page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
+        trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
+
+        doc_snippet_count = len(document.transcribed_text.snippets)
+        total_hits = document.get_total_hits()
+        hit_label = "hit" if doc_snippet_count == 1 else "hits"
+
+        lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
+
+        if total_hits > doc_snippet_count:
+            lines.append(f"💡 {doc_snippet_count} {hit_label} shown ({total_hits} total)")
+        else:
+            lines.append(f"💡 {doc_snippet_count} {hit_label} found")
+
+        for snippet in document.transcribed_text.snippets[:3]:
+            snippet_text = self.highlight_search_keyword(snippet.text, keyword)
+            if snippet.pages:
+                page_id = snippet.pages[0].id
+                lines.append(f"   Page {page_id}: {snippet_text}")
+
+        if len(document.transcribed_text.snippets) > 3:
+            lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
+
     def format_search_results(
         self,
         search_result,
@@ -200,10 +273,8 @@ class PlainTextFormatter:
 
         # Different summary for metadata search vs transcribed search
         if snippet_count > 0:
-            # Transcribed text search - has page-level hits
             lines.append(f"Found {snippet_count} page-level hits across {document_display} volumes")
         else:
-            # Metadata search - just document matches
             lines.append(f"Found {document_display} volumes matching metadata")
         lines.append("")
 
@@ -213,11 +284,8 @@ class PlainTextFormatter:
                 break
             items_scanned = idx + 1
 
-            # For transcribed search, skip documents without snippets
-            # For metadata search, show all documents
             has_snippets = document.transcribed_text and document.transcribed_text.snippets
             if snippet_count > 0 and not has_snippets:
-                # Transcribed search mode - skip docs without snippets
                 continue
 
             ref_code = document.metadata.reference_code
@@ -227,104 +295,28 @@ class PlainTextFormatter:
                 prev_page_nums = set(seen_pages.get(ref_code, []))
 
                 if has_snippets:
-                    # Filter to snippets with at least one unseen page
                     new_snippets = [s for s in document.transcribed_text.snippets if any(_page_id_to_number(p.id) not in prev_page_nums for p in s.pages)]
                     if not new_snippets:
                         skipped_count += 1
                         continue
-                    # Compact format: header + only new snippets
                     lines.append(f"📚 Document: {ref_code} (previously shown — new pages only)")
                     self._format_compact_snippets(lines, new_snippets, search_result.keyword)
                     lines.append("")
                     displayed_count += 1
                     continue
                 else:
-                    # Metadata-only: already seen this ref_code
                     skipped_count += 1
                     continue
 
-            # --- Full rendering (existing behavior) ---
+            # --- Full rendering ---
             displayed_count += 1
+            self._format_document_header(lines, document)
 
-            lines.append(f"📚 Document: {ref_code}")
-
-            if document.metadata.archival_institution:
-                institution = document.metadata.archival_institution[0].caption
-                lines.append(f"🏛️  Institution: {institution}")
-
-            if document.metadata.date:
-                lines.append(f"📅 Date: {document.metadata.date}")
-
-            title = document.get_title()
-            title_display = title[:100] + "..." if len(title) > 100 else title
-            lines.append(f"📄 Title: {title_display}")
-
-            # For metadata search, show additional contextual information
             if not has_snippets:
-                # Show object type
-                if document.object_type:
-                    type_info = document.object_type
-                    if document.type:
-                        type_info += f" / {document.type}"
-                    lines.append(f"🏷️  Type: {type_info}")
+                self._format_metadata_fields(lines, document)
 
-                # Show hierarchy (archival context)
-                if document.metadata.hierarchy:
-                    hierarchy_parts = [h.caption for h in document.metadata.hierarchy[:3]]
-                    if hierarchy_parts:
-                        hierarchy_text = " → ".join(hierarchy_parts)
-                        if len(hierarchy_text) > 150:
-                            hierarchy_text = hierarchy_text[:147] + "..."
-                        lines.append(f"📂 Context: {hierarchy_text}")
-
-                # Show provenance (creator/person)
-                if document.metadata.provenance:
-                    prov = document.metadata.provenance[0]
-                    prov_text = prov.caption
-                    if prov.date:
-                        prov_text += f" ({prov.date})"
-                    lines.append(f"👤 Creator: {prov_text}")
-
-                # Show link to view online
-                if document.links and document.links.html:
-                    lines.append(f"🔗 View: {document.links.html}")
-
-                # Show bildvisaren URL if IIIF manifest available
-                if document.links and document.links.image:
-                    bildvisaren_url = self._iiif_manifest_to_bildvisaren(document.links.image[0])
-                    if bildvisaren_url:
-                        lines.append(f"🖼️  View Images: {bildvisaren_url}")
-                    else:
-                        # Fallback to IIIF manifest if conversion fails
-                        lines.append(f"🖼️  IIIF: {document.links.image[0]}")
-
-            # Only show pages and snippets for transcribed search (has_snippets)
             if has_snippets:
-                # Extract page numbers from snippets using shared helper
-                page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
-                trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
-
-                doc_snippet_count = len(document.transcribed_text.snippets)
-                total_hits = document.get_total_hits()
-                hit_label = "hit" if doc_snippet_count == 1 else "hits"
-
-                lines.append(f"📖 Pages with hits: {', '.join(trimmed_page_numbers)}")
-
-                # Show total hits if available and different from shown count
-                if total_hits > doc_snippet_count:
-                    lines.append(f"💡 {doc_snippet_count} {hit_label} shown ({total_hits} total)")
-                else:
-                    lines.append(f"💡 {doc_snippet_count} {hit_label} found")
-
-                # Show first 3 snippets
-                for snippet in document.transcribed_text.snippets[:3]:
-                    snippet_text = self.highlight_search_keyword(snippet.text, search_result.keyword)
-                    if snippet.pages:
-                        page_id = snippet.pages[0].id
-                        lines.append(f"   Page {page_id}: {snippet_text}")
-
-                if len(document.transcribed_text.snippets) > 3:
-                    lines.append(f"   ...and {len(document.transcribed_text.snippets) - 3} more pages with hits")
+                self._format_document_snippets(lines, document, search_result.keyword)
 
             lines.append("")
 

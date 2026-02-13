@@ -87,6 +87,7 @@ select = [
     "C4",     # flake8-comprehensions
     "SIM",    # flake8-simplify
     "RUF",    # ruff-specific
+    "C901",   # mccabe complexity
 ]
 ignore = [
     "E501",   # line-too-long — MCP tool docstrings are intentionally long for LLM context
@@ -97,6 +98,9 @@ ignore = [
     "SIM108", # ternary — if/else blocks are often more readable
 ]
 
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -105,14 +109,13 @@ indent-style = "space"
 lines-after-imports = 2
 known-first-party = ["ra_mcp_common", "ra_mcp_search", "search_cli", "search_mcp", "ra_mcp_browse", "browse_cli", "browse_mcp", "guide_mcp", "ra_mcp_server"]
 
-[tool.ty]
-# error-on-warning = true
+[tool.ty.terminal]
+error-on-warning = true
 
 [tool.ty.environment]
 python-version = "3.12"
 
 
 [tool.pytest.ini_options]
-env = ["PY_COLORS=1"]
 markers = []
 testpaths = ["packages/*/tests"]
