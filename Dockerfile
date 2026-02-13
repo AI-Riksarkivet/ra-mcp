@@ -45,14 +45,14 @@ RUN addgroup -g 1000 ra-mcp && \
 
 WORKDIR /app
 
-# Copy only what's needed at runtime
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/src /app/src
-COPY --from=builder /app/packages /app/packages
-COPY assets/index.html ./assets/index.html
-COPY resources/ ./resources/
+# Copy only what's needed at runtime (--chown avoids a separate chown layer)
+COPY --from=builder --chown=ra-mcp:ra-mcp /app/.venv /app/.venv
+COPY --from=builder --chown=ra-mcp:ra-mcp /app/src /app/src
+COPY --from=builder --chown=ra-mcp:ra-mcp /app/packages /app/packages
+COPY --chown=ra-mcp:ra-mcp assets/index.html ./assets/index.html
+COPY --chown=ra-mcp:ra-mcp resources/ ./resources/
 
-RUN mkdir -p /app/data && chown -R ra-mcp:ra-mcp /app
+RUN mkdir -p /app/data && chown ra-mcp:ra-mcp /app /app/data
 
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
