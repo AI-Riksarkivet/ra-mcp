@@ -120,7 +120,7 @@ title: 00 Innehallsforteckning
      6. [Arrenden](18_Lantbruk.htm#a6)
      7. [Lantbruksnämnd ](18_Lantbruk.htm#a7)
   19. [Allmän skola](19_Skola.htm)
-Inledning  
+Inledning
 
      1. [Läroverk och gymnasium](19_Skola.htm#a1)
      2. [Flickskola](19_Skola.htm#a2)
@@ -251,7 +251,7 @@ Inledning
      3. [Övriga organ för intern service](44_Internadministration.htm#a3)
   45. [Studiestöd](45_Studiestod.htm)
 
-46-61. [FÖRSVARETS REGIONALA OCH LOKALA ARKIVBILDARE  
+46-61. [FÖRSVARETS REGIONALA OCH LOKALA ARKIVBILDARE
 _av Anders Degerström, Lars Ericson och Ulf Söderberg_ \- Introduktion ](46-61_Forsvaret.htm)
 
   1. [FÖRSVARSMAKTENS GEMENSAMMA REGIONALA ENHETER](46-61_Forsvaret.htm#a46)

@@ -7,7 +7,7 @@ title: 01 Domstolar
 
 ## 1\. ALLMÄNNA DOMSTOLAR
 
-  
+
 
 ### Inledning
 
@@ -15,19 +15,19 @@ Domstolar som är knutna till en speciell typ av verksamhet behandlas under resp
 
 Domstolarna betraktas som statliga myndigheter, även om kämnärs- och rådhusrätt i städerna hade starka kommunala inslag. I äldre tid hade domstolarnas ledamöter både i staden och på landet även vissa förvaltningsuppdrag och utövade kontroll för statens räkning. I staden blev ledamöterna av rådhusrätten i egenskap av magistrat stadens styrelse under 1600-talet. På landsbygden förvandlades däremot häradsrätten efter hand till en ren domstol, men fortfarande i 1734 års lag ser man en del av de lokala förvaltningsfunktionerna. Skillnaden mellan stad och land var stor och upphörde inte förrän med tingsrätterna 1971. Följande uppställning visar det gamla systemet:
 
-Landsbygden | Staden  
----|---  
-Häradsrätt och tingslag överklagas till lagmansrätt eller Kungen -1614, sedan hovrätt  
-Ersätts av **tingsrätt** 1971  | Kämnärsrätt från medeltid - 1849, överklagas till Rådhusrätt (utom i Sthlm)  
-| Poliskammare och polisdomstol 1864-1947 överklagas till hovrätt  
-| Rådhusrätt -1970;   
-överklagas till Kungen -1614, sedan till hovrätt  
-Ersätts av **tingsrätt** 1971   
-Lagmansrätt \- 1849 andra instans i tvistemål  
-överklagas till hovrätt 1614-1849  |   
-Hovrätt ersätter Kungen 1614   
-Högsta Domstolen blir tredje instans 1789  
-  
+Landsbygden | Staden
+---|---
+Häradsrätt och tingslag överklagas till lagmansrätt eller Kungen -1614, sedan hovrätt
+Ersätts av **tingsrätt** 1971  | Kämnärsrätt från medeltid - 1849, överklagas till Rådhusrätt (utom i Sthlm)
+| Poliskammare och polisdomstol 1864-1947 överklagas till hovrätt
+| Rådhusrätt -1970;
+överklagas till Kungen -1614, sedan till hovrätt
+Ersätts av **tingsrätt** 1971
+Lagmansrätt \- 1849 andra instans i tvistemål
+överklagas till hovrätt 1614-1849  |
+Hovrätt ersätter Kungen 1614
+Högsta Domstolen blir tredje instans 1789
+
 ### 1.Brott och tvister på landet
 
 I Syd- och Mellansverige utgjorde häradsrätt en direkt fortsättning på medeltidens ting, där en domare utsedd av kungen dömde tillsammans med en nämnd bestående av ansedda bönder från de socknar som ingick i häradet. Häradsrätten kallades tingsrätt. Konungens domhavande blev häradshövdingen. Länsman var allmän åklagare till 1917, dvs så länge han fanns. I de talrika tvistemålen klagade enskild person på en annan, men länsman kunde fungera som ombud. Länsman var kunglig ämbetsman, till en början under en fogde, under 1600-talet underställd kronofogde och ytterst landshövding (jfr 5.3).
@@ -36,7 +36,7 @@ I det glest befolkade Norrland utvecklades de lokala domstolarna litet annorlund
 
 Sockentingen fungerade som första och sista instans för lindrigare brott fram till slutet av 1600-talet. Grövre brott gick till Svea hovrätt i Stockholm från 1614. 1670 indelades Norrland i domsagor och tingslag och häradsrätter infördes. Ett tingslag bestod av en eller flera socknar, precis som ett härad. En domsaga bestod av ett eller flera kontrakt (jfr 6.3). Från 1671 överklagades de lokala tingens domar till hovrätten, liksom i övriga landet.
 
-På Gotland var setting en domstol till 1645, då ön övergick till Sverige, men inga settingarkiv är bevarade. Ting är också en gammal administrativ indelning. De 20 gotländska tingen var skatteuppbördsdistrikt på 1400-talet. På Gotland finns tre tingslagsarkiv 1646-81 baserade på treding. Gotland har också några kronolänsmansdistrikt från 1800-talet och några hushållningsgillesarkiv från 1900-talet baserade på tingsindelning. 
+På Gotland var setting en domstol till 1645, då ön övergick till Sverige, men inga settingarkiv är bevarade. Ting är också en gammal administrativ indelning. De 20 gotländska tingen var skatteuppbördsdistrikt på 1400-talet. På Gotland finns tre tingslagsarkiv 1646-81 baserade på treding. Gotland har också några kronolänsmansdistrikt från 1800-talet och några hushållningsgillesarkiv från 1900-talet baserade på tingsindelning.
 
 1734 års lag har utförliga bestämmelser om häradsrätten. Enligt rättegångsbalken 1 kap. är häradsrätt första instans på landet. Där dömer häradshövding med tolv bönder, som bor i häradet och valts till detta. Sockenstämma ( se 6.1) valde nämndemän. De tolv kallades häradsnämnd och utgjorde inte bara domstol utan hade även tillsyn över vägar och andra allmänna nyttigheter. Före 1723 års riksdagsordning var häradet valkrets för prästeståndet. Häradet utsåg också böndernas riksdagsmän genom elektorer valda på sockenstämma. Flera härad kunde samsas om en riksdagsman.
 
@@ -48,13 +48,13 @@ Tinget skulle börja senast klockan 9 på morgonen och inleddes med gudstjänst.
 
 Häradshövdingen ansvarade för att domboken fördes riktigt, skrev själv under den och satte på häradets sigill. Han skulle vid slutet av domboken tillfoga en förteckning över de böter som influtit vid tinget och hur de fördelades. Många böter delades i tre delar: en till kronan, en till häradet och en till målsäganden. Häradets del kunde sedan delas mellan nämnd och häradshövding, de fattiga kunde få en del osv. Varje års dombok skulle sändas in till hovrätten före Mikaelsdag (30/9) året därefter. I domboken skulle också alla syner i jordatvister, med domen därpå, införas. Om någon anklagades för grov missgärning t ex stöld och laga ting inte inföll snart, skulle häradshövdingen kalla särskilt dvs urtima ting. Kronans ärenden och andra allmänna mål kunde också föranleda urtima ting.
 
-I häradskistan på varje tingställe skulle man förvara häradets sigill, riksdagsbeslut, allmänna stadgar och de handlingar som angick häradet. I kistan skulle man också förvara de böter som tillfallit häradet. Häradshövdingen skulle årligen redovisa hur de använts till häradets gemensamma nytta, och skicka denna redovisning till landshövdingen. Det skulle finnas tre nycklar till häradskistan. En hade häradshövdingen, en hade kronofogden eller den som särskilt valdes till detta. Den tredje nyckeln innehades av den som "främst i nämnden sitter", dvs den ledande nämndemannen, som kallades häradsdomare. 
+I häradskistan på varje tingställe skulle man förvara häradets sigill, riksdagsbeslut, allmänna stadgar och de handlingar som angick häradet. I kistan skulle man också förvara de böter som tillfallit häradet. Häradshövdingen skulle årligen redovisa hur de använts till häradets gemensamma nytta, och skicka denna redovisning till landshövdingen. Det skulle finnas tre nycklar till häradskistan. En hade häradshövdingen, en hade kronofogden eller den som särskilt valdes till detta. Den tredje nyckeln innehades av den som "främst i nämnden sitter", dvs den ledande nämndemannen, som kallades häradsdomare.
 
-Det står inget om var domböckerna och övriga originalhandlingar skulle förvaras. Förmodligen fanns de på hyllor i tingshuset. 1700-talets domböcker var inte så utförliga, 1800-talets hade en tendens att svälla ut. Skrevs de av någon nämndeman eller anlitade man professionell skrivare? Handstilarna i domböckerna är ofta ganska dåliga, men även prydliga skrivarstilar förekommer. Nämndemännen var ofta skrivkunniga - läskunnighet räknade man med. 
+Det står inget om var domböckerna och övriga originalhandlingar skulle förvaras. Förmodligen fanns de på hyllor i tingshuset. 1700-talets domböcker var inte så utförliga, 1800-talets hade en tendens att svälla ut. Skrevs de av någon nämndeman eller anlitade man professionell skrivare? Handstilarna i domböckerna är ofta ganska dåliga, men även prydliga skrivarstilar förekommer. Nämndemännen var ofta skrivkunniga - läskunnighet räknade man med.
 
 I tingshuset förvarades också det ena exemplaret av de bouppteckningar som enligt 1734 års lag skulle lämnas in till rätten. Bouppteckningarna skrevs nog ofta av nämndemän. Det ena exemplaret stannade hos arvingarna och återfinns ibland i enskilda gårdsarkiv. Näst domböckerna är bouppteckningarna det mest omfattande materialet i äldre domstolsarkiv, därnäst kommer konkursakterna.
 
-Skrev man domböckerna efter dagens förhandlingar eller medan målet pågick? Ibland verkar de vara direkta uppteckningar som speglar scenen: den ene går ut och den andre kommer in; domboken redogör för ordväxlingar som visar folks sätt att tala, samtidigt som protokollföraren klarar den invecklade meningsbyggnaden i tidens kanslisvenska. Domböckerna är därför troligen skrivna efter dagens eller hela tingets slut och i så fall på grundval av minnesbilder och anteckningar. Från 1947 finns inte längre domböcker i den gamla formen utan enbart domar; handlingarna dvs akterna gallras till stor del vid underdomstolarna, i mindre utsträckning i högre instans. Men 1900-talets domböcker är betydligt formellare än t ex 1700-talets. 
+Skrev man domböckerna efter dagens förhandlingar eller medan målet pågick? Ibland verkar de vara direkta uppteckningar som speglar scenen: den ene går ut och den andre kommer in; domboken redogör för ordväxlingar som visar folks sätt att tala, samtidigt som protokollföraren klarar den invecklade meningsbyggnaden i tidens kanslisvenska. Domböckerna är därför troligen skrivna efter dagens eller hela tingets slut och i så fall på grundval av minnesbilder och anteckningar. Från 1947 finns inte längre domböcker i den gamla formen utan enbart domar; handlingarna dvs akterna gallras till stor del vid underdomstolarna, i mindre utsträckning i högre instans. Men 1900-talets domböcker är betydligt formellare än t ex 1700-talets.
 
 Stora härad delades på flera tingslag t ex Vadsbo i Skaraborgs län. Från 1870-talet sammanlades små häradsrätter till domsagor, som blev det normala distriktet för underdomstol på landet (domsagostadga SFS 1943:290). Domsaga är fortfarande namnet på distriktet för tingsrätterna, som infördes från 1971, då skillnaden mellan land och stad upphörde (instruktion SFS 1970:108, 1979:572). 97 tingsrätter övertog funktionerna från många fler häradsrätter, domsagor och rådhusrätter. En central myndighet inrättades i Jönköping, det nuvarande Domstolsverket, från början Domstolsnämnden (DON).
 
@@ -70,7 +70,7 @@ Enligt 1734 års lag var lagmansrätt andra instans i tvistemål, och man kunde 
 
 Lagmannen skulle enligt Rättegångsbalken 3 kap. hålla ting i sin lagsaga en gång vart år, mellan Bärtels (24/8) och Mickeldag (30/9), om landsorten ej annat krävde. Han skulle utlysa tinget tre månader i förväg och meddela landshövdingen dagen. Domstolen kunde utökas med några lagfarna män, om lagmannen ville. Kronofogde eller länsman skulle närvara. Lagmansrätten fick bara ta upp de mål som vädjats dit, men om häradsrätten skjutit upp eller glömt ta upp något mål, kunde lagmannen ta upp dem, om det "bekvämligen ske kan." Han fick också döma mindre brott som okvädinsord, oljud, tingsfridsbrott och slagsmål, som inträffade medan lagmanstinget pågick och inte krävde vidlyftigare rannsakning. Lagmannen skulle skicka in dombok till hovrätten och i lagmanskistan gömma en likalydande dombok jämte lagmansrättens andra handlingar. Eftersom lagmansrätt ofta dömde lika med häradsrätt och man från lagmansrätt kunde vädja vidare till hovrätt, avskaffades lagmansrätt som en onödig mellaninstans 1849.
 
-  
+
 
 ### 2 Brott och tvister i staden
 
@@ -78,13 +78,13 @@ Rådhusrätten, tidigare kallad rådstuvurätt efter rådstugan där den sammant
 
 Enligt 1734 års lag var kämnärsrätt första instans i staden, men alla städer fick inte kämnärsrätt, som avskaffades 1849. I kämnärsrätt dömde en rådman och kämnärerna var bisittare. Den kunde rannsaka och döma i alla tvister och även i brottmål, om de ej enligt lag eller särskild stadga hörde till annan rätt. I mål som gällde liv och ära fick kämnärsrätten bara rannsaka, inte döma, och rannsakningen skulle genast sändas in till rådhusrätten. I Stockholm fick dock kämnärsrätten döma även i sådana mål och skulle sända in domen till hovrätten för granskning (rättegångsbalken kap. 5) Från Stockholms kämnärsrätt vädjade man direkt till hovrätten, inte till rådhusrätten. Stockholm hade flera kämnärsrätter: en för staden, en för Norra Förstaden 1635-1760, som delades i en för Västra 1761-1840 och en för Östra. Södra Förstadens kämnärsrätt 1654-1840 blev 1841 en avdelning inom stadens kämnärsrätt, liksom Västra och Östra. Dessutom fanns en extra kämnärsrätt 1810-11. I Eskilstuna fristad, inrättad 1771, fanns en ordningsrätt, som att döma av bevarade protokoll motsvarade kämnärsrätt.
 
-Byting i Skånes, Hallands och Blekinge städer motsvarade kämnärsrätt. Från 1682 ersattes bytinget av kämnärsrätt i och med att svensk lag och rättegångsordning skulle gälla. I Malmö stadsarkiv har bytingets domböcker bevarats från 1577. Fördelningen av mål mellan byting och rådhusrätt är oklar, men i praktiken tycks rådhusrätten ha handlagt civila mål och bytinget brottmål, förseelser mot skråförfattningar, försäljningar, arvsärenden m fl. Några städers bytingböcker finns i landsarkivet i Lund. 
+Byting i Skånes, Hallands och Blekinge städer motsvarade kämnärsrätt. Från 1682 ersattes bytinget av kämnärsrätt i och med att svensk lag och rättegångsordning skulle gälla. I Malmö stadsarkiv har bytingets domböcker bevarats från 1577. Fördelningen av mål mellan byting och rådhusrätt är oklar, men i praktiken tycks rådhusrätten ha handlagt civila mål och bytinget brottmål, förseelser mot skråförfattningar, försäljningar, arvsärenden m fl. Några städers bytingböcker finns i landsarkivet i Lund.
 
 Enligt 1734 års lag (rättegångsbalken kap. 1) är rådhusrätt första instans i stad som inte har kämnärsrätt. Enligt kap. 6 ska rådstuvurätt hållas måndag, onsdag och lördag varje vecka, och oftare om det behövs. Där dömde man även i växel- och sjörättsmål, i tvister om flyttning i och ur hus oberoende av de tvistandes bostadsort, boskillnader mellan äkta makar, avveckling av gäldenärs skulder, inteckning, uppbud, lagfart, bördsrätt och grannars rätt, arv, förmynderskap och testamenten, om inte särskild Förmyndarkammare inrättats.
 
 Förmyndarkammare, som skulle ta hand om omyndigas arv och bevaka deras bästa, nämns i 1734 års lag men fanns bara i Stockholm, där den inrättats genom kunglig förordning 27/4 1667. Den var förenad med justitiekollegiet som dömde i målen (se 4.4). Genom SFS 1856:24 övertog rådhusrättens första avdelning dömandet i förmynderskapsmål och Förmyndarkammaren blev enbart förvaltande. Genom Förmynderskapslagen 1924:320 blev Förmyndarkammaren i Stockholm överförmyndare (instruktion 1924:480; om överförmyndare jfr 33.2) och förvaltade omyndigas medel 1925-34, men sedan flyttades uppgiften till drätselnämnden. Förmyndarkammaren var dock överförmyndare till 1956, då den ersattes av överförmyndarnämnden, och förvaltade en del donationsfonder (Stockholms kommunalkalender 1969 s 188).
 
-Flera typer av mål som legat under specialdomstolar som posträtt och tullrätt lades under rådhusrätt från 1830-talet. Från 1863 kunde städer läggas under landsrätt, dvs under häradsrätt, och så skedde med en del små och några nyinrättade städer. Rådhusrätt i större städer delades under 1800-talet i avdelningar efter olika typer av mål. Samfälld rådhusrätt beslutade om fördelningen av ärendena mellan avdelningarna. 
+Flera typer av mål som legat under specialdomstolar som posträtt och tullrätt lades under rådhusrätt från 1830-talet. Från 1863 kunde städer läggas under landsrätt, dvs under häradsrätt, och så skedde med en del små och några nyinrättade städer. Rådhusrätt i större städer delades under 1800-talet i avdelningar efter olika typer av mål. Samfälld rådhusrätt beslutade om fördelningen av ärendena mellan avdelningarna.
 
 Rådhusrätten hade i regel gemensam arkivbildning med stadens styrelse, magistraten. Gemensam förteckningsplan för rådhusrätt och magistrat fastställdes i SFS 1903:104. Från slutet av 1930-talet hade rådhusrätt även en övervakningsfunktion över villkorligt dömda och frigivna via övervakningsnämnd (se kap. 37). Kvarvarande rådhusrätter upphörde med utgången av 1970, då tingsrätterna infördes och skillnaden mellan stad och land upphörde.
 
@@ -94,13 +94,13 @@ Lagsökningsdomare för ärenden rörande betalningsförelägganden för gälden
 
 Konkursdomare vid härads- och rådhusrätter (enligt konkurslag 1921:226) var i regel inte heller egen arkivbildare, men Malmö utgjorde även i detta fall undantag och bildade ett konkursdomararkiv från 1922.
 
-  
+
 
 ### 3 Hovrätt
 
 Hovrätt inrättades 1614 efter tyskt mönster för att ersätta kungen som högsta instans, men redan efter några år återinfördes möjligheten att vädja till kungen. Högsta domstolen inrättades 1789 för att ersätta kungen. Till hovrätt hörde advokatfiskalsämbete till 1970.
 
-Svea hovrätt tillkom 1614, därefter kom hovrätter i Åbo för Finland och i Dorpat för de baltiska provinserna. Göta hovrätt inrättades 1634 för Götalandskapen. Enligt 1734 års lag vädjade man direkt till hovrätt från häradsrätt i brottmål, men i tvistemål måste man gå till lagmansrätt i andra instans, tills den avskaffades 1849. Hovrätt för Skåne och Blekinge inrättades 1820 i Kristianstad och flyttade på 1910-talet till Malmö. 1936 kom hovrätten för Övre Norrland i Umeå, 1948 för Västra Sverige i Göteborg. Hovrätten prövar numera domar från tingsrätt och är första instans, om underrättsdomare anklagas i samband med tjänsteutövning. 
+Svea hovrätt tillkom 1614, därefter kom hovrätter i Åbo för Finland och i Dorpat för de baltiska provinserna. Göta hovrätt inrättades 1634 för Götalandskapen. Enligt 1734 års lag vädjade man direkt till hovrätt från häradsrätt i brottmål, men i tvistemål måste man gå till lagmansrätt i andra instans, tills den avskaffades 1849. Hovrätt för Skåne och Blekinge inrättades 1820 i Kristianstad och flyttade på 1910-talet till Malmö. 1936 kom hovrätten för Övre Norrland i Umeå, 1948 för Västra Sverige i Göteborg. Hovrätten prövar numera domar från tingsrätt och är första instans, om underrättsdomare anklagas i samband med tjänsteutövning.
 
 Hovrätten skulle från början granska samtliga domar som medförde dödsstraff, dvs dessa verkställdes inte förrän hovrätten godkänt dem. I hovrätten dömde jurister, som skulle kunna korrigera lokala felaktiga domar. Hårda domar i underrätt kan alltså ha mildrats i hovrätt. Till hovrätt kunde man också vända sig med klagomål över landshövdingens utslag i utmätningsmål - landshövdingen var överexekutor (jfr 3.6). Landsförräderi gick direkt till hovrätten, liksom stämplingar mot kungen, kungahuset eller rikets frihet. Tvister om arv efter adelsmän samt förmynderskap över dessas barn handlades av hovrätt enligt adelns privilegier 1723. Hovrätten dömde också i sådana brottmål, där adelsman förverkat liv, ära, adlig frihet, gods eller arvsrätt, liksom i fråga om dueller och andra slagsmål mellan adelsmän. Domaren på orten fick rannsaka i dessa mål men inte döma. En del av detta adelsprivilegium upphävdes 1864 men den ekonomiska delen först 1916. SFS 1915:577 upphävde 1723 års privilegier. Hovrätt hade dock överinseende över fastställda adliga förmynderskap t o m 1924.
 
@@ -112,7 +112,7 @@ Krigshovrätt var 1916-49 formellt en avdelning inom Svea hovrätt, men arkivet 
 
 ### 4\. Förvaltnings- och skattedomstolar
 
-Stockholms kammarrätt har sitt ursprung i Kammarkollegium, som i början av 1600-talet inrättades för att pröva ärenden rörande räkenskaper för kronans egendom. 1695 inrättades Kammarrevisionen för kollegiets dömande och revisionella funktion, och 1799 kallades den Kungl Maj:ts och rikets kammarrätt. Denna kammarrätt hade befogenhet att döma i fråga om brott- och tvistemål med anknytning till kronans räkenskaper, dvs man kunde klaga på landshövdingens beslut hos kammarkollegium och kammarrätt. 1694-1811 fanns även amiralitetskammarrätt med en avdelning i Karlskrona och en i Stockholm. Den handlade observations- och balansmål samt fel i flottans räkenskaper. Arkivet omfattar 17 volymer (Krigsarkivets beståndsöversikt 2 s 501). Dessutom finns en volym 1762-67 från amiralitetskammarrätten vid Göteborgs eskader (KRA 6 s 72). Det fanns även en kammarrätt vid Arméns flotta (=skärgårdsflottan) i Stockholm. 
+Stockholms kammarrätt har sitt ursprung i Kammarkollegium, som i början av 1600-talet inrättades för att pröva ärenden rörande räkenskaper för kronans egendom. 1695 inrättades Kammarrevisionen för kollegiets dömande och revisionella funktion, och 1799 kallades den Kungl Maj:ts och rikets kammarrätt. Denna kammarrätt hade befogenhet att döma i fråga om brott- och tvistemål med anknytning till kronans räkenskaper, dvs man kunde klaga på landshövdingens beslut hos kammarkollegium och kammarrätt. 1694-1811 fanns även amiralitetskammarrätt med en avdelning i Karlskrona och en i Stockholm. Den handlade observations- och balansmål samt fel i flottans räkenskaper. Arkivet omfattar 17 volymer (Krigsarkivets beståndsöversikt 2 s 501). Dessutom finns en volym 1762-67 från amiralitetskammarrätten vid Göteborgs eskader (KRA 6 s 72). Det fanns även en kammarrätt vid Arméns flotta (=skärgårdsflottan) i Stockholm.
 
 Under 1800-talet blev kammarrätten i större utsträckning en besvärsinstans. Sedan början av 1900-talet har den revisionella delen tagits bort och den dömande har inriktats på överklaganden i skattemål och förvaltningsärenden t ex beslut enligt sociallagstiftningen eller andra beslut om tvångsåtgärder mot personer. Stockholms kammarrätt var ett centralt ämbetsverk, som 1942 blev besvärsinstans för överklagade taxeringar från prövningsnämnd (jfr 3.7). 1972 delades den i två regionala domstolar: kammarrätten i Stockholm med 9 avdelningar (av vilka två fanns i Sundsvall) och kammarrätten i Göteborg med 6 avdelningar (SFS 1971:289). 1974 ombildades avdelningarna i Sundsvall till en självständig kammarrätt och 1977 inrättades ny kammarrätt i Jönköping (1977:937, ändrad 1984:962).
 
@@ -122,7 +122,7 @@ Göteborg: Kristianstads, Malmöhus, Hallands, Göteborgs och Bohus, Älvsborgs,
 
 Sundsvall: Kopparbergs, Gävleborgs samt övriga Norrlandslän
 
-Jönköping: Östergötlands, Jönköpings, Kronobergs, Kalmar, Blekinge och Örebro län 
+Jönköping: Östergötlands, Jönköpings, Kronobergs, Kalmar, Blekinge och Örebro län
 
 Den största gruppen mål utgörs av skattemål men dessutom handläggs körkortsmål, byggnads- och vägmål, hälsovårdsmål och mål avseende socialtjänstlagen. Kammarrätten prövar också kommunalbesvär, som enligt 1991 års kommunallag kallas lagprövning; det är de fall då enskild kommunmedlem överklagar lagligheten i kommunalt beslut. Från kammarrätt kan man överklaga till Regeringsrätten, som inrättades 1909, som högsta domstol i förvaltningsmål (SFS 1909 s 38).
 
@@ -134,7 +134,7 @@ I mål enligt lagen om särskilda bestämmelser om vård av unga (LVU-mål) besl
 
 Akterna i de flesta mål gallras; enbart domarna bevaras. Från och med 1991 års taxering läggs vid skattemål upp en akt, som sedan följer målets handläggning till länsrätten och arkivläggs hos skattemyndigheten, alltså den första myndigheten som fattade beslut i ärendet, sedan målet slutligt avgjorts i länsrätt. När mål överklagas till kammarrätt och eventuellt regeringsrätt, arkivläggs akten hos dessa domstolar, utom körkortsmål, som skickas tillbaka till länsrättens arkiv.
 
-  
+
 
 ### 5\. Domstolar för jord och fast egendom: ägodelning, expropriation, inskrivning
 
@@ -150,11 +150,11 @@ Expropriationsdomstolar 1950-71
 
 Fastighetsdomstol 1969-07-01- ersatte expropriationsdomstol 1972-
 
-  
+
 
 I slutet av 1600-talet började avvittring enligt 1683 års avvittringsförordning för att främja nyodling i Dalarna och Norrland. Det var en lantmäteriförrättning som skilde kronans jord från enskildas. Avvittringen var i stort sett avslutad på 1930-talet. Handlingar i avvittringsärenden finns i länsstyrelsearkiv, hos lantmäteriet och på Riksarkivet.
 
-Avvittringsrätt fanns i Jämtlands, Norrbottens, Västernorrlands och Västerbottens län. I Jämtland var dess första period 1755-86, då arkivet blev 22 volymer, varav en är skogsavvittringsrättens protokoll 1755-58. 8/12 1820 utfärdade Kunglig Maj:t instruktion för den yngre avvittringsrätten i Jämtland, och SFS 1825 9/3 s 43 handlar om avvittringsdomare och avvittringslantmätare i Jämtland och Härjedalen. Avvittringsrätten i Jämtland behandlade alla skiftesmål 1821-40 och ägodelningsrätt inrättades därför inte förrän 1840. I de övriga norrländska länen har vissa tingslag speciella domböcker i avvittringsmål. 
+Avvittringsrätt fanns i Jämtlands, Norrbottens, Västernorrlands och Västerbottens län. I Jämtland var dess första period 1755-86, då arkivet blev 22 volymer, varav en är skogsavvittringsrättens protokoll 1755-58. 8/12 1820 utfärdade Kunglig Maj:t instruktion för den yngre avvittringsrätten i Jämtland, och SFS 1825 9/3 s 43 handlar om avvittringsdomare och avvittringslantmätare i Jämtland och Härjedalen. Avvittringsrätten i Jämtland behandlade alla skiftesmål 1821-40 och ägodelningsrätt inrättades därför inte förrän 1840. I de övriga norrländska länen har vissa tingslag speciella domböcker i avvittringsmål.
 
 Ägoskillnadsrätt fanns i Bjäre och Södra Åsbo i Skåne 1805-27. Den ersattes av ägodelningsrätt som allmänt inrättades 1827 med anledning av förordningarna om laga skifte (jfr 9.1) och fanns tills tingsrätterna infördes 1971. Rätten bestod av ägodelningsdomare jämte tre nämndemän kunniga i lanthushållning. Domaren var i regel densamme som vid häradsrätt eller domsaga. Arkiven består av protokoll. Före 1935 överklagades ägodelningsrättens beslut hos Kungen, därefter hos hovrätt. Renoverade domböcker skickades till hovrätten.
 
@@ -186,7 +186,7 @@ Inskrivningsdomare 1933-71 för lagfarter, inteckningar m m angående fastighete
 
 Slottsrätter fanns 1681-1844. 1681 hade en slottsrätt inrättats i Stockholm, och genom förordning 23 juni 1696 bestämdes att det skulle finnas slottsrätt på alla kungliga slott i landet. Landshövdingen, dvs Kungens Befallningshavande, skulle vara ordförande och ha sex bisittare. Slottsrätt skulle rannsaka och döma över de brott som begicks av slottsbetjänte - utom hov- och militärstaten - på slottet eller inom dess jurisdiktion. Slottsrätt avskaffades genom förordning 19/12 1844 angående upphörande av vissa domstolar. Landsarkivet i Lund har handlingar från slottsrätten i Landskrona 1737-64 (beståndskatalogen s 256) och från Varberg 1778-1895 (s 224). Från Malmö slottsrätt finns en volym från 1780-talet på Malmö stadsarkiv.
 
-Kommissorialrätter var under 1600- och 1700-talen namnet på tillfälligt anordnade domstolar för vidlyftigare mål, särskilt ämbetsförseelser och högförräderi. Kunglig Maj:t utsåg kommissioner som reste ut i landet och undersökte hur statens ämbetsmän skötte sina uppgifter. De dömde också i trolldomsmål i samband med häxepidemierna omkring 1670\. 1734 års kommissorialrätt i Ystad med anledning av stadens äldstes besvär över vissa rådmäns och stadskassörens sätt att sköta sitt arbete finns i landsarkivet i Lund. 
+Kommissorialrätter var under 1600- och 1700-talen namnet på tillfälligt anordnade domstolar för vidlyftigare mål, särskilt ämbetsförseelser och högförräderi. Kunglig Maj:t utsåg kommissioner som reste ut i landet och undersökte hur statens ämbetsmän skötte sina uppgifter. De dömde också i trolldomsmål i samband med häxepidemierna omkring 1670\. 1734 års kommissorialrätt i Ystad med anledning av stadens äldstes besvär över vissa rådmäns och stadskassörens sätt att sköta sitt arbete finns i landsarkivet i Lund.
 
 Domkapitel var under 1600-talet och fram till 1736, då 1734 års lag började gälla, domstol i äktenskapsmål och fortsatte att vara forum för prästerskapet t ex i tros- och disciplinärenden.
 

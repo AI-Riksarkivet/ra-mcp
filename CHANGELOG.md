@@ -303,5 +303,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump version to 0.2.0 and improve publish workflow (**BREAKING**)
 - Remove unused demo directory
 - Bump version to 0.2.1
-
-

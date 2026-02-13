@@ -9,7 +9,7 @@ title: 44 Internadministration
 
 Speciella arkivbildande organ inom internadministration, dvs sådana som ger service åt myndigheter som utför förvaltnings- eller annat arbete åt medborgarna, tillhör 1900-talet, eftersom förvaltningen måste ha nått en viss storlek för att sådana specialfunktioner ska vara nödvändiga.
 
-  
+
 
 ### 1\. Arbetsfred: statliga förlikningsmän
 
@@ -17,7 +17,7 @@ Sedan organiserade strejker blivit ett etablerat stridsmedel inom arbetslivet un
 
 Enligt lag om medling i arbetstvister 1920:245 med senare ändringar tillsatte Kunglig Maj:t en förlikningsman för att medla i tvister mellan arbetsgivare och arbetare. Västra distriktet omfattade 1936 Göteborgs och Bohus, Hallands, Skaraborgs och Älvsborgs län. Dåvarande förlikningsman var en docent Lindström, bosatt i Uddevalla, och dessutom fanns som särskild skiljedomare i arbetstvister borgmästare Nyborg (Göteborgs kommunalkalender 1936 s 239)..
 
-  
+
 
 Enligt SFS 1950:163 fanns åtta distrikt enligt följande:
 
@@ -37,13 +37,13 @@ Enligt SFS 1950:163 fanns åtta distrikt enligt följande:
 
 8\. Västerbottens och Norrbottens län
 
-  
+
 
 Enligt Statliga myndigheter 1986 förordnar förlikningsmannaexpeditionen i Stockholm förlikningsmän antingen för särskilda uppdrag eller för ett år i sänder, men enligt Nationalencyklopedien finns fortfarande fasta förlikningsmän i de åtta regionerna. Dessa är dock inte längre egna arkivbildare.
 
-Nio lönenämnder för tjänstemän omtalas i lagen om tjänsteplikt (SFS 1959:83, 1961:462, § 2 för distriktsindelning), men 1965 fick offentliganställda förhandlings- och strejkrätt. 
+Nio lönenämnder för tjänstemän omtalas i lagen om tjänsteplikt (SFS 1959:83, 1961:462, § 2 för distriktsindelning), men 1965 fick offentliganställda förhandlings- och strejkrätt.
 
-  
+
 
 ### 2\. Löne- och personalnämnder
 
@@ -61,7 +61,7 @@ Statens Avtalsverk skötte centrala löneförhandlingar för statligt anställda
 
 Länsstyrelsen hade 1971-c:a 1990 en administrativ enhet, som var egen arkivbildare och skötte löne- och ekonomiadministrationen både för länsstyrelsen kronofogdemyndigheterna och de lokala skattemyndigheterna i länet. Skatteavdelningen bröts dock ut 1987 som länsskattemyndighet med egen administration, och de lokala myndigheterna följde med (jfr 3.2).
 
-  
+
 
 ### 3\. Övriga organ för intern service
 

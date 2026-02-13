@@ -7,7 +7,7 @@ title: 99 Litteratur
 
 ## LITTERATUR
 
-  
+
 
 ALLMÄNT:
 
@@ -21,18 +21,18 @@ Bonniers Konversationlexikon andra upplagan (1950- )
 
 Nationalencyklopedien
 
-  
+
 
 I Stockholms och Göteborgs tryckta kommunalkalendrar finns historiker för både kommunala och statliga myndigheter. För Stockholm har åren 1933, 1969, 1985 och 1990 genomgåtts, för Göteborg 1936, 1945, 1957, 1969, 1975, 1985 och 1994. Hänvisningarna till kommunalkalendrar finns i regel inom parentes i texten. För Malmö har upplysningar ur arkivförteckningar meddelats av stadsarkivarien. Förteckningsinledningar på Riksarkivet, Stockholms stadsarkiv och de olika landsarkiven har också utnyttjats. Krigsarkivets (KRA) beståndsöversikt 1995 har använts för militära arkiv av civilt intresse. Landsarkivet i Lund, Beståndskatalog 1: de judiciella arkiven (1987) innehåller upplysningar inte bara om domstolar utan även om stadsstyrelse, fängelse m m.
 
 Gotland har många speciella arkivbildare och generellt hänvisas till Arkivforskning på Gotland utarbetad av Sten Körner, Tryggve Siltberg, Tommy Sundberg, 1979 (=Skriftserie utg. av kulturnämnden i Gotlands kommun, Gotlandica nr 16).
 
-Arkivregister för Stockholms län har genomgåtts för att fånga upp kommunala arkivbildare både i staden och i mindre kommuner. Den har kompletterats med Tom Sahléns sammanställning från Sundsvalls kommun (i Arkiv i Norrland 4, 1983). Cristina Wahlström, Rätt Råd Kraft Dåd, en historik över Uppsala kommuns styrelse 1863-1970 (Uppsala stads historia X, 1997) har givit många upplysningar om kommunernas allmänna utveckling. 
+Arkivregister för Stockholms län har genomgåtts för att fånga upp kommunala arkivbildare både i staden och i mindre kommuner. Den har kompletterats med Tom Sahléns sammanställning från Sundsvalls kommun (i Arkiv i Norrland 4, 1983). Cristina Wahlström, Rätt Råd Kraft Dåd, en historik över Uppsala kommuns styrelse 1863-1970 (Uppsala stads historia X, 1997) har givit många upplysningar om kommunernas allmänna utveckling.
 
 Från adelsbrev till automobil. Arkiv i väst 1 utg. av landsarkivet i Göteborg 1986 innehåller många äldre förvaltningshistoriska upplysningar. Samma gäller Arbetare och tjänstemän. Arkiv i Väst 2 1991. Björn Molin, Lennart Månsson & Lars Strömberg, Offentlig förvaltning. Stats- och kommunalförvaltningens struktur och funktioner, Bonniers 1969, ger en god översikt över förhållandena i slutet av 1960-talet. Den kompletteras av Dan Brändström, Bengt E Grimlund & Lars Ricknell, Län, landsting, kommun. Regional och lokal förvaltning i Sverige, andra upplagan 1972, Prisma. Statliga myndigheter 1986. Verksamhet, organisation, ekonomi utg av Statskontoret 1986 ger en bild av tillståndet på 1980-talet. Sveriges Nationalatlas: Infrastrukturen 1992 (Bra Böckers förlag) har också använts.
 
-  
-  
+
+
 
 Kapitel 1 ALLMÄNNA DOMSTOLAR
 
@@ -42,7 +42,7 @@ Allmänt
 
 Kjell Modéer, Juristens källor i arkiv och bibliotek (Juridiska föreningen i Lund, 1974).
 
-Landsarkivet i Lund, Beståndskatalog 1: de judiciella arkiven. Domstolarnas, städernas och fångvårdsanstalternas arkiv i Skåne, Halland och Blekinge, Lund 1987. Det judiciella systemet i Norrland enligt förteckningsinledning från landsarkivet i Härnösand. För en skildring av aktörer vid en mindre domstol på 1950-talet rekommenderas H K Rönbloms detektivroman Tala om rep (1958). 
+Landsarkivet i Lund, Beståndskatalog 1: de judiciella arkiven. Domstolarnas, städernas och fångvårdsanstalternas arkiv i Skåne, Halland och Blekinge, Lund 1987. Det judiciella systemet i Norrland enligt förteckningsinledning från landsarkivet i Härnösand. För en skildring av aktörer vid en mindre domstol på 1950-talet rekommenderas H K Rönbloms detektivroman Tala om rep (1958).
 
 Ting, setting, treding på Gotland se R Steffen, Gotlands organisation, Lund 1943, Arkivforskning på Gotland s 128 samt T Siltberg, Gotlands tingsindelning genom tiderna och domstolsreformen 1618 (i Gotländskt arkiv 1991)
 
@@ -54,9 +54,9 @@ Kämnärsrätt se Landsarkivets i Lund beståndskatalog 1 s 163
 
 Ordningsrätt se Fristadsbor inför rätta utg. av Lokalhistoriska sällskapet i Norra Södermanland, Stadsarkivet i Eskilstuna 1987.
 
-Byting se Landsarkivet i Lund, Beståndskatalog 1 s 218 Laholm, s 233 Simrishamn, s 256 Landskrona. 
+Byting se Landsarkivet i Lund, Beståndskatalog 1 s 218 Laholm, s 233 Simrishamn, s 256 Landskrona.
 
-Hovrätt och Advokatfiskalsämbete: för arkivens innehåll se Landsarkivet i Lund Beståndskatalog 1 s 35 ff för Skånes hovrätt. Göta hovrätt i Jönköping har också advokatfiskal som egen arkivbildare till 1970, jämte en vice advokatfiskal till 1857. Enligt Nordisk Familjebok var advokatfiskal en ämbetsman vid hovrätt, kammarkollegium och kammarrätt som hade tillsyn över verkets tjänstemän och kunde åtala dem för tjänstefel. Enligt Svensk uppslagsbok 1935 var advokatfiskal kronans ombud och allmän åklagare vid samma myndigheter och fanns även vid marinförvaltningen. Enligt Krigsarkivets beståndsöversikt 6 s 95 har Advokatfiskalen vid Karlskrona flottstation har efterlämnat ett arkiv för tiden 1806-1937, advokatfiskal vid Marinförvaltningen har handlingar 1836-1949 och dito inom Sydkustens marindistrikt 1936-56 (Krigsarkivets beståndsöversikt del 6 s 95, del 1 s 301 och del 6 s 40). Riksarkivet har en förteckning över Advokatfiskalsämbetets arkiv 1886-1972, men det torde röra kammarkollegiets advokatfiskal, som finns fortfarande (Nationalencyklopedien). 
+Hovrätt och Advokatfiskalsämbete: för arkivens innehåll se Landsarkivet i Lund Beståndskatalog 1 s 35 ff för Skånes hovrätt. Göta hovrätt i Jönköping har också advokatfiskal som egen arkivbildare till 1970, jämte en vice advokatfiskal till 1857. Enligt Nordisk Familjebok var advokatfiskal en ämbetsman vid hovrätt, kammarkollegium och kammarrätt som hade tillsyn över verkets tjänstemän och kunde åtala dem för tjänstefel. Enligt Svensk uppslagsbok 1935 var advokatfiskal kronans ombud och allmän åklagare vid samma myndigheter och fanns även vid marinförvaltningen. Enligt Krigsarkivets beståndsöversikt 6 s 95 har Advokatfiskalen vid Karlskrona flottstation har efterlämnat ett arkiv för tiden 1806-1937, advokatfiskal vid Marinförvaltningen har handlingar 1836-1949 och dito inom Sydkustens marindistrikt 1936-56 (Krigsarkivets beståndsöversikt del 6 s 95, del 1 s 301 och del 6 s 40). Riksarkivet har en förteckning över Advokatfiskalsämbetets arkiv 1886-1972, men det torde röra kammarkollegiets advokatfiskal, som finns fortfarande (Nationalencyklopedien).
 
 Länsrätt 1979- arkivbeskrivning för länsrätten i Kronobergs län, Landsarkivet i Lund.
 
@@ -70,7 +70,7 @@ Kommissorialrätt Marie Lennersand, Höga herrar på visit. Kommissioner till V�
 
 Borgrätt Riksarkivets beståndsöversikt 4 (Kammararkivet) s 407 f.
 
-  
+
 
 Kapitel 2 FÄNGELSE OCH TVÅNGSARBETE
 
@@ -102,7 +102,7 @@ Ankarsmedjan i Karlskrona 1853 Magnus Hollertz, Resa kring en mycket liten del a
 
 Arbetskompanier och kronoarbetskår: Karlskrona arbetskompani och pionjärkompani har efterlämnat några kyrkoböcker m m som förvaras i Lund. Landsarkivets i Lund beståndskatalog 1 s 332 uppger att Lund har det mesta av kronoarbetskårens arkiv, men 16 volymer från Karlskrona arbetskarlkompanier finns i arkivet efter Kommendantsämbetet (Krigsarkivets beståndsöversikt 6 s 102, 108). Första Kompaniet/Disciplinkompaniet finns på Krigsarkivet (KRA 1 s 544, del 2 s 576 f) och Vaxholms kronoarbetskår 1843-91 finns på Stockholms stadsarkiv (Arkivregister för Stockholms län). Arbetskompani förekom 1940-45 i fältregementen (KRA 5 s 254, 296, 348).
 
-  
+
 
 Kapitel 3 SKATT, UPPBÖRD, INDRIVNING, LAGPRÖVNING
 
@@ -130,7 +130,7 @@ Accisrätt Förordningar se L G Linde, Svensk ekonomirätt, särskilt noterna 56
 
 Skult: förteckningsinledning, Landsarkivet i Göteborg
 
-  
+
 
 Kapitel 4 STADENS STYRELSE OCH FÖRVALTNING
 
@@ -162,12 +162,12 @@ Drätselkammare: Cristina Wahlström, Rätt råd kraft dåd. Uppsala kommuns his
 
 Stadsfullmäktige: E F Lindberg, stadsfullmäktige blir politiska (i Hundra år med kommunalförfattningarna s 219 ff).
 
-Stockholm: bemedlingskommission, brandvaktskasseadministration, båtmanshåll Stockholms kommunalkalender 1969 s 4 f, 860. 
+Stockholm: bemedlingskommission, brandvaktskasseadministration, båtmanshåll Stockholms kommunalkalender 1969 s 4 f, 860.
 
 Särskilda kommunallagar Stockholms kommunalkalender 1985 s 6 f. Beredningsutskott Stockholms kommunalkalender 1969 s 21.
 
-  
-  
+
+
 
 Kapitel 5 LÄN, LANDSHÖVDING, LANDSSTAT
 
@@ -183,13 +183,13 @@ Landsstaten: Bo Westerhult, Kronofogde, häradsskrivare, länsman. Den svenska f
 
 Landshövdingen på Gotland ståthållare och militärbefälhavare samt hauptman Arkivforskning på Gotland s 69 ff. Övriga ståthållare enligt Nordisk Familjebok.
 
-Länsstyrelsens arkivbildare 1953, 1958 och 1971 Brändström, Grimlund, Ricknell, Län, landsting, kommun. Regional och lokal förvaltning i samverkan, 1972 , med schema över sektionerna 1953-71 s 81, enheterna från 1/7 1971 s 92. Gotland och Stockholm hade annan organisation liksom Norrbottens län. 
+Länsstyrelsens arkivbildare 1953, 1958 och 1971 Brändström, Grimlund, Ricknell, Län, landsting, kommun. Regional och lokal förvaltning i samverkan, 1972 , med schema över sektionerna 1953-71 s 81, enheterna från 1/7 1971 s 92. Gotland och Stockholm hade annan organisation liksom Norrbottens län.
 
 1900-talets länsmyndigheter SOU 1967:20 Den statliga länsorganisationen. Sveriges Nationalatlas, Infrastrukturen s 134. Diskussionen om den västsvenska länsindelningen se Britt Liljevall, Vänersborgs historia III, 1994, s 300 ff.
 
 Överståthållarämbetet i Stockholm Stockholms kommunalkalender 1933 s 6 och 1969 s 688 samt förteckningsinledningar på Stockholms stadsarkiv.
 
-  
+
 
 Kapitel 6 STATSKYRKAN
 
@@ -217,7 +217,7 @@ Hjalmar Holmquist, De svenska domkapitlens förvandling till lärarekapitel 1571
 
 Robert Murray, Stockholms kyrkostyrelse intill 1600-talets mitt. 1949.
 
-Bertil Rehnberg, Eforus och konsistorium (i Gamla Hvitfeldtares årsbok 1987/88). 
+Bertil Rehnberg, Eforus och konsistorium (i Gamla Hvitfeldtares årsbok 1987/88).
 
 Yngve Stenström, Om biskops tjänst och ämbete, en studie i svensk kyrkorätt, Göteborg 1959.
 
@@ -225,7 +225,7 @@ Ingegerd Marell, Härnösands domkapitels arkiv och dess källor till Norrbotten
 
 Jan Liedgren, Inrättande av stiftsstyrelse i Karlstad. Ett trehundraårsminne. Karlstad 1947.
 
-  
+
 
 Kapitel 7 FOLKBOKFÖRING
 
@@ -253,9 +253,9 @@ Utlandsförsamlingar PM av Lena Bergström, landsarkivet i Uppsala.
 
 Amerikaförsamlingar L O Berg, "Riksarkivets arkivskatter äro icke de enda (i Sveriges släktforskarförbunds årsbok 1994 s 65).
 
-Militära rullor: Alf Åberg, Rullföringen inom armén genom tiderna (i Meddelande XI från Kungl. Armémuseum, 1950). 
+Militära rullor: Alf Åberg, Rullföringen inom armén genom tiderna (i Meddelande XI från Kungl. Armémuseum, 1950).
 
-  
+
 
 Kapitel 8 TULL, GRÄNS- OCH KUSTBEVAKNING
 
@@ -263,7 +263,7 @@ Tullpersonal 1853 i Magnus Hollertz, Resa kring en mycket liten del av jorden, B
 
 Sjötullrätt i Kristianstad, sjörätt i Helsingborg Landsarkivet i Lund Beståndskatalog s 229, 247.
 
-Gränstullkammaren i Karlstad Nordisk Familjebok, 2 uppl. supplement, art. Tullstaten. Tullmannaförbundets tidskrift Lanterna nr 10, 1978. 
+Gränstullkammaren i Karlstad Nordisk Familjebok, 2 uppl. supplement, art. Tullstaten. Tullmannaförbundets tidskrift Lanterna nr 10, 1978.
 
 Gallring i lokala tullarkiv på 1800-talet samt inloppstullkammare i Karlstad Arkiv i Väst 2 utg. av landsarkivet i Göteborg 1991 s 116 f.
 
@@ -273,9 +273,9 @@ Tullens senare organisation Statliga myndigheter 1986 s 21, Nationalatlas över 
 
 Kustbevakning SOU 1991:84 s 153. En kustbevakningskommitté arbetade 1810 (Krigsarkivets beståndsöversikt 2 s 519).
 
-  
 
-Kapitel 9 FASTIGHETSREGISTRERING OCH FASTIGHETSBILDNING 
+
+Kapitel 9 FASTIGHETSREGISTRERING OCH FASTIGHETSBILDNING
 
 Manus av Lars Rumar, Riksarkivet, som hänvisat till: Svenska lantmäteriet 1628-1928 1-2, Stockholm 1928.
 
@@ -283,13 +283,13 @@ SOU 1964:55 Organisation av rationaliseringsverksamheten på jordbrukets, skogsb
 
 SOU 1969:43 Nytt lantmäteri.
 
-SOU 1995:54 Fastighetsbildning, en gemensam uppgift för stat och kommun. 
+SOU 1995:54 Fastighetsbildning, en gemensam uppgift för stat och kommun.
 
 Om kartmaterialet se även Källmaterialet berättar. Bebyggelsehistorisk tidskrift 1984:7 samt Sveriges kartor i Sveriges Nationalatlas.
 
 Joachim Åkermans artikel om inskrivningsväsendet se under kap. 1.
 
-  
+
 
 Kapitel 10 BERGSBRUK
 
@@ -301,11 +301,11 @@ Stadsadministrationen i Norden på 1700-talet, Universitetsforlaget 1982.
 
 Industri- og Bjergvaerksdrift, Universitetsforlaget 1985.
 
-Kulturhistoriskt lexikon för nordisk medeltid bd 1, Malmö 1956. 
+Kulturhistoriskt lexikon för nordisk medeltid bd 1, Malmö 1956.
 
 För bouppteckningar i bergmästararkiv L O Berg, art i Släktforskarförbundets årsskrift 1994. Brottmål vid bergsting enligt Arkiv i Väst 2 utg. av landsarkivet i Göteborg 1991, s 138.
 
-  
+
 
 Kapitel 11. FISKE OCH VATTENBRUK
 
@@ -319,11 +319,11 @@ Fiskenämnd utredning av L Lönnroth, landsarkivet i Göteborg, 1991-05-01, i la
 
 Fiskevärderingsnämnd: Landsarkivet i Lund Beståndskatalog s 282
 
-  
+
 
 Kapitel 12 SKOGSBRUK, SKOGSVÅRD OCH JAKT
 
-1734 års lag i facsimilutgåva 1941. 
+1734 års lag i facsimilutgåva 1941.
 
 H Samzelius, Kongl. Skogs- och jägeristaten 1539-1900, tryckt 1899-1902.
 
@@ -339,7 +339,7 @@ Lars Kardell och Sixten Rehn, Skogshall - Sveriges äldsta skogsskola (i Skogshi
 
 Värmländska arkiv i landsarkivet i Göteborg (i Arkiv i väst 2 utg. av landsarkivet i Göteborg 1991 s 115 f).
 
-Skogsvårdsstyrelse se Brändström, Grimlund, Ricknell, Län, landsting, kommun s 126 samt SOU 1958:30 Skogsvården å enskilda skogar, 1964:55 Organisation av rationaliseringsverksamheten m m på jordbrukets, skogsbrukets och trädgårdsnäringens område s 33 ff för skogsvårdsstyrelsens arbetsuppgifter. 
+Skogsvårdsstyrelse se Brändström, Grimlund, Ricknell, Län, landsting, kommun s 126 samt SOU 1958:30 Skogsvården å enskilda skogar, 1964:55 Organisation av rationaliseringsverksamheten m m på jordbrukets, skogsbrukets och trädgårdsnäringens område s 33 ff för skogsvårdsstyrelsens arbetsuppgifter.
 
 Skogsutbildning SOU 1957:32 Statens skogsskolor.
 
@@ -349,7 +349,7 @@ Domänverket E von Hofsten, Historien om Domänverket, 1984 (broschyr som trolig
 
 Domänstyrelsens cirkulär 13, 1962 (Ing. II 154/1962 i Riksarkivets ämbetsarkiv) ger en historik.
 
-  
+
 
 Kapitel 13 SJUK- OCH HÄLSOVÅRD, TANDVÅRD
 
@@ -383,19 +383,19 @@ Länsläkare SOU 1967:20 Den statliga länsorganisationen s 106-111 samt Bränds
 
 Medicinsk utbildning i Göteborg Sjukvården i Göteborg 200 år, red. Gösta Carlsson, 1982 s 184 f, utbildning till sjukvårdsbiträde dito s 188 f.
 
-  
+
 
 Kapitel 14 SJÖFART OCH VATTENKOMMUNIKATIONER
 
 Lotskontor Krigsarkivets beståndsöversikt 1 s 259 ff som också redovisar handlingar från Östra lotsdistriktet 1799-1806, Norra och södra distrikten 1799-1830; Södra lotsdistriktets arkiv 1766-1933 finns på Krigsarkivet enligt beståndsöversikten del 6 s 345. För övriga lotsdistrikt har Krigsarkivet bara f d hemliga handlingar men för Södra även öppna handlingar bl a 100 volymer rullor, korrespondens, diarier och kartor.
 
-Sjöfartsarkiv: Allmänt art av Lars Melchior i Arkiv i väst 2 utg. av Landsarkivet i Göteborg 1991 samt för innehållet i sjömanshusens arkiv art Värmländska arkiv s 113 i samma skrift. 
+Sjöfartsarkiv: Allmänt art av Lars Melchior i Arkiv i väst 2 utg. av Landsarkivet i Göteborg 1991 samt för innehållet i sjömanshusens arkiv art Värmländska arkiv s 113 i samma skrift.
 
 Sjömän, fartyg och samhälle. Studier i bohuslänsk sjöfartshistoria 1800-1900 red. R Olsson, 1995, s 7 f redogör för arkivmaterial.
 
 Sjömanshus Erik Dahlgren, Härnösands sjömanshus (i Arkivvetenskapliga studier 2, Uppsala 1954).
 
-Kjell-Ove Persson, Sjömanshusarkiv (i Skånsk släktforskning 1987). 
+Kjell-Ove Persson, Sjömanshusarkiv (i Skånsk släktforskning 1987).
 
 SOU 1957:29 Mönstring och registrering av sjöfolk ger en allmän historik.
 
@@ -405,15 +405,15 @@ Dito s 247 för sjörätt i Helsingborg.
 
 Skeppsmätning A Andersson, Om svensk skeppsmätning i äldre tid (i Sjöhistorisk Årsbok 1945-46).
 
-Kontroll av lanternor m m Nautisk-metereologiska byrån enligt Krigsarkivets beståndsöversikt 1 s 337 f; del 2 s 684 redovisar räkenskaper. 
+Kontroll av lanternor m m Nautisk-metereologiska byrån enligt Krigsarkivets beståndsöversikt 1 s 337 f; del 2 s 684 redovisar räkenskaper.
 
-Sjöbefälsutbildning: Navigationsskola i Karlskrona 1829-62 enl. Krigsarkivets beståndsöversikt 6 s 109, del 2 s 689 om 28 vol. från navigationsskolornas premiekassor. Material från skeppsgosseskolor redovisas i KRA 6 s 266, 311. 
+Sjöbefälsutbildning: Navigationsskola i Karlskrona 1829-62 enl. Krigsarkivets beståndsöversikt 6 s 109, del 2 s 689 om 28 vol. från navigationsskolornas premiekassor. Material från skeppsgosseskolor redovisas i KRA 6 s 266, 311.
 
 Olof Traung red., Navigationsskolornas historia, 1941.
 
 A Söre, Från Machinistsamfundet 1848 till Svenska Maskinbefälsförbundet 1951, 1951.
 
-  
+
 
 Kapitel 15 VÄGAR, GATOR, BROAR, KOMMUNIKATIONER OCH LANDTRANSPORTER
 
@@ -435,7 +435,7 @@ Vägnämnd PM av Marianne Nilsson, Landsarkivet i Vadstena (stencil).
 
 Trafiksäkerhetsverket Statliga myndigheter 1986.
 
-  
+
 
 Kapitel 16 TILLVERKNING, KONTROLL, INDUSTRISTÖD
 
@@ -461,7 +461,7 @@ Företagarföreningar SOU 1967:20 Den statliga länsförvaltningen s 94.
 
 Jan Dahlin, Kring framväxten av en svensk lokaliseringspolitik. Småindustri och statligt företagsstöd 1930-54. Licentiatavhandl. Historiska institutionen i Lund, 1996.
 
-  
+
 
 Kapitel 17 HANDEL
 
@@ -473,7 +473,7 @@ Handelssocietet i Karlskrona 1770-1838 och handelsförening i Karlshamn 1852-63 
 
 Handelskammare SOU 1967:20 Den statliga länsförvaltningen s 94.
 
-  
+
 
 Kapitel 18 LANTBRUK OCH TRÄDGÅRDSSKÖTSEL
 
@@ -489,7 +489,7 @@ N J Hultgren & S O Rodhe, Matrikel över styrelsemedlemmar, lärare och elever v
 
 Inledning till arkivförteckning över mejeriskolan i Huså, Landsarkivet i Östersund.
 
-Markanvändning Lappfogdens arkiv i utredning av H Petrini 1949 (Ing. II 866/1949 i Riksarkivets ämbetsarkiv). 
+Markanvändning Lappfogdens arkiv i utredning av H Petrini 1949 (Ing. II 866/1949 i Riksarkivets ämbetsarkiv).
 
 Egnahemsideologin i början av 1900-talet Nils Edling, Det fosterländska hemmet. Egnahemspolitik, småbruk och hemideologi kring sekelskiftet 1900. Carlssons förlag 1996. Olle Gellerman, Staten och jordbruket 1867-1918, 1958.
 
@@ -519,7 +519,7 @@ Arrendenämnd PM av Nils Nilsson (ing. II 766/59) i Riksarkivets ämbetsarkiv, m
 
 Lantbruksnämnd Brändström, Grimlund, Ricknell, Län, landsting, kommun, 1972, s 124 f. SOU 1964:55 ger historik. Utredning av L Lönnroth 1991, finns i landsarkivens och riksarkivets ämbetsarkiv.
 
-  
+
 
 Kapitel 19. ALLMÄN SKOLA
 
@@ -527,7 +527,7 @@ Stadsskola Bengt Sandin, Hemmet, gatan, fabriken eller skolan. Folkundervisning 
 
 Läroverk Christina Florin & Ulla Johansson, " där de härliga lagrarna gro", 1993 s 89 uppställning över skolformer på 1910-talet, s 95 om Läroverksbyrån.
 
-Eforus Bengt Thelin, Exit eforus, Stockholm 1981. 
+Eforus Bengt Thelin, Exit eforus, Stockholm 1981.
 
 Flickskola Gunhild Kyle, Svensk flickskola, 1972.
 
@@ -553,13 +553,13 @@ L A Cederbom, Skara folkskoleseminarium 1842-1935, Skara 1934-35. Norrlands semi
 
 Lärarhögskola Erik Blix, Jon Naeslund, Ingemar Nilsson, Ove Serrander, Lärarhögskolan i Stockholm 1956-1996.
 
-Seminarier för huslig utbildning SOU 1945:4 Betänkande angående den husliga utbildningen avgivet av 1941 års befolkningsutredning, SOU 1957:28 Lärarutbildningen på det husliga området. 
+Seminarier för huslig utbildning SOU 1945:4 Betänkande angående den husliga utbildningen avgivet av 1941 års befolkningsutredning, SOU 1957:28 Lärarutbildningen på det husliga området.
 
 Fackskolan i Uppsala Cristina Wahlström 1997 s 219, 224, 235.
 
 Förskoleseminarier SOU 1960:33 Förskollärarutbildningens organisation.
 
-  
+
 
 Kapitel 20 FATTIGVÅRD OCH SOCIALTJÄNST
 
@@ -573,7 +573,7 @@ Fattigvård i praktiken Karin Hansson-Preusler, Den kommunala fattigvården i ar
 
 Fattigvård på landsbygden under första delen av 1800-talet B Losman, Kvinnor, män och barn på Sveriges landsbygd under 1800-talet, Göteborg 1986.
 
-Fattigvård i staden Ulla Johansson, Fattiga och tiggare i Stockholms stad och län under 1700-talet. Avhandling, Stockholm 1984. 
+Fattigvård i staden Ulla Johansson, Fattiga och tiggare i Stockholms stad och län under 1700-talet. Avhandling, Stockholm 1984.
 
 Cristina Wahlström, Rätt Råd Kraft Dåd, 1997, kap. IX Från fattigvård till social omsorg s 403 ff; även s 43 om sockennämnd som fattigvårdsstyrelse, s 407 f om anstaltsnämnd 1893- (inre fattigvård).
 
@@ -585,7 +585,7 @@ Försörjningsinrättningar i Stockholm Hundra år med kommunalförfattningarna 
 
 Utbildning Bengt Svensson, Socialinstitutens uppkomst (i Hundra år med kommunalförfattningarna s 335 ff).
 
-  
+
 
 Kapitel 21 KOMMUN
 
@@ -593,11 +593,11 @@ Byarkiv Bertil Åstrand, Byarkiv och skråarkiv i landsarkivet i Lund (i Arkivve
 
 Förhistoria Fritz Kaijser, 1862 års kommunalförordningar i Hundra år med kommunalförfattningarna s 11 f. Sockennämnd Cristina Wahlström s 39 ff.
 
-Allmänt Tage de la Motte, Vilka organ är kommunala? (i Social och kommunal förvaltning. Uppsatser utgivna av Sydsvenska socialinstitutet i Lund, 1958). 
+Allmänt Tage de la Motte, Vilka organ är kommunala? (i Social och kommunal förvaltning. Uppsatser utgivna av Sydsvenska socialinstitutet i Lund, 1958).
 
 Stenciler sammanställda av Marianne Nilsson, landsarkivet i Vadstena, och Urban Johansson, kommunarkivet i Norrtälje. Lista över kommunala arkivbildare sammanställda av Tom Sahlén, Sundsvalls kommun (i Arkiv i Norrland 4).
 
-Hundra år med kommunalförfattningarna 1862-1962, en minnesskrift utg. av Svenska Landskommunernas Förbund, 1962 särskilt S U Palme, De första kommunalstämmorna s 108, med bild från kommunalstämma s 173, dens. De första kommunalfullmäktigevalen s 285 ff, T Tapper, Kommunalkontoren börjar arbeta. 
+Hundra år med kommunalförfattningarna 1862-1962, en minnesskrift utg. av Svenska Landskommunernas Förbund, 1962 särskilt S U Palme, De första kommunalstämmorna s 108, med bild från kommunalstämma s 173, dens. De första kommunalfullmäktigevalen s 285 ff, T Tapper, Kommunalkontoren börjar arbeta.
 
 Speciallagar för Stockholm Stockholms kommunalkalender 1985 s 6 f.
 
@@ -609,7 +609,7 @@ Kommunala revisorer Stockholms kommunalkalender 1969 s 38 ff.
 
 Valnämnd S U Palme, De första proportionella valen (i Hundra år med kommunalförfattningarna s 231 ff). Rösträtt och val Wahlström 1997 s 55, 121 ff, 124 f.
 
-Ny vallag SFS 1972:620. Nr 706 upphävde 1920:796 om val till riksdagen och 1930:253 om kommunala val. 
+Ny vallag SFS 1972:620. Nr 706 upphävde 1920:796 om val till riksdagen och 1930:253 om kommunala val.
 
 De första kommunanställda Wahlström, 1997, s 135 ff.
 
@@ -621,11 +621,11 @@ Inkorporering, kommundelsnämnder Wahlström 1997, s 303 ff, 318 ff, 332 ff, 470
 
 Bengt Svensson, Inkorporeringarna samt dens. Storkommunerna (i Hundra år med kommunalförfattningarna s 289 ff, 390 ff).
 
-  
+
 
 Kapitel 22 LANDSTING
 
-Allmänt Brändström, Grimlund, Ricknell, Län, landsting, kommun, 1972. 
+Allmänt Brändström, Grimlund, Ricknell, Län, landsting, kommun, 1972.
 
 S U Palme, De första landstingen, Göran B Nilsson, Landstingsfrågor i riksdagen, L Goth. Nilsson, Ett landstingsmöte på 1930-talet (i Hundra år med kommunalförfattningarna s 121 ff, 161 ff, 306 ff).
 
@@ -639,7 +639,7 @@ Markegångssättning L Jörberg, A history of prices in Sweden 1732-1914, 1972.
 
 Riksarkivets beståndsöversikt 4 s 171.
 
-  
+
 
 Kapitel 23 OMSORG FÖR HANDIKAPPADE
 
@@ -653,7 +653,7 @@ Drottning Sofias stiftelse Gunnar Sjöström, Annetorpshemmet och dess föregån
 
 Rikscentraler för hjälpmedel Statliga myndigheter 1986 s 205. Utredning av Riksarkivet 14/6 1977.
 
-  
+
 
 Kapitel 24 POLISER, ÅKLAGARE, TRYCKFRIHETSOMBUD
 
@@ -661,31 +661,31 @@ Jan Dahlin & Anna Svenson, Brott i arkiv (stencil från landsarkivet i Lund 1994
 
 Statspolisen 1933-64 Stockholmsavdelningen på Riksarkivet, inledning till arkivförteckningen av Tommy Eriksson.
 
-Praktiskt polisarbete Kjell Bergman, Poliser mellan klassförtryck och brottsbekämpning. Avhandling Göteborg 1990. 
+Praktiskt polisarbete Kjell Bergman, Poliser mellan klassförtryck och brottsbekämpning. Avhandling Göteborg 1990.
 
 Poliskammare SOU 1951:8 Betänkande angående polis- och åklagarväsendets organisation. Karlstad enligt Arkiv i Väst 2, 1991, s 118.
 
 SOU 1961:34 Huvudmannaskapet för polisväsendet m m redogör även för äldre utredningar om polisväsendet och ger allmän historik.
 
-Militär polis Krigsarkivets beståndsöversikt 3 s 383, 6 s 257, 7 s 415. 
+Militär polis Krigsarkivets beståndsöversikt 3 s 383, 6 s 257, 7 s 415.
 
-  
+
 
 Kapitel 25 KONTROLL AV RESANDE
 
 Anna-Brita Lövgren, Material om resande (i Skånsk släktforskning 1987). Om norska och baltiska flyktingar under andra världskriget se även SOU 1946:44 Den offentliga arbetsförmedlingen under krigsåren s 106 ff.
 
-  
+
 
 Kapitel 26 HÄLSO- OCH MILJÖSKYDD
 
-Karantänsinrättning Lars Öberg, Känsö karantänsinrättning 1804-1933, Göteborg 1968; för karantänsplatser längs ostkusten Riksarkivets förteckning över Karantänskommissionerna på östra kusten 1831-1857, serie E III Rapporter 1831-39. Dessa karantänsplatser tycks inte ha efterlämnat egna arkiv. Furusund i Roslagen har efterlämnat två volymer 1847-56 (Arkivregister för Stockholms län) Arpå i Karlskrona skärgård 1 volym 1847-57 (Krigsarkivets beståndsöversikt 2 s 582). 
+Karantänsinrättning Lars Öberg, Känsö karantänsinrättning 1804-1933, Göteborg 1968; för karantänsplatser längs ostkusten Riksarkivets förteckning över Karantänskommissionerna på östra kusten 1831-1857, serie E III Rapporter 1831-39. Dessa karantänsplatser tycks inte ha efterlämnat egna arkiv. Furusund i Roslagen har efterlämnat två volymer 1847-56 (Arkivregister för Stockholms län) Arpå i Karlskrona skärgård 1 volym 1847-57 (Krigsarkivets beståndsöversikt 2 s 582).
 
 Karantänsbefälhavares handlingar Landsarkivet i Lund Beståndskatalog 1 s 180 (Karlshamn), 194 (Karlskrona), 219 (Laholm), 233 (Simrishamn), 264 (Lund).
 
 Hälsovårdsnämnd 100 år för hälsan utg. av Göteborgs hälsovårdsnämnd 1975. Cristina Wahlström, Rätt Råd Kraft Dåd, 1997, kap. Kommunal hälsovård s 440 ff. Renhållning och återvinning Ola Wetterberg & Gunilla Axelsson, Smutsguld eller dödligt hot. Renhållning och återvinning i Göteborg 1864-1930, utg av Renhållningsverket i Göteborg 1995. Hundra år med kommunalförfattningarna s 143 f (bild s 76 f). Hans Bjur, Vattenbyggnadskonst i Göteborg under 200 år utg av Göteborgs VA-verk 1988.
 
-  
+
 
 Kapitel 27 DJUR
 
@@ -711,7 +711,7 @@ Militär veterinärorganisation Krigsarkivets beståndsöversikt 1 s 109 f, 120,
 
 Besiktningsveterinär PM angående distrikts- stads- och besiktningsveterinärers arkiv 7/10 1963 av R Swedlund och I Lauritzon (dnr 440/63) i Riksarkivets ämbetsarkiv samt Statliga myndigheter 1986.
 
-  
+
 
 Kapitel 28 POSTEN
 
@@ -729,8 +729,8 @@ Utredning rörande arkivering och gallring av äldre handlingar m m vid postdire
 
 Post- och rådhusrätter enligt landsarkivets i Lund beståndskatalog 1.
 
-  
-  
+
+
 
 Kapitel 29 JÄRNVÄGEN
 
@@ -744,7 +744,7 @@ Bengt Svensson, Det kommunala engagemanget i järnvägar (i Hundra år med kommu
 
 Lena Ånimmer, Sveriges Järnvägars Tjänstemannaförbunds arkiv (i Årsbok för Riksarkivet och Landsarkiven 1994 s 269).
 
-  
+
 
 Kapitel 30 TELEGRAF, TELEFON OCH RADIOSÄNDNING
 
@@ -754,7 +754,7 @@ Organisation 1975-79 enligt Statskalendern 1979 och Statliga myndigheter 1986 s 
 
 Historik i Magnus Karlsson, The liberalisation of telecommunication in Sweden: technology and regime change from the 1960s to 1993. Linköping 1998.
 
-  
+
 
 Kapitel 31 BYGGNADER OCH BOSTÄDER
 
@@ -786,7 +786,7 @@ Erik Wannfors, Stadsplanelagen 1907 och dens. Nya lagar för planläggning och b
 
 Slottstillsyningsman se Årsbok för Riksarkivet och landsarkiven 1994 s 116.
 
-  
+
 
 Kapitel 32 FÖRSÖRJNING
 
@@ -798,7 +798,7 @@ Kristid Sten Nordin, Karbennings kristidsnämnds historia och arkiv (i Arkiv sam
 
 Tage Tapper, Andra världskrigets kommunala krisorgan (i Hundra år med kommunalförfattningarna s 331).
 
-Lennart Friberg, Studier i kristidsförvaltningens organisation och struktur 1939-1945, Stockholm 1973. 
+Lennart Friberg, Studier i kristidsförvaltningens organisation och struktur 1939-1945, Stockholm 1973.
 
 Livsmedelsnämndens problem i Västra Frölunda se Lejonspår . . . . Inte bara Göteborg. Dokument från införlivade kommuner. Göteborgs stadsarkivs skriftserie 1, 1996, s 35 f. Fiskaffären i Uppsala enligt Wahlström 1997 s 94.
 
@@ -810,11 +810,11 @@ Spannmålslagerhus PM av Gunilla Ehnström och Maria Malmgren, Landsarkivet i Up
 
 Lokal värderingsnämnd arkiv hos länsstyrelse enl. Nils Nilssons register. Krigsarkivet har en volym protokoll från lokal värderingsnämnd i Norrköping 1936-46 och en för Västernorrlands län 1938-46 (Krigsarkivets beståndsöversikt 1 s 486).
 
-Krigsmansfamiljer SOU 1939:26 Sociala försvarskommitténs betänkande. Kerstin Abukhanfusa, Beredskapsfamiljernas försörjning: krigsfamiljebidragen i teori och praktik, Stockholm 1975. 
+Krigsmansfamiljer SOU 1939:26 Sociala försvarskommitténs betänkande. Kerstin Abukhanfusa, Beredskapsfamiljernas försörjning: krigsfamiljebidragen i teori och praktik, Stockholm 1975.
 
 Familjebidragsnämnd Hundra år med kommunalförfattningarna s 332.
 
-  
+
 
 Kapitel 33 BARN OCH UNGDOM
 
@@ -822,9 +822,9 @@ Barnhus L Lönnroth, Barnhusbarn i arkiven (i Inte bara kyrkoböcker. Sveriges s
 
 Ungdomsbegreppet Henrik Berggren, Seklets ungdom. Retorik, politik och modernitet 1900-1939, Tidens förlag 1996.
 
-Överförmyndare SOU 1970:67 Förmynderskap. 
+Överförmyndare SOU 1970:67 Förmynderskap.
 
-Överförmyndararkiv vid rådhusrätt och magistrat se Landsarkivet i Lund Bestånds- 
+Överförmyndararkiv vid rådhusrätt och magistrat se Landsarkivet i Lund Bestånds-
 
 katalog 1 : Helsingborg 1861-1900, Kungsbacka 1916-52 (s 216). För kommunarkiv se t ex Alnö kommun 1942-67 (Arkiv i Norrland 4). Riksarkivets råd om gallring 1976-03-18 betraktar arkiven som kommunala.
 
@@ -838,13 +838,13 @@ Eftervårdskonsulent SOU 1963:30 Den statliga konsulentverksamheten på socialv�
 
 Ungdomsfängelse Staffan Rudstedt, I fängelset 1994 s 163 f, 181 f.
 
-  
+
 
 Kapitel 34 MÖDRA- OCH FAMILJESTÖD
 
 Barnmorskor Emil Jerlov, Barnmorskeläroanstalten i Göteborg 1856-1956, Gumperts förlag, 1957, är kritisk mot forna tiders hjälpgummor, men författaren var också lärare vid anstalten i Göteborg. Pia Höjeberg, Jordemor. Barnmorskor och barnafödande i Sverige, 1981, ger en mer positiv bild av jordegummorna, men så är författaren också barnmorska. Inga barnföderskor på lasarett enligt Hundra år med kommunalförfattningarna s 644.
 
-Lisa Öberg, Barnmorskan och läkaren. Kompetens och konflikt i svensk förlossningsvård 1870-1920, Ordfront 1996. 
+Lisa Öberg, Barnmorskan och läkaren. Kompetens och konflikt i svensk förlossningsvård 1870-1920, Ordfront 1996.
 
 Mjölkdroppar och barnavårdscentraler Gena Weiner, De olydiga mödrarna (i Historisk tidskrift 1992:4 s 488 ff) samt Gena Weiners avhandling De räddade barnen: om fattiga barn, mödrar och fäder och deras möte med filantropin i Hagalund 1900-1940, Uppsala 1995.
 
@@ -852,33 +852,33 @@ Hemhjälpsnämnd Sune Eriksson, Den sociala hemhjälpen (i Hundra år med kommun
 
 Hushållsskola H L Lundh, Praktiska hushållsskolan i Göteborg. Ett hundraårsminne, Göteborg 1965. Enligt Nationalencyklopedien är hushållsskola en sammanfattande benämning på lanthushållsskola och yrkesskola för husmodersutbildning.
 
-  
+
 
 Kapitel 35 PENSION OCH FÖRSÄKRING
 
 Krigsmanshus och invalidkår Krigsarkivets beståndsöversikt 1 s 45, 177, 203, del 7 s 423,425, 436 ff, 453 ff. Invalidhuset i Uppsala Wahlström, Rätt Råd Kraft Dåd s 437.
 
-Pension Sune Eriksson, Folkpensioneringen (i Hundra år med kommunalförfattningarna s 629 ff). Cristina Wahlström, 1997, s 92 f, 203 not 2. 
+Pension Sune Eriksson, Folkpensioneringen (i Hundra år med kommunalförfattningarna s 629 ff). Cristina Wahlström, 1997, s 92 f, 203 not 2.
 
 Riksarkivets gallringsbeslut 56(1963) föreskrev total utgallring av ortsombudens handlingar.
 
 Försäkringskassa Statliga myndigheter 1986 s 109.
 
-  
+
 
 Kapitel 36 RÄTTSHJÄLP
 
 SOU 1965:13 Betänkande med reviderat förslag till lag om rättegångshjälp.
 
-SOU 1977:49 Rättshjälpsutredningen. 
+SOU 1977:49 Rättshjälpsutredningen.
 
-  
+
 
 Kapitel 37 ÖVERVAKNING OCH FRIVÅRD
 
 SOU 1967: 20 Den statliga länsförvaltningen s 104 f.
 
-  
+
 
 Kapitel 38 NYKTERHET
 
@@ -890,7 +890,7 @@ Svante Nycander, Svenskarna och spriten. Alkoholpolitik 1855-1995, Sober förlag
 
 Länsnykterhetsnämnd Brändström, Grimlund, Ricknell, Län, landsting, kommun, 1972, samt SOU 1967:20 Den statliga länsförvaltningen, som också behandlar intendent för utskänkningsärenden s 105 f.
 
-  
+
 
 Kapitel 39 ARBETSMILJÖ OCH ARBETSMARKNAD
 
@@ -904,7 +904,7 @@ Länsarbetsnämnd Brändström, Grimlund, Ricknell, 1972 samt SOU 1967:20 Den st
 
 Blocksystemet Britt Liljevall, Vänersborgs historia III (1994) s 87.
 
-  
+
 
 Kapitel 40 BRAND- OCH CIVILFÖRSVAR
 
@@ -926,7 +926,7 @@ Motorbåtsflottilj: Göteborgs frivilliga motorbåtsflottilj. Historik 1913-1938
 
 Informationsstyrelsens länsombud o. Fjällräddning: förteckningar i Östersunds landsarkiv.
 
-  
+
 
 Kapitel 41 ENERGI
 
@@ -940,7 +940,7 @@ Elektrifiering se Bengt Svensson, De första kommunala industriföretagen (i Hun
 
 Kontrollant för undersökning av eldfarliga oljor PM av Nils Nilsson 1959 (ing. II 532 i Riksarkivets ämbetsarkiv).
 
-  
+
 
 Kapitel 42 LUFTFART
 
@@ -950,7 +950,7 @@ Lufttrafikkommittéens betänkande och förslag angående reguljär lufttrafik 1
 
 Sveriges Nationalatlas: Infrastrukturen.
 
-  
+
 
 Kapitel 43 KULTUR, IDROTT, FRITID
 
@@ -966,7 +966,7 @@ Idrott, fritid Lars Gellerstedt, Kommunerna och fritiden (i Hundra år med kommu
 
 Landsantikvarie Brändström, Grimlund, Ricknell, Län, landsting, kommun,1972, s 120.
 
-  
+
 
 Kapitel 44 INTERNADMINISTRATION OCH SERVICE
 
@@ -976,13 +976,13 @@ Löne- och personalnämnder Sven Olof Dahlman, Den kommunala arbetsmarknaden (i 
 
 Cristina Wahlström, Rätt Råd Kraft Dåd s 113 ff, 365 ff (om Uppsala lönenämnd m m).
 
-  
+
 
 Kapitel 45 STUDIESTÖD
 
 SOU 1963:48 Studiehjälpsutredningen, SOU 1971:87 Studiemedelsutredning.
 
-  
+
 
 Kapitel 46-61 FÖRSVARETS REGIONALA OCH LOKALA ORGANISATION
 

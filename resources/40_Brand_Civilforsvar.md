@@ -13,7 +13,7 @@ Städerna ordnade tidigt med brandförsvar, vilket inte hindrade att de svenska 
 
 Stockholm delades enligt 1675 års brandordning i brandmästerskap under politiekollegiet, som förvaltade brandvaktkassan. 1728 inrättades sprutkompanier. Ursprungligen gick borgarna personligen brandvakt men detta ersattes senare av en avgift. Brandvaktskasseadministrationen i Stockholm 1788-1863 under Överståthållaren (jfr 5.5) bestod av två medlemmar av magistraten och tio husägare, och den skulle med hjälp av den brandvaktsavgift, som husägarna betalade, sköta nattbevakningen. 1850 övertogs uppgiften av polisen. Därefter skulle brandvaktskasseadministrationen endast uppbära medlen och överlämna dem till Överståthållaren. Kommittén upphörde 1864, då drätselnämnd inrättades (Stockholms kommunalkalender 1969 s 4).
 
-Skorstensfejarmästare, som hade en viktig roll i att förebygga eldsvådor, organiserades från 1733 i Stockholm under Politiekollegium. Varje sotare hade sin egen trakt, dvs ett distrikt där han skulle bo (Stockholms kommunalkalender 1933). Ämbetskollegium, som hade överinseende över stadens skråväsende, anvisade trakt. Från 1789 fick skorstensfejarmästare monopol på sotning i sin trakt genom en kungörelse av Överståthållaren (Stockholms kommunalkalender 1990 s 344). 1954 flyttades sotningsansvaret i Stockholm från Överståthållaren till gatunämnden. 
+Skorstensfejarmästare, som hade en viktig roll i att förebygga eldsvådor, organiserades från 1733 i Stockholm under Politiekollegium. Varje sotare hade sin egen trakt, dvs ett distrikt där han skulle bo (Stockholms kommunalkalender 1933). Ämbetskollegium, som hade överinseende över stadens skråväsende, anvisade trakt. Från 1789 fick skorstensfejarmästare monopol på sotning i sin trakt genom en kungörelse av Överståthållaren (Stockholms kommunalkalender 1990 s 344). 1954 flyttades sotningsansvaret i Stockholm från Överståthållaren till gatunämnden.
 
 Sotningsväsendet är fortfarande noga reglerat och har länge bevarat drag av skråväsendet. Enligt räddningsförordningen (1986:37) ska för varje sotningsdistrikt finnas en skorstensfejarmästare, som avlagt ingenjörsexamen för skorstensfejare vid statens räddningsskola (tidigare mästarexamen vid statens brandnämnd).
 
@@ -21,7 +21,7 @@ Den första brandordningen i Göteborg 1639 föreskrev årliga brandsyner genom 
 
 Malmö fick sin första brandordning 1666. Från slutet av 1700-talet fanns brandfogde, och i början av 1800-talet fördelade han borgerskapets arbetsinsatser i händelse av eldsvåda. Staden delades i fasta sprutlag. Dessutom fanns en frivillig bärgningscorps. 1868 anställdes brandchef och 1893 fick Malmö en liten fast anställd brandkår med arvodesanställd reservtrupp. 1903 blev brandkåren helt fast. Till 1915 var brandchefen underställd drätselkammaren, men från 1916 inrättades brandstyrelse. Sotningen sköttes av fast anställda skorstensfejare sedan början av 1700-talet.
 
-  
+
 
 ### 2\. Från brandstadga till lokal plan för räddningstjänst
 
@@ -37,19 +37,19 @@ Från 1945 gällde Brandlagen 1944:521 och brandstadgan 1944:522. Särskild bran
 
 Till 1945 var brandförsvar enbart en kommunal angelägenhet, men 1945-74 fanns statliga länsbrandinspektörer (instruktion 1944:723, 1965:685). Tjänsten var ofta förenad med befattningen som länsskogsbrandinspektör (se instruktionsändring 1951:41) som fanns 1951-62 (instruktion 1951:40). Enligt 1962:608 övertog länsbrandinspektör verksamheten från 1963.
 
-Länsbrandinspektören biträdde länsstyrelsen i frågor om brandförsvar, gjorde besiktningar inom länet, höll övningar i brandförsvar, övervakade skogsbrandbevakningen och bistod kommuner med råd om brandförsvar. Han skulle också svara för samarbetet med frivilliga organisationer inom brandförsvar (borgarbrandkårer). 
+Länsbrandinspektören biträdde länsstyrelsen i frågor om brandförsvar, gjorde besiktningar inom länet, höll övningar i brandförsvar, övervakade skogsbrandbevakningen och bistod kommuner med råd om brandförsvar. Han skulle också svara för samarbetet med frivilliga organisationer inom brandförsvar (borgarbrandkårer).
 
-Länsbrandinspektör förordnades av länsstyrelsen och arkivbildningen kan delvis ha skett inom länsstyrelsen. Från 1/7 1974 avskaffades länsbrandinspektörerna (1974:408). 
+Länsbrandinspektör förordnades av länsstyrelsen och arkivbildningen kan delvis ha skett inom länsstyrelsen. Från 1/7 1974 avskaffades länsbrandinspektörerna (1974:408).
 
 Enligt brandlagen 1974:80 § 9 ska brandstyrelse finnas, men kommun kan låta annan nämnd sköta brandförsvar och räddningstjänst. Kommun kan också hyra brandförsvar från annan kommun, och länsstyrelsen kan ta över ansvaret för räddningstjänst t ex oljesanering. Den centrala myndigheten Statens Brandnämnd bildades 1/7 1974 genom hopslagning av Statens brandinspektion, under vilken länsbrandinspektörerna sorterade, och Statens brandskola.
 
 1986:1102 upphävde brandlagen 1974 och brandstadgan 1962:91. Senast 1988 skulle varje kommun ha antagit plan för räddningstjänst; till dess gällde den kommunala brandordningen. Med planen för räddningstjänst infördes räddningsnämnd i stället för brandstyrelse, och den ansvarar nu för både brand- och civilförsvar. Fr o m 1986-07-01 sammanslogs Statens Brandnämnd med Civilförsvarsstyrelsen (jfr nedan) till Statens Räddningsverk i Karlstad. Vissa kommuner hade redan lagt samman brand- och civilförsvar: Göteborg hade från 1974 brand- och civilförsvarsnämnd (reglemente 1972-12-21 enligt kommunalkalendern 1985 s 231) och brandchefen (numera räddningschefen) var även civilförsvarschef. Räddningstjänst organiseras nu ofta genom kommunalförbund. Göteborg-Mölndal ingick i ett Räddningstjänstförbund från 1993.
 
-  
+
 
 ### 3\. Civilförsvar och frivilligt försvar
 
-Det var risken för anfall från luften, illustrerad av flygkrigföringen i Abbessinien och Spanien på 1930-talet som medförde behov av civilförsvar. Genom SFS 1937:504 tillkom luftskyddsnämnder. Kommunerna fick själva bestämma om luftskyddsnämnd skulle tillsättas för att följa luftskyddschefens planläggning av luftskyddet. Civilförsvarslagen 1944:536 upphävde luftskyddslagen och civilförsvarsnämnd övertog uppgifterna. Kommun kunde också uppdra åt annan nämnd att vara civilförsvarsnämnd eller gå samman med annan kommun i ett kommunalförbund för att sköta civilförsvaret; i så fall blev förbundsdirektionen civilförsvarsnämnd. Enligt 1948:432, som trädde i kraft 1/7 1949, kunde drätselkammare i stad eller kommunalnämnd på landet utgöra civilförsvarsnämnd, om inte särskild nämnd tillsattes. Till 1/7 1949 skulle kommunen ekonomiskt svara för allmänt civilförsvar. Fastighetsägare ålades att ordna hemskydd (=skyddsrum). Från 1/7 1949 övertog staten huvuddelen av kostnaden för civilförsvaret, men kommunen skulle bygga skyddsrum, underhålla reservanordningar för vatten, gas och el m m (Göteborgs kommunalkalender 1957 s 329). 
+Det var risken för anfall från luften, illustrerad av flygkrigföringen i Abbessinien och Spanien på 1930-talet som medförde behov av civilförsvar. Genom SFS 1937:504 tillkom luftskyddsnämnder. Kommunerna fick själva bestämma om luftskyddsnämnd skulle tillsättas för att följa luftskyddschefens planläggning av luftskyddet. Civilförsvarslagen 1944:536 upphävde luftskyddslagen och civilförsvarsnämnd övertog uppgifterna. Kommun kunde också uppdra åt annan nämnd att vara civilförsvarsnämnd eller gå samman med annan kommun i ett kommunalförbund för att sköta civilförsvaret; i så fall blev förbundsdirektionen civilförsvarsnämnd. Enligt 1948:432, som trädde i kraft 1/7 1949, kunde drätselkammare i stad eller kommunalnämnd på landet utgöra civilförsvarsnämnd, om inte särskild nämnd tillsattes. Till 1/7 1949 skulle kommunen ekonomiskt svara för allmänt civilförsvar. Fastighetsägare ålades att ordna hemskydd (=skyddsrum). Från 1/7 1949 övertog staten huvuddelen av kostnaden för civilförsvaret, men kommunen skulle bygga skyddsrum, underhålla reservanordningar för vatten, gas och el m m (Göteborgs kommunalkalender 1957 s 329).
 
 Genom civilförsvarslagen 1944 inrättades 352 civilförsvarschefer, som i stort sett ersatte luftskyddscheferna. På landsbygden blev ofta landsfiskalen, som var lokal polischef, även civilförsvarschef. Under beredskapen 1939-45 var landet indelat i luftbevakningsområden med en luftbevakningscentral och luftbevakningsstationer (Krigsarkivets beståndsöversikt 7 s 416 f). Luftbevakningen sköttes av landstormen 1937-42 och sedan av hemvärnet.
 
@@ -65,17 +65,17 @@ Kommunal inkvarteringsnämnd infördes genom 1940:215, men enligt 1940:216 behö
 
 Personalprövningsnämnd inrättades enligt 1944:648 (ändring 1949:380) för att avgöra om en person skulle skrivas in i civilförsvaret. Nämnden kunde hindra att nyckelpersoner gick ut som krigsfrivilliga eller gick in i hemvärnet. Det fanns en nämnd i varje län och landshövdingen var ordförande. Eventuella arkivhandlingar torde finnas hos civilförsvarschef eller länsstyrelsens civilförsvarssektion.
 
-Från 1944 tillsattes vid länsstyrelserna försvarsassistenter, som utvecklades till civilförsvarssektion, som fanns 1953-71 och senare blev försvarsenhet. Civilförsvarsdirektören vid länsstyrelsen bedrev en omfattande utbildning i skydds- och räddningsverksamhet. Enligt 1951:632 Instruktion för lokal civilförsvarsmyndighet skedde arbetet vid civilförsvarsbyråer. 
+Från 1944 tillsattes vid länsstyrelserna försvarsassistenter, som utvecklades till civilförsvarssektion, som fanns 1953-71 och senare blev försvarsenhet. Civilförsvarsdirektören vid länsstyrelsen bedrev en omfattande utbildning i skydds- och räddningsverksamhet. Enligt 1951:632 Instruktion för lokal civilförsvarsmyndighet skedde arbetet vid civilförsvarsbyråer.
 
 Civilförsvarets arkivbildning var i början föga reglerad och eftersom handlingarna var hemliga blev de ibland undanstoppade i låsta skåp vid tjänstemännens pensionsavgång. Enligt civilförsvarskungörelsen 1944:646 gallrades de hemliga organisationsplanerna vid inaktualitet. Registren över hundar, fordon, personal, fastigheter m m har också gallrats vid inaktualitet. Stockholms civilförsvarsbyrå hade egen matrikel- och ekonomibokföring.
 
-1944 års bestämmelser upphävdes av 1960:74 och 377. Från 1/7 1960 minskade antalet civilförsvarsdistrikt till 124 och det mesta av civilförsvarschefernas uppgifter i fredstid överfördes på länsstyrelsernas civilförsvarssektion, dit troligen även civilförsvarsbyråernas arkiv fördes. Civilförsvarsområden räknas upp i SFS 1965:41. De ändrades igen 1966:757. Tidigare distriktsindelning finns i kungligt brev 23/10 1959 (ej i SFS). 
+1944 års bestämmelser upphävdes av 1960:74 och 377. Från 1/7 1960 minskade antalet civilförsvarsdistrikt till 124 och det mesta av civilförsvarschefernas uppgifter i fredstid överfördes på länsstyrelsernas civilförsvarssektion, dit troligen även civilförsvarsbyråernas arkiv fördes. Civilförsvarsområden räknas upp i SFS 1965:41. De ändrades igen 1966:757. Tidigare distriktsindelning finns i kungligt brev 23/10 1959 (ej i SFS).
 
-Det centrala verket Civilförsvarsstyrelsen (1944-86) bildades genom sammanslagning av Luftskyddsinspektionen (från 1937) och Utrymningskommissionen (från 1940). 1978 flyttades Civilförsvarsstyrelsen från Stockholm till Karlstad och 1986-07-01 sammanslogs den med Statens Brandnämnd till Räddningsverket. Från 1987 är kommunens räddningschef i regel även civilförsvarschef. 
+Det centrala verket Civilförsvarsstyrelsen (1944-86) bildades genom sammanslagning av Luftskyddsinspektionen (från 1937) och Utrymningskommissionen (från 1940). 1978 flyttades Civilförsvarsstyrelsen från Stockholm till Karlstad och 1986-07-01 sammanslogs den med Statens Brandnämnd till Räddningsverket. Från 1987 är kommunens räddningschef i regel även civilförsvarschef.
 
 Civilbefälhavare inrättades 1951 och fick instruktion i SFS 1951:429. De skulle arbeta med beredskapsplanering. Distrikten kallades  civilområde och utgjordes av följande län:
 
-  
+
 
 1\. Jönköping, Kronoberg, Kalmar, Blekinge, Kristianstad, Malmöhus
 
@@ -87,13 +87,13 @@ Civilbefälhavare inrättades 1951 och fick instruktion i SFS 1951:429. De skull
 
 5\. Värmland, Örebro, Kopparberg
 
-  
+
 
 Enligt 1966:515 blev det i stället sex civilområden, och det var samma områden i 1970:363, ändrad genom 1978:226. Enligt Statliga myndigheter 1986 s 81 finns det sex civilområden. En av landshövdingarna inom området utses av regeringen till civilbefälhavare för att planera totalförsvaret. Från 1982 lyder civilbefälhavarna under försvarsdepartementet (1981:978, jfr Krigsarkivets beståndsöversikt 3 s 189, 192 och kap. 61).
 
 Fjällräddningstjänsten i Jämtlands län (5 vol korrespondens och handlingar) tillkom 1947\. Först låg den under civilförsvarschefen och länsstyrelsen. 1963 tycks landsfogden ha övertagit ansvaret och från 1965 låg den under Östersunds polisdistrikt. Handlingar angående fjällräddning ingår även i dessa myndigheters arkiv.
 
-Informationsstyrelsens nämnd för folklig beredskap hade länsombud under andra världskriget. Arkivet från ombudet för Östersund omfattar 8 volymer 1940-45 (förteckning i landsarkivet i Östersund). 
+Informationsstyrelsens nämnd för folklig beredskap hade länsombud under andra världskriget. Arkivet från ombudet för Östersund omfattar 8 volymer 1940-45 (förteckning i landsarkivet i Östersund).
 
 [![](arrow9.jpg)](Index.htm)
 

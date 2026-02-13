@@ -5,9 +5,9 @@ title: Register Förvaltningshistoria
 
 [![](arrow9.jpg)](Index.htm)
 
-Hänvisningar gjorda till kapitel och avsnitt. Hänvisning sker endast till ställen där sakuppgifter finns. De militära skolorna, som bytt namn ideligen, har sammanfattats under vapenslag, utom i några fall när namnen låter civila. I många fall har kommunal eller landstingskommunal angetts för att underlätta sökning, men inte för t ex skolor som bytt huvudman 
+Hänvisningar gjorda till kapitel och avsnitt. Hänvisning sker endast till ställen där sakuppgifter finns. De militära skolorna, som bytt namn ideligen, har sammanfattats under vapenslag, utom i några fall när namnen låter civila. I många fall har kommunal eller landstingskommunal angetts för att underlätta sökning, men inte för t ex skolor som bytt huvudman
 
-  
+
 
 Accisrätt [3.5](03_Skatt.htm#a5), [8.1](08_Tull.htm#a1)
 
@@ -2741,377 +2741,377 @@ Yrkesskolenämnd/styrelse kommunal [19.4](19_Skola.htm#a4)
 
 ## Kategorier
 
-1000000 | Statliga arkiv  
----|---  
-1103000 | Accisrätter (lilla tullrätten) 1672-1811  
-1104000  | Hallrätter 1739-1846  
-1105000  | Kämnersrätter -1849  
-1106000  | Magistrater -1964  
-1107000  | Notarius Publicus -1964  
-1108000  | Poliskammare -1964  
-1109000  | Rådhusrätter -1970  
-1110000 | Sjörätter  
-1111000 | Sjötullrätter -1831  
-1112000 | Stadens Äldste -(1862)  
-1113000  | Överexekutor (stadsrätt) c1877-1964  
-1116000  | Häradsrätter -1970  
-1117000  | Inskrivningsdomare 1933-1971  
-1118000  | Kommunalborgmästare  
-1119000  | Stadsstyrelser  
-1120000  | Ägodelningsrätter 1827-1970  
-1121000  | Allmänna advokatbyråer 1973-  
-1122000  | Avvittringsrätter  
-1123000  | Bergsrätter med bergsting och gruvrätter  
-1124000  | Birkerätter -1692  
-1125000  | Brandkommissorialrätter  
-1126000  | Expropriationsdomstolar 1948-1970  
-1127000  | Försäkringsrätter 1979-1992  
-1131000  | Gränstullrätter -c1933  
-1132000  | Hovrätter 1614-  
-1134000 * | Hyres- och arrendenämnder 1969-  
-1136000  | Inskrivningsmyndigheter 1972-  
-1137000  | Kammarrätter 1972-  
-1139000  | Lagmansrätter -1849  
-1140000  | Lagmansting (före 1862)  
-1141000  | Landsting  
-1143000  | Länsrätter 1979-  
-1145000  | Ordningsrätter  
-1146000  | Posträtter 1704-1836  
-1148000  | Rättshjälpsnämnder 1973-1990  
-1150000  | Slottsrätter 1681-  
-1152000  | Tingsrätter 1971-  
-1155000  | Tullrätter  
-1157000  | Vattendomstolar 1919-1971  
-1159000  | Judiciella, övriga statliga regionala och lokala  
-1161000  | Distriktsåklagare 1965-  
-1162000  | Landsfiskaler c1642-1917  
-1165000  | Länsåklagaremyndigheter 1965-1985  
-1166000 *  | Polis och åklagare i städerna -1964  
-1167000  | Regionåklagaremyndigheter 1985-  
-1168000  | Stadsfiskaler -1964  
-1169000  | Åklagare, övriga statliga regionala och lokala  
-1171000  | Landsfiskaler 1918-1964  
-1173000  | Landsfogdar 1918-1964  
-1175000  | Lokala polisdistrikt 1965-  
-1176000  | Lokala polisdistrikt, arbetsgrupper 1965-  
-1178000  | Länsdetektiver  
-1179000  | Länskriminal  
-1181000  | Polisavdelningar -1964  
-1182000  | Polisuppsyningsmän  
-1183000  | Spritpolisen -1938  
-1184000  | Statspolisen. Kriminalavdelningen 1933-1964  
-1185000  | Statspolisen. Ordningsavdelningen 1933-1964  
-1189000 *  | Poliser, övriga statliga regionala och lokala  
-1191000  | Eftervårdskonsulenter  
-1192000  | Allmänna arbetskompanier 1804-1842  
-1193000  | Frivårdsmyndigheter  
-1194000 *  | Häkten  
-1195000  | Häradshäkten -1906  
-1196000  | Kriminalvårdsanstalter  
-1201000  | Lokalanstalter  
-1203000  | Regionkanslier 1991-  
-1204000 *  | Regionkanslier (ej egna mynd.) -1990  
-1206000  | Riksanstalter  
-1209000  | Övervakningsnämnder 1965-  
-1219000  | Kriminalvårdsorgan, övriga regionala  
-1221000 *  | Distriktstullkammare  
-1222000  | Gränstullkammare  
-1225000  | Lanttullkammare  
-1227000 *  | Tullavdelningar  
-1228000  | Tullkammare  
-1230000  | Tullregioner  
-1231000  | Tullstationer  
-1239000  | Tullmyndigheter, övriga regionala och lokala  
-1241000  | Landskanslier (odelade) 1635-1952  
-1242000  | Landskontor (odelade) 1635-1957  
-1245000  | Allmänna sektioner (I) 1953-1971  
-1246000  | Socialsektioner (II) 1953-1971  
-1247000  | Planeringssektioner (III) 1953-1971  
-1248000  | Civilförsvarssektioner (IV) 1953-1971  
-1249000  | Försörjningssektioner (V)) 1953-c1962  
-1251000  | Naturvårdssektioner (VI) c1967-1971  
-1253000  | Kameralsektioner (X) 1958-1971  
-1254000  | Prövningsnämnders kanslier (XI) 1958-1971  
-1255000  | Taxeringssektioner (XII) 1958-1971  
-1256000  | Uppbördssektioner (XIII) 1968-1971  
-1257000  | Datasektioner (XIV) 1966-1971  
-1260000 |  | Styrelsen 1971-c1988  
-1261000  | Planeringsavdelningar utom 1971-1986 försvarsenhet (11)  
-1262000  | Försvarsenheter (12) 1971-c1988  
-1263000  | Rättsenheter (31) 1971-1979  
-1266000  | Allmänna enheter (32) 1971-c1988  
-1267000  | Länsrätter (33) 1971-1979  
-1268000  | Länspolischefers expedition (V,41) 1965-c1988  
-1269000  | Administrativa enheter (51) 1971-c1988  
-1271000  | Taxeringsenheter (21) 1971-1986  
-1272000  | Revisionsenheter (22) 1971-1986  
-1273000  | Mervärdesskatteenheter (23) 1969-1986  
-1274000  | Uppbördsenheter (24) 1971-1986  
-1275000  | Dataenheter (25) 1971-1986  
-1276000  | Besvärsenheter (26) 1979-1986  
-1277000  | Skatteavdelningars kansli (29) 1979-1986  
-1280000  | Länsstyrelser (1 arkivbildare) c1988-  
-1289000  | Landsstaten 1240-  
-1291000  | Häradsskrivare -1966  
-1292000 *  | Kronofjärdingsmän -1917  
-1293000  | Kronofogdar -1917  
-1294000  | Kronofogdemyndigheter 1965-1988  
-1295000  | Kronolänsmän -1917  
-1296000  | Lappfogdar  
-1297000  | Lokala skattemyndigheter 1967-1987  
-1299000  | Landsstaten, övriga  
-1301000  | AMU-center c1952-1985  
-1302000  | Bergsskolor  
-1304000  | Dövstumskolor  
-1305000  | Folkskoleinspektörer 1861-1958  
-1308000  | Högskolor med regionstyrelser  
-1309000  | Kolarskolor  
-1310000  | Kursstyrelser för AMU-utbildningar 1962-1985  
-1311000  | Körskolor  
-1313000  | Länsskolnämnder 1952-1991  
-1314000  | Lärarhögskolor 1968-  
-1316000  | [Läroverk](laroverk) -c1968  
-1317000  | Navigationsskolor  
-1318000  | Realskolor 1905-c1968  
-1319000  | Ridskolor  
-1320000  | Sjöbefälskolor -c1968  
-1321000  | Skogsskolor  
-1322000 | Seminarier (för-, små- och folk- skoleseminarier)  
-1323000  | Sameskolor  
-1325000  | Specialskolor för blinda  
-1326000  | Specialskolor för döva  
-1327000  | Statens skola för vuxna  
-1328000  | Ungdomsvårdsskolor  
-1339000  | Undervisning, övriga statliga, regionala och lokala  
-1341000 *  | Allm. försäkringskassor. Centralkontor1962-  
-1342000 *  | Allm. försäkringskassor. Lokalkontor 1962-  
-1343000  | Barnavårdsassistenter c1938-1959  
-1344000  | Barnavårdskonsulenter 1959-1976  
-1345000  | Beslutsnämnder 1968-1986  
-1346000  | Fattigvårdskonsulenter 1919-1970  
-1350000  | Länsläkare 1962-1981  
-1351000  | Länsnykterhetsnämnder 1939-1981  
-1352000  | Mödrahjälpsnämnder 1937-1963  
-1353000  | Provinsialläkare -1962  
-1354000  | Provinsialläkare, 1:e 1890-1961  
-1355000 *  | Regionala hälsoråd  
-1356000  | Rättsläkarstationer 1945-  
-1358000  | Rättspsykiatriska kliniker  
-1360000  | Sjukhus, statliga  
-1362000  | Sjömanshus 1748-1969  
-1363000  | Socialkonsulenter 1971-1981  
-1364000  | Socialvårdskonsulenter 1945-1976  
-1365000  | Vårdanstalt för alkoholmissbrukare  
-1369000  | Sociala myndigheter, övriga statliga  
-1371000 | AMU-myndigheter i länen 1986-  
-1372000 *  | AMU-utbildningsenheter 1986  
-1373000  | Arbetsförmedlingsdistrikt 1976-1986  
-1374000  | Arbetsförmedlingskontor 1987-  
-1375000  | Arbetsmarknadsinstitut 1980-  
-1376000  | Arbetsmiljöfonder 1990-  
-1378000  | Yrkesinspektioner 1890-  
-1379000  | Arbetsmarknadsmyndigheter, övriga regionala och lokala  
-1381000  | Besiktningsveterinärer  
-1382000  | Distriktsveterinärer 1934-  
-1383000  | Domänintendenter  
-1384000  | Domänverkets regionkontor  
-1385000  | Fiskenämnder 1977-1991  
-1386000  | Fiskeriintendenter c1905-1950  
-1387000  | Fiskevärderingsnämnder 1951-1977  
-1388000  | Hingstdepåer  
-1389000  | Jordbrukskommissioner 1917-1948  
-1390000  | Jägmästare (revir) 1869-  
-1391000  | Lantbruksnämnder 1948-1991  
-1392000  | Odlingsråd 1918-1922  
-1393000  | Länsveterinärer c1877-1982  
-1394000  | Skogsinspektörsdistrikt 1869-  
-1395000  | Skogsvårdsstyrelser (1905)-  
-1396000  | Överjägmästare (i länen) -1869  
-1397000 * | Skogsvårdsförvaltningar  
-1399000  | Övriga inom jord och skog, regionala och lokala  
-1401000  | Bergmästaredistrikt  
-1402000  | Bergsfogdar  
-1409000  | Bergsstaten, övriga regionala och lokala  
-1411000  | Fartygsinspektionens distriktskontor -1988  
-1412000  | Sjöfartsverkets inspektionsområden 1988-  
-1413000  | Sjötrafikområden 1988-  
-1414000  | Skeppsmätningskontrollör  
-1419000  | Sjöfartsverket, övriga regionala och lokala inom  
-1420000  | Fyrplatser  
-1421000 | Lotsdistrikt 1827-  
-1422000  | Lotsdistrikt 1905-1988  
-1423000  | Lotsdistriktschefsexp 1800t  
-1424000  | Lotsfördelningar 1881-1904  
-1425000  | Lotsfördelningar  
-1426000  | Lotsplatser  
-1431000  | Luftfartsverket flygplatser  
-1433000  | Luftfartsverket, övriga regionala  
-1441000  | Postverkets områdespostkontor  
-1442000  | Postkontor  
-1443000  | Postverkets regionkontor  
-1449000  | Postverket, övriga regionala  
-1452000  | Vägförvaltningar 1944-  
-1453000  | Väghållningsdistrikt  
-1454000  | Vägverkets byggnadsdistrikt 1968-  
-1455000  | Vägverket, övriga regionala och lokala  
-1456000  | SJs baningenjörer  
-1457000  | SJs trafikinspektörer  
-1459000  | SJs övriga regionala  
-1461000  | Teleområden  
-1469000  | Televerket, övriga regionala  
-1471000  | Statens Bilinspektion, lokal org.  
-1473000  | TSVs distrikt 1968-  
-1474000  | TSVs lokalkontor 1968-1983  
-1489000  | Vattenfall, regionala och lokala  
-1501000  | Länsvägnämnder 1944-1991  
-1502000  | Kraftverk  
-1509000  | Kommunikation, övriga  
-1511000  | Kronofogdemyndigheter i länen 1988-  
-1512000  | Kronokamrerare (uppbördsverk) 1947-1966  
-1513000  | Lokala skattemyndigheter 1988-1990  
-1514000  | Länsskattemyndigheter 1987-1990  
-1515000  | Skattemyndigheter i länen 1991-  
-1516000  | Stadsfogdar 1879-1964  
-1521000  | Auktionskammare  
-1523000  | Brödbyråer 1917  
-1524000  | Civilförsvarschefer  
-1525000  | Distrikts- och länsingenjörer 1945-1967  
-1527000  | Egnahemsnämnder -1948  
-1529000  | Elinspektioner  
-1531000  | Expropriationsnämnder  
-1533000  | Fastighetsbildningsmyndigheter 1974-  
-1535000  | Fastighetsregistermyndigheter  
-1537000  | Förenade fabriksverkens dotterbolag  
-1538000  | Guvernör/generalguvernör  
-1539000  | Konkursförvaltare  
-1541000  | Kristidsstyrelser: kansli 1939-1945  
-1542000  | Kristidsstyrelser: bränslekontor  
-1543000  | Kristidsstyrelser: kontrollbyråer  
-1544000  | Kristidsstyrelser: priskontor  
-1549000  | Kyrkobokföringsinspektörer (RSV) -1991  
-1551000  | Lager- och fryshus  
-1553000  | Landsarkiv 1898-  
-1554000  | Lantmätare, övriga  
-1555000  | Livsmedelsstyrelser 1916-1919  
-1556000  | Lokala säkerhetsnämnder 1981- vid kärnkraftsverken  
-1557000  | Lånenämnder för ackords- och stöd låneärenden  
-1558000  | Luftskyddschefer  
-1559000  | Länsarkitekter c1926-1971  
-1561000  | Länsarkiv  
-1562000  | Länsbostadsnämnder  
-1563000  | Länsbrandinspektörer 1945-c1974  
-1564000  | Länsingenjörer  
-1565000  | Provningsanstalter  
-1566000  | Löntagarfonder  
-1567000  | Regionala utvecklingsfonder  
-1569000  | Regionmusik 1971-  
-1571000  | Riksbankens regionala organ 1901-1985  
-1573000  | Statens Personalnämnds regionkontor 1975-1979  
-1575000  | Statsstipendienämnder 1939-1964  
-1577000  | Studiemedelsnämnder 1964-1991  
-1581000  | Studiestödsnämnder 1991-  
-1582000  | Ståthållare (före länsstyrelser)  
-1583000  | Tryckfrihetsombud  
-1585000  | Vuxenutbildningsnämnder 1977-1992  
-1587000  | Överlantmätaremyndigheter 1974-  
-1599000  | Övriga statliga regional och lokala myndigheter  
-2000000  | Kommunala arkiv  
-3000000  | Tekniskt arbete  
-3010000  | Kemiskt och fysikaliskt arbete, laboratoriearbete  
-3020000  | Biologiskt arbete  
-3030000  | Pedagogiskt arbete  
-3040000  | Religiöst arbete  
-3050000  | Juridiskt arbete  
-3060000  | Litterärt och journalistiskt arbete  
-3070000  | Konstnärligt arbete  
-3090000  | Övriga yrkesgrupperinom området  
-3100000 *  | Hälso- och sjukvårdsarbete  
-3110000  | Rörelse- och arbetsterapiarbete  
-3120000 * | Tandvårdsarbete  
-3130000  | Apoteksarbete  
-3140000  | Veterinärarbete  
-3150000 *  | Socialt arbete  
-3160000  | Miljö- och skyddsarbete  
-3190000  | Övriga yrkesgrupper inom området  
-3200000  | Samhällsadministrativt arbete  
-3210000  | Företagsadministrativt arbete  
-3220000  | Personalarbete  
-3230000  | Redovisningsarbete  
-3240000  | Sekreterar- och maskinskrivningsarbete  
-3250000  | ADB-arbete m m  
-3260000  | Övrigt administrativt, kameralt och kontorstekniskt arbete  
-3270000  | Reklamarbete, försäljning av egendom och tjänster  
-3280000  | Inköpsarbete, varuförsäljning  
-3290000  | Övrigt kommersiellt arbete  
-3300000  | Jordbruks-, trädgårds- och skogsbruksledning  
-3310000  | Jordbruks- och trädgårdsarbete, djurskötsel  
-3320000  | Viltvård och jakt  
-3330000  | Fiskeriarbete [+](11_Fiske.htm)  
-3340000  | Skogsarbete [+](12_Skog.htm)  
-3350000  | Gruv- och stenbrytnings- och petroleumutvinningsarbete [+](10_Bergsbruk.htm)  
-3400000  | Transport- och kommunikationsarbete  
-3500000  | Textilarbete, sömnadsarbete, sko- och lädervaruarbete  
-3510000  | Stål-, metall-, gjuteri-, verkstads-, och byggnadsmetallarbete  
-3520000  | Finmekaniskt arbete  
-3530000  | Elektroarbete  
-3540000  | Trävaruarbete, målningsarbete, bygg- och anläggningsarbete  
-3550000  | Grafiskt arbete  
-3560000  | Glas-, keramik- och tegelarbete  
-3570000  | Livsmedels- och tobaksarbete  
-3580000  | Kemiskt processarbete  
-3590000  | Övriga yrkesgrupper inom området  
-3600000  | Servicearbete  
-3710000  | Militärt arbete [+](46-61_Forsvaret.htm)  
-3720000  | Studerande  
-3790000  | Övriga inom grupp 37  
-3800000  | Kungliga  
-3810000  | Adel  
-3820000  | Politiker  
-3890000  | Övriga inom grupp 38  
-3899000  | Ej klassificerade personarkiv  
-3900000  | Släktarkiv  
-4000000  | Gårdsarkiv  
-5000000  | Byarkiv  
-6100000  | Politiska föreningar  
-6200000  | Fackliga föreningar  
-6300000  | Religiösa föreningar  
-6400000  | Nykterhetsföreningar  
-6500000  | Kulturella föreningar  
-6600000  | Idrottsföreningar  
-6700000  | Ekonomiska föreningar  
-6900000  | Övriga föreningar  
-6999000  | Ej klassificerade föreningasarkiv  
-7100000  | Lantbruk och fiske, ospecificerat  
-7110000  | Jordbruk och jakt  
-7120000  | Skogsbruk  
-7130000  | Fiske och fiskevård  
-7200000  | Utvinnings- och tillverkningsindustri, ospecificerat  
-7210000  | Gruvor och mineralutvinningsindustri  
-7220000  | Livsmedels-, dryckesvaru- och tobaksindustri  
-7230000  | Processindustri  
-7240000  | Verkstadsindustri  
-7250000  | Formvaruindustri  
-7300000  | Energi-, vatten- och avloppsverk  
-7400000  | Byggindustri  
-7500000  | Handel och kommunikation, ospecificerat  
-7510000  | Handel  
-7520000  | Transport- och lagringsföretag  
-7530000  | Post- och telekommunikationsföretag  
-7600000  | Finans-, utvecklings- och företagstjänster, ospecificerade  
-7610000  | Finans- och försäkringsbolag  
-7620000  | Forskning, konsulter  
-7630000  | Fastighetbolag och fastighetsförvaltare  
-7700000  | Personliga, sociala och kulturella tjänster, ospecificerade  
-7710000  | Utbildning  
-7720000  | Media, reklam, kultur  
-7730000  | Vård (hälso- och sjukvård, socialtjänst)  
-7740000  | Hotell och resturanger  
-7750000  | Sport, rekreation och andra tjänster  
-7999000  | Ej klassificerade företagsarkiv  
-9100000  | Stiftelsearkiv  
-9200000  | Skråarkiv  
-9900000  | Övriga arkiv, ospecificerade  
-9999000 | Ej klassificerade arkiv  
+1000000 | Statliga arkiv
+---|---
+1103000 | Accisrätter (lilla tullrätten) 1672-1811
+1104000  | Hallrätter 1739-1846
+1105000  | Kämnersrätter -1849
+1106000  | Magistrater -1964
+1107000  | Notarius Publicus -1964
+1108000  | Poliskammare -1964
+1109000  | Rådhusrätter -1970
+1110000 | Sjörätter
+1111000 | Sjötullrätter -1831
+1112000 | Stadens Äldste -(1862)
+1113000  | Överexekutor (stadsrätt) c1877-1964
+1116000  | Häradsrätter -1970
+1117000  | Inskrivningsdomare 1933-1971
+1118000  | Kommunalborgmästare
+1119000  | Stadsstyrelser
+1120000  | Ägodelningsrätter 1827-1970
+1121000  | Allmänna advokatbyråer 1973-
+1122000  | Avvittringsrätter
+1123000  | Bergsrätter med bergsting och gruvrätter
+1124000  | Birkerätter -1692
+1125000  | Brandkommissorialrätter
+1126000  | Expropriationsdomstolar 1948-1970
+1127000  | Försäkringsrätter 1979-1992
+1131000  | Gränstullrätter -c1933
+1132000  | Hovrätter 1614-
+1134000 * | Hyres- och arrendenämnder 1969-
+1136000  | Inskrivningsmyndigheter 1972-
+1137000  | Kammarrätter 1972-
+1139000  | Lagmansrätter -1849
+1140000  | Lagmansting (före 1862)
+1141000  | Landsting
+1143000  | Länsrätter 1979-
+1145000  | Ordningsrätter
+1146000  | Posträtter 1704-1836
+1148000  | Rättshjälpsnämnder 1973-1990
+1150000  | Slottsrätter 1681-
+1152000  | Tingsrätter 1971-
+1155000  | Tullrätter
+1157000  | Vattendomstolar 1919-1971
+1159000  | Judiciella, övriga statliga regionala och lokala
+1161000  | Distriktsåklagare 1965-
+1162000  | Landsfiskaler c1642-1917
+1165000  | Länsåklagaremyndigheter 1965-1985
+1166000 *  | Polis och åklagare i städerna -1964
+1167000  | Regionåklagaremyndigheter 1985-
+1168000  | Stadsfiskaler -1964
+1169000  | Åklagare, övriga statliga regionala och lokala
+1171000  | Landsfiskaler 1918-1964
+1173000  | Landsfogdar 1918-1964
+1175000  | Lokala polisdistrikt 1965-
+1176000  | Lokala polisdistrikt, arbetsgrupper 1965-
+1178000  | Länsdetektiver
+1179000  | Länskriminal
+1181000  | Polisavdelningar -1964
+1182000  | Polisuppsyningsmän
+1183000  | Spritpolisen -1938
+1184000  | Statspolisen. Kriminalavdelningen 1933-1964
+1185000  | Statspolisen. Ordningsavdelningen 1933-1964
+1189000 *  | Poliser, övriga statliga regionala och lokala
+1191000  | Eftervårdskonsulenter
+1192000  | Allmänna arbetskompanier 1804-1842
+1193000  | Frivårdsmyndigheter
+1194000 *  | Häkten
+1195000  | Häradshäkten -1906
+1196000  | Kriminalvårdsanstalter
+1201000  | Lokalanstalter
+1203000  | Regionkanslier 1991-
+1204000 *  | Regionkanslier (ej egna mynd.) -1990
+1206000  | Riksanstalter
+1209000  | Övervakningsnämnder 1965-
+1219000  | Kriminalvårdsorgan, övriga regionala
+1221000 *  | Distriktstullkammare
+1222000  | Gränstullkammare
+1225000  | Lanttullkammare
+1227000 *  | Tullavdelningar
+1228000  | Tullkammare
+1230000  | Tullregioner
+1231000  | Tullstationer
+1239000  | Tullmyndigheter, övriga regionala och lokala
+1241000  | Landskanslier (odelade) 1635-1952
+1242000  | Landskontor (odelade) 1635-1957
+1245000  | Allmänna sektioner (I) 1953-1971
+1246000  | Socialsektioner (II) 1953-1971
+1247000  | Planeringssektioner (III) 1953-1971
+1248000  | Civilförsvarssektioner (IV) 1953-1971
+1249000  | Försörjningssektioner (V)) 1953-c1962
+1251000  | Naturvårdssektioner (VI) c1967-1971
+1253000  | Kameralsektioner (X) 1958-1971
+1254000  | Prövningsnämnders kanslier (XI) 1958-1971
+1255000  | Taxeringssektioner (XII) 1958-1971
+1256000  | Uppbördssektioner (XIII) 1968-1971
+1257000  | Datasektioner (XIV) 1966-1971
+1260000 |  | Styrelsen 1971-c1988
+1261000  | Planeringsavdelningar utom 1971-1986 försvarsenhet (11)
+1262000  | Försvarsenheter (12) 1971-c1988
+1263000  | Rättsenheter (31) 1971-1979
+1266000  | Allmänna enheter (32) 1971-c1988
+1267000  | Länsrätter (33) 1971-1979
+1268000  | Länspolischefers expedition (V,41) 1965-c1988
+1269000  | Administrativa enheter (51) 1971-c1988
+1271000  | Taxeringsenheter (21) 1971-1986
+1272000  | Revisionsenheter (22) 1971-1986
+1273000  | Mervärdesskatteenheter (23) 1969-1986
+1274000  | Uppbördsenheter (24) 1971-1986
+1275000  | Dataenheter (25) 1971-1986
+1276000  | Besvärsenheter (26) 1979-1986
+1277000  | Skatteavdelningars kansli (29) 1979-1986
+1280000  | Länsstyrelser (1 arkivbildare) c1988-
+1289000  | Landsstaten 1240-
+1291000  | Häradsskrivare -1966
+1292000 *  | Kronofjärdingsmän -1917
+1293000  | Kronofogdar -1917
+1294000  | Kronofogdemyndigheter 1965-1988
+1295000  | Kronolänsmän -1917
+1296000  | Lappfogdar
+1297000  | Lokala skattemyndigheter 1967-1987
+1299000  | Landsstaten, övriga
+1301000  | AMU-center c1952-1985
+1302000  | Bergsskolor
+1304000  | Dövstumskolor
+1305000  | Folkskoleinspektörer 1861-1958
+1308000  | Högskolor med regionstyrelser
+1309000  | Kolarskolor
+1310000  | Kursstyrelser för AMU-utbildningar 1962-1985
+1311000  | Körskolor
+1313000  | Länsskolnämnder 1952-1991
+1314000  | Lärarhögskolor 1968-
+1316000  | [Läroverk](laroverk) -c1968
+1317000  | Navigationsskolor
+1318000  | Realskolor 1905-c1968
+1319000  | Ridskolor
+1320000  | Sjöbefälskolor -c1968
+1321000  | Skogsskolor
+1322000 | Seminarier (för-, små- och folk- skoleseminarier)
+1323000  | Sameskolor
+1325000  | Specialskolor för blinda
+1326000  | Specialskolor för döva
+1327000  | Statens skola för vuxna
+1328000  | Ungdomsvårdsskolor
+1339000  | Undervisning, övriga statliga, regionala och lokala
+1341000 *  | Allm. försäkringskassor. Centralkontor1962-
+1342000 *  | Allm. försäkringskassor. Lokalkontor 1962-
+1343000  | Barnavårdsassistenter c1938-1959
+1344000  | Barnavårdskonsulenter 1959-1976
+1345000  | Beslutsnämnder 1968-1986
+1346000  | Fattigvårdskonsulenter 1919-1970
+1350000  | Länsläkare 1962-1981
+1351000  | Länsnykterhetsnämnder 1939-1981
+1352000  | Mödrahjälpsnämnder 1937-1963
+1353000  | Provinsialläkare -1962
+1354000  | Provinsialläkare, 1:e 1890-1961
+1355000 *  | Regionala hälsoråd
+1356000  | Rättsläkarstationer 1945-
+1358000  | Rättspsykiatriska kliniker
+1360000  | Sjukhus, statliga
+1362000  | Sjömanshus 1748-1969
+1363000  | Socialkonsulenter 1971-1981
+1364000  | Socialvårdskonsulenter 1945-1976
+1365000  | Vårdanstalt för alkoholmissbrukare
+1369000  | Sociala myndigheter, övriga statliga
+1371000 | AMU-myndigheter i länen 1986-
+1372000 *  | AMU-utbildningsenheter 1986
+1373000  | Arbetsförmedlingsdistrikt 1976-1986
+1374000  | Arbetsförmedlingskontor 1987-
+1375000  | Arbetsmarknadsinstitut 1980-
+1376000  | Arbetsmiljöfonder 1990-
+1378000  | Yrkesinspektioner 1890-
+1379000  | Arbetsmarknadsmyndigheter, övriga regionala och lokala
+1381000  | Besiktningsveterinärer
+1382000  | Distriktsveterinärer 1934-
+1383000  | Domänintendenter
+1384000  | Domänverkets regionkontor
+1385000  | Fiskenämnder 1977-1991
+1386000  | Fiskeriintendenter c1905-1950
+1387000  | Fiskevärderingsnämnder 1951-1977
+1388000  | Hingstdepåer
+1389000  | Jordbrukskommissioner 1917-1948
+1390000  | Jägmästare (revir) 1869-
+1391000  | Lantbruksnämnder 1948-1991
+1392000  | Odlingsråd 1918-1922
+1393000  | Länsveterinärer c1877-1982
+1394000  | Skogsinspektörsdistrikt 1869-
+1395000  | Skogsvårdsstyrelser (1905)-
+1396000  | Överjägmästare (i länen) -1869
+1397000 * | Skogsvårdsförvaltningar
+1399000  | Övriga inom jord och skog, regionala och lokala
+1401000  | Bergmästaredistrikt
+1402000  | Bergsfogdar
+1409000  | Bergsstaten, övriga regionala och lokala
+1411000  | Fartygsinspektionens distriktskontor -1988
+1412000  | Sjöfartsverkets inspektionsområden 1988-
+1413000  | Sjötrafikområden 1988-
+1414000  | Skeppsmätningskontrollör
+1419000  | Sjöfartsverket, övriga regionala och lokala inom
+1420000  | Fyrplatser
+1421000 | Lotsdistrikt 1827-
+1422000  | Lotsdistrikt 1905-1988
+1423000  | Lotsdistriktschefsexp 1800t
+1424000  | Lotsfördelningar 1881-1904
+1425000  | Lotsfördelningar
+1426000  | Lotsplatser
+1431000  | Luftfartsverket flygplatser
+1433000  | Luftfartsverket, övriga regionala
+1441000  | Postverkets områdespostkontor
+1442000  | Postkontor
+1443000  | Postverkets regionkontor
+1449000  | Postverket, övriga regionala
+1452000  | Vägförvaltningar 1944-
+1453000  | Väghållningsdistrikt
+1454000  | Vägverkets byggnadsdistrikt 1968-
+1455000  | Vägverket, övriga regionala och lokala
+1456000  | SJs baningenjörer
+1457000  | SJs trafikinspektörer
+1459000  | SJs övriga regionala
+1461000  | Teleområden
+1469000  | Televerket, övriga regionala
+1471000  | Statens Bilinspektion, lokal org.
+1473000  | TSVs distrikt 1968-
+1474000  | TSVs lokalkontor 1968-1983
+1489000  | Vattenfall, regionala och lokala
+1501000  | Länsvägnämnder 1944-1991
+1502000  | Kraftverk
+1509000  | Kommunikation, övriga
+1511000  | Kronofogdemyndigheter i länen 1988-
+1512000  | Kronokamrerare (uppbördsverk) 1947-1966
+1513000  | Lokala skattemyndigheter 1988-1990
+1514000  | Länsskattemyndigheter 1987-1990
+1515000  | Skattemyndigheter i länen 1991-
+1516000  | Stadsfogdar 1879-1964
+1521000  | Auktionskammare
+1523000  | Brödbyråer 1917
+1524000  | Civilförsvarschefer
+1525000  | Distrikts- och länsingenjörer 1945-1967
+1527000  | Egnahemsnämnder -1948
+1529000  | Elinspektioner
+1531000  | Expropriationsnämnder
+1533000  | Fastighetsbildningsmyndigheter 1974-
+1535000  | Fastighetsregistermyndigheter
+1537000  | Förenade fabriksverkens dotterbolag
+1538000  | Guvernör/generalguvernör
+1539000  | Konkursförvaltare
+1541000  | Kristidsstyrelser: kansli 1939-1945
+1542000  | Kristidsstyrelser: bränslekontor
+1543000  | Kristidsstyrelser: kontrollbyråer
+1544000  | Kristidsstyrelser: priskontor
+1549000  | Kyrkobokföringsinspektörer (RSV) -1991
+1551000  | Lager- och fryshus
+1553000  | Landsarkiv 1898-
+1554000  | Lantmätare, övriga
+1555000  | Livsmedelsstyrelser 1916-1919
+1556000  | Lokala säkerhetsnämnder 1981- vid kärnkraftsverken
+1557000  | Lånenämnder för ackords- och stöd låneärenden
+1558000  | Luftskyddschefer
+1559000  | Länsarkitekter c1926-1971
+1561000  | Länsarkiv
+1562000  | Länsbostadsnämnder
+1563000  | Länsbrandinspektörer 1945-c1974
+1564000  | Länsingenjörer
+1565000  | Provningsanstalter
+1566000  | Löntagarfonder
+1567000  | Regionala utvecklingsfonder
+1569000  | Regionmusik 1971-
+1571000  | Riksbankens regionala organ 1901-1985
+1573000  | Statens Personalnämnds regionkontor 1975-1979
+1575000  | Statsstipendienämnder 1939-1964
+1577000  | Studiemedelsnämnder 1964-1991
+1581000  | Studiestödsnämnder 1991-
+1582000  | Ståthållare (före länsstyrelser)
+1583000  | Tryckfrihetsombud
+1585000  | Vuxenutbildningsnämnder 1977-1992
+1587000  | Överlantmätaremyndigheter 1974-
+1599000  | Övriga statliga regional och lokala myndigheter
+2000000  | Kommunala arkiv
+3000000  | Tekniskt arbete
+3010000  | Kemiskt och fysikaliskt arbete, laboratoriearbete
+3020000  | Biologiskt arbete
+3030000  | Pedagogiskt arbete
+3040000  | Religiöst arbete
+3050000  | Juridiskt arbete
+3060000  | Litterärt och journalistiskt arbete
+3070000  | Konstnärligt arbete
+3090000  | Övriga yrkesgrupperinom området
+3100000 *  | Hälso- och sjukvårdsarbete
+3110000  | Rörelse- och arbetsterapiarbete
+3120000 * | Tandvårdsarbete
+3130000  | Apoteksarbete
+3140000  | Veterinärarbete
+3150000 *  | Socialt arbete
+3160000  | Miljö- och skyddsarbete
+3190000  | Övriga yrkesgrupper inom området
+3200000  | Samhällsadministrativt arbete
+3210000  | Företagsadministrativt arbete
+3220000  | Personalarbete
+3230000  | Redovisningsarbete
+3240000  | Sekreterar- och maskinskrivningsarbete
+3250000  | ADB-arbete m m
+3260000  | Övrigt administrativt, kameralt och kontorstekniskt arbete
+3270000  | Reklamarbete, försäljning av egendom och tjänster
+3280000  | Inköpsarbete, varuförsäljning
+3290000  | Övrigt kommersiellt arbete
+3300000  | Jordbruks-, trädgårds- och skogsbruksledning
+3310000  | Jordbruks- och trädgårdsarbete, djurskötsel
+3320000  | Viltvård och jakt
+3330000  | Fiskeriarbete [+](11_Fiske.htm)
+3340000  | Skogsarbete [+](12_Skog.htm)
+3350000  | Gruv- och stenbrytnings- och petroleumutvinningsarbete [+](10_Bergsbruk.htm)
+3400000  | Transport- och kommunikationsarbete
+3500000  | Textilarbete, sömnadsarbete, sko- och lädervaruarbete
+3510000  | Stål-, metall-, gjuteri-, verkstads-, och byggnadsmetallarbete
+3520000  | Finmekaniskt arbete
+3530000  | Elektroarbete
+3540000  | Trävaruarbete, målningsarbete, bygg- och anläggningsarbete
+3550000  | Grafiskt arbete
+3560000  | Glas-, keramik- och tegelarbete
+3570000  | Livsmedels- och tobaksarbete
+3580000  | Kemiskt processarbete
+3590000  | Övriga yrkesgrupper inom området
+3600000  | Servicearbete
+3710000  | Militärt arbete [+](46-61_Forsvaret.htm)
+3720000  | Studerande
+3790000  | Övriga inom grupp 37
+3800000  | Kungliga
+3810000  | Adel
+3820000  | Politiker
+3890000  | Övriga inom grupp 38
+3899000  | Ej klassificerade personarkiv
+3900000  | Släktarkiv
+4000000  | Gårdsarkiv
+5000000  | Byarkiv
+6100000  | Politiska föreningar
+6200000  | Fackliga föreningar
+6300000  | Religiösa föreningar
+6400000  | Nykterhetsföreningar
+6500000  | Kulturella föreningar
+6600000  | Idrottsföreningar
+6700000  | Ekonomiska föreningar
+6900000  | Övriga föreningar
+6999000  | Ej klassificerade föreningasarkiv
+7100000  | Lantbruk och fiske, ospecificerat
+7110000  | Jordbruk och jakt
+7120000  | Skogsbruk
+7130000  | Fiske och fiskevård
+7200000  | Utvinnings- och tillverkningsindustri, ospecificerat
+7210000  | Gruvor och mineralutvinningsindustri
+7220000  | Livsmedels-, dryckesvaru- och tobaksindustri
+7230000  | Processindustri
+7240000  | Verkstadsindustri
+7250000  | Formvaruindustri
+7300000  | Energi-, vatten- och avloppsverk
+7400000  | Byggindustri
+7500000  | Handel och kommunikation, ospecificerat
+7510000  | Handel
+7520000  | Transport- och lagringsföretag
+7530000  | Post- och telekommunikationsföretag
+7600000  | Finans-, utvecklings- och företagstjänster, ospecificerade
+7610000  | Finans- och försäkringsbolag
+7620000  | Forskning, konsulter
+7630000  | Fastighetbolag och fastighetsförvaltare
+7700000  | Personliga, sociala och kulturella tjänster, ospecificerade
+7710000  | Utbildning
+7720000  | Media, reklam, kultur
+7730000  | Vård (hälso- och sjukvård, socialtjänst)
+7740000  | Hotell och resturanger
+7750000  | Sport, rekreation och andra tjänster
+7999000  | Ej klassificerade företagsarkiv
+9100000  | Stiftelsearkiv
+9200000  | Skråarkiv
+9900000  | Övriga arkiv, ospecificerade
+9999000 | Ej klassificerade arkiv
 [![](arrow9.jpg)](Index.htm)
 
 Editering för HTML: Ralph Haglund, senaste ändring 2006.04.05

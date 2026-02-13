@@ -7,40 +7,40 @@ title: 03 Skatt
 
 ## 3\. SKATTSKRIVNING, SKATTEUPPBÖRD, INDRIVNING, LAGPRÖVNING
 
-  
+
 
 ### Myndigheter inom skatteväsendet (jfr även 5.3)
 
-Skattskrivning | Uppbörd | Indrivning  
----|---|---  
-Mantalskommissarie | Fogde | Fogde  
-Häradsskrivare -1966 | Kronofogde 1687-1917 | Kronofogde 1687-1917  
-på landet | Sockenstämma 1844-62 |   
-| (hundskatt, skolavgift, fattigavgift) |   
-| Kommunal uppbördsstämma 1863-1946 |   
-Magistrat i stad | Länsstyrelsens landskontor | Magistrat (borgmästare)  
-| (stats- o. landstingsskatt) | Stadsfogde 1878-1964  
-Kronokassör -1966 | Kronokassör/kamrer eller Uppbördsverk i stad -1966 (olika kontor för statlig o. kommunal skatt -1947) | Landsfiskal 1918-64  
-Lokal skattemyndighet 1967-1991 | Länsstyrelsen: landskontor -1957  
-kameralsektion 1958-67 |   
-| uppbördssektion 1968-71  
-uppbördsenhet 1971-86 | Kronofogdemyndighet 1965-  
-|  | Länskronofogdemyndighet 1988-   
-| Länsskattemyndighet 1987-91 |   
-| Skattemyndighet i länet 1991- |   
-  
+Skattskrivning | Uppbörd | Indrivning
+---|---|---
+Mantalskommissarie | Fogde | Fogde
+Häradsskrivare -1966 | Kronofogde 1687-1917 | Kronofogde 1687-1917
+på landet | Sockenstämma 1844-62 |
+| (hundskatt, skolavgift, fattigavgift) |
+| Kommunal uppbördsstämma 1863-1946 |
+Magistrat i stad | Länsstyrelsens landskontor | Magistrat (borgmästare)
+| (stats- o. landstingsskatt) | Stadsfogde 1878-1964
+Kronokassör -1966 | Kronokassör/kamrer eller Uppbördsverk i stad -1966 (olika kontor för statlig o. kommunal skatt -1947) | Landsfiskal 1918-64
+Lokal skattemyndighet 1967-1991 | Länsstyrelsen: landskontor -1957
+kameralsektion 1958-67 |
+| uppbördssektion 1968-71
+uppbördsenhet 1971-86 | Kronofogdemyndighet 1965-
+|  | Länskronofogdemyndighet 1988-
+| Länsskattemyndighet 1987-91 |
+| Skattemyndighet i länet 1991- |
+
 
 ### 1\. Det gamla skattesystemet
 
 Skatteuttag av invånarna i ett samhälle för gemensamma uppgifter eller för regentens behov tillhör de äldsta förvaltningsfunktionerna. Skattskrivning och uppbörd i Sverige har alltså medeltida anor, men den decentraliserade förvaltning som då tillämpades - slottslän - gjorde att skatteuppbörden skedde genom den som innehade slottet; ibland var det en storman, ibland en av kungen tillsatt fogde. Klagomål över fogdarnas skatteindrivning var officiellt en av anledningarna till att Sverige försökte bryta sig ur den nordiska Kalmarunionen 1434-36. 1500-talets förvaltning under Gustav Vasa och hans söner fortsatte den decentraliserade modellen, men kungarna tillsatte fogdar, som gjorde noga räkenskap för hur skattepersedlarna användes. Medeltidens länsinnehavare hade använt medlen mer okontrollerat.
 
-Skatten beräknades efter jorden, som var det dominerande produktionsmedlet, och den betalades av bönderna i förhållande till egendomens avkastning. Gårdarna och deras skatt antecknades i jordeböcker. Frälset, dvs adeln, betalade inte sådan jordskatt, inte heller kyrkan. Däremot hade både adeln och kyrkan landbönder som betalade avgifter till dem i stället för till kronan. Enskilda godsägares jordeböcker finns bevarade från senmedeltiden, kronans inte förrän under 1500-talet. Förutom skatten på jord, som senare omtalades som ordinarie räntan eller jordeboksräntan, under 1800-talet som grundskatt, utgick extra skatter vid särskilda tillfällen. Sådana skatter betalade även adeln. En del av dem permanentades med tiden. Jordeboksräntan var stående skatt, dvs beviljades inte av riksdagarna, men alla extra skatter skulle beviljas, därav namnet bevillning, som användes från 1700-talet. Dessutom utgick vid extraordinära tillfällen skatt per person t ex vid Älvsborgs lösen 1613, då det gällde att få tillbaka denna fästning från danskarna. 1605 uttogs hjonelagspengar, dvs skatt på hushåll, som ju brukade bestå av gifta. 1627 infördes kvarntullskatten, och båda dessa skatter krävde längder över alla hushåll. Från 1635 blev mantalspengarna en stående skatt, dvs den behövde inte längre beviljas av riksdagen. Därmed infördes mantalslängden, som fanns kvar till 1991. 
+Skatten beräknades efter jorden, som var det dominerande produktionsmedlet, och den betalades av bönderna i förhållande till egendomens avkastning. Gårdarna och deras skatt antecknades i jordeböcker. Frälset, dvs adeln, betalade inte sådan jordskatt, inte heller kyrkan. Däremot hade både adeln och kyrkan landbönder som betalade avgifter till dem i stället för till kronan. Enskilda godsägares jordeböcker finns bevarade från senmedeltiden, kronans inte förrän under 1500-talet. Förutom skatten på jord, som senare omtalades som ordinarie räntan eller jordeboksräntan, under 1800-talet som grundskatt, utgick extra skatter vid särskilda tillfällen. Sådana skatter betalade även adeln. En del av dem permanentades med tiden. Jordeboksräntan var stående skatt, dvs beviljades inte av riksdagarna, men alla extra skatter skulle beviljas, därav namnet bevillning, som användes från 1700-talet. Dessutom utgick vid extraordinära tillfällen skatt per person t ex vid Älvsborgs lösen 1613, då det gällde att få tillbaka denna fästning från danskarna. 1605 uttogs hjonelagspengar, dvs skatt på hushåll, som ju brukade bestå av gifta. 1627 infördes kvarntullskatten, och båda dessa skatter krävde längder över alla hushåll. Från 1635 blev mantalspengarna en stående skatt, dvs den behövde inte längre beviljas av riksdagen. Därmed infördes mantalslängden, som fanns kvar till 1991.
 
 Mantal var från början ett mått på jord. En gård på ett mantal skulle kunna föda en familj med tjänstefolk. Senare delades gårdarna så att en normalstor gård var på 1/2, 1/4 eller 1/8 mantal. Det fanns även mindre gårdar på 1800-talet men de födde knappast en hel familj utan extrainkomster. Mantalsränta kallades en del av jordeboksräntan; i den ingick landtågsgärd, byggningshjälp, salpeterhjälp, skjutsfärdspenningar, dagsverkshjälp och från 1642 även boskapspenningar.
 
 Mantalslängderna upptog varje hushåll, men endast hushållsföreståndaren antecknades med namn. Hushållsföreståndaren ansvarade för mantalspenningarna, som betalades för varje arbetsför människa mellan 15, senare 18, och 62 år. Mantalspenningen var en personlig skatt och den fanns kvar till 1938. Före 1693 var flera befolkningsgrupper befriade men därefter endast säterier (=adelns huvudgårdar) och militärer. Indelta soldater betalade inte skatten men skulle betala för sina hustrur samt eventuella pigor, drängar och vuxna hemmavarande barn. Utfattiga personer befriades liksom kroniskt sjuka. I mantalslängd antecknades i slutet av 1700- och början av 1800-talet vilka som betalade skatt för lyxkonsumtion t ex bruk av tobak, spelkort, siden och fönsterlufter. 1863 bestämdes mantalspenningen till 40 öre för man och 20 för kvinna, så att de lägre kvinnolönerna motsvarades av lägre skatt, liksom kvinnor betalade lägre sjukvårdsavgift än män (se 13.1).
 
-Omkring sekelskiftet 1900 ändrades skattesystemet. Grundskatterna avskaffades och självdeklaration infördes 1902 som grundval för taxering, dvs skatt på inkomster blev det vanliga även om skatt på fast egendom fanns kvar. Vid det laget fanns det inte bara statlig skatt utan även kommunal- landstings- och kyrkoskatt. Sedan gammalt ansvarade de jordägande i församlingen för kyrkobyggnader och pastoratet för prästlöner inklusive prästboställen. Från början av 1800-talet kunde socknarna ta ut avgifter av invånarna för fattigvården, från 1843 kunde de ta ut avgifter för skolan. När de borgerliga kommunerna infördes 1863, fick de beskattningsrätt. Landstingen kunde också ta upp skatt för sina ändamål (jfr 22.2). 
+Omkring sekelskiftet 1900 ändrades skattesystemet. Grundskatterna avskaffades och självdeklaration infördes 1902 som grundval för taxering, dvs skatt på inkomster blev det vanliga även om skatt på fast egendom fanns kvar. Vid det laget fanns det inte bara statlig skatt utan även kommunal- landstings- och kyrkoskatt. Sedan gammalt ansvarade de jordägande i församlingen för kyrkobyggnader och pastoratet för prästlöner inklusive prästboställen. Från början av 1800-talet kunde socknarna ta ut avgifter av invånarna för fattigvården, från 1843 kunde de ta ut avgifter för skolan. När de borgerliga kommunerna infördes 1863, fick de beskattningsrätt. Landstingen kunde också ta upp skatt för sina ändamål (jfr 22.2).
 
 Bevillningen, dvs inkomstskatten, var 1862 1%. Kommunalskatten utgick från början efter objekt, dvs ändamålen var specificerade, med undantag av hundskatten, som kommunen disponerade fritt. Från 1928 blev det allmän kommunalskatt, men det fanns en särskild kommunal fastighetsskatt till 1954, då den bakades in i den allmänna skatten. Vägskatt från 1891 (jfr 15.1) var också kommunal och skogsaccis från 1909. Taxeringssystemet hade ett kommunalt inslag till 1991, då taxeringsnämnderna avskaffades. Kronoombud var enskilda personer som granskade deklarationer och deltog i taxeringsnämndernas arbete.
 
@@ -48,9 +48,9 @@ Bevillningen, dvs inkomstskatten, var 1862 1%. Kommunalskatten utgick från bör
 
 Benämningen häradsskrivare på den tjänsteman som skrev mantalslängderna och jordeböckerna kom i bruk på 1600-talet, men själva befattningen är äldre. Tidigare kallades han bara skrivare eller fogdeskrivare, dvs han var privat anställt biträde till kungens fogde. Från 1602 fick skrivaren och fogden lika ansvar för räkenskaperna, och från 1618 blev skrivaren självständig statlig tjänsteman. Från 1635 ingick han i landsstaten och var underställd landshövdingen men helt självständig i förhållande till fogden, som från 1687 kallades kronofogde. De hade samma distrikt, fögderiet, och fögderierna var i stort sett desamma från 1600-talets slut och in på 1900-talet. 1779 övertog häradsskrivaren mantalskommissariens uppgifter och ansvarade för att de handlingar som behövdes för uppbörden inom fögderiet blev upprättade. Han skrev jordeboken, som på 1600-talet upprättades för varje år, under 1700-talet för sexårsperioder; under 1800-talet upprättade man bara ny jordebok på statsmaktens befallning. Den sista skrevs i slutet av 1800-talet, i många fögderier år 1877, men det finns exempel på 1881 (Göteborgs fögderi) och 1882 (Inlands fögderi). Från slutet av 1700-talet skrev häradsskrivaren också inkomstlängder över skattskyldiga inkomsttagare. Dessa längder liksom fastighetstaxeringslängder kallades enbart taxeringslängder, men från c:a 1870 börjar man skilja ut fastighetstaxeringslängderna.
 
-Jordeboken och mantalslängden skrevs i tre exemplar, mantalslängden i två sedan 1861. Fram till 1860 finns alltså mantalslängd både i häradsskrivarens arkiv, i länsstyrelsens (för uppbörd) och i kammararkivet i Stockholm (för kontroll). Från 1947 upprättades även debiteringslängd (enligt 1947:21) och förmögenhetslängd. 1979 infördes skattelängd, som ersatte inkomst- och debiteringslängd. Vid omläggningen av folkbokföringssystemet 1991-07-01 upphörde mantalslängden, som dittills bestämt beskattningskommun genom att bostadsorten fastställdes per 1 november året före beskattningsåret. 
+Jordeboken och mantalslängden skrevs i tre exemplar, mantalslängden i två sedan 1861. Fram till 1860 finns alltså mantalslängd både i häradsskrivarens arkiv, i länsstyrelsens (för uppbörd) och i kammararkivet i Stockholm (för kontroll). Från 1947 upprättades även debiteringslängd (enligt 1947:21) och förmögenhetslängd. 1979 infördes skattelängd, som ersatte inkomst- och debiteringslängd. Vid omläggningen av folkbokföringssystemet 1991-07-01 upphörde mantalslängden, som dittills bestämt beskattningskommun genom att bostadsorten fastställdes per 1 november året före beskattningsåret.
 
-I början av 1900-talet varierade fögderiernas invånarantal mellan 13.500 och 60.000. De bestod ursprungligen av ett antal församlingar, som 1863 blev borgerliga kommuner. I städerna ansvarade magistraten, dvs stadens styrelse (se 4.2) för skattskrivningen och hade ofta en kronokassör som skötte mantalsskrivning och debitering av kronoskatt (=kronoutskylder). 1917 fanns det 9 städer som i stället ingick i fögderi, därför att de saknade rådhusrätt och magistrat. Störrre förändringar i distriktsindelningen gjordes 1918 enligt SFS 1917:687 och 1947 (1946:18) då källskatten infördes. Tidigare hade man betalat skatten i efterhand, vilket medförde en stor indrivningsverksamhet ( se 3.4). I städerna fanns uppbördsverk eller kronokamrer, som även skötte skattskrivning. 
+I början av 1900-talet varierade fögderiernas invånarantal mellan 13.500 och 60.000. De bestod ursprungligen av ett antal församlingar, som 1863 blev borgerliga kommuner. I städerna ansvarade magistraten, dvs stadens styrelse (se 4.2) för skattskrivningen och hade ofta en kronokassör som skötte mantalsskrivning och debitering av kronoskatt (=kronoutskylder). 1917 fanns det 9 städer som i stället ingick i fögderi, därför att de saknade rådhusrätt och magistrat. Störrre förändringar i distriktsindelningen gjordes 1918 enligt SFS 1917:687 och 1947 (1946:18) då källskatten infördes. Tidigare hade man betalat skatten i efterhand, vilket medförde en stor indrivningsverksamhet ( se 3.4). I städerna fanns uppbördsverk eller kronokamrer, som även skötte skattskrivning.
 
 Mantalskontor fanns formellt bara i Stockholm och Göteborg för civil folkbokföring och mantalsskrivning. Mantalskontor förestods av mantalskommissarie. Mantalskontor omtalas dock i Landskrona 1918-40 och i Solna (Arkivregister för Stockholms län). I Göteborg inrättades 1761 en tjänst som mantalskommissarie, vars innehavare till en början ensam skötte skattskrivningen. Senare uppdelades staden i olika distrikt och mantalsskrivarna blev fler; på 1940-talet var det en mantalskommissarie för varje församling. Mantalskontoret fanns kvar t o m 1966 och delade kontorslokaler med uppbördsverket.
 
@@ -62,15 +62,15 @@ En stor central myndighet för skattskrivning och uppbörd/indrivning bildades 1
 
 ### 3\. Taxering
 
-Taxeringen, dvs beslut om hur mycket var och en skulle betala i inkomstskatt (inte grundskatter för de var fasta), sköttes på landet av beredningskommittéer i varje socken 1810-41. Taxeringskommitté fanns från 1830 i Karlshamn. Enligt 1861 års bevillningsförordning förberedde bevillningsberedningen taxeringskommitténs arbete genom att ordna inkomna uppgifter och föreslå vad de skattskyldiga skulle betala. Den bestod av ordförande utsedd av länsstyrelsen (i Stockholm av Överståthållarämbetet) samt 2-3 personer valda av kommunalstämma på landet, allmän rådstuga eller stadsfullmäktige i staden. Varje församling bildade i regel ett beredningsdistrikt, men små församlingar kunde sammanslås till ett och större kunde delas. Bevillningsberedningen föreslog, taxeringsnämnd beslutade och prövningsnämnd fastställde efter eventuellt överklagande de skattskyldigas avgifter. 
+Taxeringen, dvs beslut om hur mycket var och en skulle betala i inkomstskatt (inte grundskatter för de var fasta), sköttes på landet av beredningskommittéer i varje socken 1810-41. Taxeringskommitté fanns från 1830 i Karlshamn. Enligt 1861 års bevillningsförordning förberedde bevillningsberedningen taxeringskommitténs arbete genom att ordna inkomna uppgifter och föreslå vad de skattskyldiga skulle betala. Den bestod av ordförande utsedd av länsstyrelsen (i Stockholm av Överståthållarämbetet) samt 2-3 personer valda av kommunalstämma på landet, allmän rådstuga eller stadsfullmäktige i staden. Varje församling bildade i regel ett beredningsdistrikt, men små församlingar kunde sammanslås till ett och större kunde delas. Bevillningsberedningen föreslog, taxeringsnämnd beslutade och prövningsnämnd fastställde efter eventuellt överklagande de skattskyldigas avgifter.
 
-I Stockholm har bevillningsberedningen efterlämnat ett arkiv med inkomna taxeringsuppgifter 1862-1907. Ute i landet tycks det ha räckt med en taxeringskommitté, från 1883 officiellt kallad taxeringsnämnd. Den valdes på kommunalstämman, dvs av de skattskyldiga. Bevillningsberedningen avskaffades 1907, då systemet med självdeklarationer från 1902 gjort deras arbete obehövligt. Taxeringsnämnden blev då första instans. Enligt taxeringsförordningen 28/9 1928 (ersatt av 29/11 1956, tidigare lag om taxeringsmyndigheter 28/10 1910) förordnade länsstyrelsen ordförande och en ledamot (kronoombud) i taxeringsnämnd, tre ledamöter utsågs av kommun- eller stadsfullmäktige. Från 1991 har skattenämnd vid de lokala skattekontoren ersatt taxeringsnämnderna i kommunerna. 
+I Stockholm har bevillningsberedningen efterlämnat ett arkiv med inkomna taxeringsuppgifter 1862-1907. Ute i landet tycks det ha räckt med en taxeringskommitté, från 1883 officiellt kallad taxeringsnämnd. Den valdes på kommunalstämman, dvs av de skattskyldiga. Bevillningsberedningen avskaffades 1907, då systemet med självdeklarationer från 1902 gjort deras arbete obehövligt. Taxeringsnämnden blev då första instans. Enligt taxeringsförordningen 28/9 1928 (ersatt av 29/11 1956, tidigare lag om taxeringsmyndigheter 28/10 1910) förordnade länsstyrelsen ordförande och en ledamot (kronoombud) i taxeringsnämnd, tre ledamöter utsågs av kommun- eller stadsfullmäktige. Från 1991 har skattenämnd vid de lokala skattekontoren ersatt taxeringsnämnderna i kommunerna.
 
-Det fanns även stadskommunal taxering. Redan på 1600-talet utsåg städerna kommittéer bestående av några borgare, som rättvist skulle fördela de statliga avgifterna (bakugnspengar, boskapspengar m m). I Stockholm inrättades 1710 bemedlingskommissionen för taxering av inkvarteringsavgiften som uttogs av borgarna. Deputerade för bakugnstaxeringar fanns i Stockholm 1735-41. Stockholm hade taxeringsnämnd från 1789, kallad taxerings- och prövningsnämnd 1908-1953. 
+Det fanns även stadskommunal taxering. Redan på 1600-talet utsåg städerna kommittéer bestående av några borgare, som rättvist skulle fördela de statliga avgifterna (bakugnspengar, boskapspengar m m). I Stockholm inrättades 1710 bemedlingskommissionen för taxering av inkvarteringsavgiften som uttogs av borgarna. Deputerade för bakugnstaxeringar fanns i Stockholm 1735-41. Stockholm hade taxeringsnämnd från 1789, kallad taxerings- och prövningsnämnd 1908-1953.
 
-Taxeringen för kronoskatt kunde, liksom fogdarnas uppbördskrav, överklagas hos landshövdingen/länsstyrelsen sedan 1600-talet. I mitten av 1600-talet beslutade städernas borgmästare och råd själva om eventuell kommunal skattebefrielse, men senare krävdes landshövdingens bekräftelse. Från början av 1900-talet finns det exempel (Svenljunga) på att kommunalstämman befriade ordförande från kommunal skatt - det var en form av arvode för hans arbete. 1812 infördes i länen en prövnings- kommitté för klagomål över taxering - i Stockholm kallad prövningsnämnd från 1813 (jfr 3.7). 
+Taxeringen för kronoskatt kunde, liksom fogdarnas uppbördskrav, överklagas hos landshövdingen/länsstyrelsen sedan 1600-talet. I mitten av 1600-talet beslutade städernas borgmästare och råd själva om eventuell kommunal skattebefrielse, men senare krävdes landshövdingens bekräftelse. Från början av 1900-talet finns det exempel (Svenljunga) på att kommunalstämman befriade ordförande från kommunal skatt - det var en form av arvode för hans arbete. 1812 infördes i länen en prövnings- kommitté för klagomål över taxering - i Stockholm kallad prövningsnämnd från 1813 (jfr 3.7).
 
-  
+
 
 ### 4\. Skatteuppbörd
 
@@ -92,7 +92,7 @@ Enligt Göteborgs kommunalkalender 1936 och 1945 fanns beredningar för avkortni
 
 Göteborgs stads erkända skatteförmedlingskassa skulle enligt förordning 30/4 1943 förmedla betalning av skatt genom avdrag på lön, pension eller genom direkta inbetalningar från restförda skattskyldiga som anslutit sig till kassan (Göteborgs kommunalkalender 1945 s 70). Härigenom undgick de anslutna indrivning genom stadsfogden. När källskatten infördes 1947 minskade behovet av en sådan kassa.
 
-  
+
 
 ### 5\. Specialmyndigheter inom skatteområdet
 
@@ -120,23 +120,23 @@ Accisrätter fanns 1672-1811. De var specialdomstolar i städerna för brott mot
 
 Accisrätt omtalas första gången i en stadga 1664 och fanns i många städer. Tidigare dömdes brott mot accisbestämmelserna vid rådhusrätt med tullinspektoren som åklagare. Studium av en småstads dombok i mitten av 1600-talet (Vimmerby) visar att borgarna gjorde sitt bästa för att glömma accisen. I Malmö dömde landshövdingen först i accismål, men redan 1666 delegerades detta till en accisrätt, där borgmästaren var president och två rådmän, byfogden och tullinspektoren vid Lilla Tullen bisittare. Sedan blev tullinspektoren ordförande och borgmästaren och en rådman bisittare. Husbehovsaccisen upphörde 1811, och målen skulle hädanefter handläggas av sjötullrätt (utrikestull) eller rådhusrätt.
 
-  
+
 
 ### 6\. Indrivning och exekution
 
-Den äldsta formen av indrivning gällde skatt; indrivning för enskilda fordringsägare tillkom senare. Kronofogden, som fanns till 1917, drev dock in både skatt, böter och enskilda fordringar (arbetet beskrivs i utsökningsbalken i 1734 års lag) När folk inte kunde betala, anordnade kronofogden eller hans underordnade på landsbygden auktion på fastigheter och lösöre. 1918-64 var landsfiskalen utmätningsman på landet. Utsökning och indrivning av restskatt tog mycket av hans tid fram till 1947. Länsstyrelsen var överexekutor på landet och i stad som saknade magistrat till 1964 och 1965-81 allmänt överexekutor. 
+Den äldsta formen av indrivning gällde skatt; indrivning för enskilda fordringsägare tillkom senare. Kronofogden, som fanns till 1917, drev dock in både skatt, böter och enskilda fordringar (arbetet beskrivs i utsökningsbalken i 1734 års lag) När folk inte kunde betala, anordnade kronofogden eller hans underordnade på landsbygden auktion på fastigheter och lösöre. 1918-64 var landsfiskalen utmätningsman på landet. Utsökning och indrivning av restskatt tog mycket av hans tid fram till 1947. Länsstyrelsen var överexekutor på landet och i stad som saknade magistrat till 1964 och 1965-81 allmänt överexekutor.
 
-Magistraten hade samma uppgift i staden som kronofogden på landet och var även överexekutor. Indrivningsuppgiften kunde överlämnas till borgmästaren eller annan av Kunglig Maj:t speciellt utsedd person. Från 1920 fanns kommunalborgmästare i städer som saknade magistrat och han kunde också vara överexekutor (ex. i SFS 1947:10 då kommunalborgmästaren i Falkenberg utses till sådan). 
+Magistraten hade samma uppgift i staden som kronofogden på landet och var även överexekutor. Indrivningsuppgiften kunde överlämnas till borgmästaren eller annan av Kunglig Maj:t speciellt utsedd person. Från 1920 fanns kommunalborgmästare i städer som saknade magistrat och han kunde också vara överexekutor (ex. i SFS 1947:10 då kommunalborgmästaren i Falkenberg utses till sådan).
 
 I Göteborg sköttes indrivning av "skultar" (efter holländska schout) med biträde av stadstjänare. Skulten hade även uppsikt över stadens fångar, och före tillsättande av stadsfiskal 1660 var skulten dessutom offentlig åklagare inför rådstuvu- och kämnärsrätten. Fr o m 1630 förekom även underskult. Sedan blev det två skultar, som under 1800-talet båda kallades överskultar fram till exekutionsväsendets allmänna omorganisation 1878 (1877 års utsökningslag). Genom kungligt brev 29/11 1878 utbyttes de två överskultbefattningarna i Göteborg från 1879 mot två stadsfogdebefattningar. Stadsfogden kallades även utmätningsman och tillsattes av magistraten. I Stockholm tillsattes han av Överståthållaren. Om det behövdes mer än en stadsfogde, bestämde Kunglig Maj:t antal och tjänsteåligganden. Förste stadsfogden i Göteborg verkställde domar och utslag samt andra enskilda mål, medan andre stadsfogden drev in krono- och kommunalutskylder m fl allmänna avgifter t ex böter. 1904 tillkom tredje stadsfogden för att driva in böter och meddela om straff (Göteborgs kommunalkalender 1936).
 
-Stockholm hade också tre stadsfogdar, men tredje stadsfogden indrogs 1932 (Stockholms kommunalkalender 1933). 1947 inrättades ett Indrivningsverk i Stockholm (kommunalkalendern 1969 s 754). Både indrivningsverk och stadsfogdar upphörde 1964, och den nya kronofogdemyndigheten, som i motsats till den gamle kronofogden enbart sysslade med indrivning, inrättades från 1965. Därmed upphörde också skillnaden mellan land och stad. 
+Stockholm hade också tre stadsfogdar, men tredje stadsfogden indrogs 1932 (Stockholms kommunalkalender 1933). 1947 inrättades ett Indrivningsverk i Stockholm (kommunalkalendern 1969 s 754). Både indrivningsverk och stadsfogdar upphörde 1964, och den nya kronofogdemyndigheten, som i motsats till den gamle kronofogden enbart sysslade med indrivning, inrättades från 1965. Därmed upphörde också skillnaden mellan land och stad.
 
 Från 1965 inrättades 81 nya kronofogdemyndigheter i landet (instruktion 1964:485, 1965:687, 1971:425). Central myndighet var från början Exekutionsväsendets organisationsnämnd, som 1/7 1973 uppgick i Riksskatteverket (se 3. 2). Enligt SFS 1979:755 ska från 1980 kronofogdemyndigheten i länets residensstad fungera som särskild myndighet för tillsyn över konkurser.
 
 Från 1988-07-01 omorganiserades kronofogdeverksamheten så att det blev en myndighet per län med kontor på ett par olika orter. Enligt SFS 1990:746 flyttades mål om betalningsförelägganden och handräckning från tingsrätt (se 1.1) till kronofogden från 1992; s k summarisk process infördes.
 
-  
+
 
 ### 7\. Skattemål och överklagad taxering
 
@@ -146,7 +146,7 @@ Redan på 1600-talet kunde enskilda klaga hos landshövdingen på skatter och sk
 
 För överklaganden av fastighetstaxering, som gjordes vart femte år av fastighetstaxeringsnämnd (författning 1928 28/9, ändrad 1947:21), fanns en motsvarande fastighetsprövningsnämnd. Ledamöterna i denna utgjordes av prövningsnämnden samt ytterligare 9 personer utsedda av länsstyrelsen. Tre av dessa utsågs bland dem som länsstyrelsen eller landstinget utsett till ledamöter i fastighetstaxeringsnämnd. Tre ledamöter skulle ha särskild kunskap om fastighetsvärdering. Göteborg hade enligt beslut av länsstyrelsen 25/8 1944 tio fastighetstaxeringsnämnder (kommunalkalendern 1945 s 34). Mantalskommissarien för respektive församling (jfr 3.2) biträdde nämnderna i deras arbete.
 
-Prövningsnämnden efterträddes 1971-07-01 av länsskatterätt, som fungerade inom länsstyrelsen, under dess rättsenhet, till 1979, då den bröts ut till en självständig förvaltningsdomstol, länsrätten. Fastighetsprövningsnämnden efterträddes 1975 av fastighetstaxeringsrätt för överklagade fastighetsdeklarationer. Från 1979 blev systemet mer enhetligt. Då överklagades taxeringsnämnds beslut till länsrätt och därifrån till kammarrätt. Även tidigare hade man kunnat föra skattemål upp till kammarrätt, som från 1972 fanns inte bara i Stockholm utan även i Göteborg och Sundsvall, och från 1977 även i Jönköping. 
+Prövningsnämnden efterträddes 1971-07-01 av länsskatterätt, som fungerade inom länsstyrelsen, under dess rättsenhet, till 1979, då den bröts ut till en självständig förvaltningsdomstol, länsrätten. Fastighetsprövningsnämnden efterträddes 1975 av fastighetstaxeringsrätt för överklagade fastighetsdeklarationer. Från 1979 blev systemet mer enhetligt. Då överklagades taxeringsnämnds beslut till länsrätt och därifrån till kammarrätt. Även tidigare hade man kunnat föra skattemål upp till kammarrätt, som från 1972 fanns inte bara i Stockholm utan även i Göteborg och Sundsvall, och från 1977 även i Jönköping.
 
 [![](arrow9.jpg)](Index.htm)
 

@@ -7,11 +7,11 @@ title: 09 Lantmateri
 
 ## 9\. FASTIGHETSREGISTRERING OCH FASTIGHETSBILDNING
 
-  
+
 
 I ett samhälle där innehav av fast egendom - jord på landet och hus i staden - räknades som den enda säkra försörjningen, blev det givetvis viktigt att definiera och avgränsa egendomarna. I ett glest bebyggt land som Sverige gällde det i första hand att sätta gränser mellan odlingsbara jordstycken. Detta gjordes på medeltiden på bynivå eller på tinget och avsatte inget arkivmaterial annat än de brev som bekräftade överlåtelse av jord genom köp eller arvskifte. Det fanns gott om fri mark kvar för den som ville nyodla. Skogarna betraktades som allmänningar, även om begreppet skogsregale, dvs att de stora skogarna var kronans, växte fram på 1600-talet (jfr 12.1).
 
-  
+
 
 ### 1.Lantmäteriet
 
@@ -23,11 +23,11 @@ Från 1680-talet medförde reduktionen av en mängd adelsgods till kronan samt i
 
 Under senare delen av 1700-talet hade lantmätarnas kartarkiv börjat tillföras handlingar från det år 1757 påbjudna storskiftet. En enda delägare i en by kunde kräva skifte, och 1762 stadgades att fastställda storskiften inte skulle få upphävas. Reformen gick dock långsamt, eftersom lantmätarens förrättning kunde överklagas både hos häradsrätt och hovrätt (jfr kap 1), men en del storskiftesmaterial samlades i länslantmäterikontoren. I början av 1800-talet utfärdades på initiativ från storgodsägare stadgor om enskifte, som ersattes 1827 av stadgan om laga skifte, förnyad 9/11 1866. Under 1800-talet kom den stora bysprängningen igång på allvar och kartmaterialet ökade. Fortfarande finns dock enstaka oskiftade byar kvar.
 
-Den geografiska kartläggningen hade 1805 brutits ur lantmäteriverksamheten och överförts till Generalstaben. 1937 frikopplades det geografiska kartarbetet från den militära organisationen, och Rikets Allmänna Kartverk tillkom som centralt ämbetsverk. Lantmäteristyrelsen sammanslogs 1974 med Rikets Allmänna Kartverk till Statens Lantmäteriverk med centralkontor i Gävle. Från 1974 innehåller de regionala arkiven mycket material kring framställning av civila och militära kartor. Från 1996 sker kartproduktionen kommersiellt hos Metria i Luleå och Kiruna, ett bolag inom Lantmäteriverket. 
+Den geografiska kartläggningen hade 1805 brutits ur lantmäteriverksamheten och överförts till Generalstaben. 1937 frikopplades det geografiska kartarbetet från den militära organisationen, och Rikets Allmänna Kartverk tillkom som centralt ämbetsverk. Lantmäteristyrelsen sammanslogs 1974 med Rikets Allmänna Kartverk till Statens Lantmäteriverk med centralkontor i Gävle. Från 1974 innehåller de regionala arkiven mycket material kring framställning av civila och militära kartor. Från 1996 sker kartproduktionen kommersiellt hos Metria i Luleå och Kiruna, ett bolag inom Lantmäteriverket.
 
 Lantmäteriverket och dess arkiv flyttade i början av 1970-talet från Stockholm till Gävle. De äldsta kartorna med tillhörande handlingar är bäst bevarade där, men det finns material från 1600-talet även i länskontoren. Koncepten i länskontoren ter sig ofta mer primitiva än renovationerna i Gävle, men de kan innehålla mer information än de renritade exemplaren. Avgränsningen av de regionala lantmäteriarkiven har vållat problem. Handlingar av betydelse för lantmäteriet finns i länsstyrelsens arkiv och vice versa. Jordeböcker finns ofta i länslantmäterikontoren, fast de tillhör länsstyrelsens arkiv. Vissa markärenden t ex avsöndringar handlades av länsstyrelsen, men av praktiska skäl överfördes akterna till lantmäterikontoren i samband med jordregisterreformen 1908.
 
-Enligt ändringar i instruktionerna för lantmätare 1835, 1855, 1864 och 1879 behövde inte material rörande hemmansklyvningar, ägostyckningar och smärre fastighetsförrättningar skickas till Lantmäteristyrelsen i Stockholm. Redan tidigare var även kartor rörande städer och andra samhällen undantagna från renovationsskyldigheten. Gamla stadskartor kanske då endast finns i kommunala byggnadsnämndens arkiv i kommunarkivet eller på stadsbyggnadskontoret i vederbörande kommun. Men man kan också hitta enda bevarade exemplaret av en stadskarta från 1600-talet hos lantmäteriverket i Gävle. Kartor över vägar, kommunikationsleder, vattenanläggningar m m var också undantagna från renovationsskyldigheten. Sådant material finns troligen enbart på länslantmäterikontoren. 
+Enligt ändringar i instruktionerna för lantmätare 1835, 1855, 1864 och 1879 behövde inte material rörande hemmansklyvningar, ägostyckningar och smärre fastighetsförrättningar skickas till Lantmäteristyrelsen i Stockholm. Redan tidigare var även kartor rörande städer och andra samhällen undantagna från renovationsskyldigheten. Gamla stadskartor kanske då endast finns i kommunala byggnadsnämndens arkiv i kommunarkivet eller på stadsbyggnadskontoret i vederbörande kommun. Men man kan också hitta enda bevarade exemplaret av en stadskarta från 1600-talet hos lantmäteriverket i Gävle. Kartor över vägar, kommunikationsleder, vattenanläggningar m m var också undantagna från renovationsskyldigheten. Sådant material finns troligen enbart på länslantmäterikontoren.
 
 1908 och 1909 års riksdagar beslutade en genomgripande omorganisation av lantmäteriet. Jordregisterförordningen 1908 ändrade beteckningssystem och registreringsmetoder. De gamla mantalsbeteckningarna ersattes 1912-20. Dåvarande förste lantmätaren blev chef för länets lantmäteripersonal och började från 1921 kallas överlantmätare. Länen indelades i distrikt och varje distrikt leddes av en distriktslantmätare som gjorde förrättningarna. Från 1926 fick överlantmätarna vidgade befogenheter att kontrollera distriktslantmätarna och fick fastställa avstyckningar. Särskild lantmätarutbildning inrättades från 1932 vid Tekniska Högskolan i Stockholm och infördes senare även i Luleå, men det fanns utbildning även tidigare (jfr 9.2 för 1917 års bestämmelser). Med den nya byggnadslagstiftningen 1948 skärptes de jord- och planpolitiska villkoren för fastighetsbildning. 1948 förstatligades distriktsorganisationen och Kunglig Maj:t (=regeringen) skulle bestämma distrikten.
 
@@ -35,7 +35,7 @@ När länsstyrelsen omorganiserades 1971-07-01 återfördes lantmäteriet delvis
 
 1976-1992 sammanslogs uppgifterna från fastighetsregistreringen hos domstolar (se 9.3) och lantmäteriet i ett datoriserat centralt fastighetsregister. Lantmäterienheterna vid länsstyrelserna avvecklades 1991 och deras verksamhet inordnades i Överlantmätarmyndigheterna. Formellt fanns dock begreppet Fastighetsregistermyndighet kvar.
 
-  
+
 
 ### 2\. Stadens tomter
 
@@ -45,15 +45,15 @@ Stadsarkitekten hade också kontroll över tomtindelningen. Stockholm hade stads
 
 Byggnadsstadgan 1874 drev fram anställning av yrkesutbildad mätpersonal i städerna. Riksdagen beslutade 1917 att stadsingenjör skulle föra fastighetsregister och att enhetlig registrering av tomter och stadsägor skulle göras i likhet med vad som föreskrivits för landsbygden i jordregisterlagen 1908. 1917 års fastighetslag förutsatte att städernas mätningsmän hade lantmätarutbildning från teknisk högskola eller motsvarande. Generaldirektören på Lantmäteristyrelsen lyckades dock aldrig få inflytande över de kommunala tillsättningarna. Men det centrala verket Byggnadsstyrelsen fick enligt instruktion 1917:386 yttra sig om stadsplaner och tomtindelning i stad, och ställdes därmed över den kommunale stadsarkitekten.
 
-Enligt lag 12/5 1917 om fastighetsbildning i stad ska minst två gode män, s k skiftesgodemän, biträda vid laga skifte. De valdes av stadsfullmäktige för sex år (Göteborgs kommunalkalender 1957). På landet valdes skiftesgodemän av kommunalstämma eller kommunalfullmäktige. Sedan skillnaden mellan stad och landsbygd avskaffats 1971, har länsstyrelsen enligt lagen om fastighetsbildning i kommun bestämt att kommunfullmäktige ska välja 9 gode män, varav 7 med sakkunskap i jord- och skogsbruksfrågor (Göteborgs kommunalkalender 1985 s 246). 
+Enligt lag 12/5 1917 om fastighetsbildning i stad ska minst två gode män, s k skiftesgodemän, biträda vid laga skifte. De valdes av stadsfullmäktige för sex år (Göteborgs kommunalkalender 1957). På landet valdes skiftesgodemän av kommunalstämma eller kommunalfullmäktige. Sedan skillnaden mellan stad och landsbygd avskaffats 1971, har länsstyrelsen enligt lagen om fastighetsbildning i kommun bestämt att kommunfullmäktige ska välja 9 gode män, varav 7 med sakkunskap i jord- och skogsbruksfrågor (Göteborgs kommunalkalender 1985 s 246).
 
 Genom 1971 års omorganisation av lantmäteriet minskade antalet stadsingenjörskontor kraftigt, framför allt i de mindre kommunerna, och deras verksamhet och arkivmaterial flyttades till länsstyrelsens lantmäterienhet.
 
-  
+
 
 ### 3\. Registrering av fastighetsägare; uppbud och inskrivning
 
-Uppbud, dvs kungörande om överlåtelse av egendom, gjordes redan på 1600-talet, och rätten utfärdade laga fasta efter tre oklandrade uppbud. 
+Uppbud, dvs kungörande om överlåtelse av egendom, gjordes redan på 1600-talet, och rätten utfärdade laga fasta efter tre oklandrade uppbud.
 
 1734 års lag, Jordabalken kap. 4 § 1 stadgar:
 
@@ -67,7 +67,7 @@ Möjligheten att råka i tvist om hur mycket mark som ingått i ett köp torde a
 
 För att kontrollera ägoförhållanden under 1700- och 1800-talet måste man alltså läsa i uppbuds- och lagfartsprotokollen, och då är det ändå bara köpen man kan se, inte arven. 1875 infördes emellertid lagfartsböckerna vid domstolarna, vilket avsevärt underlättade kontrollen och därmed även forskningen. Samtidigt infördes inteckningsböcker så att man kunde överblicka hur mycket inteckningar som fanns i en fastighet, men detta tycks inte ha hindrat att man även senare kunde inteckna egendom högre än både taxeringsvärde och saluvärde.
 
-1933 infördes en särskild avdelning inom häradsrätt, rådhusrätt eller domsaga som kallades inskrivningsdomare. Denne blev ofta egen arkivbildare och övertog lagfarts- och inteckningsböckerna från 1875. Från 1972 finns vid nästan alla tingsrätter en inskrivningsmyndighet som ansvarar för fastighetsregistret. De manuella fastighetsböckerna har från 1977 successivt ersatts av ett datoriserat system för inskrivning av lagfarter m m, som är gemensamt för lantmäteriet och domstolarna. Inskrivningsmyndigheten övertog de gamla böckerna från 1875 från inskrivningsdomaren, liksom dennes tomträtts- och vattenfallsböcker. 
+1933 infördes en särskild avdelning inom häradsrätt, rådhusrätt eller domsaga som kallades inskrivningsdomare. Denne blev ofta egen arkivbildare och övertog lagfarts- och inteckningsböckerna från 1875. Från 1972 finns vid nästan alla tingsrätter en inskrivningsmyndighet som ansvarar för fastighetsregistret. De manuella fastighetsböckerna har från 1977 successivt ersatts av ett datoriserat system för inskrivning av lagfarter m m, som är gemensamt för lantmäteriet och domstolarna. Inskrivningsmyndigheten övertog de gamla böckerna från 1875 från inskrivningsdomaren, liksom dennes tomträtts- och vattenfallsböcker.
 
 1827-1971 fanns särskilda domstolar för ägotvister på landet, ägodelningsrätter, som hade samband med påbudet om laga skifte 1827. I Skåne och i Jämtlands län fanns tidigare ägoskillnadsrätt med samma funktion; i Jämtlands län fanns ägoskillnadsrätten kvar till 1840. I de norrländska länen fanns också avvittringsrätt, som dömde i mål rörande uppdelning av kronans och enskildas mark. Från 1972 fungerar 27 av tingsrätterna även som fastighetsdomstol, som dömer i fråga om avstyckning, klyvning, bildande av ny fastighet, värdering och ersättning (jfr 1.5).
 

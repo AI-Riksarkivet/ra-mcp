@@ -23,7 +23,7 @@ fanns endast vid Sala silverbergslag (från 1713) och vid Stora Kopparbergslagen
 
 Geschworner
 
-Dessa tjänster inrättades under 1740- och 1750-talet i flertalet bergmästardistrikt. På 1600-talet hade de endast funnits vid Salberget och Stora Kopparberget, tidvis även vid Nya Kopparberg. Geschworner var en tekniskt utbildad bergskunnig ämbetsman tillsatt av Bergskollegium för att övervaka själva gruvarbetet; han var bergmästarens närmaste man. En detaljerad instruktion kom 1752. Enligt denna skulle han årligen avlämna berättelse om sin verksamhet samt lämna förteckning på tillverkningarna vid varje verk inom sitt distrikt. Dessa “relationer” innehåller uppgifter om antalet anställda vid varje gruva, hur lång tid av året de varit sysselsatta etc. I samband med omregleringen av bergmästardistrikten 1854 indrogs geschwornertjänsterna men ersattes på de flesta ställen med gruvingenjör.  
+Dessa tjänster inrättades under 1740- och 1750-talet i flertalet bergmästardistrikt. På 1600-talet hade de endast funnits vid Salberget och Stora Kopparberget, tidvis även vid Nya Kopparberg. Geschworner var en tekniskt utbildad bergskunnig ämbetsman tillsatt av Bergskollegium för att övervaka själva gruvarbetet; han var bergmästarens närmaste man. En detaljerad instruktion kom 1752. Enligt denna skulle han årligen avlämna berättelse om sin verksamhet samt lämna förteckning på tillverkningarna vid varje verk inom sitt distrikt. Dessa “relationer” innehåller uppgifter om antalet anställda vid varje gruva, hur lång tid av året de varit sysselsatta etc. I samband med omregleringen av bergmästardistrikten 1854 indrogs geschwornertjänsterna men ersattes på de flesta ställen med gruvingenjör.
 
 Markscheidern
 
@@ -33,7 +33,7 @@ Bergsskola
 
 var en läroanstalt för undervisning i bergsvetenskap och därtill hörande ämnen. Högre bergsskola kallades ibland bergskademi. Enligt Svensk uppslagsbok (1935) fanns tre bergsskolor i landet: två lägre och i Stockholm en högre bergsskola, som senare blev fackavdelningen för bergsvetenskap vid Tekniska högskolan. I Falun inrättades 1822 en bergsskola med tvåårig kurs för att utbilda tjänstemän i Bergslagen. 1869 flyttade den till Stockholm och förenades med dåvarande Teknologiska Institutet, som senare blev Tekniska Högskolan. 1871 inrättades i Falun en lägre bergsskola liknande den som 1830 grundats i Filipstad. Jernkontoret drev bergsskolan i Filipstad med statsbidrag. Dessa två skolor utbildade förmän, gruvfogdar och lägre brukstjänstemän. 1929 föreslogs att bergsskolan i Falun skulle läggas ned. Skolan i Filipstad lades ned 1932 men återuppstod och finns fortfarande (1994). Den drivs av Jernkontoret med statligt och kommunalt stöd och utbildar gymnasieingenjörer för stål- metall- verkstads- och gruvindustri.
 
-  
+
 
 ### 2\. Domstolar
 
@@ -73,7 +73,7 @@ Vid mitten av 1600-talet var bergslagsorterna indelade i 11 distrikt. Denna inde
 
 12\. Västernorrland, som bröts ur 7:e distriktet 1748.
 
-  
+
 
 Från 1875 gällde följande indelning:
 
@@ -89,7 +89,7 @@ Gävle-Dala distriktet: Kopparbergs och Gävleborgs län
 
 Norra distriktet: Västernorrlands, Jämtlands, Västerbottens och Norrbottens län
 
-  
+
 
 Skaraborgs län lades till Västra distriktet 1929 med säte i Filipstad; distriktet upphörde 1937 och lades samman med Örebro och Södermanland till ett distrikt med säte i Nora. 1994 består bergsstaten sedan 1974 av två bergmästaredistrikt med säten i Falun (södra) och Luleå (norra). Norra distriktet omfattar Norrbottens, Västerbottens, Västernorrlands och Jämtlands län. Södra distriktet omfattar resten av landet. Bergmästarearkiven är med vissa undantag levererade till landsarkiven fram till 1973. Hos bergmästarna i Luleå och Falun ligger dock kvar arkiv även för äldre tid. Viktigare handlingar i bergmästararkiven är ofta topografiskt lagda under de olika brukens namn. Bouppteckningar, som normalt ska finnas hos häradsrätt, kan finnas i bergmästararkiv.
 
