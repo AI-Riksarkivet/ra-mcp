@@ -14,8 +14,8 @@ COPY packages/ ./packages/
 COPY src/ ./src/
 COPY README.md LICENSE ./
 
-# Sync workspace packages
-RUN uv sync --frozen --no-cache --no-dev
+# Sync workspace packages (--no-editable makes .venv self-contained)
+RUN uv sync --frozen --no-cache --no-dev --no-editable
 
 FROM ${PRODUCTION_IMAGE} AS production
 
@@ -46,9 +46,8 @@ RUN addgroup -g 1000 ra-mcp && \
 WORKDIR /app
 
 # Copy only what's needed at runtime (--chown avoids a separate chown layer)
+# With --no-editable, .venv is self-contained — no need to copy src/ or packages/
 COPY --from=builder --chown=ra-mcp:ra-mcp /app/.venv /app/.venv
-COPY --from=builder --chown=ra-mcp:ra-mcp /app/src /app/src
-COPY --from=builder --chown=ra-mcp:ra-mcp /app/packages /app/packages
 COPY --chown=ra-mcp:ra-mcp assets/index.html ./assets/index.html
 COPY --chown=ra-mcp:ra-mcp resources/ ./resources/
 
