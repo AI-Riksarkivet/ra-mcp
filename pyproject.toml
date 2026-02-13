@@ -97,6 +97,7 @@ select = [
     "PTH",    # flake8-use-pathlib
     "EM",     # flake8-errmsg
     "ANN",    # flake8-annotations
+    "G",      # flake8-logging-format
 ]
 ignore = [
     "E501",   # line-too-long — MCP tool docstrings are intentionally long for LLM context
@@ -111,6 +112,7 @@ ignore = [
     "ANN001", # missing-type-function-argument — too noisy, fix incrementally
     "ANN003", # missing-type-kwargs — standard to ignore
     "ANN204", # missing-return-type-special-method — pedantic for __init__
+    "G201",   # logging-exc-info — .error(exc_info=True) is idiomatic
 ]
 
 [tool.ruff.lint.per-file-ignores]

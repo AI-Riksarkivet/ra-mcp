@@ -61,7 +61,7 @@ class HTTPClient:
         self._response_size_histogram = meter.create_histogram("ra_mcp.http.response.size", unit="By", description="HTTP response body size")
         self._retry_counter = meter.create_counter("ra_mcp.http.retries", description="HTTP request retry attempts")
 
-        logger.info(f"HTTPClient initialized with user agent: {self.user_agent}")
+        logger.info("HTTPClient initialized with user agent: %s", self.user_agent)
 
     def _setup_logging(self) -> None:
         """Configure logging handlers for file and console output."""
@@ -89,7 +89,7 @@ class HTTPClient:
                 response = urlopen(request, timeout=timeout)
                 if response.status in _RETRYABLE_STATUS_CODES:
                     wait = self.backoff_base * (2**attempt)
-                    self.logger.warning(f"Retryable status {response.status} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                    self.logger.warning("Retryable status %d from %s, attempt %d/%d, waiting %.1fs", response.status, url, attempt + 1, self.max_retries, wait)
                     response.close()
                     self._retry_counter.add(1, {"retry.reason": str(response.status)})
                     time.sleep(wait)
@@ -99,7 +99,7 @@ class HTTPClient:
             except HTTPError as e:
                 if e.code in _RETRYABLE_STATUS_CODES:
                     wait = self.backoff_base * (2**attempt)
-                    self.logger.warning(f"Retryable HTTP {e.code} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                    self.logger.warning("Retryable HTTP %d from %s, attempt %d/%d, waiting %.1fs", e.code, url, attempt + 1, self.max_retries, wait)
                     self._retry_counter.add(1, {"retry.reason": str(e.code)})
                     time.sleep(wait)
                     last_exception = e
@@ -107,7 +107,7 @@ class HTTPClient:
                 raise
             except (TimeoutError, URLError) as e:
                 wait = self.backoff_base * (2**attempt)
-                self.logger.warning(f"Retryable {type(e).__name__} from {url}, attempt {attempt + 1}/{self.max_retries}, waiting {wait:.1f}s")
+                self.logger.warning("Retryable %s from %s, attempt %d/%d, waiting %.1fs", type(e).__name__, url, attempt + 1, self.max_retries, wait)
                 self._retry_counter.add(1, {"retry.reason": type(e).__name__})
                 time.sleep(wait)
                 last_exception = e
@@ -147,8 +147,8 @@ class HTTPClient:
             full_url = url
 
         # Log request details
-        self.logger.info(f"GET JSON: {full_url}")
-        self.logger.debug(f"Timeout: {timeout}s, Params: {params}")
+        self.logger.info("GET JSON: %s", full_url)
+        self.logger.debug("Timeout: %ds, Params: %s", timeout, params)
 
         # Create request with headers
         request = Request(full_url)
@@ -158,7 +158,7 @@ class HTTPClient:
         if headers:
             for key, value in headers.items():
                 request.add_header(key, value)
-            self.logger.debug(f"Headers: {headers}")
+            self.logger.debug("Headers: %s", headers)
 
         span_attrs = {"http.request.method": "GET", "url.full": full_url}
 
@@ -166,24 +166,24 @@ class HTTPClient:
             start_time = time.perf_counter()
 
             try:
-                self.logger.debug(f"Opening connection to {url}...")
+                self.logger.debug("Opening connection to %s...", url)
                 with self._execute_with_retry(request, timeout, url) as response:
-                    self.logger.debug(f"Connection established, status: {response.status}")
+                    self.logger.debug("Connection established, status: %d", response.status)
 
                     if response.status != 200:
-                        self.logger.error(f"Unexpected status code: {response.status}")
+                        self.logger.error("Unexpected status code: %d", response.status)
                         raise Exception(f"HTTP {response.status}")
 
                     self.logger.debug("Reading response content...")
                     content = response.read()
                     content_size = len(content)
-                    self.logger.debug(f"Received {content_size} bytes")
+                    self.logger.debug("Received %d bytes", content_size)
 
                     self.logger.debug("Parsing JSON...")
                     result = json.loads(content)
 
                     duration = time.perf_counter() - start_time
-                    self.logger.info(f"✓ GET JSON {full_url} - {duration:.3f}s - {content_size} bytes - 200 OK")
+                    self.logger.info("✓ GET JSON %s - %.3fs - %d bytes - 200 OK", full_url, duration, content_size)
 
                     span.set_attribute("http.response.status_code", response.status)
                     span.set_attribute("http.response.body.size", content_size)
@@ -195,8 +195,8 @@ class HTTPClient:
 
             except TimeoutError as e:
                 duration = time.perf_counter() - start_time
-                self.logger.error(f"✗ TIMEOUT after {duration:.3f}s on {full_url}")
-                self.logger.error(f"Timeout limit was {timeout}s")
+                self.logger.error("✗ TIMEOUT after %.3fs on %s", duration, full_url)
+                self.logger.error("Timeout limit was %ds", timeout)
                 span.set_status(StatusCode.ERROR, f"Timeout after {timeout}s")
                 span.record_exception(e)
                 self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": "TimeoutError"})
@@ -213,11 +213,11 @@ class HTTPClient:
                     try:
                         # Get first 500 chars of error body
                         error_body = e.read().decode("utf-8")[:500]
-                        self.logger.error(f"Error response body: {error_body}")
+                        self.logger.error("Error response body: %s", error_body)
                     except Exception:
                         pass
 
-                self.logger.error(f"✗ GET JSON {full_url} - {duration:.3f}s - {error_type}: {error_msg}")
+                self.logger.error("✗ GET JSON %s - %.3fs - %s: %s", full_url, duration, error_type, error_msg)
 
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 span.record_exception(e)
@@ -234,7 +234,7 @@ class HTTPClient:
 
             except Exception as e:
                 duration = time.perf_counter() - start_time
-                self.logger.error(f"✗ Unexpected error after {duration:.3f}s: {type(e).__name__}: {e}")
+                self.logger.error("✗ Unexpected error after %.3fs: %s: %s", duration, type(e).__name__, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
                 self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": type(e).__name__})
@@ -296,7 +296,7 @@ class HTTPClient:
                     content = response.read()
                     content_size = len(content)
                     duration = time.perf_counter() - start_time
-                    self.logger.info(f"GET XML {full_url} - {duration:.3f}s - 200 OK")
+                    self.logger.info("GET XML %s - %.3fs - 200 OK", full_url, duration)
 
                     span.set_attribute("http.response.status_code", response.status)
                     span.set_attribute("http.response.body.size", content_size)
@@ -317,7 +317,7 @@ class HTTPClient:
                         error_body = f" - Body: {error_body}"
                     except Exception:
                         pass
-                self.logger.error(f"GET XML {full_url} - {duration:.3f}s - ERROR: {error_msg}{error_body}")
+                self.logger.error("GET XML %s - %.3fs - ERROR: %s%s", full_url, duration, error_msg, error_body)
 
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 span.record_exception(e)
@@ -366,19 +366,19 @@ class HTTPClient:
                     span.set_attribute("http.response.status_code", response.status)
 
                     if response.status == 404:
-                        self.logger.info(f"GET {url} - {duration:.3f}s - 404 NOT FOUND")
+                        self.logger.info("GET %s - %.3fs - 404 NOT FOUND", url, duration)
                         self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
                         self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
                         return None
                     if response.status != 200:
-                        self.logger.warning(f"GET {url} - {duration:.3f}s - {response.status}")
+                        self.logger.warning("GET %s - %.3fs - %d", url, duration, response.status)
                         self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
                         self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
                         return None
 
                     content = response.read()
                     content_size = len(content)
-                    self.logger.info(f"GET {url} - {duration:.3f}s - 200 OK")
+                    self.logger.info("GET %s - %.3fs - 200 OK", url, duration)
 
                     span.set_attribute("http.response.body.size", content_size)
                     self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
@@ -390,7 +390,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 error_type = type(e).__name__
                 error_msg = str(e.code) if hasattr(e, "code") else str(e)
-                self.logger.error(f"GET {url} - {duration:.3f}s - ERROR: {error_msg}")
+                self.logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 span.record_exception(e)
                 self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": error_type})
@@ -398,7 +398,7 @@ class HTTPClient:
                 return None
             except Exception as e:
                 duration = time.perf_counter() - start_time
-                self.logger.error(f"GET {url} - ERROR: {e!s}")
+                self.logger.error("GET %s - ERROR: %s", url, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
                 self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": type(e).__name__})

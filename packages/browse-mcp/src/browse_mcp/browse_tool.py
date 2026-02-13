@@ -112,7 +112,7 @@ def register_browse_tool(mcp) -> None:
             return format_error_message("pages must not be empty", error_suggestions=["Specify pages like '1-5', '1,3,5', or '7'"])
 
         if research_context:
-            logger.info(f"MCP Tool: browse_document | context: {research_context}")
+            logger.info("MCP Tool: browse_document | context: %s", research_context)
 
         try:
             browse_operations = BrowseOperations(http_client=default_http_client)

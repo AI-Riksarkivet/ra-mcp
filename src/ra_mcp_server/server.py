@@ -67,9 +67,9 @@ def setup_logging() -> logging.Logger:
     )
 
     logger = logging.getLogger("ra-mcp")
-    logger.info(f"Logging configured at level: {log_level}")
-    logger.info(f"Timeout setting: {os.getenv('RA_MCP_TIMEOUT', '60')}s")
-    logger.info(f"API logging: {'enabled' if os.getenv('RA_MCP_LOG_API') else 'disabled'}")
+    logger.info("Logging configured at level: %s", log_level)
+    logger.info("Timeout setting: %ss", os.getenv("RA_MCP_TIMEOUT", "60"))
+    logger.info("API logging: %s", "enabled" if os.getenv("RA_MCP_LOG_API") else "disabled")
 
     return logger
 
@@ -171,27 +171,27 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
         enabled_modules: List of module names to mount.
     """
     logger.info("Setting up server composition...")
-    logger.info(f"Enabled modules: {', '.join(enabled_modules)}")
+    logger.info("Enabled modules: %s", ", ".join(enabled_modules))
 
     _mounted_modules.clear()
     for module_name in enabled_modules:
         if module_name not in AVAILABLE_MODULES:
-            logger.warning(f"⚠ Unknown module '{module_name}' - skipping")
+            logger.warning("⚠ Unknown module '%s' - skipping", module_name)
             continue
 
         module_config = AVAILABLE_MODULES[module_name]
         module_server: FastMCP = module_config["server"]  # type: ignore[assignment]
         try:
             server.mount(module_server, namespace=module_name)
-            logger.info(f"✓ Mounted {module_server.name} (namespace={module_name})")
+            logger.info("✓ Mounted %s (namespace=%s)", module_server.name, module_name)
             _mounted_modules.append(module_name)
         except Exception as e:
-            logger.error(f"✗ Failed to mount {module_name}: {e}")
+            logger.error("✗ Failed to mount %s: %s", module_name, e)
 
     if not _mounted_modules:
         logger.warning("⚠ No modules were successfully mounted!")
     else:
-        logger.info(f"Server composition complete. {len(_mounted_modules)} module(s) mounted.")
+        logger.info("Server composition complete. %d module(s) mounted.", len(_mounted_modules))
 
 
 def setup_custom_routes(server: FastMCP) -> None:
@@ -253,7 +253,7 @@ def run_server(
     setup_server(main_server, enabled_modules)
 
     if http:
-        logger.info(f"Starting Riksarkivet MCP HTTP/SSE server on http://{host}:{port}")
+        logger.info("Starting Riksarkivet MCP HTTP/SSE server on http://%s:%d", host, port)
         main_server.run(transport="streamable-http", host=host, port=port, path="/mcp")
     else:
         logger.info("Starting Riksarkivet MCP stdio server")

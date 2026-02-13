@@ -178,15 +178,15 @@ def register_search_tool(mcp) -> None:
             return validation_error
 
         if research_context:
-            logger.info(f"MCP Tool: search_transcribed | context: {research_context}")
-        logger.info(f"MCP Tool: search_transcribed called with keyword='{keyword}', offset={offset}")
+            logger.info("MCP Tool: search_transcribed | context: %s", research_context)
+        logger.info("MCP Tool: search_transcribed called with keyword='%s', offset=%d", keyword, offset)
 
         try:
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
 
-            logger.info(f"Executing transcribed text search for '{keyword}'...")
+            logger.info("Executing transcribed text search for '%s'...", keyword)
             search_result = search_operations.search(
                 keyword=keyword,
                 transcribed_only=True,  # Always search transcribed text
@@ -205,7 +205,7 @@ def register_search_tool(mcp) -> None:
                 seen = await ctx.get_state("seen_search") or {}
                 logger.info("[search_transcribed] Dedup state loaded: %d documents previously seen", len(seen))
 
-            logger.info(f"Formatting {len(search_result.items)} search results...")
+            logger.info("Formatting %d search results...", len(search_result.items))
             formatted_results = formatter.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,
@@ -225,7 +225,7 @@ def register_search_tool(mcp) -> None:
             return formatted_results
 
         except Exception as e:
-            logger.error(f"✗ MCP search_transcribed failed: {type(e).__name__}: {e}", exc_info=True)
+            logger.error("✗ MCP search_transcribed failed: %s: %s", type(e).__name__, e, exc_info=True)
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
                 f"Search failed: {e!s}",
@@ -322,16 +322,16 @@ def register_search_tool(mcp) -> None:
             return validation_error
 
         if research_context:
-            logger.info(f"MCP Tool: search_metadata | context: {research_context}")
+            logger.info("MCP Tool: search_metadata | context: %s", research_context)
         material_scope = "digitised materials" if only_digitised else "all materials (2M+ records)"
-        logger.info(f"MCP Tool: search_metadata called with keyword='{keyword}', offset={offset}, scope={material_scope}")
+        logger.info("MCP Tool: search_metadata called with keyword='%s', offset=%d, scope=%s", keyword, offset, material_scope)
 
         try:
             logger.debug("Initializing search operations...")
             search_operations = SearchOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
 
-            logger.info(f"Executing metadata search for '{keyword}' in {material_scope}...")
+            logger.info("Executing metadata search for '%s' in %s...", keyword, material_scope)
             search_result = search_operations.search(
                 keyword=keyword,
                 transcribed_only=False,  # Search metadata fields
@@ -352,7 +352,7 @@ def register_search_tool(mcp) -> None:
                 seen = await ctx.get_state("seen_search") or {}
                 logger.info("[search_metadata] Dedup state loaded: %d documents previously seen", len(seen))
 
-            logger.info(f"Formatting {len(search_result.items)} search results...")
+            logger.info("Formatting %d search results...", len(search_result.items))
             formatted_results = formatter.format_search_results(
                 search_result,
                 maximum_documents_to_display=max_results,
@@ -372,7 +372,7 @@ def register_search_tool(mcp) -> None:
             return formatted_results
 
         except Exception as e:
-            logger.error(f"✗ MCP search_metadata failed: {type(e).__name__}: {e}", exc_info=True)
+            logger.error("✗ MCP search_metadata failed: %s: %s", type(e).__name__, e, exc_info=True)
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
                 f"Metadata search failed: {e!s}",

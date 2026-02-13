@@ -80,7 +80,7 @@ class SearchAPI:
 
         search_term = transcribed_text or text
         search_type = "transcribed" if transcribed_text else "general"
-        self.logger.info(f"Starting {search_type} search: keyword='{search_term}', max={max_results}, offset={offset}")
+        self.logger.info("Starting %s search: keyword='%s', max=%d, offset=%d", search_type, search_term, max_results, offset)
 
         with _tracer.start_as_current_span(
             "SearchAPI.search",
@@ -125,7 +125,9 @@ class SearchAPI:
                 if max_snippets_per_record:
                     self._limit_snippets(response, max_snippets_per_record)
 
-                self.logger.info(f"✓ Search completed: {response.count_snippets()} snippets from {len(response.items)} records ({response.total_hits} total)")
+                self.logger.info(
+                    "✓ Search completed: %d snippets from %d records (%d total)", response.count_snippets(), len(response.items), response.total_hits
+                )
 
                 span.set_attribute("search.total_hits", response.total_hits)
                 span.set_attribute("search.result_count", len(response.items))
@@ -134,7 +136,7 @@ class SearchAPI:
             except Exception as error:
                 span.set_status(StatusCode.ERROR, str(error))
                 span.record_exception(error)
-                self.logger.error(f"✗ Search failed: {type(error).__name__}: {error}")
+                self.logger.error("✗ Search failed: %s: %s", type(error).__name__, error)
                 raise
 
     def search_transcribed_text(
