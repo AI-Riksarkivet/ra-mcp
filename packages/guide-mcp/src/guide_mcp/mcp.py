@@ -8,14 +8,7 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 
-
-def format_error_message(error_message: str, error_suggestions: list[str] | None = None) -> str:
-    """Format an error message with optional suggestions."""
-    formatted_lines = [f"⚠️ **Error**: {error_message}"]
-    if error_suggestions:
-        formatted_lines.append("\n**Suggestions**:")
-        formatted_lines.extend(f"- {suggestion_text}" for suggestion_text in error_suggestions)
-    return "\n".join(formatted_lines)
+from ra_mcp_common.utils.formatting import format_error_message
 
 
 guide_mcp = FastMCP(

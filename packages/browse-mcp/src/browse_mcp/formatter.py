@@ -2,24 +2,7 @@
 Plain text formatter for MCP/LLM output without any Rich markup.
 """
 
-import logging
-import re
-
-
-logger = logging.getLogger("ra_mcp.browse_mcp.formatter")
-
-
-def _page_id_to_number(page_id: str) -> int:
-    """Extract the numeric page number from a page ID like '_00066' or '_H0000459_00005'.
-
-    Splits by underscore and takes the last non-empty part, stripping leading zeros.
-    """
-    parts = page_id.split("_")
-    if parts:
-        last_part = parts[-1]
-        trimmed = last_part.lstrip("0") or "0"
-        return int(trimmed)
-    return int(page_id)
+from ra_mcp_common.utils.formatting import highlight_keyword_markdown, iiif_manifest_to_bildvisaren, page_id_to_number
 
 
 class PlainTextFormatter:
@@ -89,47 +72,12 @@ class PlainTextFormatter:
         return "\n".join(formatted_lines)
 
     def highlight_search_keyword(self, text_content: str, search_keyword: str) -> str:
-        """
-        Highlight search keywords using markdown-style bold.
-        The **text** markers from the API are already in the correct format.
-        If no markers present, fallback to manual keyword highlighting.
-
-        Args:
-            text_content: Text to search in (may already contain **text** markers)
-            search_keyword: Keyword to highlight
-
-        Returns:
-            Text with keywords wrapped in **bold**
-        """
-        if re.search(r"\*\*[^*]+\*\*", text_content):
-            return text_content
-
-        if not search_keyword:
-            return text_content
-        keyword_pattern = re.compile(re.escape(search_keyword), re.IGNORECASE)
-        return keyword_pattern.sub(lambda match: f"**{match.group()}**", text_content)
+        """Highlight search keywords using markdown-style bold."""
+        return highlight_keyword_markdown(text_content, search_keyword)
 
     def _iiif_manifest_to_bildvisaren(self, iiif_manifest_url: str) -> str:
-        """
-        Convert IIIF manifest URL to bildvisaren URL.
-
-        Args:
-            iiif_manifest_url: IIIF manifest URL (e.g., https://lbiiif.riksarkivet.se/arkis!R0002497/manifest)
-
-        Returns:
-            Bildvisaren URL (e.g., https://sok.riksarkivet.se/bildvisning/R0002497) or empty string if conversion fails
-        """
-        try:
-            # Extract the ID between "arkis!" and "/manifest"
-            if "arkis!" in iiif_manifest_url and "/manifest" in iiif_manifest_url:
-                start_idx = iiif_manifest_url.find("arkis!") + len("arkis!")
-                end_idx = iiif_manifest_url.find("/manifest", start_idx)
-                manifest_id = iiif_manifest_url[start_idx:end_idx]
-                return f"https://sok.riksarkivet.se/bildvisning/{manifest_id}"
-            return ""
-        except Exception as e:
-            logger.warning("Failed to convert IIIF manifest URL to bildvisning: %s: %s", iiif_manifest_url, e)
-            return ""
+        """Convert IIIF manifest URL to bildvisaren URL."""
+        return iiif_manifest_to_bildvisaren(iiif_manifest_url)
 
     def format_no_results_message(self, search_result) -> str:
         """
@@ -192,7 +140,7 @@ class PlainTextFormatter:
     def _format_document_snippets(self, lines: list[str], document, keyword: str) -> None:
         """Emit page numbers, hit counts, and first 3 snippets for a transcribed document."""
         page_numbers = sorted({page.id for snippet in document.transcribed_text.snippets for page in snippet.pages})
-        trimmed_page_numbers = [str(_page_id_to_number(pid)) for pid in page_numbers]
+        trimmed_page_numbers = [str(page_id_to_number(pid)) for pid in page_numbers]
 
         doc_snippet_count = len(document.transcribed_text.snippets)
         total_hits = document.get_total_hits()

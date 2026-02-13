@@ -8,10 +8,11 @@ import logging
 
 from fastmcp import Context
 
+from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_common.utils.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
 
-from .formatter import PlainTextFormatter, _page_id_to_number
+from .formatter import PlainTextFormatter
 
 
 logger = logging.getLogger(__name__)
@@ -474,7 +475,7 @@ def _update_seen_search_state(seen: dict[str, list[int]], search_result, max_dis
         if document.transcribed_text and document.transcribed_text.snippets:
             for snippet in document.transcribed_text.snippets:
                 for page in snippet.pages:
-                    existing.add(_page_id_to_number(page.id))
+                    existing.add(page_id_to_number(page.id))
         # Store as sorted list (JSON-serializable)
         seen[ref_code] = sorted(existing)
 
