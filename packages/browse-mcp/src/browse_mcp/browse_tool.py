@@ -8,6 +8,7 @@ import logging
 
 from fastmcp import Context
 
+from ra_mcp_browse.models import BrowseResult
 from ra_mcp_browse.operations import BrowseOperations
 from ra_mcp_common.utils.formatting import format_error_message
 from ra_mcp_common.utils.http_client import default_http_client
@@ -168,12 +169,12 @@ def register_browse_tool(mcp) -> None:
             )
 
 
-def _fetch_document_pages(browse_operations, **browse_params):
+def _fetch_document_pages(browse_operations, **browse_params) -> BrowseResult:
     """Fetch document pages with the given parameters."""
     return browse_operations.browse_document(**browse_params)
 
 
-def _generate_no_pages_found_message(reference_code):
+def _generate_no_pages_found_message(reference_code) -> str:
     """Generate error message when no pages are found."""
     return format_error_message(
         f"Could not load pages for {reference_code}",

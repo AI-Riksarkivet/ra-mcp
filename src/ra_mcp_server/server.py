@@ -52,7 +52,7 @@ AVAILABLE_MODULES = {
 }
 
 
-def setup_logging():
+def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
     log_level = os.getenv("RA_MCP_LOG_LEVEL", "INFO").upper()
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -163,7 +163,7 @@ main_server = None
 _mounted_modules: list[str] = []
 
 
-def setup_server(server: FastMCP, enabled_modules: list[str]):
+def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
     """Setup server composition by mounting selected tool servers.
 
     Args:
@@ -194,7 +194,7 @@ def setup_server(server: FastMCP, enabled_modules: list[str]):
         logger.info(f"Server composition complete. {len(_mounted_modules)} module(s) mounted.")
 
 
-def setup_custom_routes(server: FastMCP):
+def setup_custom_routes(server: FastMCP) -> None:
     """Setup custom HTTP routes for the server.
 
     Args:
@@ -202,15 +202,15 @@ def setup_custom_routes(server: FastMCP):
     """
 
     @server.custom_route("/", methods=["GET"])
-    async def root(_):
+    async def root(_) -> FileResponse:
         return FileResponse("assets/index.html")
 
     @server.custom_route("/health", methods=["GET"])
-    async def health(_):
+    async def health(_) -> JSONResponse:
         return JSONResponse({"status": "ok"})
 
     @server.custom_route("/ready", methods=["GET"])
-    async def ready(_):
+    async def ready(_) -> JSONResponse:
         if _mounted_modules:
             return JSONResponse({"status": "ready", "modules": _mounted_modules})
         return JSONResponse({"status": "not ready", "modules": []}, status_code=503)
@@ -223,7 +223,7 @@ def run_server(
     host: str = "0.0.0.0",
     verbose: bool = False,
     modules: str | None = None,
-):
+) -> None:
     """Run the MCP server with the given configuration.
 
     Args:
@@ -261,7 +261,7 @@ def run_server(
         main_server.run(transport="stdio")
 
 
-def main():
+def main() -> None:
     """CLI entry point for direct invocation (e.g., python -m ra_mcp_server.server)."""
     default_modules = [name for name, info in AVAILABLE_MODULES.items() if info["default"]]
 

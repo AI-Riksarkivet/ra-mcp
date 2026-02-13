@@ -8,6 +8,7 @@ Environment variables for debugging:
 - RA_MCP_TIMEOUT: Override default timeout in seconds
 """
 
+import http.client
 import json
 import logging
 import os
@@ -62,7 +63,7 @@ class HTTPClient:
 
         logger.info(f"HTTPClient initialized with user agent: {self.user_agent}")
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Configure logging handlers for file and console output."""
         if not self.logger.handlers:
             # File handler for persistent logs
@@ -76,7 +77,7 @@ class HTTPClient:
             console_handler.setFormatter(logging.Formatter("%(levelname)s - %(name)s - %(message)s"))
             self.logger.addHandler(console_handler)
 
-    def _execute_with_retry(self, request, timeout, url):
+    def _execute_with_retry(self, request, timeout, url) -> http.client.HTTPResponse:
         """Execute a request with exponential backoff retry on transient errors.
 
         Returns the response object (caller must read content within context).

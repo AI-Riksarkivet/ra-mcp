@@ -21,7 +21,7 @@ _tracer = get_tracer("ra_mcp.cli.search")
 console = Console()
 
 
-def _print_renderables(renderables, console: Console):
+def _print_renderables(renderables, console: Console) -> None:
     for item in renderables:
         console.print(item)
 
@@ -47,7 +47,7 @@ def search(
         bool, typer.Option("--only-digitised-materials/--include-all-materials", help="Limit to digitised materials (default) or include all records")
     ] = True,
     log: Annotated[bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")] = False,
-):
+) -> None:
     """Search for keyword in historical documents.
 
     Fast search across Riksarkivet collections. Flags match the API parameters exactly.

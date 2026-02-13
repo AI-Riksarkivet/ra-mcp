@@ -66,7 +66,7 @@ def serve(
         typer.Option("--list-modules", help="List available modules and exit"),
     ] = False,
     verbose: Annotated[bool, typer.Option("-v", "--verbose", help="Enable verbose logging")] = False,
-):
+) -> None:
     """Start the MCP server.
 
     The server is composable - you can enable/disable modules as needed.
@@ -105,7 +105,7 @@ def serve(
 
 
 @app.callback()
-def main_callback():
+def main_callback() -> None:
     """
     Riksarkivet MCP Server and CLI Tools.
 

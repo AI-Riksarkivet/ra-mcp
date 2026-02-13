@@ -385,7 +385,7 @@ def register_search_tool(mcp) -> None:
             )
 
 
-def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
+def _apply_token_limit_if_needed(formatted_results, max_response_tokens) -> str:
     """Apply token limit to the formatted results if needed."""
     estimated_tokens = len(formatted_results) // 4
     if estimated_tokens > max_response_tokens:
@@ -393,7 +393,7 @@ def _apply_token_limit_if_needed(formatted_results, max_response_tokens):
     return formatted_results
 
 
-def _extract_unique_documents(search_hits):
+def _extract_unique_documents(search_hits) -> set[str]:
     """Extract unique document identifiers from hits."""
     unique_documents = set()
     for hit in search_hits:
@@ -402,7 +402,7 @@ def _extract_unique_documents(search_hits):
     return unique_documents
 
 
-def _calculate_pagination_metadata(unique_documents, search_hits, total_hits, offset, limit):
+def _calculate_pagination_metadata(unique_documents, search_hits, total_hits, offset, limit) -> dict[str, object]:
     """Calculate pagination metadata."""
     has_additional_results = len(unique_documents) == limit and total_hits > len(search_hits)
 
@@ -421,7 +421,7 @@ def _calculate_pagination_metadata(unique_documents, search_hits, total_hits, of
     }
 
 
-def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result_limit):
+def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result_limit) -> dict[str, object]:
     """Calculate pagination information for search results.
 
     Args:
@@ -446,7 +446,7 @@ def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result
     return pagination_metadata
 
 
-def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results):
+def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results) -> str:
     """Append pagination information to results if there are more results available."""
     pagination_info = _get_pagination_info(search_result.items, search_result.response.total_hits, offset, max_results)
 

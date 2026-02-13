@@ -21,7 +21,7 @@ _tracer = get_tracer("ra_mcp.cli.browse")
 console = Console()
 
 
-def _print_renderables(renderables, console: Console):
+def _print_renderables(renderables, console: Console) -> None:
     for item in renderables:
         console.print(item)
 
@@ -43,7 +43,7 @@ def browse(
         bool,
         typer.Option("--show-links", help="Display direct links to ALTO XML, IIIF images, and Bildvisaren viewer"),
     ] = False,
-):
+) -> None:
     """Browse pages by reference code.
 
     You can specify pages using either --pages or --page (they work the same way).

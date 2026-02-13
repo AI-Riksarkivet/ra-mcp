@@ -99,12 +99,12 @@ def get_guide_content(filename: str) -> str:
         )
 
 
-def _validate_markdown_filename(filename):
+def _validate_markdown_filename(filename) -> bool:
     """Validate that the filename has .md extension."""
     return filename.endswith(".md")
 
 
-def _generate_invalid_filename_message():
+def _generate_invalid_filename_message() -> str:
     """Generate error message for invalid filename format."""
     return format_error_message(
         "Invalid filename format",
@@ -115,7 +115,7 @@ def _generate_invalid_filename_message():
 _CURRENT_DIR = Path(__file__).parent
 
 
-def _check_file_exists(filename):
+def _check_file_exists(filename) -> bool:
     """Check if the markdown file exists."""
     safe_name = Path(filename).name
     markdown_path = _CURRENT_DIR / ".." / ".." / ".." / ".." / "resources" / safe_name
@@ -131,7 +131,7 @@ def _check_file_exists(filename):
     return markdown_path.exists()
 
 
-def _generate_file_not_found_message(filename):
+def _generate_file_not_found_message(filename) -> str:
     """Generate error message when file is not found."""
     return format_error_message(
         f"Guide section '{filename}' not found",
@@ -143,7 +143,7 @@ def _generate_file_not_found_message(filename):
     )
 
 
-def _load_markdown_file(filename):
+def _load_markdown_file(filename) -> str:
     """Load content from a markdown file."""
     safe_name = Path(filename).name
 
