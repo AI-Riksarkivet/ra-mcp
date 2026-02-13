@@ -29,7 +29,8 @@ func (m *RaMcp) Serve(
 		WithExposedPort(port).
 		AsService(dagger.ContainerAsServiceOpts{
 			Args: []string{
-				"ra", "serve",
+				"ra-serve",
+				"--http",
 				"--host", host,
 				"--port", fmt.Sprintf("%d", port),
 			},
@@ -107,7 +108,8 @@ func (m *RaMcp) ServePublished(
 		WithExposedPort(port).
 		AsService(dagger.ContainerAsServiceOpts{
 			Args: []string{
-				"ra", "serve",
+				"ra-serve",
+				"--http",
 				"--host", "0.0.0.0",
 				"--port", fmt.Sprintf("%d", port),
 			},

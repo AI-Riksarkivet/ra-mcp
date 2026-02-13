@@ -6,15 +6,14 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ra-mcp-search-mcp",
-    "ra-mcp-search-cli",
     "ra-mcp-browse-mcp",
-    "ra-mcp-browse-cli",
     "ra-mcp-guide-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
     "cryptography>=46.0.5",
 ]
+
 license = "Apache-2.0"
 keywords = [
     "mcp",
@@ -33,16 +32,25 @@ classifiers = [
     "Typing :: Typed",
 ]
 
+[project.optional-dependencies]
+cli = [
+    "ra-mcp-search-cli",
+    "ra-mcp-browse-cli",
+]
+
 
 [dependency-groups]
 dev = [
     "pytest",
     "ruff",
     "ty",
+    "ra-mcp-search-cli",
+    "ra-mcp-browse-cli",
 ]
 
 [project.scripts]
 ra = "ra_mcp_server.cli:app"
+ra-serve = "ra_mcp_server.server:main"
 
 [build-system]
 requires = ["hatchling"]

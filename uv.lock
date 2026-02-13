@@ -1113,23 +1113,29 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.5.1"
+version = "0.5.3"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
     { name = "opentelemetry-exporter-otlp" },
     { name = "opentelemetry-sdk" },
-    { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide-mcp" },
-    { name = "ra-mcp-search-cli" },
     { name = "ra-mcp-search-mcp" },
     { name = "starlette" },
+]
+
+[package.optional-dependencies]
+cli = [
+    { name = "ra-mcp-browse-cli" },
+    { name = "ra-mcp-search-cli" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
+    { name = "ra-mcp-browse-cli" },
+    { name = "ra-mcp-search-cli" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -1139,17 +1145,20 @@ requires-dist = [
     { name = "cryptography", specifier = ">=46.0.5" },
     { name = "opentelemetry-exporter-otlp", specifier = ">=1.28.0" },
     { name = "opentelemetry-sdk", specifier = ">=1.28.0" },
-    { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
+    { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
-    { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
+    { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
+provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest" },
+    { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
+    { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
     { name = "ruff" },
     { name = "ty" },
 ]
