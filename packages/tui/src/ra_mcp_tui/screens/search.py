@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import webbrowser
 from typing import TYPE_CHECKING, ClassVar
 
 from textual.app import ComposeResult
@@ -30,6 +31,7 @@ class SearchScreen(Screen):
         Binding("m", "toggle_mode", "Mode", show=True),
         Binding("n", "next_page", "Next Page", show=True),
         Binding("p", "prev_page", "Prev Page", show=True),
+        Binding("o", "open_link", "Open", show=True),
     ]
 
     def __init__(self, initial_keyword: str | None = None) -> None:
@@ -102,6 +104,14 @@ class SearchScreen(Screen):
         if self._current_keyword and self._current_offset > 0:
             prev_offset = max(0, self._current_offset - self.PAGE_SIZE)
             self._run_search(self._current_keyword, self._current_mode, offset=prev_offset)
+
+    def action_open_link(self) -> None:
+        record = self.query_one(ResultList).get_highlighted_record()
+        if record and record.links and record.links.html:
+            webbrowser.open(record.links.html)
+            self.notify(f"Opened: {record.links.html}")
+        else:
+            self.notify("No link available for this record")
 
     def action_focus_search(self) -> None:
         self.query_one(SearchBar).focus_input()

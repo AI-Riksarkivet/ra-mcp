@@ -17,6 +17,7 @@ Keybindings
   Escape     Go back / Clear search
   m          Toggle search mode (Transcribed / Metadata)
   n / p      Next / Previous page of results
+  o          Open highlighted result in browser
 
   n          Next page (in page viewer)
   p          Previous page (in page viewer)

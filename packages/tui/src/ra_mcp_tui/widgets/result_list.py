@@ -22,6 +22,7 @@ class ResultList(Widget):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._records: list[SearchRecord] = []
+        self._status_text = ""
 
     def compose(self) -> ComposeResult:
         yield LoadingIndicator(id="result-loading")
@@ -48,15 +49,14 @@ class ResultList(Widget):
             rtype = record.type
             hits = str(record.get_total_hits())
             table.add_row(ref, title, date, prov, rtype, hits)
-        status = self.query_one("#result-status", Label)
         start = offset + 1
         end = offset + len(records)
-        page_info = f" {start}-{end} of {total_hits} results for '{keyword}'"
+        self._status_text = f" {start}-{end} of {total_hits} results for '{keyword}'"
         if total_hits > page_size:
             page_num = offset // page_size + 1
             total_pages = (total_hits + page_size - 1) // page_size
-            page_info += f"  (page {page_num}/{total_pages}, n/p to navigate)"
-        status.update(page_info)
+            self._status_text += f"  (page {page_num}/{total_pages}, n/p to navigate)"
+        self.query_one("#result-status", Label).update(self._status_text)
 
     @staticmethod
     def _truncate(text: str, max_len: int) -> str:
@@ -83,6 +83,24 @@ class ResultList(Widget):
         table.clear()
         status = self.query_one("#result-status", Label)
         status.update(f" Error: {message}")
+
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        idx = event.cursor_row
+        if 0 <= idx < len(self._records):
+            record = self._records[idx]
+            link = record.links.html if record.links and record.links.html else ""
+            if link:
+                self.query_one("#result-status", Label).update(f" {link}  (o to open)")
+            else:
+                self.query_one("#result-status", Label).update(self._status_text)
+
+    def get_highlighted_record(self) -> SearchRecord | None:
+        """Return the currently highlighted record."""
+        table = self.query_one("#result-table", DataTable)
+        idx = table.cursor_row
+        if 0 <= idx < len(self._records):
+            return self._records[idx]
+        return None
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         row_index = event.cursor_row
