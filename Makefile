@@ -1,4 +1,4 @@
-.PHONY: install serve serve-http inspect format lint typecheck check test ci changelog release clean
+.PHONY: install serve serve-http inspect format lint typecheck check test ci changelog release clean compose-up compose-test
 
 # Install dependencies
 install:
@@ -56,6 +56,14 @@ endif
 	git tag "v$(VERSION)"
 	git push && git push --tags
 	@echo "Done. release.yml will create the GitHub Release."
+
+# Start ra-mcp via docker-compose on Dagger (no Docker daemon required)
+compose-up:
+	dagger call compose-up up --ports 7860:7860
+
+# Test compose service health check
+compose-test:
+	dagger call compose-test
 
 # Clean build artifacts
 clean:

@@ -117,6 +117,52 @@ uv run ra serve --port 8000
 uv run ra serve --port 8000 --log
 ```
 
+### Docker Compose (via Dagger)
+
+Run the server using `docker-compose.yml` on the Dagger engine — no Docker daemon required.
+Configuration mirrors the Helm chart ([charts/ra-mcp/values.yaml](charts/ra-mcp/values.yaml)).
+
+```bash
+# Start server (exposed on host port 7860)
+dagger call compose-up up --ports 7860:7860
+# or
+make compose-up
+
+# Run health check
+dagger call compose-test
+# or
+make compose-test
+```
+
+**Connect to Claude Code:**
+
+```bash
+# 1. Start the server (keep this terminal running)
+dagger call compose-up up --ports 7860:7860
+
+# 2. In another terminal, add as MCP server
+claude mcp add --transport http ra-mcp http://localhost:7860/mcp
+
+# 3. Verify connection inside Claude Code
+/mcp
+
+# 4. Test with a search
+# Ask Claude: "search for trolldom"
+```
+
+**Verify manually:**
+
+```bash
+# Health check
+curl http://localhost:7860/health
+
+# MCP endpoint (should return server info)
+curl -X POST http://localhost:7860/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}'
+```
+
 ### Using the CLI
 
 The project includes a full-featured CLI for searching and browsing documents:
@@ -138,22 +184,66 @@ uv run ra browse --help
 
 ### Testing
 
-**IMPORTANT**: The test infrastructure is currently being set up. Tests will be added in the `packages/*/tests/` directories.
-
 ```bash
-# Run all tests (when tests exist)
+# Run all tests
 uv run pytest
-
-# Run with coverage (requires pytest-cov)
-uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search --cov=ra_mcp_browse --cov-report=html
 
 # Run specific package tests
 uv run pytest packages/common/tests/ -v
 uv run pytest packages/search/tests/ -v
 uv run pytest packages/browse/tests/ -v
+
+# Run with coverage
+uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search --cov=ra_mcp_browse --cov-report=html
 ```
 
-**Note**: The Dagger pipeline currently accepts zero tests as success until the test suite is implemented.
+### Testing Principles
+
+Tests follow patterns drawn from httpx, pydantic, and FastMCP. Build bottom-up through the dependency stack:
+
+```
+Layer 0: ra-mcp-common           ← pure utilities, no internal deps
+Layer 1: ra-mcp-search, browse   ← domain models, clients, operations
+Layer 2: *-mcp, *-cli packages   ← MCP tools, CLI commands
+Layer 3: ra-mcp root server      ← composition
+```
+
+**Structure:**
+- One test file per source module: `test_formatting.py` tests `formatting.py`
+- Flat module-level functions — no test classes (httpx pattern)
+- Each test file is self-contained with its own helpers and mock data
+- Fixtures in `conftest.py` only for truly shared setup (e.g., mock HTTP response factory)
+- XML/JSON fixture files in `packages/<pkg>/tests/fixtures/`
+
+**Parametrize for edge cases** (pydantic pattern):
+```python
+@pytest.mark.parametrize("page_id,expected", [
+    pytest.param("_00066", 66, id="standard"),
+    pytest.param("_H0000459_00005", 5, id="compound"),
+    pytest.param("_00000", 0, id="all-zeros"),
+])
+def test_page_id_to_number(page_id, expected):
+    assert page_id_to_number(page_id) == expected
+```
+
+**Mock at the right boundary:**
+- Domain packages (search, browse): inject a mock `HTTPClient` via constructor — don't patch `urllib`
+- MCP tool packages: use `Client(mcp)` for in-process testing, mock at the operations layer
+- Never mock telemetry — test behavior, not instrumentation
+
+**MCP tool testing** (FastMCP pattern):
+```python
+async def test_tool_returns_error_on_empty_keyword():
+    async with Client(search_mcp) as client:
+        result = await client.call_tool("transcribed", {"keyword": "", "offset": 0})
+        assert "empty" in result.content[0].text.lower()
+```
+
+**Naming:** `test_<subject>_<scenario>` — e.g., `test_get_json_success`, `test_get_content_returns_none_on_404`
+
+**What to test vs skip:**
+- Test: behavior, return values, error handling, edge cases
+- Skip: telemetry span attributes, log messages, `__init__.py` re-exports, config constants
 
 ### Code Quality
 

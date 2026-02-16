@@ -1,0 +1,14 @@
+services:
+  ra-mcp:
+    image: riksarkivet/ra-mcp:latest
+    ports:
+      - "7860:7860"
+    environment:
+      RA_MCP_LOG_LEVEL: "INFO"
+      RA_MCP_TIMEOUT: "30"
+      RA_MCP_LOG_API: "0"
+      # OpenTelemetry (mirrors charts/ra-mcp/values.yaml opentelemetry section)
+      RA_MCP_OTEL_ENABLED: "false"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "ra-mcp"
