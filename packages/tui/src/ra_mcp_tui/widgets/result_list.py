@@ -27,7 +27,7 @@ class ResultList(Widget):
         yield ListView(id="result-listview")
         yield Label("", id="result-status")
 
-    def set_results(self, records: list[SearchRecord], total_hits: int, keyword: str) -> None:
+    def set_results(self, records: list[SearchRecord], total_hits: int, keyword: str, offset: int = 0, page_size: int = 25) -> None:
         """Populate the list with search results."""
         self._records = records
         listview = self.query_one("#result-listview", ListView)
@@ -40,7 +40,14 @@ class ResultList(Widget):
             line = f"{ref}  {title}  {date}  ({hits} hits)"
             listview.append(ListItem(Label(line)))
         status = self.query_one("#result-status", Label)
-        status.update(f" {total_hits} results for '{keyword}' — showing {len(records)}")
+        start = offset + 1
+        end = offset + len(records)
+        page_info = f" {start}-{end} of {total_hits} results for '{keyword}'"
+        if total_hits > page_size:
+            page_num = offset // page_size + 1
+            total_pages = (total_hits + page_size - 1) // page_size
+            page_info += f"  (page {page_num}/{total_pages}, n/p to navigate)"
+        status.update(page_info)
 
     def show_loading(self, keyword: str) -> None:
         """Show loading state."""
@@ -65,6 +72,8 @@ class ResultList(Widget):
 class PageList(Widget):
     """Displays document pages as a selectable list."""
 
+    AUTOLOAD_THRESHOLD = 3
+
     class Selected(Message):
         """Fired when a page is selected."""
 
@@ -73,25 +82,48 @@ class PageList(Widget):
             self.page = page
             self.all_pages = all_pages
 
+    class NearEnd(Message):
+        """Fired when the cursor is near the end of the list."""
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._pages: list[PageContext] = []
+        self._hit_pages: set[int] = set()
 
     def compose(self) -> ComposeResult:
         yield ListView(id="page-listview")
         yield Label("", id="page-status")
 
+    def set_hit_pages(self, hit_pages: set[int]) -> None:
+        """Set which page numbers have search hits."""
+        self._hit_pages = hit_pages
+
     def set_pages(self, pages: list[PageContext]) -> None:
         """Populate the list with document pages."""
-        self._pages = pages
+        self._pages = list(pages)
         listview = self.query_one("#page-listview", ListView)
         listview.clear()
         for page in pages:
-            preview = page.full_text[:100].replace("\n", " ") if page.full_text else "(empty page)"
-            line = f"Page {page.page_number}: {preview}"
-            listview.append(ListItem(Label(line)))
+            self._append_page_item(listview, page)
+        self._update_status()
+
+    def append_pages(self, pages: list[PageContext]) -> None:
+        """Append additional pages to the existing list."""
+        listview = self.query_one("#page-listview", ListView)
+        for page in pages:
+            self._pages.append(page)
+            self._append_page_item(listview, page)
+        self._update_status()
+
+    def _append_page_item(self, listview: ListView, page: PageContext) -> None:
+        preview = page.full_text[:100].replace("\n", " ") if page.full_text else "(empty page)"
+        marker = " << HIT" if page.page_number in self._hit_pages else ""
+        line = f"Page {page.page_number}{marker}: {preview}"
+        listview.append(ListItem(Label(line)))
+
+    def _update_status(self) -> None:
         status = self.query_one("#page-status", Label)
-        status.update(f" {len(pages)} pages loaded")
+        status.update(f" {len(self._pages)} pages loaded")
 
     def show_loading(self) -> None:
         """Show loading state."""
@@ -104,6 +136,11 @@ class PageList(Widget):
         """Show error state."""
         status = self.query_one("#page-status", Label)
         status.update(f" Error: {message}")
+
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        idx = event.list_view.index
+        if idx is not None and len(self._pages) - idx <= self.AUTOLOAD_THRESHOLD:
+            self.post_message(self.NearEnd())
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         idx = event.list_view.index

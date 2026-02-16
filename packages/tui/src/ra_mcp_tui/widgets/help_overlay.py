@@ -16,6 +16,7 @@ Keybindings
   Enter      Submit search / Open selected item
   Escape     Go back / Clear search
   m          Toggle search mode (Transcribed / Metadata)
+  n / p      Next / Previous page of results
 
   n          Next page (in page viewer)
   p          Previous page (in page viewer)

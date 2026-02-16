@@ -11,6 +11,7 @@ from textual.widgets import Footer, Header
 from textual.worker import Worker, WorkerState
 
 from ra_mcp_browse.models import BrowseResult
+from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_search.models import SearchRecord
 
 from ..widgets.metadata_panel import MetadataPanel
@@ -19,6 +20,8 @@ from ..widgets.result_list import PageList
 
 if TYPE_CHECKING:
     from ..app import RiksarkivetApp
+
+BATCH_SIZE = 20
 
 
 class DocumentScreen(Screen):
@@ -34,6 +37,8 @@ class DocumentScreen(Screen):
         self._record = record
         self._keyword = keyword
         self._browse_worker: Worker[BrowseResult] | None = None
+        self._max_loaded_page = 0
+        self._loading = False
 
     @property
     def _service(self) -> RiksarkivetApp:
@@ -45,32 +50,72 @@ class DocumentScreen(Screen):
         yield PageList(id="doc-pages")
         yield Footer()
 
+    def _extract_hit_pages(self) -> set[int]:
+        """Extract page numbers that have search hits from the record's snippets."""
+        hit_pages: set[int] = set()
+        if self._record.transcribed_text:
+            for snippet in self._record.transcribed_text.snippets:
+                for page_info in snippet.pages:
+                    hit_pages.add(page_id_to_number(page_info.id))
+        return hit_pages
+
     def on_mount(self) -> None:
         self.query_one(MetadataPanel).set_from_record(self._record)
-        self.query_one(PageList).show_loading()
+        page_list = self.query_one(PageList)
+        page_list.set_hit_pages(self._extract_hit_pages())
+        page_list.show_loading()
+        self._fetch_pages(1, BATCH_SIZE)
+
+    def _fetch_pages(self, start: int, end: int) -> None:
+        self._loading = True
+        page_spec = f"{start}-{end}"
+        service = self._service.service
         ref_code = self._record.metadata.reference_code
         keyword = self._keyword
-        service = self._service.service
         self._browse_worker = self.run_worker(
-            lambda: service.browse_document(reference_code=ref_code, pages="1-20", highlight_term=keyword),
+            lambda: service.browse_document(reference_code=ref_code, pages=page_spec, highlight_term=keyword),
             thread=True,
         )
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         if event.worker is not self._browse_worker:
             return
+        self._loading = False
         if event.state == WorkerState.SUCCESS:
             result: BrowseResult = event.worker.result  # type: ignore[assignment]
-            self.query_one(PageList).set_pages(result.contexts)
-            if result.oai_metadata:
-                self.query_one(MetadataPanel).enrich_from_oai(result.oai_metadata)
+            page_list = self.query_one(PageList)
+            if self._max_loaded_page == 0:
+                # First load
+                page_list.set_pages(result.contexts)
+                if result.oai_metadata:
+                    self.query_one(MetadataPanel).enrich_from_oai(result.oai_metadata)
+            elif result.contexts:
+                page_list.append_pages(result.contexts)
+            else:
+                self.notify("No more pages in this document")
+            if result.contexts:
+                self._max_loaded_page = max(p.page_number for p in result.contexts)
         elif event.state == WorkerState.ERROR:
             self.query_one(PageList).set_error(str(event.worker.error))
+
+    def on_page_list_near_end(self, event: PageList.NearEnd) -> None:
+        if self._loading or self._max_loaded_page == 0:
+            return
+        start = self._max_loaded_page + 1
+        end = start + BATCH_SIZE - 1
+        self._fetch_pages(start, end)
 
     def on_page_list_selected(self, event: PageList.Selected) -> None:
         from .page import PageScreen
 
-        self.app.push_screen(PageScreen(page=event.page, all_pages=event.all_pages, keyword=self._keyword))
+        self.app.push_screen(
+            PageScreen(
+                page=event.page,
+                all_pages=event.all_pages,
+                keyword=self._keyword,
+                reference_code=self._record.metadata.reference_code,
+            )
+        )
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

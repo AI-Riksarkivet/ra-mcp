@@ -2,10 +2,22 @@
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
+from textual.events import Click
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Input, Label
+
+
+class ModeLabel(Label):
+    """Clickable mode label that posts a Toggle message when clicked."""
+
+    class Toggle(Message):
+        """Fired when the label is clicked."""
+
+    def on_click(self, event: Click) -> None:
+        event.stop()
+        self.post_message(self.Toggle())
 
 
 class SearchBar(Widget):
@@ -23,7 +35,7 @@ class SearchBar(Widget):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="search-bar"):
-            yield Label(" [T]ranscribed ", id="mode-label")
+            yield ModeLabel(" \\[T]ranscribed ", id="mode-label")
             yield Input(placeholder="Search Riksarkivet...", id="search-input")
 
     def on_mount(self) -> None:
@@ -33,11 +45,14 @@ class SearchBar(Widget):
         self._update_mode_label()
 
     def _update_mode_label(self) -> None:
-        label = self.query_one("#mode-label", Label)
+        label = self.query_one("#mode-label", ModeLabel)
         if self.mode == "transcribed":
-            label.update(" [T]ranscribed ")
+            label.update(" \\[T]ranscribed ")
         else:
-            label.update(" [M]etadata ")
+            label.update(" \\[M]etadata ")
+
+    def on_mode_label_toggle(self) -> None:
+        self.toggle_mode()
 
     def toggle_mode(self) -> None:
         """Switch between transcribed and metadata search."""
