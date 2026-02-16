@@ -1,23 +1,58 @@
 """List widgets for search results and document pages."""
 
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable, Label, LoadingIndicator
+from textual.widgets import DataTable, Label, LoadingIndicator, Tree
+from textual.widgets._tree import TreeNode
 
 from ra_mcp_browse.models import PageContext
+from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_search.models import SearchRecord
+
+_EM_RE = re.compile(r"<em>(.*?)</em>")
+
+
+@dataclass
+class _ArchiveNode:
+    """Data for an intermediate tree node (archive/series level)."""
+
+    uri: str | None = None
+    caption: str | None = None
+
+
+@dataclass
+class _SnippetNode:
+    """Data for a snippet leaf node (search hit on a specific page)."""
+
+    record: SearchRecord
+    page_number: int
+    text: str
 
 
 class ResultList(Widget):
-    """Displays search results as a data table with columns."""
+    """Displays search results as a tree grouped by reference code segments."""
 
     class Selected(Message):
-        """Fired when a result is selected."""
+        """Fired when a record node is selected."""
 
         def __init__(self, record: SearchRecord) -> None:
             super().__init__()
             self.record = record
+
+    class SnippetSelected(Message):
+        """Fired when a snippet node is selected (navigates to a specific page)."""
+
+        def __init__(self, record: SearchRecord, page_number: int) -> None:
+            super().__init__()
+            self.record = record
+            self.page_number = page_number
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -26,29 +61,23 @@ class ResultList(Widget):
 
     def compose(self) -> ComposeResult:
         yield LoadingIndicator(id="result-loading")
-        yield DataTable(id="result-table", cursor_type="row")
+        yield Tree("Results", id="result-tree")
         yield Label("", id="result-status")
 
     def on_mount(self) -> None:
         self.query_one("#result-loading").display = False
-        table = self.query_one("#result-table", DataTable)
-        table.add_columns("Ref", "Title", "Date", "Provenance", "Type", "Hits")
+        tree = self.query_one("#result-tree", Tree)
+        tree.show_root = False
+        tree.guide_depth = 3
 
     def set_results(self, records: list[SearchRecord], total_hits: int, keyword: str, offset: int = 0, page_size: int = 25) -> None:
-        """Populate the table with search results."""
+        """Populate the tree with search results grouped by reference code."""
         self._records = records
         self.query_one("#result-loading").display = False
-        table = self.query_one("#result-table", DataTable)
-        table.display = True
-        table.clear()
-        for record in records:
-            ref = record.metadata.reference_code
-            title = self._truncate(record.get_title(), 50)
-            date = record.metadata.date or "-"
-            prov = self._get_provenance(record)
-            rtype = record.type
-            hits = str(record.get_total_hits())
-            table.add_row(ref, title, date, prov, rtype, hits)
+        tree = self.query_one("#result-tree", Tree)
+        tree.display = True
+        tree.clear()
+        self._build_tree(tree, records)
         start = offset + 1
         end = offset + len(records)
         self._status_text = f" {start}-{end} of {total_hits} results for '{keyword}'"
@@ -58,19 +87,96 @@ class ResultList(Widget):
             self._status_text += f"  (page {page_num}/{total_pages}, n/p to navigate)"
         self.query_one("#result-status", Label).update(self._status_text)
 
-    @staticmethod
-    def _truncate(text: str, max_len: int) -> str:
-        return text[:max_len - 1] + "\u2026" if len(text) > max_len else text
+    def _build_tree(self, tree: Tree, records: list[SearchRecord]) -> None:
+        sorted_records = sorted(records, key=lambda r: r.metadata.reference_code)
+        path_nodes: dict[tuple[str, ...], TreeNode] = {}
+
+        for record in sorted_records:
+            parts = record.metadata.reference_code.split("/")
+            # Create/find intermediate nodes with hierarchy metadata
+            for depth in range(len(parts) - 1):
+                path_key = tuple(parts[: depth + 1])
+                if path_key not in path_nodes:
+                    parent_key = tuple(parts[:depth])
+                    parent = path_nodes.get(parent_key) if parent_key else tree.root
+                    if parent is None:
+                        parent = tree.root
+                    node_data = self._node_metadata(record, depth)
+                    segment = parts[depth]
+                    if node_data and node_data.caption:
+                        label = f"{segment}  {node_data.caption}"
+                    else:
+                        label = segment
+                    path_nodes[path_key] = parent.add(label, data=node_data)
+
+            # Add record node (branch so snippets can be children)
+            parent_key = tuple(parts[:-1])
+            parent = path_nodes.get(parent_key) if parent_key else tree.root
+            if parent is None:
+                parent = tree.root
+            title = self._truncate(record.get_title(), 40)
+            hits = record.get_total_hits()
+            date = record.metadata.date or ""
+            date_str = f"  ({date})" if date else ""
+            label = f"{parts[-1]}  {title}{date_str}  [{hits} hits]"
+            record_node = parent.add(label, data=record)
+
+            # Add snippet leaves under the record node
+            self._add_snippets(record_node, record)
+
+        tree.root.expand_all()
+
+    def _add_snippets(self, record_node: TreeNode, record: SearchRecord) -> None:
+        if not record.transcribed_text:
+            return
+        snippets = sorted(
+            record.transcribed_text.snippets,
+            key=lambda s: page_id_to_number(s.pages[0].id) if s.pages else 0,
+        )
+        for snippet in snippets:
+            page_num = page_id_to_number(snippet.pages[0].id) if snippet.pages else 0
+            label = self._styled_snippet(snippet.text, page_num)
+            record_node.add_leaf(label, data=_SnippetNode(record=record, page_number=page_num, text=snippet.text))
 
     @staticmethod
-    def _get_provenance(record: SearchRecord) -> str:
-        if record.metadata.provenance:
-            return record.metadata.provenance[0].caption
-        return "-"
+    def _styled_snippet(raw: str, page_num: int) -> Text:
+        """Build a Rich Text label with <em> regions highlighted."""
+        prefix = f"p.{page_num}: "
+        plain = raw.replace("\n", " ").strip()
+        result = Text(prefix, style="dim")
+        for i, part in enumerate(_EM_RE.split(plain)):
+            if i % 2 == 1:
+                result.append(part, style="bold #C9A96E")
+            else:
+                result.append(part)
+        result.truncate(200, overflow="ellipsis")
+        return result
+
+    @staticmethod
+    def _node_metadata(record: SearchRecord, depth: int) -> _ArchiveNode | None:
+        """Extract metadata for an intermediate node at the given depth.
+
+        Depth mapping (ref code ``SE/RA/420422/01/...``):
+        - 0 (SE)  → country code, no metadata
+        - 1 (RA)  → archival_institution
+        - 2+      → hierarchy[depth - 2]
+        """
+        if depth == 1 and record.metadata.archival_institution:
+            inst = record.metadata.archival_institution[0]
+            return _ArchiveNode(uri=inst.uri, caption=inst.caption)
+        hierarchy_idx = depth - 2
+        if hierarchy_idx >= 0 and record.metadata.hierarchy and hierarchy_idx < len(record.metadata.hierarchy):
+            h = record.metadata.hierarchy[hierarchy_idx]
+            return _ArchiveNode(uri=h.uri, caption=h.caption)
+        return None
+
+    @staticmethod
+    def _truncate(text: str, max_len: int) -> str:
+        return text[: max_len - 1] + "\u2026" if len(text) > max_len else text
 
     def show_loading(self, keyword: str) -> None:
         """Show loading state with animated indicator."""
-        self.query_one("#result-table", DataTable).display = False
+        self.query_one("#result-tree", Tree).display = False
         self.query_one("#result-loading").display = True
         status = self.query_one("#result-status", Label)
         status.update(f" Searching for '{keyword}'...")
@@ -78,34 +184,52 @@ class ResultList(Widget):
     def set_error(self, message: str) -> None:
         """Show error state."""
         self.query_one("#result-loading").display = False
-        table = self.query_one("#result-table", DataTable)
-        table.display = True
-        table.clear()
+        tree = self.query_one("#result-tree", Tree)
+        tree.display = True
+        tree.clear()
         status = self.query_one("#result-status", Label)
         status.update(f" Error: {message}")
 
-    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        idx = event.cursor_row
-        if 0 <= idx < len(self._records):
-            record = self._records[idx]
-            link = record.links.html if record.links and record.links.html else ""
-            if link:
-                self.query_one("#result-status", Label).update(f" {link}  (o to open)")
-            else:
-                self.query_one("#result-status", Label).update(self._status_text)
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
+        link = self._link_from_node(event.node)
+        if link:
+            self.query_one("#result-status", Label).update(f" {link}  (o to open)")
+        else:
+            self.query_one("#result-status", Label).update(self._status_text)
 
     def get_highlighted_record(self) -> SearchRecord | None:
-        """Return the currently highlighted record."""
-        table = self.query_one("#result-table", DataTable)
-        idx = table.cursor_row
-        if 0 <= idx < len(self._records):
-            return self._records[idx]
+        """Return the currently highlighted record (leaf nodes only)."""
+        tree = self.query_one("#result-tree", Tree)
+        node = tree.cursor_node
+        if node is not None and isinstance(node.data, SearchRecord):
+            return node.data
         return None
 
-    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        row_index = event.cursor_row
-        if 0 <= row_index < len(self._records):
-            self.post_message(self.Selected(record=self._records[row_index]))
+    def get_highlighted_link(self) -> str | None:
+        """Return a link for the currently highlighted node (leaf or intermediate)."""
+        tree = self.query_one("#result-tree", Tree)
+        node = tree.cursor_node
+        if node is not None:
+            return self._link_from_node(node)
+        return None
+
+    @staticmethod
+    def _link_from_node(node: TreeNode) -> str | None:
+        if isinstance(node.data, SearchRecord):
+            return node.data.links.html if node.data.links and node.data.links.html else None
+        if isinstance(node.data, _SnippetNode):
+            rec = node.data.record
+            return rec.links.html if rec.links and rec.links.html else None
+        if isinstance(node.data, _ArchiveNode):
+            return node.data.uri
+        return None
+
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        node = event.node
+        if isinstance(node.data, SearchRecord):
+            self.post_message(self.Selected(record=node.data))
+        elif isinstance(node.data, _SnippetNode):
+            self.post_message(self.SnippetSelected(record=node.data.record, page_number=node.data.page_number))
 
 
 class PageList(Widget):
@@ -173,6 +297,18 @@ class PageList(Widget):
         status = self.query_one("#page-status", Label)
         hit_info = f"  ({hit_count} hits)" if hit_count else ""
         status.update(f" {len(self._pages)} pages loaded{hit_info}")
+
+    def get_pages(self) -> list[PageContext]:
+        """Return all loaded pages."""
+        return list(self._pages)
+
+    def move_cursor_to_page(self, page_number: int) -> None:
+        """Move the table cursor to the row matching the given page number."""
+        for idx, page in enumerate(self._pages):
+            if page.page_number == page_number:
+                table = self.query_one("#page-table", DataTable)
+                table.move_cursor(row=idx)
+                return
 
     def show_loading(self) -> None:
         """Show loading state with animated indicator."""

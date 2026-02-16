@@ -41,27 +41,25 @@ SearchBar {
     border: tall $primary;
 }
 
-/* Result table */
+/* Result tree */
 ResultList {
     height: 1fr;
 }
 
-#result-table {
+#result-tree {
     height: 1fr;
 }
 
-#result-table > .datatable--header {
-    background: $panel;
-    color: $primary;
-    text-style: bold;
-}
-
-#result-table > .datatable--cursor {
+#result-tree > .tree--cursor {
     background: $primary 25%;
     color: $text;
 }
 
-#result-table > .datatable--hover {
+#result-tree > .tree--guides {
+    color: $primary 40%;
+}
+
+#result-tree > .tree--highlight-line {
     background: $primary 12%;
 }
 
