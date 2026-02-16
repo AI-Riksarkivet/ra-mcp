@@ -8,18 +8,25 @@ SearchBar {
 
 #search-bar {
     height: 3;
+    background: $panel;
 }
 
 #mode-label {
     width: 18;
     content-align: center middle;
-    background: $accent;
+    background: $primary;
     color: $text;
     text-style: bold;
 }
 
 #search-input {
     width: 1fr;
+    background: $surface;
+    border: tall $primary 30%;
+}
+
+#search-input:focus {
+    border: tall $primary;
 }
 
 /* Result list */
@@ -31,24 +38,35 @@ ResultList {
     height: 1fr;
 }
 
+#result-listview > ListItem {
+    padding: 0 1;
+}
+
+#result-listview > ListItem.-highlight {
+    background: $primary 20%;
+}
+
 #result-status {
     dock: bottom;
     height: 1;
-    background: $surface;
-    color: $text-muted;
+    background: $panel;
+    color: $accent;
+    padding: 0 1;
 }
 
 /* Document screen: metadata panel */
 MetadataPanel {
     height: auto;
     max-height: 12;
-    border: solid $accent;
+    border: solid $primary 50%;
     margin: 0 1;
     padding: 1;
+    background: $surface;
 }
 
 #metadata-content {
     height: auto;
+    color: $secondary;
 }
 
 /* Page list in document screen */
@@ -60,11 +78,20 @@ PageList {
     height: 1fr;
 }
 
+#page-listview > ListItem {
+    padding: 0 1;
+}
+
+#page-listview > ListItem.-highlight {
+    background: $primary 20%;
+}
+
 #page-status {
     dock: bottom;
     height: 1;
-    background: $surface;
-    color: $text-muted;
+    background: $panel;
+    color: $accent;
+    padding: 0 1;
 }
 
 /* Page viewer */
@@ -75,7 +102,7 @@ PageViewer {
 #page-header {
     dock: top;
     height: 1;
-    background: $accent;
+    background: $primary;
     color: $text;
     text-style: bold;
 }
@@ -87,16 +114,21 @@ PageViewer {
 #page-links {
     dock: bottom;
     height: 1;
-    background: $surface;
-    color: $text-muted;
+    background: $panel;
+    color: $secondary;
+    padding: 0 1;
 }
 
 /* Help overlay */
+HelpScreen {
+    align: center middle;
+}
+
 #help-dialog {
-    width: 50;
+    width: 54;
     height: auto;
     max-height: 24;
-    border: thick $accent;
+    border: thick $primary;
     background: $surface;
     padding: 1 2;
 }
