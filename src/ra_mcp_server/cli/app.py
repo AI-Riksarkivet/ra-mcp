@@ -9,6 +9,7 @@ import typer
 from rich.console import Console
 
 from browse_cli import browse_app
+from ra_mcp_tui import tui_app
 from search_cli import search_app
 
 
@@ -23,17 +24,20 @@ Access transcribed historical documents from the Swedish National Archives (Riks
 Available Commands:
   search     - Search transcribed documents with advanced query syntax
   browse     - View full page transcriptions by reference code
+  tui        - Interactive terminal browser for documents
   serve      - Start the MCP server (composable, modular architecture)
 
 Quick Start:
   ra search "Stockholm"              # Search for a keyword
   ra browse "SE/RA/123" --page 5     # View a specific page
+  ra tui "trolldom"                  # Launch interactive TUI
   ra serve --port 8000               # Start MCP server
   ra serve --list-modules            # List available server modules
 
 For detailed help on any command:
   ra search --help
   ra browse --help
+  ra tui --help
   ra serve --help
     """,
     rich_markup_mode="markdown",
@@ -46,6 +50,9 @@ for command in search_app.registered_commands:
     app.registered_commands.append(command)
 
 for command in browse_app.registered_commands:
+    app.registered_commands.append(command)
+
+for command in tui_app.registered_commands:
     app.registered_commands.append(command)
 
 

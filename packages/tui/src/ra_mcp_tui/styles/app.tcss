@@ -1,0 +1,112 @@
+/* Riksarkivet TUI Theme */
+
+/* Search bar: docked at top */
+SearchBar {
+    dock: top;
+    height: 3;
+}
+
+#search-bar {
+    height: 3;
+}
+
+#mode-label {
+    width: 18;
+    content-align: center middle;
+    background: $accent;
+    color: $text;
+    text-style: bold;
+}
+
+#search-input {
+    width: 1fr;
+}
+
+/* Result list */
+ResultList {
+    height: 1fr;
+}
+
+#result-listview {
+    height: 1fr;
+}
+
+#result-status {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Document screen: metadata panel */
+MetadataPanel {
+    height: auto;
+    max-height: 12;
+    border: solid $accent;
+    margin: 0 1;
+    padding: 1;
+}
+
+#metadata-content {
+    height: auto;
+}
+
+/* Page list in document screen */
+PageList {
+    height: 1fr;
+}
+
+#page-listview {
+    height: 1fr;
+}
+
+#page-status {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Page viewer */
+PageViewer {
+    height: 1fr;
+}
+
+#page-header {
+    dock: top;
+    height: 1;
+    background: $accent;
+    color: $text;
+    text-style: bold;
+}
+
+#page-text {
+    height: 1fr;
+}
+
+#page-links {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Help overlay */
+#help-dialog {
+    width: 50;
+    height: auto;
+    max-height: 24;
+    border: thick $accent;
+    background: $surface;
+    padding: 1 2;
+}
+
+#help-text {
+    height: auto;
+}
+
+#help-hint {
+    text-align: center;
+    color: $text-muted;
+    margin-top: 1;
+}
