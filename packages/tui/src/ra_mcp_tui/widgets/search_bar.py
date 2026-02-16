@@ -2,22 +2,10 @@
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
-from textual.events import Click
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import Input, Label
-
-
-class ModeLabel(Label):
-    """Clickable mode label that posts a Toggle message when clicked."""
-
-    class Toggle(Message):
-        """Fired when the label is clicked."""
-
-    def on_click(self, event: Click) -> None:
-        event.stop()
-        self.post_message(self.Toggle())
+from textual.widgets import Input, RadioButton, RadioSet
 
 
 class SearchBar(Widget):
@@ -35,28 +23,21 @@ class SearchBar(Widget):
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="search-bar"):
-            yield ModeLabel(" \\[T]ranscribed ", id="mode-label")
-            yield Input(placeholder="Search Riksarkivet...", id="search-input")
+            with RadioSet(id="mode-toggle"):
+                yield RadioButton("Transcribed", value=True, id="mode-transcribed")
+                yield RadioButton("Metadata", id="mode-metadata")
+            yield Input(placeholder="Search Riksarkivet...  (m to toggle mode)", id="search-input")
 
-    def on_mount(self) -> None:
-        self._update_mode_label()
-
-    def watch_mode(self) -> None:
-        self._update_mode_label()
-
-    def _update_mode_label(self) -> None:
-        label = self.query_one("#mode-label", ModeLabel)
-        if self.mode == "transcribed":
-            label.update(" \\[T]ranscribed ")
-        else:
-            label.update(" \\[M]etadata ")
-
-    def on_mode_label_toggle(self) -> None:
-        self.toggle_mode()
+    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
+        event.stop()
+        self.mode = "transcribed" if event.pressed.id == "mode-transcribed" else "metadata"
 
     def toggle_mode(self) -> None:
         """Switch between transcribed and metadata search."""
-        self.mode = "metadata" if self.mode == "transcribed" else "transcribed"
+        if self.mode == "transcribed":
+            self.query_one("#mode-metadata", RadioButton).value = True
+        else:
+            self.query_one("#mode-transcribed", RadioButton).value = True
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         keyword = event.value.strip()

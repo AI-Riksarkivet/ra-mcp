@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 class SearchScreen(Screen):
     """Root screen: search input + result list."""
 
+    SUB_TITLE = "Search Archives"
     PAGE_SIZE = 25
 
     BINDINGS: ClassVar[list[BindingType]] = [

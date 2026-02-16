@@ -54,12 +54,12 @@ class RiksarkivetApp(App):
         super().__init__()
         self.service = ArchiveService()
         self._initial_keyword = initial_keyword
+        self.register_theme(RIKSARKIVET_THEME)
+        self.theme = "riksarkivet"
 
     def on_mount(self) -> None:
         from .screens.search import SearchScreen
 
-        self.register_theme(RIKSARKIVET_THEME)
-        self.theme = "riksarkivet"
         self.push_screen(SearchScreen(initial_keyword=self._initial_keyword))
 
     def action_help(self) -> None:

@@ -25,6 +25,8 @@ BATCH_SIZE = 20
 class PageScreen(Screen):
     """Full-text page viewer with n/p navigation and automatic page loading."""
 
+    SUB_TITLE = "Page Viewer"
+
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("escape", "go_back", "Back", show=True),
         Binding("n", "next_page", "Next", show=True),

@@ -1,19 +1,31 @@
 /* Riksarkivet TUI Theme */
 
-/* Search bar: docked at top */
+/* Search bar */
 SearchBar {
-    dock: top;
     height: 3;
 }
 
 #search-bar {
     height: 3;
-    background: $panel;
 }
 
-#mode-label {
-    width: 18;
-    content-align: center middle;
+#mode-toggle {
+    layout: horizontal;
+    height: 3;
+    width: auto;
+    border: none;
+}
+
+#mode-toggle RadioButton {
+    background: $panel;
+    color: $text-muted;
+    padding: 0 1;
+    height: 3;
+    width: auto;
+    border: none;
+}
+
+#mode-toggle RadioButton.-on {
     background: $primary;
     color: $text;
     text-style: bold;

@@ -28,6 +28,8 @@ BATCH_SIZE = 20
 class DocumentScreen(Screen):
     """Document view: metadata panel + page list."""
 
+    SUB_TITLE = "Document Browser"
+
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("escape", "go_back", "Back", show=True),
         Binding("o", "open_link", "Open", show=True),
