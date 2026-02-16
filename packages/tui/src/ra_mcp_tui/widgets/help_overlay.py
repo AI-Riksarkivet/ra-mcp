@@ -17,11 +17,13 @@ Keybindings
   Escape     Go back / Clear search
   m          Toggle search mode (Transcribed / Metadata)
   n / p      Next / Previous page of results
-  o          Open highlighted result in browser
+  o          Open in browser (works on all screens)
+  y          Copy reference code to clipboard
 
   n          Next page (in page viewer)
   p          Previous page (in page viewer)
-  y          Copy reference code to clipboard
+  c          Copy page text to clipboard
+  a          Copy ALTO XML URL to clipboard
 
   ?          Show this help
   q          Quit

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import webbrowser
 from typing import TYPE_CHECKING, ClassVar
 
 from textual.app import ComposeResult
@@ -28,7 +29,10 @@ class PageScreen(Screen):
         Binding("escape", "go_back", "Back", show=True),
         Binding("n", "next_page", "Next", show=True),
         Binding("p", "prev_page", "Prev", show=True),
+        Binding("o", "open_link", "Open", show=True),
         Binding("y", "copy_ref", "Copy Ref", show=True),
+        Binding("c", "copy_text", "Copy Text", show=True),
+        Binding("a", "copy_alto", "Copy ALTO", show=True),
     ]
 
     def __init__(
@@ -106,6 +110,14 @@ class PageScreen(Screen):
         elif event.state == WorkerState.ERROR:
             self.notify(f"Failed to load pages: {event.worker.error}", severity="error")
 
+    def action_open_link(self) -> None:
+        page = self._all_pages[self._current_index]
+        if page.bildvisning_url:
+            webbrowser.open(page.bildvisning_url)
+            self.notify(f"Opened: {page.bildvisning_url}")
+        else:
+            self.notify("No image link available for this page")
+
     def action_go_back(self) -> None:
         self.app.pop_screen()
 
@@ -113,3 +125,19 @@ class PageScreen(Screen):
         page = self._all_pages[self._current_index]
         self.app.copy_to_clipboard(page.reference_code)
         self.notify(f"Copied: {page.reference_code}")
+
+    def action_copy_text(self) -> None:
+        page = self._all_pages[self._current_index]
+        if page.full_text:
+            self.app.copy_to_clipboard(page.full_text)
+            self.notify(f"Copied page {page.page_number} text to clipboard")
+        else:
+            self.notify("No text available for this page")
+
+    def action_copy_alto(self) -> None:
+        page = self._all_pages[self._current_index]
+        if page.alto_url:
+            self.app.copy_to_clipboard(page.alto_url)
+            self.notify(f"Copied ALTO URL: {page.alto_url}")
+        else:
+            self.notify("No ALTO URL available for this page")

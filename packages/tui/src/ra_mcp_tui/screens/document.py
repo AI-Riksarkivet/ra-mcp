@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import webbrowser
 from typing import TYPE_CHECKING, ClassVar
 
 from textual.app import ComposeResult
@@ -29,6 +30,7 @@ class DocumentScreen(Screen):
 
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("escape", "go_back", "Back", show=True),
+        Binding("o", "open_link", "Open", show=True),
         Binding("y", "copy_ref", "Copy Ref", show=True),
     ]
 
@@ -116,6 +118,13 @@ class DocumentScreen(Screen):
                 reference_code=self._record.metadata.reference_code,
             )
         )
+
+    def action_open_link(self) -> None:
+        if self._record.links and self._record.links.html:
+            webbrowser.open(self._record.links.html)
+            self.notify(f"Opened: {self._record.links.html}")
+        else:
+            self.notify("No link available for this document")
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

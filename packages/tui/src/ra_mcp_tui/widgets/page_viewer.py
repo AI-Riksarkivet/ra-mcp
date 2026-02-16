@@ -30,8 +30,15 @@ class PageViewer(Widget):
         text = page.full_text if page.full_text else "(Empty page - no transcribed text)"
         self.query_one("#page-text", TextArea).text = text
 
-        links = f" Image: {page.bildvisning_url}" if page.bildvisning_url else ""
-        self.query_one("#page-links", Label).update(links)
+        parts = []
+        if page.bildvisning_url:
+            parts.append(f"o: open image")
+        if page.full_text:
+            parts.append("c: copy text")
+        if page.alto_url:
+            parts.append("a: copy ALTO")
+        parts.append("y: copy ref")
+        self.query_one("#page-links", Label).update(f" {' | '.join(parts)}")
 
     def show_loading(self, message: str = "Loading pages...") -> None:
         """Show loading indicator instead of content."""
