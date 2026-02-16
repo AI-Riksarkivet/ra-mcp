@@ -29,21 +29,28 @@ SearchBar {
     border: tall $primary;
 }
 
-/* Result list */
+/* Result table */
 ResultList {
     height: 1fr;
 }
 
-#result-listview {
+#result-table {
     height: 1fr;
 }
 
-#result-listview > ListItem {
-    padding: 0 1;
+#result-table > .datatable--header {
+    background: $panel;
+    color: $primary;
+    text-style: bold;
 }
 
-#result-listview > ListItem.-highlight {
-    background: $primary 20%;
+#result-table > .datatable--cursor {
+    background: $primary 25%;
+    color: $text;
+}
+
+#result-table > .datatable--hover {
+    background: $primary 12%;
 }
 
 #result-status {
@@ -69,21 +76,28 @@ MetadataPanel {
     color: $secondary;
 }
 
-/* Page list in document screen */
+/* Page table in document screen */
 PageList {
     height: 1fr;
 }
 
-#page-listview {
+#page-table {
     height: 1fr;
 }
 
-#page-listview > ListItem {
-    padding: 0 1;
+#page-table > .datatable--header {
+    background: $panel;
+    color: $primary;
+    text-style: bold;
 }
 
-#page-listview > ListItem.-highlight {
-    background: $primary 20%;
+#page-table > .datatable--cursor {
+    background: $primary 25%;
+    color: $text;
+}
+
+#page-table > .datatable--hover {
+    background: $primary 12%;
 }
 
 #page-status {
@@ -92,6 +106,12 @@ PageList {
     background: $panel;
     color: $accent;
     padding: 0 1;
+}
+
+/* Loading indicators */
+LoadingIndicator {
+    height: 1fr;
+    color: $primary;
 }
 
 /* Page viewer */

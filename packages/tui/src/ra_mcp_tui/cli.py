@@ -1,5 +1,6 @@
 """CLI entry point for the Riksarkivet TUI."""
 
+import logging
 from typing import Annotated
 
 import typer
@@ -25,6 +26,10 @@ def tui(
         ra tui "trolldom"        # Open with pre-filled search
         ra tui "Stockholm"       # Search for Stockholm on launch
     """
+    # Suppress all logging to prevent debug output from corrupting the TUI display.
+    # The HTTP client and other components log at INFO level to stderr by default.
+    logging.disable(logging.CRITICAL)
+
     from .app import RiksarkivetApp
 
     app = RiksarkivetApp(initial_keyword=keyword)

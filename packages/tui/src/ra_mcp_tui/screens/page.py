@@ -78,7 +78,7 @@ class PageScreen(Screen):
     def _load_more_pages(self) -> None:
         """Fetch the next batch of pages from the API."""
         self._loading = True
-        self.notify("Loading more pages...")
+        self.query_one(PageViewer).show_loading("Loading more pages...")
         start = self._max_requested_page + 1
         end = start + BATCH_SIZE - 1
         page_spec = f"{start}-{end}"
