@@ -46,6 +46,7 @@ class ArchiveService:
         return self._search.search(
             keyword=keyword,
             transcribed_only=False,
+            only_digitised=False,
             offset=offset,
             max_results=max_results,
         )

@@ -56,9 +56,11 @@ class ResultList(Widget):
         yield LoadingIndicator(id="result-loading")
         yield Tree("Results", id="result-tree")
         yield Label("", id="result-status")
+        yield Label("", id="result-note")
 
     def on_mount(self) -> None:
         self.query_one("#result-loading").display = False
+        self.query_one("#result-note", Label).display = False
         tree = self.query_one("#result-tree", Tree)
         tree.show_root = False
         tree.guide_depth = 3
@@ -199,6 +201,14 @@ class ResultList(Widget):
             self.query_one("#result-status", Label).update(f" {link}  (o to open)")
         else:
             self.query_one("#result-status", Label).update(self._status_text)
+        # Show note for highlighted record
+        note = self._note_from_node(node)
+        note_label = self.query_one("#result-note", Label)
+        if note:
+            note_label.update(note)
+            note_label.display = True
+        else:
+            note_label.display = False
 
     @staticmethod
     def _ref_from_node(node: TreeNode) -> str | None:
@@ -206,6 +216,14 @@ class ResultList(Widget):
             return node.data.metadata.reference_code
         if isinstance(node.data, _SnippetNode):
             return node.data.record.metadata.reference_code
+        return None
+
+    @staticmethod
+    def _note_from_node(node: TreeNode) -> str | None:
+        if isinstance(node.data, SearchRecord):
+            return node.data.metadata.note
+        if isinstance(node.data, _SnippetNode):
+            return node.data.record.metadata.note
         return None
 
     def get_highlighted_record(self) -> SearchRecord | None:

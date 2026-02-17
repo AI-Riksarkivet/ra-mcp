@@ -63,6 +63,15 @@ ResultList {
     background: $primary 12%;
 }
 
+#result-note {
+    dock: bottom;
+    height: auto;
+    max-height: 3;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+}
+
 #result-status {
     dock: bottom;
     height: 1;
