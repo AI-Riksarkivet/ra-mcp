@@ -54,12 +54,14 @@ class ResultList(Widget):
 
     def compose(self) -> ComposeResult:
         yield LoadingIndicator(id="result-loading")
+        yield Label("", id="no-results")
         yield Tree("Results", id="result-tree")
         yield Label("", id="result-status")
         yield Label("", id="result-note")
 
     def on_mount(self) -> None:
         self.query_one("#result-loading").display = False
+        self.query_one("#no-results", Label).display = False
         self.query_one("#result-note", Label).display = False
         tree = self.query_one("#result-tree", Tree)
         tree.show_root = False
@@ -70,8 +72,17 @@ class ResultList(Widget):
         self._records = records
         self.query_one("#result-loading").display = False
         tree = self.query_one("#result-tree", Tree)
-        tree.display = True
+        no_results = self.query_one("#no-results", Label)
         tree.clear()
+        if not records:
+            tree.display = False
+            no_results.update(f"No results found for '{keyword}'\n\nTry different keywords, wildcards (e.g. troll*), or switch search mode (m)")
+            no_results.display = True
+            self._status_text = ""
+            self.query_one("#result-status", Label).update("")
+            return
+        no_results.display = False
+        tree.display = True
         self._build_tree(tree, records)
         start = offset + 1
         end = offset + len(records)
@@ -176,6 +187,7 @@ class ResultList(Widget):
     def show_loading(self, keyword: str) -> None:
         """Show loading state with animated indicator."""
         self.query_one("#result-tree", Tree).display = False
+        self.query_one("#no-results", Label).display = False
         self.query_one("#result-loading").display = True
         status = self.query_one("#result-status", Label)
         status.update(f" Searching for '{keyword}'...")

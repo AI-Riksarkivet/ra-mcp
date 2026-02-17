@@ -50,6 +50,13 @@ ResultList {
     height: 1fr;
 }
 
+#no-results {
+    width: 1fr;
+    height: 1fr;
+    content-align: center middle;
+    color: $text-muted;
+}
+
 #result-tree > .tree--cursor {
     background: $primary 25%;
     color: $text;
