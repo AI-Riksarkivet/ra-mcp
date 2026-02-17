@@ -31,6 +31,7 @@ class SearchScreen(Screen):
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("slash", "focus_search", "Search", show=True),
         Binding("m", "toggle_mode", "Mode", show=True),
+        Binding("d", "open_document", "Document", show=True),
         Binding("n", "next_page", "Next Page", show=True),
         Binding("p", "prev_page", "Prev Page", show=True),
         Binding("o", "open_link", "Open", show=True),
@@ -120,10 +121,14 @@ class SearchScreen(Screen):
             self._snippet_record = None
             self.notify(f"Failed to load page: {event.worker.error}", severity="error")
 
-    def on_result_list_selected(self, event: ResultList.Selected) -> None:
+    def action_open_document(self) -> None:
         from .document import DocumentScreen
 
-        self.app.push_screen(DocumentScreen(record=event.record, keyword=self._current_keyword))
+        record = self.query_one(ResultList).get_highlighted_record()
+        if record:
+            self.app.push_screen(DocumentScreen(record=record, keyword=self._current_keyword))
+        else:
+            self.notify("No document selected")
 
     def on_result_list_snippet_selected(self, event: ResultList.SnippetSelected) -> None:
         self._snippet_record = event.record

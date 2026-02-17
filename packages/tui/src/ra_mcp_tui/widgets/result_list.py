@@ -39,13 +39,6 @@ class _SnippetNode:
 class ResultList(Widget):
     """Displays search results as a tree grouped by reference code segments."""
 
-    class Selected(Message):
-        """Fired when a record node is selected."""
-
-        def __init__(self, record: SearchRecord) -> None:
-            super().__init__()
-            self.record = record
-
     class SnippetSelected(Message):
         """Fired when a snippet node is selected (navigates to a specific page)."""
 
@@ -103,10 +96,7 @@ class ResultList(Widget):
                         parent = tree.root
                     node_data = self._node_metadata(record, depth)
                     segment = parts[depth]
-                    if node_data and node_data.caption:
-                        label = f"{segment}  {node_data.caption}"
-                    else:
-                        label = segment
+                    label = node_data.caption if node_data and node_data.caption else segment
                     path_nodes[path_key] = parent.add(label, data=node_data)
 
             # Add record node (branch so snippets can be children)
@@ -114,11 +104,11 @@ class ResultList(Widget):
             parent = path_nodes.get(parent_key) if parent_key else tree.root
             if parent is None:
                 parent = tree.root
-            title = self._truncate(record.get_title(), 40)
+            title = self._truncate(record.get_title(), 50)
             hits = record.get_total_hits()
             date = record.metadata.date or ""
             date_str = f"  ({date})" if date else ""
-            label = f"{parts[-1]}  {title}{date_str}  [{hits} hits]"
+            label = f"{title}{date_str}  [{hits} hits]"
             record_node = parent.add(label, data=record)
 
             # Add snippet leaves under the record node
@@ -159,8 +149,11 @@ class ResultList(Widget):
         Depth mapping (ref code ``SE/RA/420422/01/...``):
         - 0 (SE)  → country code, no metadata
         - 1 (RA)  → archival_institution
-        - 2+      → hierarchy[depth - 2]
+        - 2       → hierarchy[0] or provenance (archive/fond level)
+        - 3+      → hierarchy[depth - 2]
         """
+        if depth == 0:
+            return None
         if depth == 1 and record.metadata.archival_institution:
             inst = record.metadata.archival_institution[0]
             return _ArchiveNode(uri=inst.uri, caption=inst.caption)
@@ -168,6 +161,10 @@ class ResultList(Widget):
         if hierarchy_idx >= 0 and record.metadata.hierarchy and hierarchy_idx < len(record.metadata.hierarchy):
             h = record.metadata.hierarchy[hierarchy_idx]
             return _ArchiveNode(uri=h.uri, caption=h.caption)
+        # Fallback: use provenance for the archive level when hierarchy is missing
+        if depth == 2 and record.metadata.provenance:
+            prov = record.metadata.provenance[0]
+            return _ArchiveNode(uri=prov.uri, caption=prov.caption)
         return None
 
     @staticmethod
@@ -191,18 +188,36 @@ class ResultList(Widget):
         status.update(f" Error: {message}")
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
-        link = self._link_from_node(event.node)
-        if link:
+        node = event.node
+        ref = self._ref_from_node(node)
+        link = self._link_from_node(node)
+        if ref and link:
+            self.query_one("#result-status", Label).update(f" {ref}  {link}  (o to open)")
+        elif ref:
+            self.query_one("#result-status", Label).update(f" {ref}")
+        elif link:
             self.query_one("#result-status", Label).update(f" {link}  (o to open)")
         else:
             self.query_one("#result-status", Label).update(self._status_text)
 
+    @staticmethod
+    def _ref_from_node(node: TreeNode) -> str | None:
+        if isinstance(node.data, SearchRecord):
+            return node.data.metadata.reference_code
+        if isinstance(node.data, _SnippetNode):
+            return node.data.record.metadata.reference_code
+        return None
+
     def get_highlighted_record(self) -> SearchRecord | None:
-        """Return the currently highlighted record (leaf nodes only)."""
+        """Return the record for the currently highlighted node."""
         tree = self.query_one("#result-tree", Tree)
         node = tree.cursor_node
-        if node is not None and isinstance(node.data, SearchRecord):
+        if node is None:
+            return None
+        if isinstance(node.data, SearchRecord):
             return node.data
+        if isinstance(node.data, _SnippetNode):
+            return node.data.record
         return None
 
     def get_highlighted_link(self) -> str | None:
@@ -226,9 +241,7 @@ class ResultList(Widget):
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         node = event.node
-        if isinstance(node.data, SearchRecord):
-            self.post_message(self.Selected(record=node.data))
-        elif isinstance(node.data, _SnippetNode):
+        if isinstance(node.data, _SnippetNode):
             self.post_message(self.SnippetSelected(record=node.data.record, page_number=node.data.page_number))
 
 
