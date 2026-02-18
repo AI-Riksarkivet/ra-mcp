@@ -9,7 +9,7 @@ import (
 // Serve starts the RA-MCP server as a service
 func (m *RaMcp) Serve(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -40,7 +40,7 @@ func (m *RaMcp) Serve(
 // TestServer builds and starts the server, then runs a health check
 func (m *RaMcp) TestServer(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -76,7 +76,7 @@ func (m *RaMcp) TestServer(
 // ServeUp builds and exposes the server on the host for manual testing
 func (m *RaMcp) ServeUp(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,

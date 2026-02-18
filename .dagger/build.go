@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// BuildLocal builds using Dockerfile from a local directory with custom environment variables
+// BuildLocal builds using .docker/ra-mcp.dockerfile from a local directory with custom environment variables
 func (m *RaMcp) BuildLocal(
 	ctx context.Context,
 	// Local directory to build from
@@ -43,7 +43,7 @@ func (m *RaMcp) BuildLocal(
 
 	container := dag.Container().
 		Build(source, dagger.ContainerBuildOpts{
-			Dockerfile: "Dockerfile",
+			Dockerfile: ".docker/ra-mcp.dockerfile",
 			BuildArgs:  buildArgs,
 		})
 
@@ -53,7 +53,7 @@ func (m *RaMcp) BuildLocal(
 // Build creates a production-ready container image using default settings
 func (m *RaMcp) Build(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	source *dagger.Directory,
 	// Base image for builder and production stages

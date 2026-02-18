@@ -9,7 +9,7 @@ import (
 // Scan performs container vulnerability scanning using Trivy
 func (m *RaMcp) Scan(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -62,7 +62,7 @@ func (m *RaMcp) Scan(
 // ScanJson performs vulnerability scanning and returns JSON output
 func (m *RaMcp) ScanJson(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -77,7 +77,7 @@ func (m *RaMcp) ScanJson(
 // Fails build if CRITICAL or HIGH vulnerabilities are found
 func (m *RaMcp) ScanCi(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -92,7 +92,7 @@ func (m *RaMcp) ScanCi(
 // ScanSarif generates SARIF output for GitHub Security tab integration
 func (m *RaMcp) ScanSarif(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -125,7 +125,7 @@ func (m *RaMcp) ScanSarif(
 // GenerateSbom generates Software Bill of Materials (SBOM) for the container
 func (m *RaMcp) GenerateSbom(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -166,7 +166,7 @@ func (m *RaMcp) GenerateSbom(
 // GenerateSbomSpdx generates SPDX-format SBOM
 func (m *RaMcp) GenerateSbomSpdx(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -181,7 +181,7 @@ func (m *RaMcp) GenerateSbomSpdx(
 // GenerateSbomCycloneDx generates CycloneDX-format SBOM
 func (m *RaMcp) GenerateSbomCycloneDx(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
@@ -196,7 +196,7 @@ func (m *RaMcp) GenerateSbomCycloneDx(
 // ExportSbom generates and exports SBOM to a local file
 func (m *RaMcp) ExportSbom(
 	ctx context.Context,
-	// Source directory containing Dockerfile and application code
+	// Source directory containing .docker/ and application code
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
