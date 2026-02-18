@@ -125,7 +125,7 @@ class RichConsoleFormatter:
         """Build the left column string with institution, reference, pages, and date."""
         institution_and_ref = ""
         if document.metadata.archival_institution:
-            institution = document.metadata.archival_institution[0].caption
+            institution = document.metadata.archival_institution[0].caption or ""
             institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
         if document.transcribed_text and document.transcribed_text.snippets:
@@ -167,14 +167,14 @@ class RichConsoleFormatter:
         content_parts.append(f"[yellow]🏷️  {type_info}[/yellow]")
 
         if document.metadata.hierarchy:
-            hierarchy_parts = [h.caption for h in document.metadata.hierarchy]
+            hierarchy_parts = [h.caption or "" for h in document.metadata.hierarchy]
             if hierarchy_parts:
                 hierarchy_text = " → ".join(hierarchy_parts[:3])
                 content_parts.append(f"[cyan]📂 {truncate_text(hierarchy_text, 150)}[/cyan]")
 
         if document.metadata.provenance:
             prov = document.metadata.provenance[0]
-            prov_text = prov.caption
+            prov_text = prov.caption or ""
             if prov.date:
                 prov_text += f" ({prov.date})"
             content_parts.append(f"[green]👤 {truncate_text(prov_text, 100)}[/green]")
@@ -286,7 +286,7 @@ class RichConsoleFormatter:
             return []
 
         lines = []
-        ref_code = first_doc.metadata.reference_code
+        ref_code = first_doc.metadata.reference_code or ""
 
         # Extract page numbers from snippets
         if first_doc.transcribed_text and first_doc.transcribed_text.snippets:

@@ -181,7 +181,7 @@ class PlainTextFormatter:
 
         # Show "100+" if we hit the max limit, indicating more are available
         document_count = len(search_result.items)
-        if document_count >= search_result.max:
+        if document_count >= search_result.limit:
             document_display = f"{document_count}+"
         else:
             document_display = str(document_count)

@@ -74,7 +74,7 @@ class DocumentScreen(Screen):
         self._loading = True
         page_spec = f"{start}-{end}"
         service = self._service.service
-        ref_code = self._record.metadata.reference_code
+        ref_code = self._record.metadata.reference_code or ""
         keyword = self._keyword
         self._browse_worker = self.run_worker(
             lambda: service.browse_document(reference_code=ref_code, pages=page_spec, highlight_term=keyword),
@@ -117,7 +117,7 @@ class DocumentScreen(Screen):
                 page=event.page,
                 all_pages=event.all_pages,
                 keyword=self._keyword,
-                reference_code=self._record.metadata.reference_code,
+                reference_code=self._record.metadata.reference_code or "",
             )
         )
 
@@ -132,5 +132,6 @@ class DocumentScreen(Screen):
         self.app.pop_screen()
 
     def action_copy_ref(self) -> None:
-        self.app.copy_to_clipboard(self._record.metadata.reference_code)
-        self.notify(f"Copied: {self._record.metadata.reference_code}")
+        ref = self._record.metadata.reference_code or ""
+        self.app.copy_to_clipboard(ref)
+        self.notify(f"Copied: {ref}")

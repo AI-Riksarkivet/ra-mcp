@@ -41,6 +41,16 @@ SearchBar {
     border: tall $primary;
 }
 
+#limit-input {
+    width: 8;
+    background: $surface;
+    border: tall $primary 30%;
+}
+
+#limit-input:focus {
+    border: tall $primary;
+}
+
 /* Result tree */
 ResultList {
     height: 1fr;

@@ -21,16 +21,16 @@ class MetadataPanel(Widget):
     def set_from_record(self, record: SearchRecord) -> None:
         """Populate metadata from a search record."""
         lines = [
-            f"Reference: {record.metadata.reference_code}",
+            f"Reference: {record.metadata.reference_code or 'N/A'}",
             f"Title:     {record.get_title()}",
         ]
         if record.metadata.date:
             lines.append(f"Date:      {record.metadata.date}")
         if record.metadata.provenance:
-            prov = ", ".join(p.caption for p in record.metadata.provenance)
+            prov = ", ".join(p.caption or "" for p in record.metadata.provenance)
             lines.append(f"Provenance: {prov}")
         if record.metadata.archival_institution:
-            inst = ", ".join(i.caption for i in record.metadata.archival_institution)
+            inst = ", ".join(i.caption or "" for i in record.metadata.archival_institution)
             lines.append(f"Institution: {inst}")
         self._text = "\n".join(lines)
         self.query_one("#metadata-content", Static).update(self._text)

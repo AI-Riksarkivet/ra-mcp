@@ -26,21 +26,21 @@ class ArchiveService:
         self,
         keyword: str,
         offset: int = 0,
-        max_results: int = 25,
+        limit: int = 25,
     ) -> SearchResult:
         """Search transcribed document text."""
         return self._search.search(
             keyword=keyword,
             transcribed_only=True,
             offset=offset,
-            max_results=max_results,
+            limit=limit,
         )
 
     def search_metadata(
         self,
         keyword: str,
         offset: int = 0,
-        max_results: int = 25,
+        limit: int = 25,
     ) -> SearchResult:
         """Search document metadata (titles, names, places)."""
         return self._search.search(
@@ -48,7 +48,7 @@ class ArchiveService:
             transcribed_only=False,
             only_digitised=False,
             offset=offset,
-            max_results=max_results,
+            limit=limit,
         )
 
     def browse_document(

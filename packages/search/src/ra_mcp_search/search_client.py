@@ -11,7 +11,7 @@ from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
-from ra_mcp_search.config import DEFAULT_MAX_RESULTS, REQUEST_TIMEOUT, SEARCH_API_BASE_URL
+from ra_mcp_search.config import DEFAULT_LIMIT, REQUEST_TIMEOUT, SEARCH_API_BASE_URL
 from ra_mcp_search.models import RecordsResponse
 
 
@@ -35,7 +35,7 @@ class SearchClient:
         text: str | None = None,
         transcribed_text: str | None = None,
         only_digitised_materials: bool = True,
-        max_results: int = DEFAULT_MAX_RESULTS,
+        limit: int = DEFAULT_LIMIT,
         offset: int = 0,
         max_snippets_per_record: int | None = None,
         sort: str = "relevance",
@@ -53,8 +53,8 @@ class SearchClient:
         Args:
             text: General free-text search across all fields
             transcribed_text: Search specifically in AI-transcribed text (requires only_digitised_materials=True)
-            only_digitised_materials: Limit results to digitized materials (default: True)
-            max_results: Maximum number of records to return
+            only_digitised_materials: Limit results to digitised materials (default: True, API default: False)
+            limit: Maximum number of records to return
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
             sort: Sort order — one of: relevance, timeAsc, timeDesc, alphaAsc, alphaDesc
@@ -80,7 +80,7 @@ class SearchClient:
 
         search_term = transcribed_text or text
         search_type = "transcribed" if transcribed_text else "general"
-        self.logger.info("Starting %s search: keyword='%s', max=%d, offset=%d", search_type, search_term, max_results, offset)
+        self.logger.info("Starting %s search: keyword='%s', limit=%d, offset=%d", search_type, search_term, limit, offset)
 
         with _tracer.start_as_current_span(
             "SearchClient.search",
@@ -88,13 +88,13 @@ class SearchClient:
                 "search.type": search_type,
                 "search.keyword": search_term or "",
                 "search.offset": offset,
-                "search.max_results": max_results,
+                "search.limit": limit,
             },
         ) as span:
             try:
                 # Build search parameters
                 params = {
-                    "max": max_results,
+                    "limit": limit,
                     "offset": offset,
                     "sort": sort,
                 }
@@ -142,7 +142,7 @@ class SearchClient:
     def search_transcribed_text(
         self,
         transcribed_text: str,
-        max_results: int = DEFAULT_MAX_RESULTS,
+        limit: int = DEFAULT_LIMIT,
         offset: int = 0,
         max_snippets_per_record: int | None = None,
     ) -> RecordsResponse:
@@ -153,7 +153,7 @@ class SearchClient:
 
         Args:
             transcribed_text: Search term or Solr query (API parameter name)
-            max_results: Maximum number of records to return
+            limit: Maximum number of records to return
             offset: Pagination offset (API parameter name)
             max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
 
@@ -163,7 +163,7 @@ class SearchClient:
         return self.search(
             transcribed_text=transcribed_text,
             only_digitised_materials=True,
-            max_results=max_results,
+            limit=limit,
             offset=offset,
             max_snippets_per_record=max_snippets_per_record,
         )
@@ -175,5 +175,5 @@ class SearchClient:
         Modifies the response in-place to keep only the first N snippets per record.
         """
         for record in response.items:
-            if record.transcribed_text:
+            if record.transcribed_text and record.transcribed_text.snippets:
                 record.transcribed_text.snippets = record.transcribed_text.snippets[:max_snippets]

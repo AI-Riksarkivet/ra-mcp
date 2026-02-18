@@ -152,7 +152,7 @@ class RichConsoleFormatter:
             # Build institution and reference column
             institution_and_ref = ""
             if document.metadata.archival_institution:
-                institution = document.metadata.archival_institution[0].caption
+                institution = document.metadata.archival_institution[0].caption or ""
                 institution_and_ref = f"🏛️  {truncate_text(institution, 30)}\n"
 
             # Extract unique page numbers from all snippets
@@ -277,7 +277,7 @@ class RichConsoleFormatter:
             return []
 
         lines = []
-        ref_code = first_doc.metadata.reference_code
+        ref_code = first_doc.metadata.reference_code or ""
 
         # Extract page numbers from snippets
         if first_doc.transcribed_text and first_doc.transcribed_text.snippets:

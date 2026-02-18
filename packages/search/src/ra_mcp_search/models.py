@@ -16,25 +16,14 @@ from pydantic import BaseModel, ConfigDict, Field
 # ============================================================================
 
 
-class ArchivalInstitution(BaseModel):
-    """Archival institution information."""
+class GenericReference(BaseModel):
+    """Generic reference (archival institution, hierarchy level, provenance).
 
-    caption: str
-    uri: str
+    Maps to the GenericReference type in the Swagger spec. All fields are nullable.
+    """
 
-
-class HierarchyLevel(BaseModel):
-    """Hierarchy level in archival structure."""
-
-    caption: str
-    uri: str
-
-
-class Provenance(BaseModel):
-    """Provenance information."""
-
-    caption: str
-    uri: str | None = None  # URI is optional in some API responses
+    caption: str | None = None
+    uri: str | None = None
     date: str | None = None
 
 
@@ -43,38 +32,51 @@ class Metadata(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    reference_code: str = Field(alias="referenceCode")
+    reference_code: str | None = Field(None, alias="referenceCode")
     date: str | None = None
-    hierarchy: list[HierarchyLevel] | None = None
-    archival_institution: list[ArchivalInstitution] | None = Field(None, alias="archivalInstitution")
-    provenance: list[Provenance] | None = None
+    hierarchy: list[GenericReference] | None = None
+    part_of: list[GenericReference] | None = Field(None, alias="partOf")
+    archival_institution: list[GenericReference] | None = Field(None, alias="archivalInstitution")
+    provenance: list[GenericReference] | None = None
     note: str | None = None
     only_digitised_materials: bool | None = Field(None, alias="onlyDigitisedMaterials")
 
 
 class PageInfo(BaseModel):
-    """Page information from snippet."""
+    """Page information from snippet.
 
-    id: str
+    Note: id is marked nullable in the Swagger spec but is always present
+    in search results. We default to "" for safety.
+    """
+
+    id: str = ""
     width: int | None = None
     height: int | None = None
 
 
 class Snippet(BaseModel):
-    """Text snippet with search match."""
+    """Text snippet with search match.
 
-    text: str
-    score: float
-    pages: list[PageInfo]
+    Note: text and pages are marked nullable in the Swagger spec but are
+    always present in search results. We use safe defaults.
+    """
+
+    text: str = ""
+    score: float = 0.0
+    pages: list[PageInfo] = Field(default_factory=list)
     regions: list[Any] | None = None
     highlights: list[Any] | None = None
 
 
 class TranscribedText(BaseModel):
-    """Transcribed text information."""
+    """Transcribed text information.
+
+    Note: snippets is marked nullable in the Swagger spec but is always
+    present (possibly empty) in search results.
+    """
 
     num_total: int = Field(alias="numTotal")
-    snippets: list[Snippet]
+    snippets: list[Snippet] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -98,7 +100,7 @@ class SearchRecord(BaseModel):
 
     id: str
     object_type: str = Field(alias="objectType")
-    type: str
+    type: str | None = None
     caption: str | None = None
     metadata: Metadata
     transcribed_text: TranscribedText | None = Field(None, alias="transcribedText")
@@ -165,7 +167,7 @@ class SearchResult(BaseModel):
 
     response: RecordsResponse
     transcribed_text: str  # Search keyword (API parameter name)
-    max: int  # Maximum results per page (API parameter name)
+    limit: int  # Maximum results per page (API parameter name)
     offset: int  # Pagination offset (API parameter name)
     max_snippets_per_record: int | None = None  # Client-side snippet limiting (not an API parameter)
 

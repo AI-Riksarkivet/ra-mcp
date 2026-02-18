@@ -10,7 +10,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
-from ra_mcp_search.config import DEFAULT_MAX_DISPLAY, DEFAULT_MAX_RESULTS
+from ra_mcp_search.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY
 from ra_mcp_search.search_operations import SearchOperations
 
 from .formatting import RichConsoleFormatter
@@ -31,7 +31,7 @@ def search(
         str,
         typer.Argument(help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"),
     ],
-    max_results: Annotated[int, typer.Option("--max", help="Maximum number of records to fetch from API (pagination size)")] = DEFAULT_MAX_RESULTS,
+    limit: Annotated[int, typer.Option("--limit", help="Maximum number of records to fetch from API (pagination size)")] = DEFAULT_LIMIT,
     max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of records to display in output")] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
         int | None,
@@ -67,7 +67,7 @@ def search(
         ra search "Stockholm" --text                                # text + only_digitised_materials
         ra search "Stockholm" --include-all-materials               # text + all materials (auto-switches)
         ra search "Stockholm" --max-hits-per-vol 2                  # Limit hits per volume
-        ra search "Stockholm" --max 100 --max-hits-per-vol 1        # Many volumes, 1 hit each
+        ra search "Stockholm" --limit 100 --max-hits-per-vol 1       # Many volumes, 1 hit each
         ra search "Stockholm" --log                                 # With API logging
     """
     http_client = get_http_client(log)
@@ -101,7 +101,7 @@ def search(
                     keyword=keyword,
                     transcribed_only=transcribed_only,
                     only_digitised=only_digitised,
-                    max_results=max_results,
+                    limit=limit,
                     max_snippets_per_record=max_snippets_per_record,
                 )
 
@@ -116,7 +116,7 @@ def search(
                     records_count=records_count,
                     total_hits=search_result.response.total_hits,
                     offset=search_result.offset,
-                    max_requested=search_result.max,
+                    max_requested=search_result.limit,
                 ),
                 console,
             )

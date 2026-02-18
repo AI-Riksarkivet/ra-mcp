@@ -94,11 +94,11 @@ class ResultList(Widget):
         self.query_one("#result-status", Label).update(self._status_text)
 
     def _build_tree(self, tree: Tree, records: list[SearchRecord]) -> None:
-        sorted_records = sorted(records, key=lambda r: r.metadata.reference_code)
+        sorted_records = sorted(records, key=lambda r: r.metadata.reference_code or "")
         path_nodes: dict[tuple[str, ...], TreeNode] = {}
 
         for record in sorted_records:
-            parts = record.metadata.reference_code.split("/")
+            parts = (record.metadata.reference_code or "").split("/")
             # Create/find intermediate nodes with hierarchy metadata
             for depth in range(len(parts) - 1):
                 path_key = tuple(parts[: depth + 1])

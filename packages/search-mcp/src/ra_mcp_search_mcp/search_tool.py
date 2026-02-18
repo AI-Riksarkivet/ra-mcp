@@ -131,7 +131,7 @@ def register_search_tool(mcp) -> None:
     Parameters:
     - keyword: Search term or Solr query (required)
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - max_results: Maximum documents to return per query (default: 25)
+    - limit: Maximum documents to return per query (default: 25)
     - max_snippets_per_record: Maximum matching pages per document (default: 3)
     - max_response_tokens: Maximum tokens in response (default: 15000)
     - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
@@ -158,7 +158,7 @@ def register_search_tool(mcp) -> None:
     async def search_transcribed(
         keyword: str,
         offset: int,
-        max_results: int = 25,
+        limit: int = 25,
         max_snippets_per_record: int = 3,
         max_response_tokens: int = 15000,
         sort: str = "relevance",
@@ -192,7 +192,7 @@ def register_search_tool(mcp) -> None:
                 transcribed_only=True,  # Always search transcribed text
                 only_digitised=True,  # Transcriptions only exist for digitised materials
                 offset=offset,
-                max_results=max_results,
+                limit=limit,
                 max_snippets_per_record=max_snippets_per_record,
                 sort=sort,
                 year_min=year_min,
@@ -208,7 +208,7 @@ def register_search_tool(mcp) -> None:
             logger.info("Formatting %d search results...", len(search_result.items))
             formatted_results = formatter.format_search_results(
                 search_result,
-                maximum_documents_to_display=max_results,
+                maximum_documents_to_display=limit,
                 seen_pages=seen,
             )
 
@@ -219,7 +219,7 @@ def register_search_tool(mcp) -> None:
                 logger.info("[search_transcribed] Dedup state saved: %d documents now tracked", len(updated))
 
             formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
-            formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
+            formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, limit)
 
             logger.info("✓ Search completed successfully, returning results")
             return formatted_results
@@ -232,7 +232,7 @@ def register_search_tool(mcp) -> None:
                 error_suggestions=[
                     "Try a simpler search term",
                     "Check if the service is available",
-                    "Reduce max_results",
+                    "Reduce limit",
                     "Check Hugging Face logs for timeout details",
                 ],
             )
@@ -267,7 +267,7 @@ def register_search_tool(mcp) -> None:
     - keyword: General free-text search across all metadata fields (maps to the API 'text' parameter). Required.
     - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
     - only_digitised: Limit to digitised materials (True) or include all records (False) (default: True)
-    - max_results: Maximum documents to return per query (default: 25)
+    - limit: Maximum documents to return per query (default: 25)
     - max_response_tokens: Maximum tokens in response (default: 15000)
     - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
     - year_min: Optional start year to filter results (e.g. 1700)
@@ -301,7 +301,7 @@ def register_search_tool(mcp) -> None:
         keyword: str,
         offset: int,
         only_digitised: bool = True,
-        max_results: int = 25,
+        limit: int = 25,
         max_response_tokens: int = 15000,
         sort: str = "relevance",
         year_min: int | None = None,
@@ -337,7 +337,7 @@ def register_search_tool(mcp) -> None:
                 transcribed_only=False,  # Search metadata fields
                 only_digitised=only_digitised,
                 offset=offset,
-                max_results=max_results,
+                limit=limit,
                 max_snippets_per_record=None,  # Metadata search doesn't have snippets
                 sort=sort,
                 year_min=year_min,
@@ -355,7 +355,7 @@ def register_search_tool(mcp) -> None:
             logger.info("Formatting %d search results...", len(search_result.items))
             formatted_results = formatter.format_search_results(
                 search_result,
-                maximum_documents_to_display=max_results,
+                maximum_documents_to_display=limit,
                 seen_pages=seen,
             )
 
@@ -366,7 +366,7 @@ def register_search_tool(mcp) -> None:
                 logger.info("[search_metadata] Dedup state saved: %d documents now tracked", len(updated))
 
             formatted_results = _apply_token_limit_if_needed(formatted_results, max_response_tokens)
-            formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results)
+            formatted_results = _append_pagination_info_if_needed(formatted_results, search_result, offset, limit)
 
             logger.info("✓ Metadata search completed successfully, returning results")
             return formatted_results
@@ -379,7 +379,7 @@ def register_search_tool(mcp) -> None:
                 error_suggestions=[
                     "Try a simpler search term",
                     "Check if the service is available",
-                    "Reduce max_results",
+                    "Reduce limit",
                     "Try with only_digitised=True for faster results",
                 ],
             )
@@ -446,13 +446,13 @@ def _get_pagination_info(search_hits, total_hit_count, pagination_offset, result
     return pagination_metadata
 
 
-def _append_pagination_info_if_needed(formatted_results, search_result, offset, max_results) -> str:
+def _append_pagination_info_if_needed(formatted_results, search_result, offset, limit) -> str:
     """Append pagination information to results if there are more results available."""
-    pagination_info = _get_pagination_info(search_result.items, search_result.response.total_hits, offset, max_results)
+    pagination_info = _get_pagination_info(search_result.items, search_result.response.total_hits, offset, limit)
 
     if pagination_info["has_more"]:
         formatted_results += f"\n\n📊 **Pagination**: Showing documents {pagination_info['document_range_start']}-{pagination_info['document_range_end']}"
-        formatted_results += f"\n💡 Use `offset={pagination_info['next_offset']}` to see the next {max_results} documents"
+        formatted_results += f"\n💡 Use `offset={pagination_info['next_offset']}` to see the next {limit} documents"
 
     return formatted_results
 
@@ -469,7 +469,7 @@ def _update_seen_search_state(seen: dict[str, list[int]], search_result, max_dis
     Documents without snippets (metadata-only) are recorded with an empty list.
     """
     for document in search_result.items[:max_displayed]:
-        ref_code = document.metadata.reference_code
+        ref_code = document.metadata.reference_code or document.id
         existing = set(seen.get(ref_code, []))
 
         if document.transcribed_text and document.transcribed_text.snippets:
