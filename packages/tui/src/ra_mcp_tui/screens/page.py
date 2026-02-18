@@ -51,7 +51,9 @@ class PageScreen(Screen):
         self._current_index = next((i for i, p in enumerate(all_pages) if p.page_number == page.page_number), 0)
         self._loading = False
         self._load_worker: Worker[BrowseResult] | None = None
+        self._load_direction: str = "next"
         self._max_requested_page = max(p.page_number for p in all_pages) if all_pages else BATCH_SIZE
+        self._min_requested_page = min(p.page_number for p in all_pages) if all_pages else 1
 
     @property
     def _service(self) -> RiksarkivetApp:
@@ -80,13 +82,32 @@ class PageScreen(Screen):
         if self._current_index > 0:
             self._current_index -= 1
             self._show_current_page()
+        elif not self._loading and self._min_requested_page > 1:
+            self._load_previous_pages()
 
     def _load_more_pages(self) -> None:
         """Fetch the next batch of pages from the API."""
         self._loading = True
+        self._load_direction = "next"
         self.query_one(PageViewer).show_loading("Loading more pages...")
         start = self._max_requested_page + 1
         end = start + BATCH_SIZE - 1
+        page_spec = f"{start}-{end}"
+        service = self._service.service
+        ref_code = self._reference_code
+        keyword = self._keyword
+        self._load_worker = self.run_worker(
+            lambda: service.browse_document(reference_code=ref_code, pages=page_spec, highlight_term=keyword),
+            thread=True,
+        )
+
+    def _load_previous_pages(self) -> None:
+        """Fetch the previous batch of pages from the API."""
+        self._loading = True
+        self._load_direction = "prev"
+        self.query_one(PageViewer).show_loading("Loading previous pages...")
+        end = self._min_requested_page - 1
+        start = max(1, end - BATCH_SIZE + 1)
         page_spec = f"{start}-{end}"
         service = self._service.service
         ref_code = self._reference_code
@@ -103,9 +124,14 @@ class PageScreen(Screen):
         if event.state == WorkerState.SUCCESS:
             result: BrowseResult = event.worker.result  # type: ignore[assignment]
             if result.contexts:
-                self._all_pages.extend(result.contexts)
-                self._max_requested_page = max(p.page_number for p in result.contexts)
-                self._current_index += 1
+                if self._load_direction == "prev":
+                    self._all_pages = result.contexts + self._all_pages
+                    self._min_requested_page = min(p.page_number for p in result.contexts)
+                    self._current_index = len(result.contexts) - 1
+                else:
+                    self._all_pages.extend(result.contexts)
+                    self._max_requested_page = max(p.page_number for p in result.contexts)
+                    self._current_index = len(self._all_pages) - len(result.contexts)
                 self._show_current_page()
             else:
                 self.notify("No more pages in this document")
