@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/logo-rm-bg.png" alt="RA-MCP Logo" width="350">
+  <img src="https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/docs/assets/logo-rm-bg.png" alt="RA-MCP Logo" width="350">
 </div>
 
 
@@ -64,7 +64,7 @@ ra search "((Stockholm OR Göteborg) AND troll*)"
 ra browse "SE/RA/310187/1" --pages "7,8,52" --search-term "trolldom"
 ```
 
-See [packages/search-cli](packages/search-cli/) and [packages/browse-cli](packages/browse-cli/) for full syntax and search operators.
+See [packages/search-cli](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/packages/search-cli) and [packages/browse-cli](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/packages/browse-cli) for full syntax and search operators.
 
 ## Architecture
 
@@ -73,14 +73,14 @@ The project is a **uv workspace** with eight modular packages plus a root server
 | Package | Purpose | README |
 |---------|---------|--------|
 | **ra-mcp** (root) | Server composition and Typer CLI entry point | — |
-| **ra-mcp-common** | Shared HTTP client, telemetry helpers | [README](packages/common/README.md) |
-| **ra-mcp-search** | Search domain: models, API client, operations | [README](packages/search/README.md) |
-| **ra-mcp-browse** | Browse domain: models, ALTO/IIIF/OAI-PMH clients | [README](packages/browse/README.md) |
-| **ra-mcp-search-mcp** | MCP tools: `search_transcribed`, `search_metadata` | [README](packages/search-mcp/README.md) |
-| **ra-mcp-browse-mcp** | MCP tool: `browse_document` | [README](packages/browse-mcp/README.md) |
-| **ra-mcp-search-cli** | CLI command: `ra search` | [README](packages/search-cli/README.md) |
-| **ra-mcp-browse-cli** | CLI command: `ra browse` | [README](packages/browse-cli/README.md) |
-| **ra-mcp-guide-mcp** | MCP resources: archival research guides | [README](packages/guide-mcp/README.md) |
+| **ra-mcp-common** | Shared HTTP client, telemetry helpers | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/README.md) |
+| **ra-mcp-search** | Search domain: models, API client, operations | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search/README.md) |
+| **ra-mcp-browse** | Browse domain: models, ALTO/IIIF/OAI-PMH clients | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse/README.md) |
+| **ra-mcp-search-mcp** | MCP tools: `search_transcribed`, `search_metadata` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search-mcp/README.md) |
+| **ra-mcp-browse-mcp** | MCP tool: `browse_document` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse-mcp/README.md) |
+| **ra-mcp-search-cli** | CLI command: `ra search` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search-cli/README.md) |
+| **ra-mcp-browse-cli** | CLI command: `ra browse` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse-cli/README.md) |
+| **ra-mcp-guide-mcp** | MCP resources: archival research guides | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/guide-mcp/README.md) |
 
 ```
 ra-mcp-common              (no internal deps)
@@ -113,7 +113,7 @@ helm install ra-mcp charts/ra-mcp \
   --set opentelemetry.enabled=true
 ```
 
-See [charts/ra-mcp/](charts/ra-mcp/) for the full values reference (autoscaling, ingress, PDB, security contexts, etc.).
+See [charts/ra-mcp/](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/charts/ra-mcp) for the full values reference (autoscaling, ingress, PDB, security contexts, etc.).
 
 **Health endpoints** (available when running with HTTP transport):
 
@@ -170,4 +170,4 @@ Additional resources: [Riksarkivet Data Platform Wiki](https://github.com/Riksar
 
 ## License
 
-[Apache 2.0](LICENSE)
+[Apache 2.0](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/LICENSE)

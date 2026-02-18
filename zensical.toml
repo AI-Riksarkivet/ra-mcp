@@ -9,12 +9,25 @@ Copyright &copy; 2026 AI-Riksarkivet
 repo_url = "https://github.com/AI-Riksarkivet/ra-mcp"
 repo_name = "AI-Riksarkivet/ra-mcp"
 
+nav = [
+  { "ra-mcp" = [
+    "index.md",
+  ]},
+  { "Getting Started" = [
+    "getting-started/index.md",
+  ]},
+  { "How it Works" = [
+    "how-it-works/index.md",
+  ]},
+]
+
 # ----------------------------------------------------------------------------
 # Theme
 # ----------------------------------------------------------------------------
 [project.theme]
 language = "en"
-favicon = "assets/ra.svg"
+favicon = "assets/favicon.ico"
+logo = "assets/ra.svg"
 
 features = [
     "announce.dismiss",
@@ -31,7 +44,8 @@ features = [
     "navigation.instant",
     "navigation.instant.prefetch",
     "navigation.path",
-    "navigation.sections",
+    "navigation.tabs",
+    "navigation.tabs.sticky",
     "navigation.top",
     "navigation.tracking",
     "search.highlight",
@@ -58,7 +72,6 @@ toggle.name = "Switch to light mode"
 # Icons
 # ----------------------------------------------------------------------------
 [project.theme.icon]
-logo = "lucide/archive"
 repo = "fontawesome/brands/github"
 
 # ----------------------------------------------------------------------------
@@ -75,3 +88,9 @@ link = "https://hub.docker.com/r/riksarkivet/ra-mcp"
 [[project.extra.social]]
 icon = "fontawesome/brands/python"
 link = "https://pypi.org/project/ra-mcp/"
+
+# ----------------------------------------------------------------------------
+# Markdown extensions
+# ----------------------------------------------------------------------------
+[project.markdown_extensions.pymdownx.snippets]
+base_path = ["."]
