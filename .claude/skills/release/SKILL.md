@@ -46,3 +46,7 @@ Cut a new release for the ra-mcp project.
 - NEVER skip the confirmation step
 - If there are uncommitted changes, warn the user and stop
 - If there are no new commits since the last tag, tell the user and stop
+- When making any git commits (e.g., committing uncommitted changes before
+  releasing), follow the conventions in `.claude/commands/commit.md` —
+  in particular: no co-author lines, no Claude attribution, clean
+  conventional commit format
