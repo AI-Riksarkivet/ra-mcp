@@ -20,16 +20,18 @@ import atexit
 import logging
 import os
 import sys
+from pathlib import Path
 
 from fastmcp import FastMCP
+from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from starlette.responses import FileResponse, JSONResponse
 
 from ra_mcp_browse_mcp.mcp import browse_mcp
 from ra_mcp_guide_mcp.mcp import guide_mcp
-from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
 
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.mcp import search_mcp
+from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
 
 
 # Registry of available modules
@@ -163,6 +165,20 @@ main_server = None
 _mounted_modules: list[str] = []
 
 
+def _discover_plugin_skills() -> list[Path]:
+    """Discover skill directories from plugins.
+
+    Scans the plugins directory for subdirectories containing skills.
+    The plugins directory is resolved from the ``RA_MCP_PLUGINS_DIR``
+    environment variable, falling back to ``plugins/`` relative to the
+    current working directory.
+    """
+    plugins_dir = Path(os.getenv("RA_MCP_PLUGINS_DIR", "plugins"))
+    if not plugins_dir.is_dir():
+        return []
+    return sorted(p for p in plugins_dir.glob("*/skills") if p.is_dir())
+
+
 def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
     """Setup server composition by mounting selected tool servers.
 
@@ -187,6 +203,12 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
             _mounted_modules.append(module_name)
         except Exception as e:
             logger.error("✗ Failed to mount %s: %s", module_name, e)
+
+    # Expose plugin skills as MCP resources
+    skill_roots = _discover_plugin_skills()
+    if skill_roots:
+        server.add_provider(SkillsDirectoryProvider(roots=skill_roots))
+        logger.info("✓ Loaded skills from: %s", ", ".join(str(r) for r in skill_roots))
 
     if not _mounted_modules:
         logger.warning("⚠ No modules were successfully mounted!")
