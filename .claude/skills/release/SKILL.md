@@ -33,11 +33,19 @@ Cut a new release for the ra-mcp project.
    ```bash
    make release VERSION=<version>
    ```
-   This bumps `pyproject.toml`, commits, tags, and pushes. The CI pipeline
-   (`release.yml` → `publish.yml`) handles changelog generation, GitHub Release
-   creation, and Docker image publishing automatically.
+   This bumps `pyproject.toml`, commits, tags, and pushes. The tag push
+   triggers two CI workflows in parallel: `release.yml` (changelog + GitHub
+   Release) and `publish.yml` (Docker build, push, sign, and attestations).
 
-5. **Report** — confirm the tag was pushed and link to the GitHub releases page:
+5. **Monitor CI workflows** — after the tag push, watch both workflows:
+   - Run `gh run list --limit 5` to find the triggered runs
+   - Poll with `gh run view <run-id>` until both "Release" and "Publish"
+     workflows complete (check every ~30 seconds)
+   - If either workflow fails, run `gh run view <run-id> --log-failed` to
+     get the error details and report them to the user
+   - Only proceed to the report step once both workflows succeed
+
+6. **Report** — confirm the tag was pushed and link to the GitHub releases page:
    `https://github.com/AI-Riksarkivet/ra-mcp/releases`
 
 ## Rules
