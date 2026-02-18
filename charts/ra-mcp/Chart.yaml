@@ -4,7 +4,7 @@ description: MCP server providing access to transcribed historical documents fro
 type: application
 version: 0.1.0
 appVersion: "v0.4.2"
-icon: https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/assets/ra.svg
+icon: https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/docs/assets/ra.svg
 home: https://github.com/AI-Riksarkivet/ra-mcp
 sources:
   - https://github.com/AI-Riksarkivet/ra-mcp

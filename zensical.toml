@@ -1,0 +1,77 @@
+[project]
+site_name = "ra-mcp"
+site_description = "MCP server and CLI for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet)."
+site_author = "AI-Riksarkivet"
+site_url = "https://ai-riksarkivet.github.io/ra-mcp/"
+copyright = """
+Copyright &copy; 2026 AI-Riksarkivet
+"""
+repo_url = "https://github.com/AI-Riksarkivet/ra-mcp"
+repo_name = "AI-Riksarkivet/ra-mcp"
+
+# ----------------------------------------------------------------------------
+# Theme
+# ----------------------------------------------------------------------------
+[project.theme]
+language = "en"
+favicon = "assets/ra.svg"
+
+features = [
+    "announce.dismiss",
+    "content.action.edit",
+    "content.action.view",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.code.select",
+    "content.footnote.tooltips",
+    "content.tabs.link",
+    "content.tooltips",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+]
+
+# ----------------------------------------------------------------------------
+# Color palette (light/dark toggle)
+# ----------------------------------------------------------------------------
+[[project.theme.palette]]
+scheme = "default"
+primary = "indigo"
+accent = "blue"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "indigo"
+accent = "blue"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# Icons
+# ----------------------------------------------------------------------------
+[project.theme.icon]
+logo = "lucide/archive"
+repo = "fontawesome/brands/github"
+
+# ----------------------------------------------------------------------------
+# Social links
+# ----------------------------------------------------------------------------
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/AI-Riksarkivet/ra-mcp"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/docker"
+link = "https://hub.docker.com/r/riksarkivet/ra-mcp"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/ra-mcp/"

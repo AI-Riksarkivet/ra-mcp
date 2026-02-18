@@ -208,7 +208,7 @@ func (m *RaMcp) VerifyTelemetry(
 				"packages/",
 				"src/",
 				"resources/",
-				"assets/",
+				"docs/assets/",
 				"README.md",
 				"LICENSE",
 			},
