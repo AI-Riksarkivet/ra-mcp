@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ra-mcp",
+  "description": "Skills for the ra-mcp ecosystem — MCP servers and apps from the Swedish National Archives (Riksarkivet)",
+  "owner": {
+    "name": "AI-Riksarkivet"
+  },
+  "plugins": [
+    {
+      "name": "ra-mcp",
+      "description": "Skills for building MCP Apps with FastMCP/Svelte and HTR transcription workflows",
+      "version": "0.1.0",
+      "source": "./",
+      "category": "development"
+    }
+  ]
+}
