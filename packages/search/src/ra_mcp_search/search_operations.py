@@ -8,7 +8,7 @@ from opentelemetry.trace import StatusCode
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
-from .search_client import SearchAPI
+from .search_client import SearchClient
 from .models import SearchResult
 
 
@@ -28,7 +28,7 @@ class SearchOperations:
     """
 
     def __init__(self, http_client: HTTPClient):
-        self.search_api = SearchAPI(http_client=http_client)
+        self.search_api = SearchClient(http_client=http_client)
 
     def search(
         self,

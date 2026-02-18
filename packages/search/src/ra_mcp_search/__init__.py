@@ -7,13 +7,13 @@ Provides search client, operations, and models for searching transcribed documen
 __version__ = "0.3.0"
 
 from .models import RecordsResponse, SearchRecord, SearchResult
-from .search_client import SearchAPI
+from .search_client import SearchClient
 from .search_operations import SearchOperations
 
 
 __all__ = [
     "RecordsResponse",
-    "SearchAPI",
+    "SearchClient",
     "SearchOperations",
     "SearchRecord",
     "SearchResult",

@@ -18,7 +18,7 @@ from ra_mcp_search.models import RecordsResponse
 _tracer = get_tracer("ra_mcp.search_api")
 
 
-class SearchAPI:
+class SearchClient:
     """
     Client for Riksarkivet Search API.
 
@@ -83,7 +83,7 @@ class SearchAPI:
         self.logger.info("Starting %s search: keyword='%s', max=%d, offset=%d", search_type, search_term, max_results, offset)
 
         with _tracer.start_as_current_span(
-            "SearchAPI.search",
+            "SearchClient.search",
             attributes={
                 "search.type": search_type,
                 "search.keyword": search_term or "",
