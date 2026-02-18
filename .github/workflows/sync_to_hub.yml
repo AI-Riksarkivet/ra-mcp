@@ -1,0 +1,27 @@
+name: Sync to Hugging Face hub
+on: workflow_dispatch
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  
+          lfs: true       
+
+      - name: Install Git LFS
+        run: git lfs install
+
+      - name: Debug LFS Tracking
+        run: |
+          cat .gitattributes
+          git lfs ls-files
+
+      - name: Push to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git lfs push --all https://Riksarkivet:$HF_TOKEN@huggingface.co/spaces/Riksarkivet/ra-mcp
+          git push --force https://Riksarkivet:$HF_TOKEN@huggingface.co/spaces/Riksarkivet/ra-mcp main

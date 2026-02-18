@@ -1,0 +1,1 @@
+FROM riksarkivet/ra-mcp:v0.5.3
