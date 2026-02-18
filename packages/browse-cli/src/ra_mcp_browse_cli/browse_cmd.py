@@ -8,7 +8,7 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from ra_mcp_browse.operations import BrowseOperations
+from ra_mcp_browse.browse_operations import BrowseOperations
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
 

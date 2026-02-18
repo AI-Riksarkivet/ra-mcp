@@ -8,10 +8,10 @@ from opentelemetry.trace import StatusCode
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
-from .. import url_generator
-from ..clients import ALTOClient, IIIFClient, OAIPMHClient
-from ..models import BrowseResult, PageContext
-from ..utils import parse_page_range
+from . import url_generator
+from .clients import ALTOClient, IIIFClient, OAIPMHClient
+from .models import BrowseResult, PageContext
+from .utils import parse_page_range
 
 
 _tracer = get_tracer("ra_mcp.browse_operations")

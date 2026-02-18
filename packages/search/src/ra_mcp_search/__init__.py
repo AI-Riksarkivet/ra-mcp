@@ -6,9 +6,9 @@ Provides search client, operations, and models for searching transcribed documen
 
 __version__ = "0.3.0"
 
-from .clients import SearchAPI
 from .models import RecordsResponse, SearchRecord, SearchResult
-from .operations import SearchOperations
+from .search_client import SearchAPI
+from .search_operations import SearchOperations
 
 
 __all__ = [

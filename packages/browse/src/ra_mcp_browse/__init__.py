@@ -6,9 +6,9 @@ Provides clients, operations, and models for browsing document pages.
 
 __version__ = "0.3.0"
 
+from .browse_operations import BrowseOperations
 from .clients import ALTOClient, IIIFClient, OAIPMHClient
 from .models import BrowseResult, OAIPMHMetadata, PageContext
-from .operations import BrowseOperations
 
 
 __all__ = [

@@ -10,7 +10,7 @@ from fastmcp import Context
 
 from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_common.utils.http_client import default_http_client
-from ra_mcp_search.operations import SearchOperations
+from ra_mcp_search.search_operations import SearchOperations
 
 from .formatter import PlainTextFormatter
 

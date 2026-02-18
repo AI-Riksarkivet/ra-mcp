@@ -11,7 +11,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
 from ra_mcp_search.config import DEFAULT_MAX_DISPLAY, DEFAULT_MAX_RESULTS
-from ra_mcp_search.operations import SearchOperations
+from ra_mcp_search.search_operations import SearchOperations
 
 from .formatting import RichConsoleFormatter
 

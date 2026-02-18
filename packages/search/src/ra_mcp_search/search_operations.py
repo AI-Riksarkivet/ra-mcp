@@ -8,8 +8,8 @@ from opentelemetry.trace import StatusCode
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
-from ..clients import SearchAPI
-from ..models import SearchResult
+from .search_client import SearchAPI
+from .models import SearchResult
 
 
 _tracer = get_tracer("ra_mcp.search_operations")
