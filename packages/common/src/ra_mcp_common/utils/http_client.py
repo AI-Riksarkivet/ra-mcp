@@ -189,9 +189,9 @@ class HTTPClient:
 
                     span.set_attribute("http.response.status_code", response.status)
                     span.set_attribute("http.response.body.size", content_size)
-                    self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                    self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET", "url.template": url})
+                    self._request_counter.add(1, {"http.request.method": "GET"})
+                    self._duration_histogram.record(duration, {"http.request.method": "GET"})
+                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
 
                     return result
 
@@ -201,9 +201,9 @@ class HTTPClient:
                 self.logger.error("Timeout limit was %ds", timeout)
                 span.set_status(StatusCode.ERROR, f"Timeout after {timeout}s")
                 span.record_exception(e)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": "TimeoutError"})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": "TimeoutError"})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
                 raise Exception(f"Request timeout after {timeout}s: {url}") from e
 
             except (HTTPError, URLError, json.JSONDecodeError) as e:
@@ -229,9 +229,9 @@ class HTTPClient:
                 span.record_exception(e)
                 if isinstance(e, HTTPError):
                     span.set_attribute("http.response.status_code", e.code)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": error_type})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": error_type})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
 
                 if isinstance(e, HTTPError):
                     raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
@@ -246,9 +246,9 @@ class HTTPClient:
                 self.logger.error("✗ Unexpected error after %.3fs: %s: %s", duration, type(e).__name__, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": type(e).__name__})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": type(e).__name__})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
                 raise
 
     def get_xml(
@@ -310,9 +310,9 @@ class HTTPClient:
 
                     span.set_attribute("http.response.status_code", response.status)
                     span.set_attribute("http.response.body.size", content_size)
-                    self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                    self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET", "url.template": url})
+                    self._request_counter.add(1, {"http.request.method": "GET"})
+                    self._duration_histogram.record(duration, {"http.request.method": "GET"})
+                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
 
                     return content
 
@@ -334,9 +334,9 @@ class HTTPClient:
                 span.record_exception(e)
                 if isinstance(e, HTTPError):
                     span.set_attribute("http.response.status_code", e.code)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": error_type})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": error_type})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
 
                 if isinstance(e, HTTPError):
                     raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
@@ -381,13 +381,13 @@ class HTTPClient:
 
                     if response.status == 404:
                         self.logger.info("GET %s - %.3fs - 404 NOT FOUND", url, duration)
-                        self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                        self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                        self._request_counter.add(1, {"http.request.method": "GET"})
+                        self._duration_histogram.record(duration, {"http.request.method": "GET"})
                         return None
                     if response.status != 200:
                         self.logger.warning("GET %s - %.3fs - %d", url, duration, response.status)
-                        self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                        self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                        self._request_counter.add(1, {"http.request.method": "GET"})
+                        self._duration_histogram.record(duration, {"http.request.method": "GET"})
                         return None
 
                     content = response.read()
@@ -395,9 +395,9 @@ class HTTPClient:
                     self.logger.info("GET %s - %.3fs - 200 OK", url, duration)
 
                     span.set_attribute("http.response.body.size", content_size)
-                    self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                    self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET", "url.template": url})
+                    self._request_counter.add(1, {"http.request.method": "GET"})
+                    self._duration_histogram.record(duration, {"http.request.method": "GET"})
+                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
                     return content
 
             except (HTTPError, URLError, TimeoutError) as e:
@@ -408,18 +408,18 @@ class HTTPClient:
                 self.logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 span.record_exception(e)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": error_type})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": error_type})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
                 return None
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 self.logger.error("GET %s - ERROR: %s", url, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
-                self._request_counter.add(1, {"http.request.method": "GET", "url.template": url})
-                self._error_counter.add(1, {"http.request.method": "GET", "url.template": url, "error.type": type(e).__name__})
-                self._duration_histogram.record(duration, {"http.request.method": "GET", "url.template": url})
+                self._request_counter.add(1, {"http.request.method": "GET"})
+                self._error_counter.add(1, {"error.type": type(e).__name__})
+                self._duration_histogram.record(duration, {"http.request.method": "GET"})
                 return None
 
 
