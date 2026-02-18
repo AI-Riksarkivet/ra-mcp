@@ -12,7 +12,7 @@ from ra_mcp_browse.browse_operations import BrowseOperations
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import get_http_client
 
-from .formatting import RichConsoleFormatter
+from .formatter import RichConsoleFormatter
 
 
 _tracer = get_tracer("ra_mcp.cli.browse")

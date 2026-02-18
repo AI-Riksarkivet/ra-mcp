@@ -13,7 +13,7 @@ from ra_mcp_common.utils.http_client import get_http_client
 from ra_mcp_search.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY
 from ra_mcp_search.search_operations import SearchOperations
 
-from .formatting import RichConsoleFormatter
+from .formatter import RichConsoleFormatter
 
 
 _tracer = get_tracer("ra_mcp.cli.search")

@@ -60,12 +60,12 @@ ra-mcp/
 **ra-mcp-search-cli** (depends on search + typer + rich):
 - [app.py](packages/search-cli/src/search_cli/app.py): Typer sub-app
 - [search_cmd.py](packages/search-cli/src/search_cli/search_cmd.py): `ra search` CLI command
-- [formatting/](packages/search-cli/src/search_cli/formatting/): CLI output formatting
+- [formatter.py](packages/search-cli/src/ra_mcp_search_cli/formatter.py): CLI output formatting
 
 **ra-mcp-browse-cli** (depends on browse + typer + rich):
-- [app.py](packages/browse-cli/src/browse_cli/app.py): Typer sub-app
-- [browse_cmd.py](packages/browse-cli/src/browse_cli/browse_cmd.py): `ra browse` CLI command
-- [formatting/](packages/browse-cli/src/browse_cli/formatting/): CLI output formatting
+- [app.py](packages/browse-cli/src/ra_mcp_browse_cli/app.py): Typer sub-app
+- [browse_cmd.py](packages/browse-cli/src/ra_mcp_browse_cli/browse_cmd.py): `ra browse` CLI command
+- [formatter.py](packages/browse-cli/src/ra_mcp_browse_cli/formatter.py): CLI output formatting
 
 **ra-mcp-guide-mcp** (depends on common + fastmcp):
 - [mcp.py](packages/guide-mcp/src/guide_mcp/mcp.py): MCP resources for historical guides from `resources/`
