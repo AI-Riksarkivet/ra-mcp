@@ -28,7 +28,7 @@ nav = [
 language = "en"
 favicon = "assets/favicon.ico"
 logo = "assets/ra.svg"
-custom_dir = "overrides"
+custom_dir = "docs/overrides"
 
 features = [
     "announce.dismiss",
