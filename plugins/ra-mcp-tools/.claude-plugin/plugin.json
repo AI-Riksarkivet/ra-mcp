@@ -1,0 +1,10 @@
+{
+  "name": "ra-mcp-tools",
+  "version": "0.1.0",
+  "description": "Skills for using Riksarkivet MCP tools — HTR transcription, archive search, document browsing",
+  "author": {
+    "name": "AI-Riksarkivet"
+  },
+  "repository": "https://github.com/AI-Riksarkivet/ra-mcp",
+  "license": "MIT"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "ra-mcp-dev",
+  "version": "0.1.0",
+  "description": "Development skills — building MCP Apps with FastMCP/Svelte",
+  "author": {
+    "name": "AI-Riksarkivet"
+  },
+  "repository": "https://github.com/AI-Riksarkivet/ra-mcp",
+  "license": "MIT"
+}

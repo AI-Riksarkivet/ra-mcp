@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uvx ruff format $CLAUDE_FILE_PATHS && uvx ruff check --fix $CLAUDE_FILE_PATHS && uvx ty check"
+          }
+        ]
+      }
+    ]
+  }
+}
