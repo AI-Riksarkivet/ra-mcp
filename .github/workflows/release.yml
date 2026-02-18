@@ -5,7 +5,6 @@ on:
 
 permissions:
   contents: write
-  actions: write  # For triggering publish workflow
 
 jobs:
   release:
@@ -28,9 +27,3 @@ jobs:
         with:
           body_path: RELEASE_NOTES.md
 
-      # GITHUB_TOKEN-created releases don't trigger downstream workflows,
-      # so explicitly dispatch the publish workflow.
-      - name: Trigger publish workflow
-        run: gh workflow run publish.yml
-        env:
-          GH_TOKEN: ${{ github.token }}

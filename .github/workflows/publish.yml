@@ -1,7 +1,7 @@
 name: Publish
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -19,12 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
-      # Determine image tag: use release tag if available, else read from pyproject.toml
+      # Determine image tag: use git tag ref if available, else read from pyproject.toml
       - name: Determine version tag
         id: version
         run: |
-          if [ -n "${{ github.event.release.tag_name }}" ]; then
-            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           else
             VERSION=$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
             echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
@@ -70,7 +70,7 @@ jobs:
 
       # Generate SBOM locally using Dagger (for Scorecard compliance)
       - name: Generate standalone SBOM
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
         with:
           verb: call
@@ -80,7 +80,7 @@ jobs:
 
       # Extract real provenance attestation from published image using Dagger
       - name: Extract provenance from image
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
         with:
           verb: call
@@ -90,7 +90,7 @@ jobs:
 
       # Upload attestations as release assets (for OpenSSF Scorecard compliance)
       - name: Upload attestations as release assets
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           files: |
