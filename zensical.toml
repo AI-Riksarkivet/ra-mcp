@@ -28,6 +28,7 @@ nav = [
 language = "en"
 favicon = "assets/favicon.ico"
 logo = "assets/ra.svg"
+custom_dir = "overrides"
 
 features = [
     "announce.dismiss",
@@ -90,7 +91,18 @@ icon = "fontawesome/brands/python"
 link = "https://pypi.org/project/ra-mcp/"
 
 # ----------------------------------------------------------------------------
+# Analytics (Matomo)
+# ----------------------------------------------------------------------------
+[project.extra.analytics]
+provider = "custom"
+
+# ----------------------------------------------------------------------------
 # Markdown extensions
 # ----------------------------------------------------------------------------
 [project.markdown_extensions.pymdownx.snippets]
 base_path = ["."]
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]

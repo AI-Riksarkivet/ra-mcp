@@ -12,19 +12,10 @@ ra-mcp uses the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP)
 
 MCP is an open protocol that lets AI models call external tools. Think of it like a USB port for AI — any model that speaks MCP can plug into any MCP server and use its tools.
 
-```
-┌─────────────┐       MCP        ┌─────────────────┐
-│  AI Client   │ ◄──────────────► │   ra-mcp Server  │
-│ (Claude, etc)│   tool calls     │                  │
-└─────────────┘                  └────────┬─────────┘
-                                          │
-                                          ▼
-                                 ┌─────────────────┐
-                                 │  Riksarkivet     │
-                                 │  Data Platform   │
-                                 │  (Search, IIIF,  │
-                                 │   ALTO, OAI-PMH) │
-                                 └─────────────────┘
+``` mermaid
+graph LR
+  A["AI Client\n(Claude, etc)"] <-->|"MCP\ntool calls"| B["ra-mcp Server"]
+  B --> C["Riksarkivet\nData Platform\n(Search, IIIF, ALTO, OAI-PMH)"]
 ```
 
 When you ask Claude *"Find documents about trolldom"*, the AI:
@@ -94,23 +85,25 @@ Retrieves complete page transcriptions from a specific document. Each result inc
 
 ra-mcp is organized as a **uv workspace** with modular packages, each with a single responsibility:
 
-```
-ra-mcp-common              shared HTTP client, telemetry
-       │
-       ├── ra-mcp-search   search domain (models, API clients, operations)
-       │      │
-       │      ├── ra-mcp-search-mcp   MCP tools (search_transcribed, search_metadata)
-       │      └── ra-mcp-search-cli   CLI command (ra search)
-       │
-       ├── ra-mcp-browse   browse domain (models, API clients, operations)
-       │      │
-       │      ├── ra-mcp-browse-mcp   MCP tool (browse_document)
-       │      └── ra-mcp-browse-cli   CLI command (ra browse)
-       │
-       └── ra-mcp-guide-mcp   MCP resources (historical research guides)
-              │
-              ▼
-         ra-mcp (root)   composes all packages into one server
+``` mermaid
+graph TD
+  common["ra-mcp-common\nshared HTTP client, telemetry"]
+
+  search["ra-mcp-search\nsearch domain"]
+  browse["ra-mcp-browse\nbrowse domain"]
+
+  search_mcp["ra-mcp-search-mcp\nMCP tools"]
+  search_cli["ra-mcp-search-cli\nCLI command"]
+  browse_mcp["ra-mcp-browse-mcp\nMCP tool"]
+  browse_cli["ra-mcp-browse-cli\nCLI command"]
+  guide["ra-mcp-guide-mcp\nMCP resources"]
+
+  root["ra-mcp (root)\ncomposes all packages"]
+
+  common --> search & browse & guide
+  search --> search_mcp & search_cli
+  browse --> browse_mcp & browse_cli
+  search_mcp & search_cli & browse_mcp & browse_cli & guide --> root
 ```
 
 **Why this structure?**
@@ -140,15 +133,12 @@ All data comes from the [Riksarkivet Data Platform](https://github.com/Riksarkiv
 
 ra-mcp is one piece of a larger ecosystem. Multiple MCP servers can be connected to the same AI client, each providing different capabilities:
 
-```
-┌──────────────┐
-│  AI Client    │
-│  (Claude)     │
-└──┬───┬───┬───┘
-   │   │   │
-   │   │   └──► htrflow-mcp      Handwritten text recognition
-   │   └──────► ra-mcp           Archive search & browse
-   └──────────► other servers     Any MCP-compatible tool
+``` mermaid
+graph LR
+  client["AI Client\n(Claude)"]
+  client --> htrflow["htrflow-mcp\nHandwritten text recognition"]
+  client --> ramcp["ra-mcp\nArchive search & browse"]
+  client --> other["other servers\nAny MCP-compatible tool"]
 ```
 
 **ra-mcp** provides:
@@ -183,13 +173,16 @@ Each module is a self-contained FastMCP sub-server that gets composed into the m
 
 ra-mcp supports OpenTelemetry for tracing and metrics. When enabled, every tool call produces a trace spanning from the MCP protocol layer down through domain operations to individual HTTP requests:
 
-```
-tools/call search_transcribed          ← FastMCP (automatic)
-└── delegate search_transcribed        ← FastMCP (composed server)
-    └── tools/call search_transcribed  ← FastMCP (provider)
-        └── SearchOperations.search    ← domain layer
-            └── SearchAPI.search       ← API client
-                └── HTTP GET           ← HTTP client
+``` mermaid
+graph TD
+  A["tools/call search_transcribed\n<i>FastMCP — automatic</i>"]
+  B["delegate search_transcribed\n<i>FastMCP — composed server</i>"]
+  C["tools/call search_transcribed\n<i>FastMCP — provider</i>"]
+  D["SearchOperations.search\n<i>domain layer</i>"]
+  E["SearchAPI.search\n<i>API client</i>"]
+  F["HTTP GET\n<i>HTTP client</i>"]
+
+  A --> B --> C --> D --> E --> F
 ```
 
 Enable with:
