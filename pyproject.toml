@@ -48,6 +48,7 @@ dev = [
     "ra-mcp-search-cli",
     "ra-mcp-browse-cli",
     "ra-mcp-tui",
+    "zensical>=0.0.23",
 ]
 
 [project.scripts]
