@@ -42,8 +42,10 @@ def init_telemetry() -> None:
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+    from ra_mcp_server import __version__
+
     service_name = os.getenv("OTEL_SERVICE_NAME", "ra-mcp")
-    resource = Resource.create({"service.name": service_name})
+    resource = Resource.create({"service.name": service_name, "service.version": __version__})
 
     protocol = os.getenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
 
@@ -66,12 +68,39 @@ def init_telemetry() -> None:
     metrics.set_meter_provider(meter_provider)
     _providers.append(meter_provider)
 
+    # Build-info gauge (Prometheus _info pattern: value=1 with version label)
+    meter = metrics.get_meter("ra_mcp")
+    build_info = meter.create_gauge("ra_mcp.build_info", description="Build information for the ra-mcp server")
+    build_info.set(1, {"version": __version__})
+
+    # Log message counter (by severity level)
+    log_counter = meter.create_counter("ra_mcp.log.messages", description="Log messages emitted by severity level")
+    _setup_log_metrics(log_counter)
+
     # Log bridge
     if os.getenv("RA_MCP_OTEL_LOG_BRIDGE", "true").lower() in ("true", "1", "yes"):
         _setup_log_bridge(resource)
 
     _initialized = True
-    logger.info("OpenTelemetry initialized (service=%s, protocol=%s)", service_name, protocol)
+    logger.info("OpenTelemetry initialized (service=%s, version=%s, protocol=%s)", service_name, __version__, protocol)
+
+
+class _MetricsLoggingHandler(logging.Handler):
+    """Logging handler that increments an OTel counter per log level."""
+
+    def __init__(self, counter) -> None:
+        super().__init__()
+        self._counter = counter
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self._counter.add(1, {"log.level": record.levelname})
+
+
+def _setup_log_metrics(counter) -> None:
+    """Attach a metrics handler to the root logger that counts messages by level."""
+    handler = _MetricsLoggingHandler(counter)
+    handler.setLevel(logging.WARNING)
+    logging.getLogger().addHandler(handler)
 
 
 def _setup_log_bridge(resource) -> None:
