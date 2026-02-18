@@ -31,6 +31,18 @@ _DEFAULT_MAX_RETRIES = 3
 _DEFAULT_BACKOFF_BASE = 0.5
 
 
+def _is_timeout_error(e: Exception) -> bool:
+    """Check if an exception represents a timeout."""
+    return isinstance(e, TimeoutError) or (isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason))
+
+
+def _build_url(url: str, params: dict[str, str | int] | None) -> str:
+    """Build a full URL with optional query parameters."""
+    if params:
+        return f"{url}?{urlencode(params)}"
+    return url
+
+
 class HTTPClient:
     """Centralized HTTP client using urllib with comprehensive logging and retry."""
 
@@ -106,8 +118,7 @@ class HTTPClient:
                     continue
                 raise
             except (TimeoutError, URLError) as e:
-                is_timeout = isinstance(e, TimeoutError) or (isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason))
-                reason = "TimeoutError" if is_timeout else type(e).__name__
+                reason = "TimeoutError" if _is_timeout_error(e) else type(e).__name__
                 wait = self.backoff_base * (2**attempt)
                 self.logger.warning("Retryable %s from %s, attempt %d/%d, waiting %.1fs", reason, url, attempt + 1, self.max_retries, wait)
                 self._retry_counter.add(1, {"retry.reason": reason})
@@ -136,17 +147,16 @@ class HTTPClient:
             Parsed JSON response
 
         Raises:
-            Exception: On HTTP errors or invalid JSON
+            TimeoutError: On request timeout (including URLError-wrapped timeouts)
+            urllib.error.HTTPError: On non-success HTTP status code
+            urllib.error.URLError: On network/URL connection error
+            json.JSONDecodeError: On invalid JSON response
         """
         # Allow timeout override from environment (useful for Hugging Face)
         timeout = int(os.getenv("RA_MCP_TIMEOUT", timeout))
 
         # Build URL with parameters
-        if params:
-            query_string = urlencode(params)
-            full_url = f"{url}?{query_string}"
-        else:
-            full_url = url
+        full_url = _build_url(url, params)
 
         # Log request details
         self.logger.info("GET JSON: %s", full_url)
@@ -204,13 +214,13 @@ class HTTPClient:
                 self._request_counter.add(1, {"http.request.method": "GET"})
                 self._error_counter.add(1, {"error.type": "TimeoutError"})
                 self._duration_histogram.record(duration, {"http.request.method": "GET"})
-                raise Exception(f"Request timeout after {timeout}s: {url}") from e
+                raise
 
             except (HTTPError, URLError, json.JSONDecodeError) as e:
                 duration = time.perf_counter() - start_time
 
                 # urllib wraps socket timeouts in URLError — classify them as TimeoutError
-                is_timeout = isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason)
+                is_timeout = _is_timeout_error(e)
                 error_type = "TimeoutError" if is_timeout else type(e).__name__
                 error_msg = str(e.code) if hasattr(e, "code") else str(e)
 
@@ -233,13 +243,9 @@ class HTTPClient:
                 self._error_counter.add(1, {"error.type": error_type})
                 self._duration_histogram.record(duration, {"http.request.method": "GET"})
 
-                if isinstance(e, HTTPError):
-                    raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
                 if is_timeout:
-                    raise Exception(f"Request timeout after {timeout}s: {url}") from e
-                if isinstance(e, URLError):
-                    raise Exception(f"URL Error: {e.reason}") from e
-                raise Exception(f"Invalid JSON response: {e}") from e
+                    raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
+                raise
 
             except Exception as e:
                 duration = time.perf_counter() - start_time
@@ -271,14 +277,12 @@ class HTTPClient:
             XML response as bytes
 
         Raises:
-            Exception: On HTTP errors
+            TimeoutError: On request timeout (including URLError-wrapped timeouts)
+            urllib.error.HTTPError: On non-success HTTP status code
+            urllib.error.URLError: On network/URL connection error
         """
         # Build URL with parameters
-        if params:
-            query_string = urlencode(params)
-            full_url = f"{url}?{query_string}"
-        else:
-            full_url = url
+        full_url = _build_url(url, params)
 
         # Debug: Print URL to console
         if self.debug_console:
@@ -318,7 +322,7 @@ class HTTPClient:
 
             except (HTTPError, URLError) as e:
                 duration = time.perf_counter() - start_time
-                is_timeout = isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason)
+                is_timeout = _is_timeout_error(e)
                 error_type = "TimeoutError" if is_timeout else type(e).__name__
                 error_msg = str(e.code) if hasattr(e, "code") else str(e)
                 error_body = ""
@@ -338,11 +342,9 @@ class HTTPClient:
                 self._error_counter.add(1, {"error.type": error_type})
                 self._duration_histogram.record(duration, {"http.request.method": "GET"})
 
-                if isinstance(e, HTTPError):
-                    raise Exception(f"HTTP Error {e.code}: {e.reason}") from e
                 if is_timeout:
-                    raise Exception(f"Request timeout: {url}") from e
-                raise Exception(f"URL Error: {e.reason}") from e
+                    raise TimeoutError(f"Request timeout: {url}") from e
+                raise
 
     def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
         """
@@ -402,8 +404,7 @@ class HTTPClient:
 
             except (HTTPError, URLError, TimeoutError) as e:
                 duration = time.perf_counter() - start_time
-                is_timeout = isinstance(e, TimeoutError) or (isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason))
-                error_type = "TimeoutError" if is_timeout else type(e).__name__
+                error_type = "TimeoutError" if _is_timeout_error(e) else type(e).__name__
                 error_msg = str(e.code) if hasattr(e, "code") else str(e)
                 self.logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
