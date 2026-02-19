@@ -12,6 +12,7 @@ dependencies = [
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
     "cryptography>=46.0.5",
+    "fastmcp>=3.0.0"
 ]
 
 license = "Apache-2.0"
