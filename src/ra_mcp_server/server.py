@@ -23,6 +23,7 @@ import sys
 from pathlib import Path
 
 from fastmcp import FastMCP
+from fastmcp.server.providers import FastMCPProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from starlette.responses import FileResponse, JSONResponse
 
@@ -180,11 +181,16 @@ def _discover_plugin_skills() -> list[Path]:
 
 
 def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
-    """Setup server composition by mounting selected tool servers.
+    """Setup server composition using explicit providers.
+
+    Each module's FastMCP sub-server is wrapped in a FastMCPProvider and
+    registered with a namespace. This gives the same behaviour as mount()
+    while exposing the provider layer for future transforms and visibility
+    control.
 
     Args:
         server: The FastMCP server instance to configure.
-        enabled_modules: List of module names to mount.
+        enabled_modules: List of module names to register as providers.
     """
     logger.info("Setting up server composition...")
     logger.info("Enabled modules: %s", ", ".join(enabled_modules))
@@ -198,11 +204,11 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
         module_config = AVAILABLE_MODULES[module_name]
         module_server: FastMCP = module_config["server"]  # type: ignore[assignment]
         try:
-            server.mount(module_server, namespace=module_name)
-            logger.info("✓ Mounted %s (namespace=%s)", module_server.name, module_name)
+            server.add_provider(FastMCPProvider(module_server), namespace=module_name)
+            logger.info("✓ Registered %s (namespace=%s)", module_server.name, module_name)
             _mounted_modules.append(module_name)
         except Exception as e:
-            logger.error("✗ Failed to mount %s: %s", module_name, e)
+            logger.error("✗ Failed to register %s: %s", module_name, e)
 
     # Expose plugin skills as MCP resources
     skill_roots = _discover_plugin_skills()
@@ -211,9 +217,9 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
         logger.info("✓ Loaded skills from: %s", ", ".join(str(r) for r in skill_roots))
 
     if not _mounted_modules:
-        logger.warning("⚠ No modules were successfully mounted!")
+        logger.warning("⚠ No modules were successfully registered!")
     else:
-        logger.info("Server composition complete. %d module(s) mounted.", len(_mounted_modules))
+        logger.info("Server composition complete. %d module(s) registered.", len(_mounted_modules))
 
 
 def setup_custom_routes(server: FastMCP) -> None:
