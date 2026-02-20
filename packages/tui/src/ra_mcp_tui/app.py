@@ -10,6 +10,7 @@ from textual.theme import Theme
 from .services import ArchiveService
 from .widgets.help_overlay import HelpScreen
 
+
 RIKSARKIVET_THEME = Theme(
     name="riksarkivet",
     primary="#BC4B6F",

@@ -27,11 +27,11 @@ from fastmcp.server.providers import FastMCPProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from starlette.responses import FileResponse, JSONResponse
 
-from ra_mcp_browse_mcp.mcp import browse_mcp
-from ra_mcp_guide_mcp.mcp import guide_mcp
+from ra_mcp_browse_mcp.tools import browse_mcp
+from ra_mcp_guide_mcp.tools import guide_mcp
 
 # Import available modules (lazy imports handled in setup)
-from ra_mcp_search_mcp.mcp import search_mcp
+from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
 
 
@@ -290,43 +290,17 @@ def run_server(
 
 
 def main() -> None:
-    """CLI entry point for direct invocation (e.g., python -m ra_mcp_server.server)."""
-    default_modules = [name for name, info in AVAILABLE_MODULES.items() if info["default"]]
+    """Thin entry point for ``ra-serve`` (used by Docker and Dagger).
 
-    parser = argparse.ArgumentParser(
-        description="Riksarkivet MCP Server - Composable access to Swedish National Archives",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=f"""
-Available modules:
-{chr(10).join(f"  {name:12} - {info['description']}" for name, info in AVAILABLE_MODULES.items())}
-
-Examples:
-  ra serve                              # Start with all default modules
-  ra serve --modules search,browse      # Start with only search and browse
-  ra serve --port 8000                  # Start HTTP server on port 8000
-  ra serve --modules search --port 8000 # Custom modules with HTTP transport
-        """,
-    )
-    parser.add_argument("--http", action="store_true", help="Use HTTP/SSE transport instead of stdio")
+    For interactive use prefer the Typer CLI: ``ra serve --help``.
+    """
+    parser = argparse.ArgumentParser(description="Riksarkivet MCP Server")
+    parser.add_argument("--http", action="store_true", help="Use HTTP transport instead of stdio")
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)")
     parser.add_argument("--host", default="0.0.0.0", help="Host for HTTP transport (default: 0.0.0.0)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
-    parser.add_argument(
-        "--modules",
-        type=str,
-        default=",".join(default_modules),
-        help=f"Comma-separated list of modules to enable (default: {','.join(default_modules)})",
-    )
-    parser.add_argument("--list-modules", action="store_true", help="List available modules and exit")
-
+    parser.add_argument("--modules", type=str, default=None, help="Comma-separated list of modules to enable")
     args = parser.parse_args()
-
-    if args.list_modules:
-        print("Available modules:")
-        for name, info in AVAILABLE_MODULES.items():
-            default_marker = " (default)" if info["default"] else ""
-            print(f"  {name:12} - {info['description']}{default_marker}")
-        return
 
     run_server(http=args.http, port=args.port, host=args.host, verbose=args.verbose, modules=args.modules)
 

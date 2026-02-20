@@ -16,6 +16,7 @@ from ra_mcp_browse.models import PageContext
 from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_search.models import SearchRecord
 
+
 _EM_RE = re.compile(r"<em>(.*?)</em>")
 
 

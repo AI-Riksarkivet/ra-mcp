@@ -4,8 +4,8 @@ Thin facade over SearchOperations and BrowseOperations for TUI use.
 All methods are synchronous (called from Textual workers via @work(thread=True)).
 """
 
-from ra_mcp_browse.models import BrowseResult
 from ra_mcp_browse.browse_operations import BrowseOperations
+from ra_mcp_browse.models import BrowseResult
 from ra_mcp_common.utils.http_client import HTTPClient
 from ra_mcp_search.models import SearchResult
 from ra_mcp_search.search_operations import SearchOperations

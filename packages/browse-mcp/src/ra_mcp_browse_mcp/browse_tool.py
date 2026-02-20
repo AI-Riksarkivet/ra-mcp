@@ -8,8 +8,8 @@ import logging
 
 from fastmcp import Context
 
-from ra_mcp_browse.models import BrowseResult
 from ra_mcp_browse.browse_operations import BrowseOperations
+from ra_mcp_browse.models import BrowseResult
 from ra_mcp_common.utils.formatting import format_error_message
 from ra_mcp_common.utils.http_client import default_http_client
 

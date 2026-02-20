@@ -144,4 +144,4 @@ python-version = "3.12"
 
 [tool.pytest.ini_options]
 markers = []
-testpaths = ["packages/*/tests"]
+testpaths = ["packages/*/tests", "tests"]

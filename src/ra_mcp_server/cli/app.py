@@ -9,8 +9,8 @@ import typer
 from rich.console import Console
 
 from ra_mcp_browse_cli import browse_app
-from ra_mcp_tui import tui_app
 from ra_mcp_search_cli import search_app
+from ra_mcp_tui import tui_app
 
 
 console = Console()

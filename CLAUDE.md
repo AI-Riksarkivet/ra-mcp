@@ -48,14 +48,16 @@ ra-mcp/
 - [url_generator.py](packages/browse/src/ra_mcp_browse/url_generator.py): URL construction helpers
 
 **ra-mcp-search-mcp** (depends on search + fastmcp):
-- [mcp.py](packages/search-mcp/src/search_mcp/mcp.py): FastMCP server setup and instructions
-- [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py): `search_transcribed` and `search_metadata` MCP tools
-- [formatter.py](packages/search-mcp/src/search_mcp/formatter.py): Search result formatting for LLM output
+- [tools.py](packages/search-mcp/src/ra_mcp_search_mcp/tools.py): FastMCP server setup, instructions, and tool registration
+- [search_tool.py](packages/search-mcp/src/ra_mcp_search_mcp/search_tool.py): `search_transcribed` and `search_metadata` MCP tools
+- [server.py](packages/search-mcp/src/ra_mcp_search_mcp/server.py): Standalone entry point for isolated dev/testing
+- [formatter.py](packages/search-mcp/src/ra_mcp_search_mcp/formatter.py): Search result formatting for LLM output
 
 **ra-mcp-browse-mcp** (depends on browse + fastmcp):
-- [mcp.py](packages/browse-mcp/src/browse_mcp/mcp.py): FastMCP server setup and instructions
-- [browse_tool.py](packages/browse-mcp/src/browse_mcp/browse_tool.py): `browse_document` MCP tool
-- [formatter.py](packages/browse-mcp/src/browse_mcp/formatter.py): Browse result formatting for LLM output
+- [tools.py](packages/browse-mcp/src/ra_mcp_browse_mcp/tools.py): FastMCP server setup, instructions, and tool registration
+- [browse_tool.py](packages/browse-mcp/src/ra_mcp_browse_mcp/browse_tool.py): `browse_document` MCP tool
+- [server.py](packages/browse-mcp/src/ra_mcp_browse_mcp/server.py): Standalone entry point for isolated dev/testing
+- [formatter.py](packages/browse-mcp/src/ra_mcp_browse_mcp/formatter.py): Browse result formatting for LLM output
 
 **ra-mcp-search-cli** (depends on search + typer + rich):
 - [app.py](packages/search-cli/src/search_cli/app.py): Typer sub-app
@@ -68,7 +70,8 @@ ra-mcp/
 - [formatter.py](packages/browse-cli/src/ra_mcp_browse_cli/formatter.py): CLI output formatting
 
 **ra-mcp-guide-mcp** (depends on common + fastmcp):
-- [mcp.py](packages/guide-mcp/src/guide_mcp/mcp.py): MCP resources for historical guides from `resources/`
+- [tools.py](packages/guide-mcp/src/ra_mcp_guide_mcp/tools.py): FastMCP server and MCP resources for historical guides from `resources/`
+- [server.py](packages/guide-mcp/src/ra_mcp_guide_mcp/server.py): Standalone entry point for isolated dev/testing
 
 **Root package — ra-mcp** (depends on all MCP and CLI packages):
 - [server.py](src/ra_mcp_server/server.py): FastMCP composition server (imports search, browse, guide modules)
@@ -577,7 +580,7 @@ Add to `claude_desktop_config.json`:
 1. Create a new tool file in the appropriate MCP package (e.g., [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py))
 2. Define a `register_*_tool(mcp)` function that uses `@mcp.tool()` decorator
 3. Add detailed docstring with examples and parameter documentation
-4. Call the register function from the package's [mcp.py](packages/search-mcp/src/search_mcp/mcp.py)
+4. Call the register function from the package's [tools.py](packages/search-mcp/src/ra_mcp_search_mcp/tools.py)
 
 Example pattern (from [search_tool.py](packages/search-mcp/src/search_mcp/search_tool.py)):
 ```python
@@ -598,7 +601,7 @@ To add a new module (e.g., `ra-mcp-metadata`):
 4. Register in [server.py](src/ra_mcp_server/server.py) `AVAILABLE_MODULES`:
 
 ```python
-from metadata_mcp.mcp import metadata_mcp
+from metadata_mcp.tools import metadata_mcp
 
 AVAILABLE_MODULES = {
     ...
@@ -622,7 +625,7 @@ AVAILABLE_MODULES = {
 
 ### Adding a New MCP Resource
 
-Resources provide static or dynamic content to MCP clients (see [guide_mcp/mcp.py](packages/guide-mcp/src/guide_mcp/mcp.py) for examples):
+Resources provide static or dynamic content to MCP clients (see [guide_mcp/tools.py](packages/guide-mcp/src/ra_mcp_guide_mcp/tools.py) for examples):
 
 ```python
 @mcp.resource("riksarkivet://my-resource/{param}")

@@ -32,7 +32,7 @@ class PageViewer(Widget):
 
         parts = []
         if page.bildvisning_url:
-            parts.append(f"o: open image")
+            parts.append("o: open image")
         if page.full_text:
             parts.append("c: copy text")
         if page.alto_url:
