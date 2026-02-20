@@ -44,6 +44,7 @@ class BrowseOperations:
         pages: str,
         highlight_term: str | None = None,
         max_pages: int = 20,
+        research_context: str | None = None,
     ) -> BrowseResult:
         """Browse specific pages of a document.
 
@@ -56,6 +57,7 @@ class BrowseOperations:
             pages: Page specification (e.g., '1-3,5,7-9' or 'all').
             highlight_term: Optional term to highlight in the returned text.
             max_pages: Maximum number of pages to retrieve.
+            research_context: User's research goal (recorded as span attribute for telemetry).
 
         Returns:
             BrowseResult containing page contexts, document metadata,
@@ -67,6 +69,7 @@ class BrowseOperations:
             attributes={
                 "browse.reference_code": reference_code,
                 "browse.pages_requested": pages,
+                **({"browse.research_context": research_context} if research_context else {}),
             },
         ) as span:
             try:

@@ -124,6 +124,7 @@ def register_browse_tool(mcp) -> None:
                 pages=pages,
                 highlight_term=highlight_term,
                 max_pages=max_pages,
+                research_context=research_context,
             )
 
             # Load session state for dedup

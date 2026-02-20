@@ -197,6 +197,7 @@ def register_search_tool(mcp) -> None:
                 sort=sort,
                 year_min=year_min,
                 year_max=year_max,
+                research_context=research_context,
             )
 
             # Load session state for dedup
@@ -344,6 +345,7 @@ def register_search_tool(mcp) -> None:
                 year_max=year_max,
                 name=name,
                 place=place,
+                research_context=research_context,
             )
 
             # Load session state for dedup

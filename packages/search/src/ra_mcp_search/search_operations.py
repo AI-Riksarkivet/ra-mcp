@@ -43,6 +43,7 @@ class SearchOperations:
         year_max: int | None = None,
         name: str | None = None,
         place: str | None = None,
+        research_context: str | None = None,
     ) -> SearchResult:
         """Search for records in document collections.
 
@@ -61,6 +62,7 @@ class SearchOperations:
             year_max: Filter results to this end year or earlier.
             name: Search by person name (can combine with keyword).
             place: Search by place name (can combine with keyword).
+            research_context: User's research goal (recorded as span attribute for telemetry).
 
         Returns:
             SearchResult containing documents, total count, and metadata.
@@ -73,6 +75,7 @@ class SearchOperations:
                 "search.transcribed_only": transcribed_only,
                 "search.offset": offset,
                 "search.limit": limit,
+                **({"search.research_context": research_context} if research_context else {}),
             },
         ) as span:
             try:
