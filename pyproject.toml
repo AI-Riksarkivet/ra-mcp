@@ -8,6 +8,7 @@ dependencies = [
     "ra-mcp-search-mcp",
     "ra-mcp-browse-mcp",
     "ra-mcp-guide-mcp",
+    "ra-mcp-htr-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
@@ -75,6 +76,7 @@ ra-mcp-browse = { workspace = true }
 ra-mcp-browse-cli = { workspace = true }
 ra-mcp-browse-mcp = { workspace = true }
 ra-mcp-guide-mcp = { workspace = true }
+ra-mcp-htr-mcp = { workspace = true }
 ra-mcp-tui = { workspace = true }
 
 [tool.ruff]
@@ -123,6 +125,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "src/ra_mcp_server/server.py" = ["T201"]
 "packages/common/src/ra_mcp_common/utils/http_client.py" = ["T201"]
+"packages/*/tests/**" = ["S101", "ANN201"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
@@ -133,7 +136,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_tui", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_tui", "ra_mcp_server"]
 
 [tool.ty.terminal]
 error-on-warning = true

@@ -29,6 +29,7 @@ from starlette.responses import FileResponse, JSONResponse
 
 from ra_mcp_browse_mcp.tools import browse_mcp
 from ra_mcp_guide_mcp.tools import guide_mcp
+from ra_mcp_htr_mcp.tools import htr_mcp
 
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
@@ -50,6 +51,11 @@ AVAILABLE_MODULES = {
     "guide": {
         "server": guide_mcp,
         "description": "Access historical documentation and archival guides",
+        "default": True,
+    },
+    "htr": {
+        "server": htr_mcp,
+        "description": "Transcribe handwritten documents using HTRflow",
         "default": True,
     },
 }
