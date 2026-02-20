@@ -44,6 +44,7 @@ class SearchOperations:
         name: str | None = None,
         place: str | None = None,
         research_context: str | None = None,
+        session_id: str | None = None,
     ) -> SearchResult:
         """Search for records in document collections.
 
@@ -76,6 +77,7 @@ class SearchOperations:
                 "search.offset": offset,
                 "search.limit": limit,
                 **({"search.research_context": research_context} if research_context else {}),
+                **({"mcp.session.id": session_id} if session_id else {}),
             },
         ) as span:
             try:

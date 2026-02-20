@@ -45,6 +45,7 @@ class BrowseOperations:
         highlight_term: str | None = None,
         max_pages: int = 20,
         research_context: str | None = None,
+        session_id: str | None = None,
     ) -> BrowseResult:
         """Browse specific pages of a document.
 
@@ -70,6 +71,7 @@ class BrowseOperations:
                 "browse.reference_code": reference_code,
                 "browse.pages_requested": pages,
                 **({"browse.research_context": research_context} if research_context else {}),
+                **({"mcp.session.id": session_id} if session_id else {}),
             },
         ) as span:
             try:
