@@ -207,7 +207,6 @@ func (m *RaMcp) VerifyTelemetry(
 				"uv.lock",
 				"packages/",
 				"src/",
-				"resources/",
 				"docs/assets/",
 				"README.md",
 				"LICENSE",

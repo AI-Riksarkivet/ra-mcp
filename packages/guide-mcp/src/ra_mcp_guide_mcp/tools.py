@@ -112,23 +112,34 @@ def _generate_invalid_filename_message() -> str:
     )
 
 
-_CURRENT_DIR = Path(__file__).parent
+def _find_resources_dir() -> Path:
+    """Locate the resources directory.
+
+    Checks two locations:
+    1. Inside the guide-mcp package (development / editable install)
+    2. Working directory ``resources/`` (Docker production with --no-editable)
+    """
+    # Development: resources/ lives next to src/ in the guide-mcp package
+    # tools.py -> ra_mcp_guide_mcp/ -> src/ -> guide-mcp/ -> resources/
+    pkg_resources = Path(__file__).resolve().parent.parent.parent / "resources"
+    if pkg_resources.is_dir():
+        return pkg_resources
+
+    # Production (Docker): resources/ is copied to the working directory
+    cwd_resources = Path("resources")
+    if cwd_resources.is_dir():
+        return cwd_resources.resolve()
+
+    return pkg_resources  # fall back so error messages reference a sensible path
+
+
+_RESOURCES_DIR = _find_resources_dir()
 
 
 def _check_file_exists(filename) -> bool:
     """Check if the markdown file exists."""
     safe_name = Path(filename).name
-    markdown_path = _CURRENT_DIR / ".." / ".." / ".." / ".." / "resources" / safe_name
-    if not markdown_path.exists():
-        # Try alternative paths for different package layouts
-        alt_paths = [
-            _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "resources" / safe_name,
-            _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "markdown" / safe_name,
-        ]
-        for alt_path in alt_paths:
-            if alt_path.exists():
-                return True
-    return markdown_path.exists()
+    return (_RESOURCES_DIR / safe_name).exists()
 
 
 def _generate_file_not_found_message(filename) -> str:
@@ -146,17 +157,9 @@ def _generate_file_not_found_message(filename) -> str:
 def _load_markdown_file(filename) -> str:
     """Load content from a markdown file."""
     safe_name = Path(filename).name
+    path = _RESOURCES_DIR / safe_name
 
-    # Try multiple possible paths
-    possible_paths = [
-        _CURRENT_DIR / ".." / ".." / ".." / ".." / "resources" / safe_name,
-        _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "resources" / safe_name,
-        _CURRENT_DIR / ".." / ".." / ".." / ".." / ".." / "markdown" / safe_name,
-    ]
+    if not path.exists():
+        raise FileNotFoundError(f"Could not find {safe_name} in {_RESOURCES_DIR}")
 
-    for markdown_path in possible_paths:
-        if markdown_path.exists():
-            return markdown_path.read_text(encoding="utf-8")
-
-    # Default path for error message
-    raise FileNotFoundError(f"Could not find {safe_name} in any expected location")
+    return path.read_text(encoding="utf-8")
