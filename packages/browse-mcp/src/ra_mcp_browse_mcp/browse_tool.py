@@ -33,33 +33,13 @@ def register_browse_tool(mcp) -> None:
     This tool retrieves complete page transcriptions from historical documents in Swedish.
     Each result includes the full transcribed text as it appears in the original document,
     plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
-    Prefer showing the whole transcription and link in responses of individual pages.
-    Download some of the nearby pages too on selected pages if context seem to be missing from the transcript
-    to get a better picture.
-
-    Original text:
-    transcript
-
-    Translation:
-    Modern translation in language of user
-
-    Links
-
-    IMPORTANT BEHAVIORS:
-    - **Blank pages**: Pages may show "(Empty page - no transcribed text)" if the ALTO file exists
-      but contains no text (cover pages, blank pages, etc.). These are still digitised materials.
-    - **Non-digitised materials**: If no ALTO files exist (404 errors), the tool returns metadata only
-      including title, date range, description, and links to view the material online.
-    - **Mixed content**: Documents may have blank cover pages followed by pages with text content.
 
     Key features:
     - Returns full page transcriptions in original language (usually Swedish)
-    - Shows "(Empty page - no transcribed text)" for blank pages that are digitised but have no text
-    - Provides metadata (title, date, description) for non-digitised materials
-    - Provides links to bildvisaren (Riksarkivet's image viewer) for viewing original documents
+    - Provides links to bildvisaren (image viewer), ALTO XML, and IIIF URLs
     - Supports single pages, page ranges, or multiple specific pages
-    - Direct links to ALTO XML for detailed text layout information
-    - IIIF manifest and image URLs when available
+    - Blank pages show "(Empty page - no transcribed text)" — these are digitised but have no text
+    - Non-digitised materials return metadata only (title, date, description, viewing links)
 
     Parameters:
     - reference_code: Document reference code from search results (e.g., "SE/RA/420422/01")
@@ -78,9 +58,6 @@ def register_browse_tool(mcp) -> None:
     - browse_document("SE/RA/420422/01", "5") - View full transcription of page 5
     - browse_document("SE/RA/420422/01", "1-10") - View pages 1 through 10
     - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
-
-    Note: Transcriptions are as they appear in the historical documents.
-    Use this tool when you need complete page content rather than just search snippets.
     """,
     )
     async def browse_document(
@@ -118,6 +95,7 @@ def register_browse_tool(mcp) -> None:
             browse_operations = BrowseOperations(http_client=default_http_client)
             formatter = PlainTextFormatter()
 
+            session_id = ctx.session_id if ctx is not None else None
             browse_result = _fetch_document_pages(
                 browse_operations,
                 reference_code=reference_code,
@@ -125,6 +103,7 @@ def register_browse_tool(mcp) -> None:
                 highlight_term=highlight_term,
                 max_pages=max_pages,
                 research_context=research_context,
+                session_id=session_id,
             )
 
             # Load session state for dedup

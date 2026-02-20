@@ -49,84 +49,17 @@ def register_search_tool(mcp) -> None:
     - Returns document metadata, page numbers, and text snippets containing the keyword
     - Provides direct links to page images and ALTO XML transcriptions
     - Supports pagination via offset parameter for comprehensive discovery
-    - Advanced search syntax for precise queries
 
     For searching document metadata (titles, names, places), use the search_metadata tool instead.
 
-    Search syntax examples:
-    - Basic: "Stockholm" - exact term search
-    - Wildcards: "Stock*", "St?ckholm", "*holm" - match patterns
-    - Fuzzy: "Stockholm~" or "Stockholm~1" - find similar words (typos, variants)
-    - Proximity: '\"Stockholm trolldom\"~10' - words within 10 words of each other
-    - Boolean: "(Stockholm AND trolldom)", "(Stockholm OR Göteborg)", "(Stockholm NOT trolldom)"
-    - Boosting: \"Stockholm^4 trol*\" - increase relevance of specific terms
-    - Complex: "((troll* OR häx*) AND (Stockholm OR Göteborg))" - combine operators
+    Search syntax quick reference:
+    - Basic: "Stockholm" | Wildcards: "Stock*", "St?ckholm" | Fuzzy: "Stockholm~1"
+    - Proximity: '"Stockholm trolldom"~10' (2 terms in quotes only)
+    - Boolean: "(Stockholm AND trolldom)", "(Stockholm OR Goteborg)"
+    - Complex: "((troll* OR hax*) AND (Stockholm OR Goteborg))"
 
-    NOTE: make sure to use grouping () for any boolean search also  \"\" is important to group multiple words
-    E.g do '((skatt* OR guld* OR silver*) AND (stöld* OR stul*))' instead of '(skatt* OR guld* OR silver*) AND (stöld* OR stul*)', i.e prefer grouping as that will retrun results, non-grouping will return 0 results
-
-    also prefer to use fuzzy search i.e. something like ((stöld~2 OR tjufnad~2) AND (silver* OR guld*)) AND (döm* OR straff*) as many trancriptions are OCR/HTR AI based with common errors. Also account for old swedish i.e (((präst* OR prest*) OR (kyrko* OR kyrck*)) AND ((silver* OR silfv*) OR (guld* OR gull*)))
-
-    Proximity guide:
-
-        Use quotes around the search terms
-
-        "term1 term2"~N ✅
-        term1 term2~N ❌
-
-        Only 2 terms work reliably
-
-        "kyrka stöld"~10 ✅
-        "kyrka silver stöld"~10 ❌
-
-        The number indicates maximum word distance
-
-        ~3 = within 3 words
-        ~10 = within 10 words
-        ~50 = within 50 words
-
-        📊 Working Examples by Category:
-        Crime & Punishment:
-        "tredje stöld"~5           # Third-time theft
-        "dömd hänga"~10            # Sentenced to hang
-        "inbrott natt*"~5          # Burglary at night
-        "kyrka stöld"~10           # Church theft
-        Values & Items:
-        "hundra daler"~3           # Hundred dalers
-        "stor* stöld*"~5           # Major theft
-        "guld* ring*"~10           # Gold ring
-        "silver* kalk*"~10         # Silver chalice
-        Complex Combinations:
-        ("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*
-        # Church thefts or church thieves in 1700s
-
-        ("inbrott natt*"~5) AND (guld* OR silver*)
-        # Night burglaries involving gold or silver
-
-        ("första resan" AND stöld*) OR ("tredje stöld"~5)
-        # First-time theft OR third theft (within proximity)
-        🔧 Troubleshooting Tips:
-        If proximity search returns no results:
-
-        Check your quotes - Must wrap both terms
-        Reduce to 2 terms - Drop extra words
-        Try exact terms first - Before wildcards
-        Increase distance - Try ~10 instead of ~3
-        Simplify wildcards - Use on one term only
-
-        💡 Advanced Strategy:
-        Layer your searches from simple to complex:
-        Step 1: "kyrka stöld"~10
-        Step 2: ("kyrka stöld"~10 OR "kyrka tjuv*"~10)
-        Step 3: (("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*)
-        Step 4: (("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*) AND (guld* OR silver*)
-        Most Reliable Proximity Patterns:
-
-        Exact + Exact: "hundra daler"~3
-        Exact + Wildcard: "inbrott natt*"~5
-        Wildcard + Wildcard (sometimes): "stor* stöld*"~5
-
-        The key is that proximity operators in this system work best with exactly 2 terms in quotes, and you can then combine multiple proximity searches using Boolean operators outside the quotes!
+    CRITICAL: Always use grouping () for Boolean queries — omitting outer parens returns 0 results.
+    Use fuzzy search (~) for OCR/HTR errors and old Swedish spelling variants.
 
     Parameters:
     - keyword: Search term or Solr query (required)
@@ -144,15 +77,6 @@ def register_search_tool(mcp) -> None:
     - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
     - If you already have search results or page transcriptions in your conversation context, reference that data directly instead of calling this tool again.
     - Only call again when you need NEW information: a different query, different offset, or different parameters.
-
-    Best practices:
-    - Start with offset=0 and increase by 50 to discover all matches
-    - Search related terms and variants for comprehensive coverage
-    - Use wildcards (*) for word variations: "troll*" finds "trolldom", "trolleri", "trollkona"
-    - Use fuzzy search (~) for historical spelling variants
-    - Use browse_document tool to view full page transcriptions of interesting results
-    - Use year_min/year_max to narrow results to a specific time period
-    - Use sort="timeAsc" to find earliest mentions, sort="timeDesc" for most recent
     """,
     )
     async def search_transcribed(
@@ -187,6 +111,7 @@ def register_search_tool(mcp) -> None:
             formatter = PlainTextFormatter()
 
             logger.info("Executing transcribed text search for '%s'...", keyword)
+            session_id = ctx.session_id if ctx is not None else None
             search_result = search_operations.search(
                 keyword=keyword,
                 transcribed_only=True,  # Always search transcribed text
@@ -198,6 +123,7 @@ def register_search_tool(mcp) -> None:
                 year_min=year_min,
                 year_max=year_max,
                 research_context=research_context,
+                session_id=session_id,
             )
 
             # Load session state for dedup
@@ -251,18 +177,9 @@ def register_search_tool(mcp) -> None:
 
     Key features:
     - Searches titles, names, places, archival descriptions, provenance
-    - Can search both digitised and non-digitised materials
-    - Returns document metadata with matching fields
-    - Supports same advanced Solr query syntax as search_transcribed
-    - Access to 2M+ records when including non-digitised materials
+    - Can search both digitised and non-digitised materials (2M+ records with only_digitised=False)
     - Targeted search by person name or place name via dedicated fields
-
-    Search syntax (same as search_transcribed):
-    - Basic: "Stockholm" - exact term search
-    - Wildcards: "Stock*" - match patterns
-    - Fuzzy: "Stockholm~1" - find similar words
-    - Boolean: "(Stockholm AND Carpelan)" - combine terms
-    - Proximity: '"Stockholm silver"~10' - words within 10 words
+    - Supports same Solr query syntax as search_transcribed (wildcards, fuzzy, Boolean, proximity)
 
     Parameters:
     - keyword: General free-text search across all metadata fields (maps to the API 'text' parameter). Required.
@@ -273,29 +190,18 @@ def register_search_tool(mcp) -> None:
     - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
     - year_min: Optional start year to filter results (e.g. 1700)
     - year_max: Optional end year to filter results (e.g. 1750)
-    - name: Search by person name in the dedicated name field (e.g. "Nobel", "Linné"). Can be combined with keyword and place.
-    - place: Search by place name in the dedicated place field (e.g. "Stockholm", "Göteborg"). Can be combined with keyword and name.
-
-    Combining parameters:
-    - keyword + name + place can all be used together for precise filtering
-    - Example: keyword="inventarium", name="Nobel", place="Stockholm" finds inventory documents mentioning Nobel in Stockholm
-    - Use name/place for targeted searches instead of putting everything in keyword
+    - name: Search by person name in the dedicated name field (e.g. "Nobel", "Linne"). Can be combined with keyword and place.
+    - place: Search by place name in the dedicated place field (e.g. "Stockholm", "Goteborg"). Can be combined with keyword and name.
     - dedup: Session deduplication (default: True). When True, documents already shown in this session are compacted or skipped. Set to False to force full results.
     - research_context: Brief summary of the user's research goal and what they hope to find with this search. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before searching. Examples: "Looking for estate inventories in Stockholm from the 1800s", "Investigating church records related to a specific parish". This is used for telemetry and logging only — it does not affect search results.
+
+    Combining parameters: keyword + name + place can all be used together for precise filtering.
+    Example: keyword="inventarium", name="Nobel", place="Stockholm".
 
     IMPORTANT - Avoid redundant calls:
     - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
     - If you already have search results in your conversation context, reference that data directly instead of calling this tool again.
     - Only call again when you need NEW information: a different query, different offset, or different parameters.
-
-    When to use:
-    - Searching for places: use the place parameter for targeted results
-    - Searching for people: use the name parameter
-    - Searching document titles or descriptions: use keyword
-    - Finding non-digitised materials by metadata
-    - Broad discovery across all archival records
-    - Time-ordered results: use sort="timeAsc" or sort="timeDesc"
-    - Narrowing by date range: use year_min/year_max
     """,
     )
     async def search_metadata(
@@ -333,6 +239,7 @@ def register_search_tool(mcp) -> None:
             formatter = PlainTextFormatter()
 
             logger.info("Executing metadata search for '%s' in %s...", keyword, material_scope)
+            session_id = ctx.session_id if ctx is not None else None
             search_result = search_operations.search(
                 keyword=keyword,
                 transcribed_only=False,  # Search metadata fields
@@ -346,6 +253,7 @@ def register_search_tool(mcp) -> None:
                 name=name,
                 place=place,
                 research_context=research_context,
+                session_id=session_id,
             )
 
             # Load session state for dedup

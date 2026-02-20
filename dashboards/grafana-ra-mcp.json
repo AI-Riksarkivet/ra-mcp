@@ -108,7 +108,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -242,7 +242,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -335,7 +335,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -409,7 +409,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -495,7 +495,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -597,7 +597,7 @@
           "sort": "desc"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -694,7 +694,7 @@
           "sort": "desc"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -925,7 +925,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "direction": "backward",
@@ -1020,7 +1020,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "editorMode": "code",
@@ -1084,7 +1084,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "editorMode": "code",
@@ -1148,7 +1148,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "editorMode": "code",
@@ -1212,7 +1212,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "editorMode": "code",
@@ -1276,7 +1276,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "editorMode": "code",
@@ -1320,7 +1320,7 @@
             "steps": [
               {
                 "color": "blue",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -1352,7 +1352,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1386,7 +1386,7 @@
             "steps": [
               {
                 "color": "purple",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -1418,7 +1418,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1453,7 +1453,7 @@
             "steps": [
               {
                 "color": "yellow",
-                "value": null
+                "value": 0
               },
               {
                 "color": "green",
@@ -1489,7 +1489,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1524,7 +1524,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -1564,7 +1564,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1599,7 +1599,7 @@
             "steps": [
               {
                 "color": "red",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -1639,7 +1639,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1673,7 +1673,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -1713,7 +1713,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1781,7 +1781,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -1811,7 +1811,7 @@
           "sort": "desc"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1879,7 +1879,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -1909,7 +1909,7 @@
           "sort": "desc"
         }
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -1933,7 +1933,34 @@
       },
       "description": "Recent search operations from Tempo traces. Shows the keyword searched, number of results found, and request duration.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": [
+                "countAll"
+              ]
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -1944,6 +1971,30 @@
               {
                 "id": "unit",
                 "value": "ns"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "search.research_context"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 126
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mcp.session.id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 299
               }
             ]
           }
@@ -1958,15 +2009,7 @@
       "id": 209,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": true,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "count"
-          ],
-          "show": true
-        },
+        "enablePagination": true,
         "showHeader": true,
         "sortBy": [
           {
@@ -1975,45 +2018,46 @@
           }
         ]
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
             "type": "tempo",
             "uid": "${traces_datasource}"
           },
-          "queryType": "traceql",
-          "query": "{resource.service.name=\"ra-mcp\" && name=\"SearchOperations.search\"} | select(span.search.keyword, span.search.total_hits, span.search.research_context)",
-          "tableType": "spans",
           "limit": 20,
+          "query": "{resource.service.name=\"ra-mcp\" && name=\"SearchOperations.search\"} | select(span.mcp.session.id, span.search.keyword, span.search.total_hits, span.search.research_context)",
+          "queryType": "traceql",
+          "refId": "A",
           "spss": 3,
-          "refId": "A"
+          "tableType": "spans"
         }
       ],
       "title": "Recent Searches",
-      "type": "table",
       "transformations": [
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "spanID": true,
-              "traceService": true,
               "traceNamespace": true,
-              "traceName": true,
-              "spanName": true,
-              "serviceName": true
+              "traceService": true
             },
             "indexByName": {},
             "renameByName": {
-              "traceName": "Trace",
+              "span.mcp.session.id": "Session",
+              "span.search.keyword": "Keyword",
+              "span.search.research_context": "Research Context",
+              "span.search.total_hits": "Hits",
               "spanName": "Operation",
               "traceDuration": "Trace Duration",
-              "traceID": "Trace ID"
+              "traceID": "Trace ID",
+              "traceName": "Trace"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -2022,7 +2066,34 @@
       },
       "description": "Searches that returned zero results. These may indicate unsupported query patterns, spelling issues, or gaps in the archive data.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": [
+                "countAll"
+              ]
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -2047,15 +2118,7 @@
       "id": 210,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": true,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "count"
-          ],
-          "show": true
-        },
+        "enablePagination": true,
         "showHeader": true,
         "sortBy": [
           {
@@ -2064,45 +2127,45 @@
           }
         ]
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
             "type": "tempo",
             "uid": "${traces_datasource}"
           },
-          "queryType": "traceql",
-          "query": "{resource.service.name=\"ra-mcp\" && name=\"SearchOperations.search\" && span.search.total_hits = 0} | select(span.search.keyword, span.search.research_context)",
-          "tableType": "spans",
           "limit": 20,
+          "query": "{resource.service.name=\"ra-mcp\" && name=\"SearchOperations.search\" && span.search.total_hits = 0} | select(span.mcp.session.id, span.search.keyword, span.search.research_context)",
+          "queryType": "traceql",
+          "refId": "A",
           "spss": 3,
-          "refId": "A"
+          "tableType": "spans"
         }
       ],
       "title": "Zero-Result Searches",
-      "type": "table",
       "transformations": [
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "spanID": true,
-              "traceService": true,
               "traceNamespace": true,
-              "traceName": true,
-              "spanName": true,
-              "serviceName": true
+              "traceService": true
             },
             "indexByName": {},
             "renameByName": {
-              "traceName": "Trace",
+              "span.mcp.session.id": "Session",
+              "span.search.keyword": "Keyword",
+              "span.search.research_context": "Research Context",
               "spanName": "Operation",
               "traceDuration": "Trace Duration",
-              "traceID": "Trace ID"
+              "traceID": "Trace ID",
+              "traceName": "Trace"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -2111,7 +2174,34 @@
       },
       "description": "Recent document browse operations from Tempo traces. Shows the reference code browsed and pages requested.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": [
+                "countAll"
+              ]
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -2136,15 +2226,7 @@
       "id": 211,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": true,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "count"
-          ],
-          "show": true
-        },
+        "enablePagination": true,
         "showHeader": true,
         "sortBy": [
           {
@@ -2153,45 +2235,48 @@
           }
         ]
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
             "type": "tempo",
             "uid": "${traces_datasource}"
           },
-          "queryType": "traceql",
-          "query": "{resource.service.name=\"ra-mcp\" && name=\"BrowseOperations.browse_document\"} | select(span.browse.reference_code, span.browse.pages_requested, span.browse.research_context)",
-          "tableType": "spans",
           "limit": 20,
+          "metricsQueryType": "range",
+          "query": "{resource.service.name=\"ra-mcp\" && name=\"BrowseOperations.browse_document\"} | select(span.mcp.session.id, span.browse.reference_code, span.browse.pages_requested, span.browse.research_context)",
+          "queryType": "traceql",
+          "refId": "A",
+          "serviceMapUseNativeHistograms": false,
           "spss": 3,
-          "refId": "A"
+          "tableType": "spans"
         }
       ],
       "title": "Recently Browsed Documents",
-      "type": "table",
       "transformations": [
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "spanID": true,
-              "traceService": true,
               "traceNamespace": true,
-              "traceName": true,
-              "spanName": true,
-              "serviceName": true
+              "traceService": true
             },
             "indexByName": {},
             "renameByName": {
-              "traceName": "Trace",
+              "span.browse.pages_requested": "Pages",
+              "span.browse.reference_code": "Reference Code",
+              "span.browse.research_context": "Research Context",
+              "span.mcp.session.id": "Session",
               "spanName": "Operation",
               "traceDuration": "Trace Duration",
-              "traceID": "Trace ID"
+              "traceID": "Trace ID",
+              "traceName": "Trace"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -2212,15 +2297,18 @@
       "id": 212,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
+        "showControls": false,
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
+        "unwrappedColumns": false,
         "wrapLogMessage": true
       },
-      "pluginVersion": "12.4.0-21959849188",
+      "pluginVersion": "12.4.0-21959849188.patch2",
       "targets": [
         {
           "datasource": {
@@ -2264,8 +2352,8 @@
       },
       {
         "current": {
-          "text": "0.5.3",
-          "value": "0.5.3"
+          "text": "0.8.0",
+          "value": "0.8.0"
         },
         "datasource": {
           "type": "prometheus",
@@ -2331,7 +2419,7 @@
       {
         "current": {
           "text": "grafanacloud-riksarkivet-traces",
-          "value": "grafanacloud-riksarkivet-traces"
+          "value": "grafanacloud-traces"
         },
         "description": "Tempo datasource for trace queries (TraceQL).",
         "includeAll": false,
@@ -2346,7 +2434,7 @@
       {
         "current": {
           "text": "grafanacloud-riksarkivet-logs",
-          "value": "grafanacloud-riksarkivet-logs"
+          "value": "grafanacloud-logs"
         },
         "description": "Loki datasource for log queries.",
         "includeAll": false,
@@ -2368,6 +2456,6 @@
   "timezone": "browser",
   "title": "ra-mcp — Riksarkivet MCP Server",
   "uid": "ra-mcp-overview",
-  "version": 41,
+  "version": 56,
   "weekStart": ""
 }

@@ -98,50 +98,28 @@ def build_instructions(enabled_modules: list[str]) -> str:
     modules_section = "\n".join(module_descriptions) if module_descriptions else "    (No modules enabled)"
 
     return f"""
-    🏛️ Riksarkivet MCP Server
+    Riksarkivet MCP Server — access to the Swedish National Archives (Riksarkivet).
+    Combines multiple specialized tool servers for historical research.
 
-    A Model Context Protocol server providing access to the Swedish National Archives (Riksarkivet).
-    This server combines multiple specialized tool servers into a unified interface for historical research.
-
-    📋 ENABLED MODULES:
+    ENABLED MODULES:
 
 {modules_section}
 
-    Each tool and resource includes detailed documentation. Use MCP's tool/list and resource/list
-    to discover available capabilities, or consult individual tool descriptions for usage guidance.
+    Each tool includes detailed documentation. Consult individual tool descriptions for usage guidance.
 
-    ⚠️ RESEARCH INTEGRITY — MANDATORY RULES:
+    SKILLS: This server provides companion skills (slash commands) that MUST be invoked before
+    calling tools directly. If a matching skill is available, invoke it FIRST — it provides
+    search strategy guidance, query syntax help, research methodology, and best practices
+    that significantly improve results. Key skills:
+    - archive-search: Invoke before any search task (search strategy, Solr syntax, fuzzy matching, old Swedish spelling)
+    - archive-research: Invoke before research tasks (methodology, citing sources, interpreting documents)
+    - htr-transcription: Invoke before HTR/transcription tasks
 
-    This is an academic research tool. Accuracy and proper sourcing are paramount.
+    RESEARCH INTEGRITY: This is an academic research tool. Never fabricate reference codes, page numbers,
+    dates, or names. Always cite exact reference codes and page numbers. Only use links returned by tools.
+    Distinguish document quotes from your interpretation. Flag uncertain transcriptions.
 
-    1. NEVER fabricate, guess, or hallucinate reference codes, page numbers, dates, names,
-       or any archival data. Every claim must come directly from tool results.
-    2. ALWAYS cite the exact reference code and page number when presenting information
-       from a document (e.g. "SE/RA/420422/01/A I a 1/288, page 66").
-    3. ONLY use links that are explicitly returned by the tools (bildvisaren, ALTO XML,
-       NAD links, IIIF URLs). NEVER construct or guess URLs — not even by combining
-       a base URL with a reference code. If a tool result does not include a link,
-       do not invent one.
-    4. DISTINGUISH clearly between what the document says (quote or close paraphrase)
-       and your own interpretation or translation. Use quotation marks for original text.
-    5. If a transcription is unclear, incomplete, or ambiguous, say so explicitly.
-       Do not silently fill in gaps with plausible-sounding text.
-    6. When translating old Swedish, mark it as a translation and note when
-       the meaning is uncertain.
-    7. If you cannot find information the user is looking for, say so. Do not
-       construct an answer from partial or unrelated results.
-
-    🔍 UNDERSTAND THE RESEARCH GOAL BEFORE SEARCHING:
-
-    Before making your first search, ensure you understand what the user is researching.
-    If their intent is vague or unclear, ASK clarifying questions first:
-    - What time period are they interested in?
-    - What type of documents are they looking for (court records, church records, military, estates)?
-    - Are they researching a specific person, family, place, or event?
-    - What do they already know that could help narrow the search?
-
-    Every tool call includes a research_context parameter — always fill it in with your
-    best understanding of the user's research goal based on the conversation so far.
+    Always fill in the research_context parameter on every tool call.
 
     """
 

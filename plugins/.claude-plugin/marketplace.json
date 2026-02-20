@@ -1,0 +1,16 @@
+{
+  "name": "ra-mcp-plugins",
+  "owner": {
+    "name": "AI-Riksarkivet"
+  },
+  "metadata": {
+    "description": "Plugins for Riksarkivet MCP tools"
+  },
+  "plugins": [
+    {
+      "name": "ra-mcp-tools",
+      "source": "./ra-mcp-tools",
+      "description": "Skills for using Riksarkivet MCP tools — HTR transcription, archive search, document browsing"
+    }
+  ]
+}

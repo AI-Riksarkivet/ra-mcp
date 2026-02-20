@@ -13,74 +13,16 @@ from .search_tool import register_search_tool
 search_mcp = FastMCP(
     name="ra-search-mcp",
     instructions="""
-    🏛️ Riksarkivet (RA) Search MCP Server
+    Riksarkivet (RA) Search MCP Server — search access to historical documents from the Swedish National Archives.
 
-    This server provides search access to historical documents from the Swedish National Archives.
+    TOOLS:
+    - search_transcribed: Search AI-transcribed text in digitised documents (full-text, snippets, page links)
+    - search_metadata: Search document metadata — titles, names, places, descriptions (2M+ records with only_digitised=False)
 
-    AVAILABLE TOOLS:
-
-    🔍 search_transcribed - Search AI-transcribed text in digitised documents
-       - Searches full-text transcriptions of historical documents
-       - Returns documents and pages containing the keyword with text snippets
-       - Best for: Finding specific phrases, names, or terms in document content
-       - Offset parameter required to encourage comprehensive discovery
-       - Provides direct links to images and ALTO XML
-       - Supports advanced Solr search syntax (see SEARCH SYNTAX below)
-
-    📋 search_metadata - Search document metadata (titles, names, places)
-       - Searches metadata fields: titles, personal names, place names, descriptions
-       - Can search both digitised and non-digitised materials (2M+ records)
-       - Best for: Finding documents by person names, places, or archival descriptions
-       - Set only_digitised=False to include non-digitised materials
-       - Supports same advanced Solr search syntax
-
-    SEARCH STRATEGY FOR MAXIMUM DISCOVERY:
-    1. Start with search_transcribed(keyword, offset=0) for initial hits (use syntax guide below when searching) and check some metadata with search_metadata
-    2. Continue pagination with increasing offsets (50, 100, 150...) if nothing interesting pop up but prioritze transribed materials
-    3. EXPLORE RELATED TERMS: Search for similar/related words to gather comprehensive context
-       - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
-       - Synonyms and related concepts (e.g., "satan" + "djävul" for devil-related terms)
-       - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
-       - Period-appropriate terminology and archaic spellings
-    4. Note reference codes and page numbers from results for detailed browsing with browse tools, use them to go into interesting matches
-
-    SEARCH SYNTAX (Solr Query Syntax):
-
-    Basic Search:
-    - "Stockholm" - Exact term search
-    - "Stock*" - Wildcard (multiple characters)
-    - "St?ckholm" - Wildcard (single character)
-
-    Fuzzy & Proximity:
-    - "Stockholm~" - Fuzzy search (edit distance 2)
-    - "Stockholm~1" - Fuzzy with custom edit distance
-    - '\"Stockholm trolldom\"~10' - Proximity (within 10 words)
-
-    Boolean Operators:
-    - "(Stockholm AND trolldom)" - Both terms required
-    - "(Stockholm OR Göteborg)" - Either term (or both)
-    - "(Stockholm NOT trolldom)" - First without second
-    - "+Stockholm -trolldom" - Require/exclude terms
-
-    Boosting & Grouping:
-    - "Stockholm^4 troll*" - Boost term relevance (4x)
-    - '(\"Stockholm dom*\"^4 Reg*)' - Boost phrase with wildcards
-    - "((Stockholm OR Göteborg) AND troll*)" - Complex grouping
-
-    TYPICAL WORKFLOW:
-    1. Comprehensive search: search_transcribed(term, 0), then search_transcribed(term, 50), etc.
-    2. Search related terms in parallel to build complete context
-    3. Use advanced syntax for precise queries (Boolean, wildcards, fuzzy, proximity)
-    4. Review hit summaries to identify most relevant documents across all searches
-    5. Use browse tools (separate server) for detailed examination of specific pages
-
-    SESSION MEMORY & AVOIDING REDUNDANT CALLS:
-    - These tools track what they have shown you in this session. Re-calling the same search returns compact stubs for already-seen documents, saving tokens.
-    - PREFER referencing data already in your conversation context over re-calling a tool. If you already have search results with reference codes, page numbers, or snippets, use them directly.
-    - Only call a search tool again when you need genuinely NEW information: a different keyword, different offset, or different parameters.
-    - Pass dedup=False to any tool if you truly need full results repeated.
-
-    All tools return rich, formatted text optimized for LLM understanding.
+    SESSION MEMORY:
+    These tools track what they have shown you in this session. Re-calling the same search returns compact stubs
+    for already-seen documents. Prefer referencing data already in your conversation context. Pass dedup=False
+    to force full results repeated.
     """,
 )
 
