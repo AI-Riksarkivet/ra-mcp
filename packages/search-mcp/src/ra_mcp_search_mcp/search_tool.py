@@ -148,7 +148,9 @@ def register_search_tool(mcp) -> None:
             "Use the dedicated name parameter for person searches and place parameter for place searches — these can be combined with keyword.\n"
             "Does NOT search transcribed page text — use search_transcribed for that. "
             "Prefer this tool for genealogy (church records, estate inventories) since those are cataloged but mostly not AI-transcribed.\n"
-            "Same Solr syntax as search_transcribed. Session dedup: re-calling returns stubs for already-seen documents."
+            "Same Solr syntax as search_transcribed. Session dedup: re-calling returns stubs for already-seen documents.\n"
+            "Important: name and place filter a dedicated metadata field that is sparsely populated. "
+            "Most person/place matches are NOT digitised, so set only_digitised=False when using name or place to avoid empty results."
         ),
     )
     async def search_metadata(
@@ -161,10 +163,10 @@ def register_search_tool(mcp) -> None:
         year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
         year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
         name: Annotated[
-            str | None, Field(description="Person name search in dedicated name field (e.g. 'Nobel', 'Linné'). Combinable with keyword and place.")
+            str | None, Field(description="Person name search in dedicated name field (e.g. 'Nobel', 'Linné'). Combinable with keyword and place. Most name matches are non-digitised — set only_digitised=False.")
         ] = None,
         place: Annotated[
-            str | None, Field(description="Place name search in dedicated place field (e.g. 'Stockholm', 'Göteborg'). Combinable with keyword and name.")
+            str | None, Field(description="Place name search in dedicated place field (e.g. 'Stockholm', 'Göteborg'). Combinable with keyword and name. Most place matches are non-digitised — set only_digitised=False.")
         ] = None,
         dedup: Annotated[bool, Field(description="Session deduplication. True compacts already-seen documents; False forces full results.")] = True,
         research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,

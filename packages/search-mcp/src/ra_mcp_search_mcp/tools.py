@@ -18,6 +18,7 @@ search_mcp = FastMCP(
     TOOLS:
     - search_transcribed: Search AI-transcribed text in digitised documents (full-text, snippets, page links)
     - search_metadata: Search document metadata — titles, names, places, descriptions (2M+ records with only_digitised=False)
+      When using name or place parameters, set only_digitised=False — most person/place catalog entries lack digitised images.
 
     SESSION MEMORY:
     These tools track what they have shown you in this session. Re-calling the same search returns compact stubs
