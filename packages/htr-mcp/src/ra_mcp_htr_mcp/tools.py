@@ -9,15 +9,18 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any
+from typing import Annotated, Literal
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 from gradio_client import Client
+from pydantic import BaseModel, Field
 
 
 logger = logging.getLogger(__name__)
 
 HTR_SPACE_URL = os.getenv("HTR_SPACE_URL", "https://riksarkivet-htr-demo.hf.space")
+HTR_TIMEOUT = float(os.getenv("HTR_TIMEOUT", "300"))
 
 _client: Client | None = None
 
@@ -31,17 +34,26 @@ def _get_client() -> Client:
     return _client
 
 
+class HtrResult(BaseModel):
+    """Result from an HTR transcription job."""
+
+    viewer_url: str = Field(description="Interactive gallery viewer with polygon overlays, search, confidence scores, and text download")
+    pages_url: str = Field(description="JSON with per-page transcription lines (id, text, confidence per line)")
+    export_url: str = Field(description="Archival export file in the requested format")
+    export_format: str = Field(description="The export format that was used (echoed back)")
+
+
 htr_mcp = FastMCP(
     name="ra-htr-mcp",
     instructions="""
-    🖊️ Riksarkivet HTR MCP Server
+    Riksarkivet HTR MCP Server
 
-    This server provides handwritten text recognition (HTR) for historical documents
+    Provides handwritten text recognition (HTR) for historical documents
     via a remote Gradio Space running HTRflow.
 
     AVAILABLE TOOL:
 
-    📝 htr_transcribe - Transcribe handwritten document images
+    htr_transcribe - Transcribe handwritten document images
        - Accepts image URLs (http/https)
        - Supports Swedish, Norwegian, English, and medieval documents
        - Returns viewer URL, per-page JSON, and archival export (ALTO XML, PAGE XML, or JSON)
@@ -56,41 +68,55 @@ htr_mcp = FastMCP(
 )
 
 
-@htr_mcp.tool()
+@htr_mcp.tool(
+    annotations={
+        "title": "Transcribe Handwritten Documents",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+        "idempotentHint": True,
+    },
+    timeout=HTR_TIMEOUT,
+)
 async def htr_transcribe(
-    image_urls: list[str],
-    language: str = "swedish",
-    layout: str = "single_page",
-    export_format: str = "alto_xml",
-    custom_yaml: str | None = None,
-) -> dict[str, Any]:
+    image_urls: Annotated[list[str], Field(description="Image URLs to process (http/https URLs)")],
+    language: Annotated[
+        Literal["swedish", "norwegian", "english", "medieval"],
+        Field(description="Document language"),
+    ] = "swedish",
+    layout: Annotated[
+        Literal["single_page", "spread"],
+        Field(description="Page layout: single_page or spread (two-page opening)"),
+    ] = "single_page",
+    export_format: Annotated[
+        Literal["alto_xml", "page_xml", "json"],
+        Field(description="Archival export format"),
+    ] = "alto_xml",
+    custom_yaml: Annotated[
+        str | None,
+        Field(description="Optional HTRflow YAML pipeline config. Overrides language/layout when provided"),
+    ] = None,
+) -> HtrResult:
     """Transcribe handwritten documents and return results as file URLs.
 
-    Returns: dict with file URLs:
-        viewer_url: Interactive gallery viewer with polygon overlays,
-            search, confidence scores, and text download.
-        pages_url: JSON with per-page transcription lines
-            (id, text, confidence per line).
-        export_url: Archival export file in the requested format.
-        export_format: The requested format (echoed back).
-
-    Args:
-        image_urls: List of full server URLs to process (from upload endpoint
-                    or direct http/https URLs).
-        language: Document language: "swedish" (default), "norwegian",
-                  "english", or "medieval".
-        layout: Page layout: "single_page" (default) or "spread" (two-page opening).
-        export_format: Export format: "alto_xml" (default), "page_xml", or "json".
-        custom_yaml: Optional HTRflow YAML pipeline config string. Overrides
-                     language/layout when provided.
+    Sends images to the HTRflow Gradio Space for AI-powered handwritten text
+    recognition. Returns URLs to an interactive viewer, per-page JSON
+    transcriptions, and an archival export file.
     """
-    client = _get_client()
-    result = client.predict(
-        image_urls=image_urls,
-        language=language,
-        layout=layout,
-        export_format=export_format,
-        custom_yaml=custom_yaml,
-        api_name="/htr_transcribe",
-    )
-    return result
+    try:
+        client = _get_client()
+    except Exception as e:
+        raise ToolError(f"Failed to connect to HTR Space at {HTR_SPACE_URL}: {e}") from e
+
+    try:
+        result = client.predict(
+            image_urls=image_urls,
+            language=language,
+            layout=layout,
+            export_format=export_format,
+            custom_yaml=custom_yaml,
+            api_name="/htr_transcribe",
+        )
+    except Exception as e:
+        raise ToolError(f"HTR transcription failed: {e}") from e
+
+    return HtrResult(**result)
