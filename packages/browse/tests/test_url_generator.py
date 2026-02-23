@@ -93,9 +93,9 @@ def test_bildvisning_url_strips_arkis_prefix():
 
 def test_bildvisning_url_search_term_none():
     result = bildvisning_url("R0001203", "7", None)
-    assert "#?q=" not in result
+    assert result == "https://sok.riksarkivet.se/bildvisning/R0001203_00007"
 
 
 def test_bildvisning_url_search_term_empty():
     result = bildvisning_url("R0001203", "7", "  ")
-    assert "#?q=" not in result
+    assert result == "https://sok.riksarkivet.se/bildvisning/R0001203_00007"

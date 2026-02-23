@@ -126,7 +126,7 @@ class IIIFClient:
             "collection_url": collection_url,
         }
 
-    def _extract_iiif_label(self, label_object: str | dict | list, default_value: str = "Unknown") -> str:
+    def _extract_iiif_label(self, label_object: str | dict | list | None, default_value: str = "Unknown") -> str:
         """Smart IIIF label extraction supporting all language map formats."""
         if not label_object:
             return default_value
