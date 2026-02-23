@@ -54,6 +54,7 @@ dev = [
     "ra-mcp-browse-cli",
     "ra-mcp-tui",
     "zensical>=0.0.23",
+    "pytest-cov>=7.0.0",
 ]
 
 [project.scripts]
@@ -155,3 +156,18 @@ python-version = "3.13"
 asyncio_mode = "auto"
 markers = []
 testpaths = ["packages/*/tests", "tests"]
+addopts = "--cov --cov-report=term-missing:skip-covered"
+
+[tool.coverage.run]
+branch = true
+source = ["packages/", "src/"]
+omit = ["**/tests/*", "**/__init__.py", "**/server.py", "**/cli/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]

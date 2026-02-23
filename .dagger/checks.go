@@ -12,6 +12,7 @@ var (
 	ruffCheckFixCmd    = []string{"uvx", "ruff", "check", "--fix", "."}
 	ruffCheckCmd       = []string{"uvx", "ruff", "check", "."}
 	tyCheckCmd         = []string{"uvx", "ty", "check"}
+	pipAuditCmd        = []string{"uvx", "pip-audit", "--strict", "--desc"}
 )
 
 // RuffFormat formats code using ruff (modifies files)
@@ -100,6 +101,15 @@ func (m *RaMcp) Checks(
 
 	if err != nil {
 		return "", fmt.Errorf("checks failed: %w", err)
+	}
+
+	// Step 4: Audit dependencies for known vulnerabilities
+	_, err = container.
+		WithExec(pipAuditCmd).
+		Sync(ctx)
+
+	if err != nil {
+		return "", fmt.Errorf("pip-audit failed: %w", err)
 	}
 
 	return "All checks passed ✅ (after auto-formatting and auto-fixing)", nil

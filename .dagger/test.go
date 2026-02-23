@@ -37,17 +37,13 @@ func (m *RaMcp) Test(
 		}).
 		WithExec([]string{"uv", "sync", "--frozen", "--no-cache"}) // Include dev dependencies
 
-	// Run pytest without coverage for now (coverage requires pytest-cov)
-	// Test suite is being set up - for now just verify pytest can be invoked
-	// Exit code 5 (no tests collected) is acceptable until tests are added
 	output, err := container.
-		WithExec([]string{"sh", "-c", "uv run pytest packages/ --collect-only -q || test $? -eq 5"}).
+		WithExec([]string{"uv", "run", "pytest", "--tb=short", "-q"}).
 		Stdout(ctx)
 
 	if err != nil {
 		return "", err
 	}
 
-	// Return success message since no tests exist yet
-	return "✓ Test infrastructure verified (no tests found - test suite being set up)\n" + output, nil
+	return output, nil
 }
