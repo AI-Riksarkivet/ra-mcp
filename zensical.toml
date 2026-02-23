@@ -19,9 +19,6 @@ nav = [
   { "How it Works" = [
     "how-it-works/index.md",
   ]},
-  { "Architecture" = [
-    "architecture/index.md",
-  ]},
   { "Tools & Skills" = [
     "tools/index.md",
   ]},
@@ -30,9 +27,6 @@ nav = [
   ]},
   { "Development" = [
     "development/index.md",
-  ]},
-  { "Deployment" = [
-    "deployment/index.md",
   ]},
   { "API" = [
     "api/index.md",
