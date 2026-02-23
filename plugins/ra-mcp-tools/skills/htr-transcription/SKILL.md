@@ -20,45 +20,17 @@ Returns an interactive viewer, per-line transcription JSON, and archival exports
 
 ### 1. Determine image source
 
-- **http/https URLs** (IIIF links, public image URLs): Use directly — skip to step 3.
-- **Local files or attachments**: Must be uploaded to the Gradio server first — proceed to step 2.
+- **http/https URLs** (IIIF links, public image URLs): Use directly — skip to step 2.
+- **Local files or attachments**: Must be uploaded first. Use the `/upload-files` skill, then continue to step 2.
 
-### 2. Upload files to the Gradio server
-
-`htr_transcribe` runs on a remote server. It can only access URLs it can
-reach. Local file paths and user attachments are not accessible to the
-server — you must upload them first.
-
-The base URL is the MCP server host (e.g. `https://riksarkivet-htr-demo.hf.space`).
-
-For each file:
-
-1. POST the file:
-   ```bash
-   curl -s -X POST "{base_url}/gradio_api/upload" \
-     -F "files=@filename.jpg"
-   ```
-
-2. Extract server path from JSON response:
-   ```json
-   ["/tmp/gradio/abc123def/filename.jpg"]
-   ```
-
-3. Construct the image URL:
-   ```
-   {base_url}/gradio_api/file=/tmp/gradio/abc123def/filename.jpg
-   ```
-
-Upload ALL files and collect ALL image URLs before proceeding to step 3.
-
-### 3. Transcribe
+### 2. Transcribe
 
 Call `htr_transcribe` once with ALL image URLs in a single call.
 
 **Batching rule**: Never call `htr_transcribe` multiple times for separate
 images. Each call runs an expensive GPU pipeline — batch everything.
 
-### 4. Present results
+### 3. Present results
 
 After transcription, present results as an **inline artifact** for the viewer
 and **downloadable links** for data exports.
