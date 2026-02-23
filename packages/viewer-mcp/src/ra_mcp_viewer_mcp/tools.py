@@ -172,33 +172,31 @@ async def search_all_pages(
 
     term_lower = term.strip().lower()
     sem = asyncio.Semaphore(6)
-    page_matches: list[dict] = []
-    total_matches = 0
 
-    async def _search_page(page_index: int, url: str) -> None:
-        nonlocal total_matches
+    async def _search_page(page_index: int, url: str) -> dict | None:
         if not url or not url.startswith(("http://", "https://")):
-            return
+            return None
         async with sem:
             try:
                 text_layer = await fetch_and_parse_text_layer(url)
             except Exception as e:
                 logger.warning("search_all_pages: failed to fetch page %d: %s", page_index, e)
-                return
+                return None
             count = 0
             for line in text_layer.get("textLines", []):
                 transcription = line.get("transcription", "")
                 if term_lower in transcription.lower():
                     count += 1
             if count > 0:
-                page_matches.append({"pageIndex": page_index, "matchCount": count})
-                total_matches += count
+                return {"pageIndex": page_index, "matchCount": count}
+            return None
 
     async with asyncio.TaskGroup() as tg:
-        for i, url in enumerate(text_layer_urls):
-            tg.create_task(_search_page(i, url))
+        tasks = [tg.create_task(_search_page(i, url)) for i, url in enumerate(text_layer_urls)]
 
+    page_matches = [r for t in tasks if (r := t.result()) is not None]
     page_matches.sort(key=lambda m: m["pageIndex"])
+    total_matches = sum(m["matchCount"] for m in page_matches)
 
     pages_with_matches = len(page_matches)
     summary = f"Found {total_matches} match{'es' if total_matches != 1 else ''} across {pages_with_matches} page{'s' if pages_with_matches != 1 else ''}."

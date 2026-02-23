@@ -113,29 +113,23 @@ function handleGlobalSearch(term: string) {
         globalSearchLoading = false;
       }
     }
-  }, 300);
+  }, 500);
 }
 
 function handleGlobalNavigate(direction: "prev" | "next") {
   const pagesWithMatches = Array.from(pageMatchCounts.keys()).sort((a, b) => a - b);
   if (pagesWithMatches.length === 0) return;
 
+  // Filter out current page — we want to navigate *away*
+  const otherPages = pagesWithMatches.filter(p => p !== currentPageIndex);
+  if (otherPages.length === 0) return; // Only matches on current page
+
   if (direction === "next") {
-    const next = pagesWithMatches.find(p => p > currentPageIndex);
-    if (next !== undefined) {
-      currentPageIndex = next;
-    } else {
-      // Wrap to first page with matches
-      currentPageIndex = pagesWithMatches[0];
-    }
+    const next = otherPages.find(p => p > currentPageIndex);
+    currentPageIndex = next !== undefined ? next : otherPages[0];
   } else {
-    const prev = [...pagesWithMatches].reverse().find(p => p < currentPageIndex);
-    if (prev !== undefined) {
-      currentPageIndex = prev;
-    } else {
-      // Wrap to last page with matches
-      currentPageIndex = pagesWithMatches[pagesWithMatches.length - 1];
-    }
+    const prev = [...otherPages].reverse().find(p => p < currentPageIndex);
+    currentPageIndex = prev !== undefined ? prev : otherPages[otherPages.length - 1];
   }
 }
 
