@@ -23,12 +23,14 @@ logger = logging.getLogger(__name__)
 _VALID_SORT_VALUES = {"relevance", "timeAsc", "timeDesc", "alphaAsc", "alphaDesc"}
 
 
-def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance") -> str | None:
+def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25) -> str | None:
     """Validate common search inputs. Returns an error string or None if valid."""
     if not keyword or not keyword.strip():
         return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
     if offset < 0:
         return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
+    if limit < 1:
+        return PlainTextFormatter().format_error_message(f"limit must be >= 1, got {limit}", error_suggestions=["Use limit=25 for default page size"])
     if year_min is not None and year_max is not None and year_min > year_max:
         return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
     if sort not in _VALID_SORT_VALUES:
@@ -77,7 +79,7 @@ def register_search_tool(mcp) -> None:
         This tool searches only transcribed text (not metadata).
         For metadata search, use search_metadata instead.
         """
-        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort)
+        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort, limit)
         if validation_error:
             return validation_error
 
@@ -185,7 +187,7 @@ def register_search_tool(mcp) -> None:
         This tool searches metadata fields, not transcribed text.
         For transcription search, use search_transcribed instead.
         """
-        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort)
+        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort, limit)
         if validation_error:
             return validation_error
 
