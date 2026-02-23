@@ -1,0 +1,18 @@
+<View>
+  <Image name="image" value="$ocr" zoom="true" zoomControl="true"/>
+
+  <VectorLabels name="label" toName="image" closable="true" curves="false" snap="pixel">
+    <Label value="Textlines" background="#2563EB"/>
+  </VectorLabels>
+
+  <TextArea name="transcription" toName="image" editable="true" perRegion="true"
+    required="true" maxSubmissions="1" rows="5"
+    placeholder="Transcribe the text here..." displayMode="region-list"/>
+
+  <Choices name="feedback" toName="image" perRegion="true" required="false"
+    showInline="true" choice="multiple"
+    description="Negative remarks about the quality">
+    <Choice value="Transcription"/>
+    <Choice value="Segmentation"/>
+  </Choices>
+</View>

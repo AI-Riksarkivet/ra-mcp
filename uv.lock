@@ -11,6 +11,7 @@ members = [
     "ra-mcp-common",
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
+    "ra-mcp-label-mcp",
     "ra-mcp-search",
     "ra-mcp-search-cli",
     "ra-mcp-search-mcp",
@@ -1598,6 +1599,7 @@ dependencies = [
     { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-htr-mcp" },
+    { name = "ra-mcp-label-mcp" },
     { name = "ra-mcp-search-mcp" },
     { name = "ra-mcp-viewer-mcp" },
     { name = "starlette" },
@@ -1639,6 +1641,7 @@ requires-dist = [
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
+    { name = "ra-mcp-label-mcp", editable = "packages/label-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
@@ -1750,6 +1753,23 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = ">=3.0.0" },
     { name = "gradio-client" },
+]
+
+[[package]]
+name = "ra-mcp-label-mcp"
+version = "0.8.0"
+source = { editable = "packages/label-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "httpx" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=3.0.0" },
+    { name = "httpx", specifier = ">=0.28.0" },
+    { name = "ra-mcp-common", editable = "packages/common" },
 ]
 
 [[package]]

@@ -30,6 +30,7 @@ from starlette.responses import FileResponse, JSONResponse
 from ra_mcp_browse_mcp.tools import browse_mcp
 from ra_mcp_guide_mcp.tools import guide_mcp
 from ra_mcp_htr_mcp.tools import htr_mcp
+from ra_mcp_label_mcp.tools import label_mcp
 
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
@@ -64,6 +65,11 @@ AVAILABLE_MODULES = {
         "description": "Interactive document viewer with zoomable images and text layer overlays",
         "default": True,
         "no_namespace": True,
+    },
+    "label": {
+        "server": label_mcp,
+        "description": "Convert ALTO XML to Label Studio tasks and import via API",
+        "default": False,
     },
 }
 
