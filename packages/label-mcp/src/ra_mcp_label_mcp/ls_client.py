@@ -24,17 +24,20 @@ def import_tasks(tasks: list[dict], ls_url: str, token: str, project_id: int) ->
         project_id: Target project ID.
 
     Returns:
-        Dict with import result including task_count.
+        Dict with import result including task_count and task_ids.
 
     Raises:
         RuntimeError: On API errors.
     """
     try:
         client = LabelStudio(base_url=ls_url.rstrip("/"), api_key=token.strip())
-        result = client.projects.import_tasks(id=project_id, request=tasks)
+        result = client.projects.import_tasks(
+            id=project_id, request=tasks, return_task_ids=True
+        )
         count = getattr(result, "task_count", None) or len(tasks)
-        logger.info(f"Imported {count} task(s) to project {project_id}")
-        return {"task_count": count}
+        task_ids = getattr(result, "task_ids", None) or []
+        logger.info("Imported %d task(s) to project %d (task_ids=%s)", count, project_id, task_ids)
+        return {"task_count": count, "task_ids": task_ids}
     except ApiError as e:
         raise RuntimeError(f"Label Studio API error {e.status_code}: {e.body}") from e
     except Exception as e:

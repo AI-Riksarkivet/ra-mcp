@@ -121,8 +121,17 @@ def register_label_tool(mcp) -> None:
             raise ToolError(str(e)) from e
 
         count = result.get("task_count", len(tasks))
+        task_ids = result.get("task_ids", [])
         logger.info("Successfully imported %d task(s) to project %d", count, pid)
-        return f"Successfully imported {count} {mode} task(s) to project {pid}"
+
+        base = url.rstrip("/")
+        lines = [f"Successfully imported {count} {mode} task(s) to project {pid}"]
+        if task_ids:
+            lines.append("")
+            lines.append("Label Studio task links:")
+            for tid in task_ids:
+                lines.append(f"  - {base}/projects/{pid}/data?task={tid}")
+        return "\n".join(lines)
 
 
 async def _fetch_and_convert_alto(
