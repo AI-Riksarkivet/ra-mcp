@@ -238,6 +238,7 @@ function handleViewerKeydown(e: KeyboardEvent) {
       if (!showSearch) {
         searchTerm = "";
         activeMatchIndex = 0;
+        onGlobalSearch?.("");
         controller?.requestDraw();
       }
     }
