@@ -46,6 +46,8 @@ tui = ["ra-mcp-tui"]
 [dependency-groups]
 dev = [
     "pytest",
+    "pytest-asyncio>=0.25.0",
+    "respx>=0.22.0",
     "ruff",
     "ty",
     "ra-mcp-search-cli",
@@ -150,5 +152,6 @@ python-version = "3.13"
 
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 markers = []
 testpaths = ["packages/*/tests", "tests"]

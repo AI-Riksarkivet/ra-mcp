@@ -1323,9 +1323,11 @@ tui = [
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-search-cli" },
     { name = "ra-mcp-tui" },
+    { name = "respx" },
     { name = "ruff" },
     { name = "ty" },
     { name = "zensical" },
@@ -1352,9 +1354,11 @@ provides-extras = ["cli", "tui"]
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest" },
+    { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
     { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
     { name = "ra-mcp-tui", editable = "packages/tui" },
+    { name = "respx", specifier = ">=0.22.0" },
     { name = "ruff" },
     { name = "ty" },
     { name = "zensical", specifier = ">=0.0.23" },
