@@ -29,6 +29,25 @@ Search strategy, syntax, and best practices for the Riksarkivet search tools
 | Church records, estate inventories | search_metadata | keyword + place (not AI-transcribed) |
 | Read full page content | browse_document | reference_code, pages |
 
+## Transcription Quality — Why Fuzzy Search Matters
+
+All searchable text is **AI-generated** using HTR (Handwritten Text Recognition) and OCR models.
+These transcriptions contain recognition errors: misread characters, merged or split words, and
+garbled passages — especially in older, damaged, or poorly legible documents.
+
+**Always use fuzzy search (~) by default** to compensate for transcription errors:
+
+- `stockholm~1` finds "Stockholm", "Stockholn", "Stookholm" (common HTR misreads)
+- `trolldom~1` finds "trolldom", "trolldoin", "trolldorn"
+- `präst~1` finds "präst", "prast", "prest"
+
+Without fuzzy search, you will **miss many relevant results** because the transcription
+of the exact word you're looking for may contain errors.
+
+**Rule of thumb**: Use `~1` (edit distance 1) for short words, `~2` for longer words or
+very old/damaged documents. Combine with wildcards for maximum coverage:
+`(troll*~1 OR häx*~1)`.
+
 ## Search Strategy for Maximum Discovery
 
 1. **Start with transcribed text**: `search_transcribed(keyword, offset=0)` for initial hits
@@ -45,8 +64,8 @@ Search strategy, syntax, and best practices for the Riksarkivet search tools
 
 - **Always group Boolean queries** with parentheses:
   `((skatt* OR guld*) AND (stöld* OR stul*))` — omitting outer parens returns 0 results
-- **Use fuzzy search for OCR/HTR errors**: Many transcriptions have AI recognition errors.
-  `((stöld~2 OR tjufnad~2) AND (silver* OR guld*))` catches misspellings
+- **Use fuzzy search for AI transcription errors**: All text is AI-generated and contains recognition errors.
+  `((stöld~2 OR tjufnad~2) AND (silver* OR guld*))` catches misreads and misspellings
 - **Account for old Swedish spelling**: Historical documents use archaic forms.
   `(((präst* OR prest*) OR (kyrko* OR kyrck*)) AND ((silver* OR silfv*) OR (guld* OR gull*)))`
 
@@ -149,7 +168,7 @@ Step 4: (("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*) AND (guld* OR silver*)
 ## Best Practices
 
 - **Wildcards for word variations**: `troll*` finds "trolldom", "trolleri", "trollkona"
-- **Fuzzy for spelling variants**: `Stockholm~1` catches OCR misreads
+- **Fuzzy for AI transcription errors**: `Stockholm~1` catches HTR/OCR misreads
 - **Year filtering**: Use `year_min`/`year_max` to narrow time periods
 - **Sorting**: `sort="timeAsc"` for earliest mentions, `sort="timeDesc"` for most recent
 - **Metadata search**: Use dedicated `name` and `place` parameters in `search_metadata`

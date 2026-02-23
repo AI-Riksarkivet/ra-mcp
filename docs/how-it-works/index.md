@@ -93,6 +93,12 @@ The archive has three access tiers — not all materials are searchable the same
 
 Church records, estate inventories, and military records are typically cataloged and often digitised, but NOT AI-transcribed.
 
+### Transcription Quality
+
+The AI-transcribed text was produced by HTR (Handwritten Text Recognition) and OCR models. These transcriptions are **not perfect** — they contain recognition errors including misread characters, merged or split words, and garbled passages, especially in older or damaged documents.
+
+This has a direct impact on search: an exact search for `Stockholm` will miss documents where the transcription reads `Stockholn` or `Stookholm` due to recognition errors. **Always use fuzzy search (`~`)** to compensate — `stockholm~1` catches common misreads and significantly increases the number of hits.
+
 ## The Plugin Model
 
 ra-mcp is one piece of a larger ecosystem. Multiple MCP servers can be connected to the same AI client:

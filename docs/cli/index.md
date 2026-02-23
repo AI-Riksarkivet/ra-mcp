@@ -55,6 +55,9 @@ The search supports full Solr query syntax:
 
 Always wrap Boolean queries in parentheses: `((A OR B) AND C*)`.
 
+!!! tip "Use fuzzy search for better results"
+    Transcriptions are AI-generated (HTR/OCR) and contain recognition errors. Use fuzzy matching (`~1`) to catch misread characters: `stockholm~1` finds "Stockholm", "Stockholn", "Stookholm", etc.
+
 ---
 
 ## ra browse

@@ -52,6 +52,8 @@ def register_search_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search AI-transcribed text in digitised historical documents from the Swedish National Archives. "
+            "IMPORTANT: Transcriptions are AI-generated (HTR/OCR) and contain recognition errors — "
+            "always use fuzzy search (~) to compensate for misread characters and increase hits.\n"
             'Supports Solr syntax: wildcards (troll*), fuzzy (stockholm~1), Boolean ((A AND B)), proximity ("term1 term2"~10). '
             "Always group Boolean queries with outer parentheses. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
             "Paginate with offset (0, 50, 100...). Session dedup: re-calling returns stubs for already-seen documents."

@@ -14,6 +14,9 @@ ra-mcp provides MCP tools for searching, browsing, transcribing, and viewing his
 
 Search AI-transcribed text in digitised historical documents from the Swedish National Archives. Supports Solr query syntax.
 
+!!! warning "Transcriptions are AI-generated"
+    All searchable text was produced by HTR (Handwritten Text Recognition) and OCR models. These transcriptions contain recognition errors — misread characters, merged or split words, and garbled passages are common. **Always use fuzzy search (`~`)** to compensate for errors and significantly increase hits. For example, `stockholm~1` instead of `Stockholm`.
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `keyword` | str | *(required)* | Search term or Solr query. Supports wildcards (`*`), fuzzy (`~`), Boolean (`AND/OR/NOT`), proximity (`"term1 term2"~N`). |

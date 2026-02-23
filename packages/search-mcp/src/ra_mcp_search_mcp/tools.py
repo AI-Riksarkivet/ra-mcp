@@ -15,6 +15,12 @@ search_mcp = FastMCP(
     instructions="""
     Riksarkivet (RA) Search MCP Server — search access to historical documents from the Swedish National Archives.
 
+    TRANSCRIPTION QUALITY:
+    All transcriptions are AI-generated using HTR (Handwritten Text Recognition) and OCR models.
+    They contain recognition errors — misread characters, merged/split words, and garbled passages are common,
+    especially in older or damaged documents. ALWAYS use fuzzy search (~) to compensate for these errors
+    and significantly increase the number of hits. For example, use stockholm~1 instead of Stockholm.
+
     TOOLS:
     - search_transcribed: Search AI-transcribed text in digitised documents (full-text, snippets, page links)
     - search_metadata: Search document metadata — titles, names, places, descriptions (2M+ records with only_digitised=False)
