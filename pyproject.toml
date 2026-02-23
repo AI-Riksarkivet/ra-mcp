@@ -50,12 +50,14 @@ dev = [
     "respx>=0.22.0",
     "ruff",
     "ty",
+    "pytest-cov>=7.0.0",
     "ra-mcp-search-cli",
     "ra-mcp-browse-cli",
     "ra-mcp-tui",
+]
+docs = [
     "zensical>=0.0.23",
     "mkdocstrings-python>=1.16.0",
-    "pytest-cov>=7.0.0",
 ]
 
 [project.scripts]

@@ -1614,7 +1614,6 @@ tui = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "mkdocstrings-python" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -1624,6 +1623,9 @@ dev = [
     { name = "respx" },
     { name = "ruff" },
     { name = "ty" },
+]
+docs = [
+    { name = "mkdocstrings-python" },
     { name = "zensical" },
 ]
 
@@ -1647,7 +1649,6 @@ provides-extras = ["cli", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mkdocstrings-python", specifier = ">=1.16.0" },
     { name = "pytest" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
@@ -1657,6 +1658,9 @@ dev = [
     { name = "respx", specifier = ">=0.22.0" },
     { name = "ruff" },
     { name = "ty" },
+]
+docs = [
+    { name = "mkdocstrings-python", specifier = ">=1.16.0" },
     { name = "zensical", specifier = ">=0.0.23" },
 ]
 
