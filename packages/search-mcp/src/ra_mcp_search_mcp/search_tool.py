@@ -5,8 +5,10 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 """
 
 import logging
+from typing import Annotated
 
 from fastmcp import Context
+from pydantic import Field
 
 from ra_mcp_common.utils.formatting import page_id_to_number
 from ra_mcp_common.utils.http_client import default_http_client
@@ -38,58 +40,28 @@ def register_search_tool(mcp) -> None:
         timeout=30.0,
         tags={"search"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        description="""Search AI-transcribed text in digitised historical documents from the Swedish National Archives (Riksarkivet).
-
-    This tool searches ONLY AI-transcribed text in digitised materials (not metadata fields).
-    Returns matching pages with their transcriptions from documents that have been transcribed.
-    Supports advanced Solr query syntax including wildcards, fuzzy search, Boolean operators, and proximity searches.
-
-    Key features:
-    - Searches full-text transcriptions of historical documents
-    - Returns document metadata, page numbers, and text snippets containing the keyword
-    - Provides direct links to page images and ALTO XML transcriptions
-    - Supports pagination via offset parameter for comprehensive discovery
-
-    For searching document metadata (titles, names, places), use the search_metadata tool instead.
-
-    Search syntax quick reference:
-    - Basic: "Stockholm" | Wildcards: "Stock*", "St?ckholm" | Fuzzy: "Stockholm~1"
-    - Proximity: '"Stockholm trolldom"~10' (2 terms in quotes only)
-    - Boolean: "(Stockholm AND trolldom)", "(Stockholm OR Goteborg)"
-    - Complex: "((troll* OR hax*) AND (Stockholm OR Goteborg))"
-
-    CRITICAL: Always use grouping () for Boolean queries — omitting outer parens returns 0 results.
-    Use fuzzy search (~) for OCR/HTR errors and old Swedish spelling variants.
-
-    Parameters:
-    - keyword: Search term or Solr query (required)
-    - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - limit: Maximum documents to return per query (default: 25)
-    - max_snippets_per_record: Maximum matching pages per document (default: 3)
-    - max_response_tokens: Maximum tokens in response (default: 15000)
-    - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
-    - year_min: Optional start year to filter results (e.g. 1700)
-    - year_max: Optional end year to filter results (e.g. 1750)
-    - dedup: Session deduplication (default: True). When True, documents/pages already shown in this session are compacted or skipped. Set to False to force full results.
-    - research_context: Brief summary of the user's research goal and what they hope to find with this search. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before searching. Examples: "Researching 17th century witchcraft trials in Stockholm", "Tracing military service records for a noble family in the 1780s". This is used for telemetry and logging only — it does not affect search results.
-
-    IMPORTANT - Avoid redundant calls:
-    - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
-    - If you already have search results or page transcriptions in your conversation context, reference that data directly instead of calling this tool again.
-    - Only call again when you need NEW information: a different query, different offset, or different parameters.
-    """,
+        description=(
+            "Search AI-transcribed text in digitised historical documents from the Swedish National Archives. "
+            "Currently covers court records (Svea/Göta hovrätt, Trolldomskommissionen, poliskammare, magistrat) "
+            "from the 17th-18th centuries (~1.6M pages). For person names, places, or document titles use search_metadata instead.\n"
+            'Supports Solr syntax: wildcards (troll*), fuzzy (stockholm~1), Boolean ((A AND B)), proximity ("term1 term2"~10). '
+            "Always group Boolean queries with outer parentheses. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
+            "Paginate with offset (0, 50, 100...). Session dedup: re-calling returns stubs for already-seen documents."
+        ),
     )
     async def search_transcribed(
-        keyword: str,
-        offset: int,
-        limit: int = 25,
-        max_snippets_per_record: int = 3,
-        max_response_tokens: int = 15000,
-        sort: str = "relevance",
-        year_min: int | None = None,
-        year_max: int | None = None,
-        dedup: bool = True,
-        research_context: str | None = None,
+        keyword: Annotated[
+            str, Field(description='Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity ("term1 term2"~N).')
+        ],
+        offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
+        limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,
+        max_snippets_per_record: Annotated[int, Field(description="Maximum matching pages shown per document.")] = 3,
+        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.")] = 15000,
+        sort: Annotated[str, Field(description="Sort order: 'relevance', 'timeAsc', 'timeDesc', 'alphaAsc', 'alphaDesc'.")] = "relevance",
+        year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
+        year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
+        dedup: Annotated[bool, Field(description="Session deduplication. True compacts already-seen documents; False forces full results.")] = True,
+        research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,
         ctx: Context | None = None,
     ) -> str:
         """Search AI-transcribed text in digitised historical documents.
@@ -170,53 +142,32 @@ def register_search_tool(mcp) -> None:
         timeout=30.0,
         tags={"search"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        description="""Search document metadata (titles, names, places, provenance) in the Swedish National Archives.
-
-    This tool searches metadata fields like document titles, personal names, place names, and archival descriptions.
-    Does NOT search full-text transcriptions - use search_transcribed for that.
-
-    Key features:
-    - Searches titles, names, places, archival descriptions, provenance
-    - Can search both digitised and non-digitised materials (2M+ records with only_digitised=False)
-    - Targeted search by person name or place name via dedicated fields
-    - Supports same Solr query syntax as search_transcribed (wildcards, fuzzy, Boolean, proximity)
-
-    Parameters:
-    - keyword: General free-text search across all metadata fields (maps to the API 'text' parameter). Required.
-    - offset: Starting position for pagination - use 0, then 50, 100, etc. (required)
-    - only_digitised: Limit to digitised materials (True) or include all records (False) (default: True)
-    - limit: Maximum documents to return per query (default: 25)
-    - max_response_tokens: Maximum tokens in response (default: 15000)
-    - sort: Sort order for results (default: "relevance"). Options: "relevance", "timeAsc" (oldest first), "timeDesc" (newest first), "alphaAsc", "alphaDesc"
-    - year_min: Optional start year to filter results (e.g. 1700)
-    - year_max: Optional end year to filter results (e.g. 1750)
-    - name: Search by person name in the dedicated name field (e.g. "Nobel", "Linne"). Can be combined with keyword and place.
-    - place: Search by place name in the dedicated place field (e.g. "Stockholm", "Goteborg"). Can be combined with keyword and name.
-    - dedup: Session deduplication (default: True). When True, documents already shown in this session are compacted or skipped. Set to False to force full results.
-    - research_context: Brief summary of the user's research goal and what they hope to find with this search. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before searching. Examples: "Looking for estate inventories in Stockholm from the 1800s", "Investigating church records related to a specific parish". This is used for telemetry and logging only — it does not affect search results.
-
-    Combining parameters: keyword + name + place can all be used together for precise filtering.
-    Example: keyword="inventarium", name="Nobel", place="Stockholm".
-
-    IMPORTANT - Avoid redundant calls:
-    - This tool remembers what it has shown you in this session. Re-calling with the same query returns compact stubs for already-seen documents.
-    - If you already have search results in your conversation context, reference that data directly instead of calling this tool again.
-    - Only call again when you need NEW information: a different query, different offset, or different parameters.
-    """,
+        description=(
+            "Search document metadata (titles, names, places, descriptions) across the Swedish National Archives catalog. "
+            "Covers 2M+ records when only_digitised=False, including non-digitised materials. "
+            "Use the dedicated name parameter for person searches and place parameter for place searches — these can be combined with keyword.\n"
+            "Does NOT search transcribed page text — use search_transcribed for that. "
+            "Prefer this tool for genealogy (church records, estate inventories) since those are cataloged but mostly not AI-transcribed.\n"
+            "Same Solr syntax as search_transcribed. Session dedup: re-calling returns stubs for already-seen documents."
+        ),
     )
     async def search_metadata(
-        keyword: str,
-        offset: int,
-        only_digitised: bool = True,
-        limit: int = 25,
-        max_response_tokens: int = 15000,
-        sort: str = "relevance",
-        year_min: int | None = None,
-        year_max: int | None = None,
-        name: str | None = None,
-        place: str | None = None,
-        dedup: bool = True,
-        research_context: str | None = None,
+        keyword: Annotated[str, Field(description="Free-text search across all metadata fields. Supports Solr syntax (wildcards, fuzzy, Boolean).")],
+        offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
+        only_digitised: Annotated[bool, Field(description="True = digitised materials only. False = all 2M+ records including non-digitised.")] = True,
+        limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,
+        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.")] = 15000,
+        sort: Annotated[str, Field(description="Sort order: 'relevance', 'timeAsc', 'timeDesc', 'alphaAsc', 'alphaDesc'.")] = "relevance",
+        year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
+        year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
+        name: Annotated[
+            str | None, Field(description="Person name search in dedicated name field (e.g. 'Nobel', 'Linné'). Combinable with keyword and place.")
+        ] = None,
+        place: Annotated[
+            str | None, Field(description="Place name search in dedicated place field (e.g. 'Stockholm', 'Göteborg'). Combinable with keyword and name.")
+        ] = None,
+        dedup: Annotated[bool, Field(description="Session deduplication. True compacts already-seen documents; False forces full results.")] = True,
+        research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,
         ctx: Context | None = None,
     ) -> str:
         """Search document metadata (titles, names, places, provenance).

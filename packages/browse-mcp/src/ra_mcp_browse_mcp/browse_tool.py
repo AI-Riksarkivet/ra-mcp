@@ -5,8 +5,10 @@ Provides the browse_document tool for viewing full page transcriptions.
 """
 
 import logging
+from typing import Annotated
 
 from fastmcp import Context
+from pydantic import Field
 
 from ra_mcp_browse.browse_operations import BrowseOperations
 from ra_mcp_browse.models import BrowseResult
@@ -28,45 +30,20 @@ def register_browse_tool(mcp) -> None:
         timeout=60.0,
         tags={"browse"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        description="""Browse specific pages of a document by reference code and view full transcriptions.
-
-    This tool retrieves complete page transcriptions from historical documents in Swedish.
-    Each result includes the full transcribed text as it appears in the original document,
-    plus direct links to view the original page images in Riksarkivet's image viewer (bildvisaren).
-
-    Key features:
-    - Returns full page transcriptions in original language (usually Swedish)
-    - Provides links to bildvisaren (image viewer), ALTO XML, and IIIF URLs
-    - Supports single pages, page ranges, or multiple specific pages
-    - Blank pages show "(Empty page - no transcribed text)" — these are digitised but have no text
-    - Non-digitised materials return metadata only (title, date, description, viewing links)
-
-    Parameters:
-    - reference_code: Document reference code from search results (e.g., "SE/RA/420422/01")
-    - pages: Page specification - single ("5"), range ("1-10"), or comma-separated ("5,7,9")
-    - highlight_term: Optional keyword to highlight in the transcription
-    - max_pages: Maximum number of pages to retrieve (default: 20)
-    - dedup: Session deduplication (default: True). When True, pages already shown in this session are replaced with a one-liner stub. Set to False to force full transcriptions.
-    - research_context: Brief summary of the user's research goal and why they are browsing this document. Infer this from the conversation. If the user's intent is unclear, ASK them what they are researching and what kind of information they need before browsing. Examples: "Examining witchcraft trial testimony mentioned in search results", "Reading full court protocol to understand a legal dispute from the 1790s". This is used for telemetry and logging only — it does not affect results.
-
-    IMPORTANT - Avoid redundant calls:
-    - This tool remembers which pages it has shown you in this session. Re-browsing the same pages returns stubs instead of full text.
-    - If you already have page transcriptions in your conversation context, reference that data directly instead of calling this tool again.
-    - Only call again when you need pages you haven't seen yet, or set dedup=False if you truly need the full text again.
-
-    Examples:
-    - browse_document("SE/RA/420422/01", "5") - View full transcription of page 5
-    - browse_document("SE/RA/420422/01", "1-10") - View pages 1 through 10
-    - browse_document("SE/RA/420422/01", "5,7,9", highlight_term="Stockholm") - View specific pages with highlighting
-    """,
+        description=(
+            "View full page transcriptions of a document by reference code. Use reference codes from search results. "
+            "Returns original text (usually Swedish), links to bildvisaren (image viewer), and ALTO XML.\n"
+            "Blank pages are normal (digitised but no text). Non-digitised materials return metadata only. "
+            "Session dedup: re-browsing same pages returns stubs. Set dedup=False to force full text."
+        ),
     )
     async def browse_document(
-        reference_code: str,
-        pages: str,
-        highlight_term: str | None = None,
-        max_pages: int = 20,
-        dedup: bool = True,
-        research_context: str | None = None,
+        reference_code: Annotated[str, Field(description="Document reference code from search results (e.g. 'SE/RA/420422/01').")],
+        pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
+        highlight_term: Annotated[str | None, Field(description="Optional keyword to highlight in the transcription.")] = None,
+        max_pages: Annotated[int, Field(description="Maximum pages to retrieve.")] = 20,
+        dedup: Annotated[bool, Field(description="Session deduplication. True replaces already-shown pages with stubs; False forces full text.")] = True,
+        research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,
         ctx: Context | None = None,
     ) -> str:
         """

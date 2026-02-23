@@ -103,31 +103,37 @@ def build_instructions(enabled_modules: list[str]) -> str:
 
     modules_section = "\n".join(module_descriptions) if module_descriptions else "    (No modules enabled)"
 
-    return f"""
-    Riksarkivet MCP Server — access to the Swedish National Archives (Riksarkivet).
-    Combines multiple specialized tool servers for historical research.
+    return f"""Riksarkivet MCP Server — access to the Swedish National Archives (Riksarkivet).
 
-    ENABLED MODULES:
-
+ENABLED MODULES:
 {modules_section}
 
-    Each tool includes detailed documentation. Consult individual tool descriptions for usage guidance.
+WORKFLOW: Start with search_transcribed or search_metadata to find documents.
+Use browse_document to read full page transcriptions of interesting results.
+Paginate searches (offset 0, 50, 100...) for comprehensive discovery.
 
-    SKILLS: This server provides companion skills (slash commands) that MUST be invoked before
-    calling tools directly. If a matching skill is available, invoke it FIRST — it provides
-    search strategy guidance, query syntax help, research methodology, and best practices
-    that significantly improve results. Key skills:
-    - archive-search: Invoke before any search task (search strategy, Solr syntax, fuzzy matching, old Swedish spelling)
-    - archive-research: Invoke before research tasks (methodology, citing sources, interpreting documents)
-    - htr-transcription: Invoke before HTR/transcription tasks
+TOOL SELECTION:
+- Person/family lookup → search_metadata with name="..."
+- Place-based search → search_metadata with place="..."
+- Full-text in court records → search_transcribed with Solr syntax
+- Church records, estate inventories, military → search_metadata (these are cataloged but mostly not AI-transcribed)
+- Read document pages → browse_document with reference code from search results
 
-    RESEARCH INTEGRITY: This is an academic research tool. Never fabricate reference codes, page numbers,
-    dates, or names. Always cite exact reference codes and page numbers. Only use links returned by tools.
-    Distinguish document quotes from your interpretation. Flag uncertain transcriptions.
+COVERAGE: The archive has three access tiers:
+- Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
+- Digitised images: ~73M pages viewable via bildvisaren links
+- AI-transcribed text: ~1.6M pages searchable via search_transcribed — currently court records (hovrätt, trolldomskommissionen, poliskammare, magistrat) from 17th-18th centuries
 
-    Always fill in the research_context parameter on every tool call.
+COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
+- archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants
+- archive-research: Research integrity, citing sources, presenting findings
 
-    """
+RESEARCH INTEGRITY: Never fabricate reference codes, page numbers, dates, or names.
+Cite exact reference codes and page numbers. Only use links returned by tools.
+Distinguish document quotes from interpretation. Flag uncertain transcriptions.
+
+Always fill in the research_context parameter on every tool call.
+"""
 
 
 def create_server(enabled_modules: list[str]) -> FastMCP:

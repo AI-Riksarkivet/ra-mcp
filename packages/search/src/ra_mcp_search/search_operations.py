@@ -99,9 +99,7 @@ class SearchOperations:
                 span.set_attribute("search.total_hits", response.total_hits)
                 _search_counter.add(1, {"search.type": search_type, "search.status": "success"})
                 _results_histogram.record(response.total_hits, {"search.type": search_type})
-                return SearchResult(
-                    response=response, transcribed_text=keyword, limit=limit, offset=offset, max_snippets_per_record=max_snippets_per_record
-                )
+                return SearchResult(response=response, transcribed_text=keyword, limit=limit, offset=offset, max_snippets_per_record=max_snippets_per_record)
             except Exception as e:
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)

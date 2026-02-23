@@ -264,6 +264,9 @@ class PlainTextFormatter:
         if total_remaining > 0:
             lines.append(f"... and {total_remaining} more documents")
 
+        lines.append("")
+        lines.append("Tip: Use browse_document to read full pages of interesting results.")
+
         return "\n".join(lines)
 
     def _format_compact_snippets(self, lines: list[str], snippets: list, keyword: str) -> None:

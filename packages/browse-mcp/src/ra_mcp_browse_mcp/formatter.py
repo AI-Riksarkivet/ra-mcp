@@ -352,4 +352,8 @@ class PlainTextFormatter:
 
             lines.append("")
 
+        lines.append(
+            "Tip: Present the original text (quoted), provide a translation in the user's language, and include the bildvisaren link. Note uncertain readings."
+        )
+
         return "\n".join(lines)

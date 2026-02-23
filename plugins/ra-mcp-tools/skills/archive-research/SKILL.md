@@ -74,7 +74,7 @@ for additional context.
 ### Phase 4: Synthesis
 
 Present findings with proper citations, original text, translations,
-and links to source materials (see Presenting Results below).
+and links to source materials (see Result Presentation Template below).
 
 ## Browsing Strategy
 
@@ -88,18 +88,42 @@ and links to source materials (see Presenting Results below).
 - **Non-digitised materials**: When no transcriptions exist, the tool returns
   metadata only (title, date range, description, and viewing links)
 
-## Presenting Results
+## Result Presentation Template
 
-When presenting document content to the user:
+When presenting document content, follow this structure:
 
-**Original text**: Show the transcription as it appears in the document,
-using quotation marks for direct quotes.
+### [Document title or description]
+**Source**: [reference_code], page [N]
 
-**Translation**: Provide a modern translation in the user's language.
-Note when meaning is uncertain.
+> [Original Swedish text, quoted verbatim from the transcription]
 
-**Links**: Include the bildvisaren link (image viewer) and any other links
-returned by the tools so the user can verify the source.
+**Translation**: [Modern translation in the user's language]
+*Note: [Any uncertainties in the transcription or translation]*
 
-**Context**: Note the document type, date, and archival series to help
-the user understand the provenance of the information.
+[Bildvisaren link from tool results]
+
+### Example
+
+### Court Protocol — Witchcraft Case
+**Source**: SE/RA/420422/01/A I a 1/288, page 66
+
+> "... then bekände hon at Diefwulen hadhe kommit till henne ..."
+
+**Translation**: "... then she confessed that the Devil had come to her ..."
+*Note: The word "Diefwulen" is an archaic spelling of "Djävulen" (the Devil).*
+
+[View original page](https://sok.riksarkivet.se/bildvisning/...)
+
+## Coverage Awareness
+
+The archive has three access tiers — not all materials are searchable the same way:
+
+- **Metadata catalog** (search_metadata): 2M+ records — titles, names, places, dates
+- **Digitised images**: ~73M pages viewable via bildvisaren links
+- **AI-transcribed text** (search_transcribed): ~1.6M pages — currently court records
+  from 17th-18th centuries
+
+Church records, estate inventories, and military records are typically cataloged
+(searchable via metadata) and often digitised (viewable as images) but NOT
+AI-transcribed (not searchable via full-text search). Always explain this to
+the user when relevant.
