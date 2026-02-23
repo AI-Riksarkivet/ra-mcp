@@ -34,6 +34,13 @@ nav = [
   { "Deployment" = [
     "deployment/index.md",
   ]},
+  { "API" = [
+    "api/index.md",
+    "api/common.md",
+    "api/search.md",
+    "api/browse.md",
+    "api/mcp-tools.md",
+  ]},
 ]
 
 # ----------------------------------------------------------------------------
@@ -121,3 +128,32 @@ base_path = ["."]
 custom_fences = [
   { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
 ]
+
+# ----------------------------------------------------------------------------
+# Plugins — mkdocstrings (API reference)
+# ----------------------------------------------------------------------------
+[project.plugins.mkdocstrings]
+default_handler = "python"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = [
+  "packages/common/src",
+  "packages/search/src",
+  "packages/browse/src",
+  "packages/search-mcp/src",
+  "packages/browse-mcp/src",
+  "packages/guide-mcp/src",
+  "packages/htr-mcp/src",
+  "packages/viewer-mcp/src",
+]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "google"
+show_source = true
+show_root_heading = true
+show_root_full_path = false
+show_symbol_type_heading = true
+show_symbol_type_toc = true
+show_bases = true
+merge_init_into_class = true
+filters = ["!^_"]
