@@ -18,7 +18,7 @@ from ra_mcp_common.utils.http_client import default_http_client
 from .formatter import PlainTextFormatter
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.browse.tool")
 
 
 def register_browse_tool(mcp) -> None:

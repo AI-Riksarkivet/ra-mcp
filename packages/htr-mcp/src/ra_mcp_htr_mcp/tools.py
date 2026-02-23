@@ -17,7 +17,7 @@ from gradio_client import Client
 from pydantic import BaseModel, Field
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.htr.tools")
 
 HTR_SPACE_URL = os.getenv("HTR_SPACE_URL", "https://riksarkivet-htr-demo.hf.space")
 HTR_TIMEOUT = float(os.getenv("HTR_TIMEOUT", "300"))

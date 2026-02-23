@@ -63,6 +63,7 @@ AVAILABLE_MODULES = {
         "server": viewer_mcp,
         "description": "Interactive document viewer with zoomable images and text layer overlays",
         "default": True,
+        "no_namespace": True,
     },
 }
 
@@ -81,7 +82,17 @@ def setup_logging() -> logging.Logger:
         ],
     )
 
-    logger = logging.getLogger("ra-mcp")
+    # Quiet noisy third-party loggers
+    for name in ("httpx", "httpcore", "mcp", "gradio_client"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+
+    # Optional file handler for API call logging
+    if os.getenv("RA_MCP_LOG_API"):
+        file_handler = logging.FileHandler("ra_mcp_api.log")
+        file_handler.setFormatter(logging.Formatter(log_format, datefmt="%Y-%m-%d %H:%M:%S"))
+        logging.getLogger().addHandler(file_handler)
+
+    logger = logging.getLogger("ra_mcp.server")
     logger.info("Logging configured at level: %s", log_level)
     logger.info("Timeout setting: %ss", os.getenv("RA_MCP_TIMEOUT", "60"))
     logger.info("API logging: %s", "enabled" if os.getenv("RA_MCP_LOG_API") else "disabled")
@@ -200,8 +211,9 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
         module_config = AVAILABLE_MODULES[module_name]
         module_server: FastMCP = module_config["server"]  # type: ignore[assignment]
         try:
-            server.add_provider(FastMCPProvider(module_server), namespace=module_name)
-            logger.info("✓ Registered %s (namespace=%s)", module_server.name, module_name)
+            namespace = "" if module_config.get("no_namespace") else module_name
+            server.add_provider(FastMCPProvider(module_server), namespace=namespace)
+            logger.info("✓ Registered %s (namespace=%s)", module_server.name, namespace or "(none)")
             _mounted_modules.append(module_name)
         except Exception as e:
             logger.error("✗ Failed to register %s: %s", module_name, e)

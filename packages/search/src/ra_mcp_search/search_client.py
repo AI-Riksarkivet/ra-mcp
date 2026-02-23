@@ -15,7 +15,7 @@ from ra_mcp_search.config import DEFAULT_LIMIT, REQUEST_TIMEOUT, SEARCH_API_BASE
 from ra_mcp_search.models import RecordsResponse
 
 
-_tracer = get_tracer("ra_mcp.search_api")
+_tracer = get_tracer("ra_mcp.search.client")
 
 
 class SearchClient:
@@ -28,7 +28,7 @@ class SearchClient:
 
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
-        self.logger = logging.getLogger("ra_mcp.search_api")
+        self.logger = logging.getLogger("ra_mcp.search.client")
 
     def search(
         self,

@@ -21,7 +21,7 @@ from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.viewer.tools")
 
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
@@ -57,8 +57,9 @@ async def view_document(
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
 
     transcription = ""
-    if text_layer_urls[0]:
-        first_text_layer = await fetch_and_parse_text_layer(text_layer_urls[0])
+    first_url = text_layer_urls[0]
+    if first_url and first_url.startswith(("http://", "https://")):
+        first_text_layer = await fetch_and_parse_text_layer(first_url)
         text_lines = first_text_layer.get("textLines", [])
         transcription = "\n".join(line["transcription"] for line in text_lines)
 
@@ -72,7 +73,7 @@ async def view_document(
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
-    logger.info(f"view-document: {len(image_urls)} pages, {len(text_layer_urls)} text layers")
+    logger.info(f"view-document: displaying {len(image_urls)} page(s) with {len(text_layer_urls)} text layer(s)")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
     )
@@ -96,7 +97,8 @@ async def load_page(
     if errors:
         summary += f" Errors: {'; '.join(errors)}"
 
-    logger.info(f"load-page: {summary}")
+    logger.info(f"load-page: page {page_index + 1} loaded, {total_lines} text lines")
+    logger.debug(f"load-page: image_url={image_url}, text_layer_url={text_layer_url}")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content={"page": page},
@@ -142,7 +144,7 @@ async def load_thumbnails(
     if errors:
         summary += f" Errors: {'; '.join(errors)}"
 
-    logger.info(f"load-thumbnails: {summary}")
+    logger.info(f"load-thumbnails: generated {len(thumbnails)} thumbnail(s)")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content={"thumbnails": thumbnails},

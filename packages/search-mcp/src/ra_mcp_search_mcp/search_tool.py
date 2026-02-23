@@ -17,7 +17,7 @@ from ra_mcp_search.search_operations import SearchOperations
 from .formatter import PlainTextFormatter
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.search.tool")
 
 
 _VALID_SORT_VALUES = {"relevance", "timeAsc", "timeDesc", "alphaAsc", "alphaDesc"}

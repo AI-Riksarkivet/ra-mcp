@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from ra_mcp_viewer_mcp.models import TextLayer, TextLine
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.viewer.parser")
 
 _DEFAULT_PAGE_WIDTH = 6192
 _DEFAULT_PAGE_HEIGHT = 5432
@@ -93,6 +93,12 @@ def parse_alto_xml(xml_string: str) -> TextLayer:
     for tl in root.iter(f"{{{_NS_ALTO['a']}}}" + "TextLine" if ns else "TextLine"):
         polygon_el = tl.find(f"{prefix}Shape/{prefix}Polygon", ns)
         polygon = polygon_el.get("POINTS", "") if polygon_el is not None else ""
+
+        # Transkribus ALTO: no Shape/Polygon on TextLines, synthesize from bbox
+        if not polygon:
+            h, v, w, ht = _int(tl.get("HPOS")), _int(tl.get("VPOS")), _int(tl.get("WIDTH")), _int(tl.get("HEIGHT"))
+            if w and ht:
+                polygon = f"{h},{v} {h + w},{v} {h + w},{v + ht} {h},{v + ht}"
 
         strings = tl.findall(f"{prefix}String", ns)
         words = [s.get("CONTENT", "") for s in strings]

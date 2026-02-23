@@ -20,7 +20,7 @@ from PIL import Image
 from ra_mcp_viewer_mcp.parser import detect_and_parse
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ra_mcp.viewer.fetchers")
 tracer = get_tracer()
 
 _EMPTY_TEXT_LAYER: dict = {"textLines": [], "pageWidth": 0, "pageHeight": 0}
