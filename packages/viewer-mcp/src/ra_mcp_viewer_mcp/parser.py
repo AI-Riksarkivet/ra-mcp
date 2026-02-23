@@ -48,6 +48,27 @@ def _build_text_layer(
     )
 
 
+_BASELINE_ASCENT = 40  # pixels above baseline for polygon strip
+_BASELINE_DESCENT = 15  # pixels below baseline for polygon strip
+
+
+def _polygon_from_baseline(baseline: str, ascent: int = _BASELINE_ASCENT, descent: int = _BASELINE_DESCENT) -> str:
+    """Create a polygon strip from a BASELINE attribute.
+
+    Offsets each baseline point up by *ascent* and down by *descent* to form
+    a band that tightly wraps the text line.
+    """
+    try:
+        points = [(int(x), int(y)) for x, y in (p.split(",") for p in baseline.split())]
+        if len(points) < 2:
+            return ""
+        top = [f"{x},{max(0, y - ascent)}" for x, y in points]
+        bottom = [f"{x},{y + descent}" for x, y in reversed(points)]
+        return " ".join(top + bottom)
+    except (ValueError, IndexError):
+        return ""
+
+
 def _bbox_from_polygon(polygon: str) -> tuple[int, int, int, int]:
     """Compute (hpos, vpos, width, height) from space-separated x,y points."""
     try:
@@ -94,11 +115,15 @@ def parse_alto_xml(xml_string: str) -> TextLayer:
         polygon_el = tl.find(f"{prefix}Shape/{prefix}Polygon", ns)
         polygon = polygon_el.get("POINTS", "") if polygon_el is not None else ""
 
-        # Transkribus ALTO: no Shape/Polygon on TextLines, synthesize from bbox
+        # Transkribus ALTO: no Shape/Polygon — prefer BASELINE over bbox
         if not polygon:
-            h, v, w, ht = _int(tl.get("HPOS")), _int(tl.get("VPOS")), _int(tl.get("WIDTH")), _int(tl.get("HEIGHT"))
-            if w and ht:
-                polygon = f"{h},{v} {h + w},{v} {h + w},{v + ht} {h},{v + ht}"
+            baseline = tl.get("BASELINE", "")
+            if baseline:
+                polygon = _polygon_from_baseline(baseline)
+            else:
+                h, v, w, ht = _int(tl.get("HPOS")), _int(tl.get("VPOS")), _int(tl.get("WIDTH")), _int(tl.get("HEIGHT"))
+                if w and ht:
+                    polygon = f"{h},{v} {h + w},{v} {h + w},{v + ht} {h},{v + ht}"
 
         strings = tl.findall(f"{prefix}String", ns)
         words = [s.get("CONTENT", "") for s in strings]
