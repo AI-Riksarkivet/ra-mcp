@@ -65,6 +65,23 @@ async def test_view_document_returns_transcription(mock_fetchers):
     assert "Mommouth" in text
 
 
+async def test_view_document_with_highlight_term(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document",
+            {
+                "image_urls": ["https://example.com/img1.jpg"],
+                "text_layer_urls": ["https://example.com/alto1.xml"],
+                "highlight_term": "Stockholm",
+                "highlight_term_color": "#ef4444",
+            },
+        )
+
+    assert not result.is_error
+    text = result.content[0].text
+    assert "1-page document" in text
+
+
 async def test_view_document_mismatched_urls(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(

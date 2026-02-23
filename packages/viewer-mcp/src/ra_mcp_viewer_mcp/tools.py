@@ -33,7 +33,8 @@ RESOURCE_URI = "ui://document-viewer/mcp-app.html"
         "Display document pages with zoomable images and text layer overlays. "
         "Provide paired lists: image_urls[i] pairs with text_layer_urls[i]. "
         "Empty text_layer_urls entries are allowed for pages without transcription. "
-        "Optionally include per-page metadata for display in the viewer."
+        "Optionally include per-page metadata for display in the viewer. "
+        "Use highlight_term to pre-populate the search bar and highlight matching text lines."
     ),
     app=AppConfig(resource_uri=RESOURCE_URI),
 )
@@ -42,6 +43,8 @@ async def view_document(
     text_layer_urls: Annotated[list[str], "List of text layer XML URLs (ALTO/PAGE) paired with image_urls. Use empty string for pages without transcription."],
     ctx: Context,
     metadata: Annotated[list[str] | None, "Per-page metadata descriptions, paired with image_urls."] = None,
+    highlight_term: Annotated[str | None, "Optional search term to pre-populate the search bar and highlight matching text lines."] = None,
+    highlight_term_color: Annotated[str | None, "Optional hex color for search highlights (default: amber #f59e0b)."] = None,
 ) -> ToolResult:
     """View document pages with zoomable images and text layer overlays."""
     if len(image_urls) != len(text_layer_urls):

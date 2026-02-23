@@ -10,6 +10,7 @@ import {
 
 import DocumentContainer from "./components/DocumentContainer.svelte";
 import type { ViewerData } from "./lib/types";
+import { HIGHLIGHT_DEFAULTS } from "./lib/constants";
 
 const CARD_HEIGHT = 300;
 const VIEWER_HEIGHT = 550;
@@ -119,9 +120,14 @@ onMount(async () => {
       (_, i) => rawMetadata?.[i] ?? "",
     );
 
+    const highlightTerm = (args?.highlight_term as string) ?? "";
+    const highlightTermColor = (args?.highlight_term_color as string) ?? HIGHLIGHT_DEFAULTS.color;
+
     viewerData = {
       pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
       pageMetadata,
+      highlightTerm,
+      highlightTermColor,
     };
     error = null;
     streamingMessage = `Loading ${imageUrls.length}-page document...`;

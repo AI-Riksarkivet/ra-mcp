@@ -3,3 +3,9 @@ export const POLYGON_DEFAULTS = {
   thickness: 1,
   opacity: 0.1,
 } as const;
+
+export const HIGHLIGHT_DEFAULTS = {
+  color: "#f59e0b",
+  thickness: 2,
+  opacity: 0.25,
+} as const;

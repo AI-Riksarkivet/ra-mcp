@@ -18,6 +18,9 @@ interface Props {
   polygonThickness?: number;
   polygonOpacity?: number;
   onPolygonStyleChange?: (key: string, value: string | number) => void;
+  onToggleSearch?: () => void;
+  showHighlights?: boolean;
+  onToggleHighlights?: (v: boolean) => void;
 }
 
 let {
@@ -36,12 +39,28 @@ let {
   polygonThickness = POLYGON_DEFAULTS.thickness,
   polygonOpacity = POLYGON_DEFAULTS.opacity,
   onPolygonStyleChange,
+  onToggleSearch,
+  showHighlights,
+  onToggleHighlights,
 }: Props = $props();
 
 let showPopover = $state(false);
 </script>
 
 <div class="toolbar" style:right="{rightOffset + 8}px">
+  {#if hasTranscription && onToggleSearch}
+    <button
+      class="toolbar-btn"
+      onclick={onToggleSearch}
+      title="Search text (Ctrl+F)"
+    >
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  {/if}
+
   {#if hasTranscription}
     <button
       class="toolbar-btn"
@@ -102,6 +121,8 @@ let showPopover = $state(false);
         opacity={polygonOpacity}
         onChange={(key, value) => onPolygonStyleChange?.(key, value)}
         onClose={() => showPopover = false}
+        {showHighlights}
+        {onToggleHighlights}
       />
     {/if}
   </div>

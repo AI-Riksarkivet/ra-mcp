@@ -10,6 +10,8 @@ export interface ContextState {
   totalPages: number;
   pageMetadata: string;
   getTextLines: () => TextLine[];
+  searchTerm?: string;
+  searchMatchCount?: number;
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -34,6 +36,7 @@ async function sendContextUpdate(state: ContextState, selectedLine?: TextLine) {
   const parts = [`Document viewer: page ${page}/${totalPages} (page_index=${pageIndex})`];
   if (pageMetadata) parts.push(`Page metadata: ${pageMetadata}`);
   if (selectedLine) parts.push(`User selected text (${selectedLine.id}): "${selectedLine.transcription}"`);
+  if (state.searchTerm) parts.push(`Active search: "${state.searchTerm}" (${state.searchMatchCount ?? 0} matches on this page)`);
   parts.push(fullText ? `Page transcription (line IDs for highlight-region tool):\n${fullText}` : "(no transcribed text on this page)");
 
   const text = parts.join("\n");

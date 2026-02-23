@@ -16,9 +16,11 @@ interface Props {
   opacity: number;
   onChange: (key: string, value: string | number) => void;
   onClose: () => void;
+  showHighlights?: boolean;
+  onToggleHighlights?: (v: boolean) => void;
 }
 
-let { color, thickness, opacity, onChange, onClose }: Props = $props();
+let { color, thickness, opacity, onChange, onClose, showHighlights, onToggleHighlights }: Props = $props();
 
 let popoverEl: HTMLDivElement;
 
@@ -67,13 +69,24 @@ onDestroy(() => {
     <span class="popover-label">Opacity</span>
     <input
       type="range"
-      min="0.02"
+      min="0"
       max="0.5"
       step="0.02"
       value={opacity}
       oninput={(e) => onChange('opacity', parseFloat((e.target as HTMLInputElement).value))}
     />
   </div>
+  {#if onToggleHighlights}
+    <div class="popover-divider"></div>
+    <label class="popover-toggle">
+      <input
+        type="checkbox"
+        checked={showHighlights}
+        onchange={() => onToggleHighlights?.(!showHighlights)}
+      />
+      <span class="toggle-label">Search highlights</span>
+    </label>
+  {/if}
 </div>
 
 <style>
@@ -135,5 +148,28 @@ onDestroy(() => {
   height: 4px;
   accent-color: var(--color-accent, #c15f3c);
   cursor: pointer;
+}
+
+.popover-divider {
+  height: 1px;
+  background: var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
+  margin: 2px 0;
+}
+
+.popover-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.popover-toggle input[type="checkbox"] {
+  accent-color: #f59e0b;
+  cursor: pointer;
+}
+
+.toggle-label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
 }
 </style>

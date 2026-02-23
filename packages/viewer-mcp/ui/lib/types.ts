@@ -39,6 +39,8 @@ export interface ThumbnailData {
 export interface ViewerData {
   pageUrls: PageUrl[];
   pageMetadata: string[];
+  highlightTerm: string;
+  highlightTermColor: string;
 }
 
 export interface TooltipState {

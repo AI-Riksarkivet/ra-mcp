@@ -182,6 +182,8 @@ $effect(() => {
       onToggleThumbnails={() => showThumbnails = !showThumbnails}
       onPrevPage={handlePrevPage}
       onNextPage={handleNextPage}
+      highlightTerm={data.highlightTerm}
+      highlightTermColor={data.highlightTermColor}
     />
   {:else}
     <div class="page-loading">

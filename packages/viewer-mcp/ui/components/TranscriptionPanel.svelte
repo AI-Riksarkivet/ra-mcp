@@ -10,9 +10,10 @@ interface Props {
   onWidthChange?: (width: number) => void;
   onLineHover: (id: string | null) => void;
   onLineClick: (line: TextLine) => void;
+  searchMatchIds?: Set<string>;
 }
 
-let { textLines, highlightedLineId, open, width = 280, onWidthChange, onLineHover, onLineClick }: Props = $props();
+let { textLines, highlightedLineId, open, width = 280, onWidthChange, onLineHover, onLineClick, searchMatchIds }: Props = $props();
 
 let lineEls: HTMLButtonElement[] = [];
 let containerEl: HTMLDivElement;
@@ -45,6 +46,7 @@ $effect(() => {
       <button
         class="line-item"
         class:highlighted={line.id === highlightedLineId}
+        class:search-match={searchMatchIds?.has(line.id)}
         bind:this={lineEls[i]}
         onpointerenter={() => onLineHover(line.id)}
         onpointerleave={() => onLineHover(null)}
@@ -181,6 +183,15 @@ $effect(() => {
 .line-item.highlighted {
   background: var(--claude-selection, rgba(193, 95, 60, 0.19));
   border-left-color: var(--color-accent, #c15f3c);
+}
+
+.line-item.search-match {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.line-item.search-match.highlighted {
+  background: rgba(245, 158, 11, 0.18);
 }
 
 .no-lines {
