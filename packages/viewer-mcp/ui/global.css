@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light dark;
+
+  /* Claude Theme - Primary Colors */
+  --claude-orange: #C15F3C;
+  --claude-orange-dark: #A14A2F;
+  --claude-selection: rgba(193, 95, 60, 0.19);
+
+  /* Background colors - using light-dark() for automatic theme switching */
+  --color-background-primary: light-dark(#faf9f5, #1a1815);
+  --color-background-secondary: light-dark(#f5f4ed, #201d18);
+  --color-background-tertiary: light-dark(#ebe9e1, #2a2620);
+
+  /* Text colors */
+  --color-text-primary: light-dark(#2c2c2c, #e8e6e3);
+  --color-text-secondary: light-dark(#5c5c5c, #a8a6a3);
+
+  /* Border */
+  --color-border-primary: light-dark(#d4d2cb, #3a3632);
+
+  /* Accent colors (custom — not in host spec) */
+  --color-accent: var(--claude-orange);
+  --color-accent-dark: var(--claude-orange-dark);
+  --color-text-on-accent: #ffffff;
+
+  /* Standard spec danger/error colors */
+  --color-text-danger: light-dark(#b91c1c, #f87171);
+  --color-background-danger: light-dark(#fef2f2, #2d1515);
+  --color-border-danger: light-dark(#fca5a5, #7f1d1d);
+
+  /* SVG Container background (document image) */
+  --color-svg-background: light-dark(#ffffff, #252220);
+
+  /* Tooltip colors */
+  --color-tooltip-background: light-dark(rgba(44, 44, 44, 0.95), rgba(232, 230, 227, 0.95));
+  --color-tooltip-text: light-dark(#faf9f5, #1a1815);
+
+  /* Border and radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Font sizes */
+  --font-text-sm-size: 0.875rem;
+  --font-text-md-size: 1rem;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--claude-selection);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--font-text-md-size);
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-dark);
+  text-decoration: underline;
+}
+
+button {
+  font-family: var(--font-sans);
+}

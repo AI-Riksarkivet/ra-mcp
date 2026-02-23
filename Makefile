@@ -70,3 +70,11 @@ clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type d -name .ruff_cache -exec rm -rf {} +
 	rm -rf dist/ build/ *.egg-info
+
+# Expose local server to the internet using Cloudflare Tunnel, then add: <tunnel_url>/mcp
+tunnel:
+	npx cloudflared tunnel --url http://localhost:3001
+
+# Expose local server to the internet using ngrok, then add: <ngrok_url>/mcp
+ngrok:
+	npx ngrok http 3001

@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "svelte-skills@svelte-skills-kit": true,
+    "toolkit-skills@claude-code-toolkit": true
+  }
+}

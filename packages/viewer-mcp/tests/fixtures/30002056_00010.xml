@@ -1,0 +1,912 @@
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v4#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v4# http://www.loc.gov/standards/alto/v4/alto-4-4.xsd">
+    <Description>
+        <MeasurementUnit>pixel</MeasurementUnit>
+        <sourceImageInformation>
+            <fileName>30002056_00010.jpg</fileName>
+        </sourceImageInformation>
+        <Processing ID="general">
+            <processingDateTime>2025-08-15T10:16:06.051709</processingDateTime>
+            <processingSoftware>
+                <softwareCreator>ai@riksarkivet.se</softwareCreator>
+                <softwareName>htrflow</softwareName>
+                <softwareVersion>0.1.3</softwareVersion>
+                <applicationDescription>htrflow is developed at Riksarkivet's AI-lab as an open-source package to simplify HTR</applicationDescription>
+            </processingSoftware>
+        </Processing>
+        <Processing ID="step1">
+            <processingStepDescription>Segmentation</processingStepDescription>
+            <processingStepSettings> model: Riksarkivet/yolov9-regions-1 model_class: YOLO model_version: 7c44178d85926b4a096c55c89bf224855a201fbf
+            </processingStepSettings>
+        </Processing>
+        <Processing ID="step2">
+            <processingStepDescription>Segmentation</processingStepDescription>
+            <processingStepSettings> model: Riksarkivet/yolov9-lines-within-regions-1 model_class: YOLO model_version: ea2f8987cba316abc62762f3030266ec8875338d
+            </processingStepSettings>
+        </Processing>
+        <Processing ID="step3">
+            <processingStepDescription>TextRecognition</processingStepDescription>
+            <processingStepSettings> model: ./model
+            </processingStepSettings>
+        </Processing>
+    </Description>
+    <ReadingOrder>
+        <OrderedGroup ID="ro">
+            <OrderedGroup ID="ro_30002056_00010_region0">
+            <ElementRef ID="ro_30002056_00010_region0_line0" REF="_30002056_00010_region0_line0" />
+            <ElementRef ID="ro_30002056_00010_region0_line1" REF="_30002056_00010_region0_line1" />
+            <ElementRef ID="ro_30002056_00010_region0_line2" REF="_30002056_00010_region0_line2" />
+            <ElementRef ID="ro_30002056_00010_region0_line3" REF="_30002056_00010_region0_line3" />
+            <ElementRef ID="ro_30002056_00010_region0_line4" REF="_30002056_00010_region0_line4" />
+            <ElementRef ID="ro_30002056_00010_region0_line5" REF="_30002056_00010_region0_line5" />
+            <ElementRef ID="ro_30002056_00010_region0_line6" REF="_30002056_00010_region0_line6" />
+            <ElementRef ID="ro_30002056_00010_region0_line7" REF="_30002056_00010_region0_line7" />
+            <ElementRef ID="ro_30002056_00010_region0_line8" REF="_30002056_00010_region0_line8" />
+            <ElementRef ID="ro_30002056_00010_region0_line9" REF="_30002056_00010_region0_line9" />
+            <ElementRef ID="ro_30002056_00010_region0_line10" REF="_30002056_00010_region0_line10" />
+            <ElementRef ID="ro_30002056_00010_region0_line11" REF="_30002056_00010_region0_line11" />
+            <ElementRef ID="ro_30002056_00010_region0_line12" REF="_30002056_00010_region0_line12" />
+            <ElementRef ID="ro_30002056_00010_region0_line13" REF="_30002056_00010_region0_line13" />
+            <ElementRef ID="ro_30002056_00010_region0_line14" REF="_30002056_00010_region0_line14" />
+            <ElementRef ID="ro_30002056_00010_region0_line15" REF="_30002056_00010_region0_line15" />
+            <ElementRef ID="ro_30002056_00010_region0_line16" REF="_30002056_00010_region0_line16" />
+            <ElementRef ID="ro_30002056_00010_region0_line17" REF="_30002056_00010_region0_line17" />
+            <ElementRef ID="ro_30002056_00010_region0_line18" REF="_30002056_00010_region0_line18" />
+            <ElementRef ID="ro_30002056_00010_region0_line19" REF="_30002056_00010_region0_line19" />
+            <ElementRef ID="ro_30002056_00010_region0_line20" REF="_30002056_00010_region0_line20" />
+            <ElementRef ID="ro_30002056_00010_region0_line21" REF="_30002056_00010_region0_line21" />
+            <ElementRef ID="ro_30002056_00010_region0_line22" REF="_30002056_00010_region0_line22" />
+            <ElementRef ID="ro_30002056_00010_region0_line23" REF="_30002056_00010_region0_line23" />
+            <ElementRef ID="ro_30002056_00010_region0_line24" REF="_30002056_00010_region0_line24" />
+            <ElementRef ID="ro_30002056_00010_region0_line25" REF="_30002056_00010_region0_line25" />
+            <ElementRef ID="ro_30002056_00010_region0_line26" REF="_30002056_00010_region0_line26" />
+            <ElementRef ID="ro_30002056_00010_region0_line27" REF="_30002056_00010_region0_line27" />
+            <ElementRef ID="ro_30002056_00010_region0_line28" REF="_30002056_00010_region0_line28" />
+            <ElementRef ID="ro_30002056_00010_region0_line29" REF="_30002056_00010_region0_line29" />
+            <ElementRef ID="ro_30002056_00010_region0_line30" REF="_30002056_00010_region0_line30" />
+            <ElementRef ID="ro_30002056_00010_region0_line31" REF="_30002056_00010_region0_line31" />
+            <ElementRef ID="ro_30002056_00010_region0_line32" REF="_30002056_00010_region0_line32" />
+            </OrderedGroup>
+            <OrderedGroup ID="ro_30002056_00010_region1">
+            <ElementRef ID="ro_30002056_00010_region1_line0" REF="_30002056_00010_region1_line0" />
+            <ElementRef ID="ro_30002056_00010_region1_line1" REF="_30002056_00010_region1_line1" />
+            <ElementRef ID="ro_30002056_00010_region1_line2" REF="_30002056_00010_region1_line2" />
+            <ElementRef ID="ro_30002056_00010_region1_line3" REF="_30002056_00010_region1_line3" />
+            <ElementRef ID="ro_30002056_00010_region1_line4" REF="_30002056_00010_region1_line4" />
+            <ElementRef ID="ro_30002056_00010_region1_line5" REF="_30002056_00010_region1_line5" />
+            <ElementRef ID="ro_30002056_00010_region1_line6" REF="_30002056_00010_region1_line6" />
+            <ElementRef ID="ro_30002056_00010_region1_line7" REF="_30002056_00010_region1_line7" />
+            <ElementRef ID="ro_30002056_00010_region1_line8" REF="_30002056_00010_region1_line8" />
+            <ElementRef ID="ro_30002056_00010_region1_line9" REF="_30002056_00010_region1_line9" />
+            <ElementRef ID="ro_30002056_00010_region1_line10" REF="_30002056_00010_region1_line10" />
+            <ElementRef ID="ro_30002056_00010_region1_line11" REF="_30002056_00010_region1_line11" />
+            <ElementRef ID="ro_30002056_00010_region1_line12" REF="_30002056_00010_region1_line12" />
+            <ElementRef ID="ro_30002056_00010_region1_line13" REF="_30002056_00010_region1_line13" />
+            <ElementRef ID="ro_30002056_00010_region1_line14" REF="_30002056_00010_region1_line14" />
+            <ElementRef ID="ro_30002056_00010_region1_line15" REF="_30002056_00010_region1_line15" />
+            <ElementRef ID="ro_30002056_00010_region1_line16" REF="_30002056_00010_region1_line16" />
+            <ElementRef ID="ro_30002056_00010_region1_line17" REF="_30002056_00010_region1_line17" />
+            <ElementRef ID="ro_30002056_00010_region1_line18" REF="_30002056_00010_region1_line18" />
+            <ElementRef ID="ro_30002056_00010_region1_line19" REF="_30002056_00010_region1_line19" />
+            <ElementRef ID="ro_30002056_00010_region1_line20" REF="_30002056_00010_region1_line20" />
+            <ElementRef ID="ro_30002056_00010_region1_line21" REF="_30002056_00010_region1_line21" />
+            <ElementRef ID="ro_30002056_00010_region1_line22" REF="_30002056_00010_region1_line22" />
+            <ElementRef ID="ro_30002056_00010_region1_line23" REF="_30002056_00010_region1_line23" />
+            <ElementRef ID="ro_30002056_00010_region1_line24" REF="_30002056_00010_region1_line24" />
+            <ElementRef ID="ro_30002056_00010_region1_line25" REF="_30002056_00010_region1_line25" />
+            <ElementRef ID="ro_30002056_00010_region1_line26" REF="_30002056_00010_region1_line26" />
+            <ElementRef ID="ro_30002056_00010_region1_line27" REF="_30002056_00010_region1_line27" />
+            <ElementRef ID="ro_30002056_00010_region1_line28" REF="_30002056_00010_region1_line28" />
+            <ElementRef ID="ro_30002056_00010_region1_line29" REF="_30002056_00010_region1_line29" />
+            <ElementRef ID="ro_30002056_00010_region1_line30" REF="_30002056_00010_region1_line30" />
+            <ElementRef ID="ro_30002056_00010_region1_line31" REF="_30002056_00010_region1_line31" />
+            <ElementRef ID="ro_30002056_00010_region1_line32" REF="_30002056_00010_region1_line32" />
+            <ElementRef ID="ro_30002056_00010_region1_line33" REF="_30002056_00010_region1_line33" />
+            <ElementRef ID="ro_30002056_00010_region1_line34" REF="_30002056_00010_region1_line34" />
+            <ElementRef ID="ro_30002056_00010_region1_line35" REF="_30002056_00010_region1_line35" />
+            <ElementRef ID="ro_30002056_00010_region1_line36" REF="_30002056_00010_region1_line36" />
+            <ElementRef ID="ro_30002056_00010_region1_line37" REF="_30002056_00010_region1_line37" />
+            <ElementRef ID="ro_30002056_00010_region1_line38" REF="_30002056_00010_region1_line38" />
+            <ElementRef ID="ro_30002056_00010_region1_line39" REF="_30002056_00010_region1_line39" />
+            <ElementRef ID="ro_30002056_00010_region1_line40" REF="_30002056_00010_region1_line40" />
+            </OrderedGroup>
+            <OrderedGroup ID="ro_30002056_00010_region2">
+            <ElementRef ID="ro_30002056_00010_region2_line0" REF="_30002056_00010_region2_line0" />
+            </OrderedGroup>
+        </OrderedGroup>
+    </ReadingOrder>
+    <Layout>
+        <Page WIDTH="5379" HEIGHT="4395" PC="0.9928" PHYSICAL_IMG_NR="0" ID="_00010">
+            <TopMargin />
+            <LeftMargin />
+            <RightMargin />
+            <BottomMargin />
+            <PrintSpace>
+                
+                <TextBlock ID="_30002056_00010_region0" HPOS="352" VPOS="129" HEIGHT="4060" WIDTH="2312" CS="false">
+                    <Shape>
+                        <Polygon POINTS="352,129 352,4189 2664,4189 2664,129" />
+                    </Shape>
+                    <TextLine ID="_30002056_00010_region0_line0" HPOS="1495" VPOS="141" HEIGHT="95" WIDTH="526">
+                        <Shape>
+                            <Polygon POINTS="1495,141 1495,236 1647,236 1653,211 1691,205 1850,211 2021,198 2021,141" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line0_word0" HPOS="1495" VPOS="141" HEIGHT="95" WIDTH="263" CONTENT="sedan" />
+                        <String ID="_30002056_00010_region0_line0_word1" HPOS="1758" VPOS="141" HEIGHT="95" WIDTH="263" CONTENT="han" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line1" HPOS="505" VPOS="167" HEIGHT="196" WIDTH="2100">
+                        <Shape>
+                            <Polygon POINTS="505,167 505,281 2091,306 2186,363 2351,363 2396,325 2605,300 2605,236 2554,211 2332,205 2288,167 2028,167 1971,217 1527,224 1431,167 1311,192 1082,167 1057,198 943,167" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line1_word0" HPOS="505" VPOS="167" HEIGHT="196" WIDTH="262" CONTENT="dar" />
+                        <String ID="_30002056_00010_region0_line1_word1" HPOS="767" VPOS="167" HEIGHT="196" WIDTH="438" CONTENT="hvarefter" />
+                        <String ID="_30002056_00010_region0_line1_word2" HPOS="1205" VPOS="167" HEIGHT="196" WIDTH="350" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line1_word3" HPOS="1555" VPOS="167" HEIGHT="196" WIDTH="525" CONTENT="uppskjutit" />
+                        <String ID="_30002056_00010_region0_line1_word4" HPOS="2080" VPOS="167" HEIGHT="196" WIDTH="525" CONTENT="berörde" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line2" HPOS="505" VPOS="319" HEIGHT="146" WIDTH="1516">
+                        <Shape>
+                            <Polygon POINTS="505,319 505,433 1140,439 1146,465 1260,465 1266,439 1730,439 1736,465 1914,465 1920,439 1977,439 1983,465 2021,465 2021,363 1926,357 1888,319 1419,319 1412,344 1381,319" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line2_word0" HPOS="505" VPOS="319" HEIGHT="146" WIDTH="379" CONTENT="ridder" />
+                        <String ID="_30002056_00010_region0_line2_word1" HPOS="884" VPOS="319" HEIGHT="146" WIDTH="379" CONTENT="samt" />
+                        <String ID="_30002056_00010_region0_line2_word2" HPOS="1263" VPOS="319" HEIGHT="146" WIDTH="442" CONTENT="fönstret" />
+                        <String ID="_30002056_00010_region0_line2_word3" HPOS="1705" VPOS="319" HEIGHT="146" WIDTH="316" CONTENT="till" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line3" HPOS="480" VPOS="446" HEIGHT="196" WIDTH="2074">
+                        <Shape>
+                            <Polygon POINTS="480,446 480,560 753,585 1469,585 1647,642 1920,642 2148,598 2383,604 2484,642 2554,604 2554,503 2040,490 1990,446 1907,490 1660,477 1634,446 1197,484 1159,446 1038,477 1006,446 854,446 784,484" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line3_word0" HPOS="480" VPOS="446" HEIGHT="196" WIDTH="518" CONTENT="hvarefter" />
+                        <String ID="_30002056_00010_region0_line3_word1" HPOS="998" VPOS="446" HEIGHT="196" WIDTH="259" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line3_word2" HPOS="1257" VPOS="446" HEIGHT="196" WIDTH="605" CONTENT="uppskjutit" />
+                        <String ID="_30002056_00010_region0_line3_word3" HPOS="1862" VPOS="446" HEIGHT="196" WIDTH="432" CONTENT="fönstret" />
+                        <String ID="_30002056_00010_region0_line3_word4" HPOS="2294" VPOS="446" HEIGHT="196" WIDTH="260" CONTENT="och" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line4" HPOS="480" VPOS="598" HEIGHT="120" WIDTH="932">
+                        <Shape>
+                            <Polygon POINTS="480,598 480,687 657,693 753,718 905,687 1362,699 1412,680 1412,642 1343,623 1336,598" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line4_word0" HPOS="480" VPOS="598" HEIGHT="120" WIDTH="427" CONTENT="inkrupit" />
+                        <String ID="_30002056_00010_region0_line4_word1" HPOS="907" VPOS="598" HEIGHT="120" WIDTH="116" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line4_word2" HPOS="1023" VPOS="598" HEIGHT="120" WIDTH="389" CONTENT="boden;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line5" HPOS="480" VPOS="699" HEIGHT="159" WIDTH="2074">
+                        <Shape>
+                            <Polygon POINTS="480,699 480,826 2554,858 2554,763 2478,744 1647,750 1584,699 1419,699 1355,763 905,769 816,750 772,699" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line5_word0" HPOS="480" VPOS="699" HEIGHT="159" WIDTH="172" CONTENT="att" />
+                        <String ID="_30002056_00010_region0_line5_word1" HPOS="652" VPOS="699" HEIGHT="159" WIDTH="260" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line5_word2" HPOS="912" VPOS="699" HEIGHT="159" WIDTH="518" CONTENT="derstädes" />
+                        <String ID="_30002056_00010_region0_line5_word3" HPOS="1430" VPOS="699" HEIGHT="159" WIDTH="432" CONTENT="tillgripit:" />
+                        <String ID="_30002056_00010_region0_line5_word4" HPOS="1862" VPOS="699" HEIGHT="159" WIDTH="259" CONTENT="tre" />
+                        <String ID="_30002056_00010_region0_line5_word5" HPOS="2121" VPOS="699" HEIGHT="159" WIDTH="433" CONTENT="paketer" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line6" HPOS="810" VPOS="699" HEIGHT="70" WIDTH="602">
+                        <Shape>
+                            <Polygon POINTS="810,699 810,757 886,763 1102,757 1260,769 1412,744 1412,699" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line6_word0" HPOS="810" VPOS="699" HEIGHT="70" WIDTH="75" CONTENT="å" />
+                        <String ID="_30002056_00010_region0_line6_word1" HPOS="885" VPOS="699" HEIGHT="70" WIDTH="200" CONTENT="öppna" />
+                        <String ID="_30002056_00010_region0_line6_word2" HPOS="1085" VPOS="699" HEIGHT="70" WIDTH="327" CONTENT="ställen" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line7" HPOS="480" VPOS="826" HEIGHT="146" WIDTH="1947">
+                        <Shape>
+                            <Polygon POINTS="480,852 480,966 2427,972 2427,896 2066,858 1552,877 1463,826 1400,852 1285,826 1273,858 1190,877 987,864 949,826 810,826 803,852 512,826" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line7_word0" HPOS="480" VPOS="826" HEIGHT="146" WIDTH="486" CONTENT="chokolad," />
+                        <String ID="_30002056_00010_region0_line7_word1" HPOS="966" VPOS="826" HEIGHT="146" WIDTH="406" CONTENT="minst" />
+                        <String ID="_30002056_00010_region0_line7_word2" HPOS="1372" VPOS="826" HEIGHT="146" WIDTH="243" CONTENT="tio" />
+                        <String ID="_30002056_00010_region0_line7_word3" HPOS="1615" VPOS="826" HEIGHT="146" WIDTH="325" CONTENT="kakor" />
+                        <String ID="_30002056_00010_region0_line7_word4" HPOS="1940" VPOS="826" HEIGHT="146" WIDTH="243" CONTENT="hex," />
+                        <String ID="_30002056_00010_region0_line7_word5" HPOS="2183" VPOS="826" HEIGHT="146" WIDTH="244" CONTENT="en" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line8" HPOS="480" VPOS="979" HEIGHT="139" WIDTH="1973">
+                        <Shape>
+                            <Polygon POINTS="480,979 480,1093 2275,1118 2453,1080 2396,1010 2161,1004 2155,979 2066,1010 1964,1004 1958,979" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line8_word0" HPOS="480" VPOS="979" HEIGHT="139" WIDTH="657" CONTENT="papperspåde" />
+                        <String ID="_30002056_00010_region0_line8_word1" HPOS="1137" VPOS="979" HEIGHT="139" WIDTH="329" CONTENT="med" />
+                        <String ID="_30002056_00010_region0_line8_word2" HPOS="1466" VPOS="979" HEIGHT="139" WIDTH="987" CONTENT="bröstkerameller" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line9" HPOS="480" VPOS="1105" HEIGHT="127" WIDTH="2150">
+                        <Shape>
+                            <Polygon POINTS="480,1105 480,1213 2630,1232 2630,1150 2561,1105 2307,1105 2275,1137 2097,1131 2091,1105 1971,1105 1945,1137 1850,1137 1825,1105 1457,1105 1450,1131 1425,1105" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line9_word0" HPOS="480" VPOS="1105" HEIGHT="127" WIDTH="268" CONTENT="samt" />
+                        <String ID="_30002056_00010_region0_line9_word1" HPOS="748" VPOS="1105" HEIGHT="127" WIDTH="179" CONTENT="7" />
+                        <String ID="_30002056_00010_region0_line9_word2" HPOS="927" VPOS="1105" HEIGHT="127" WIDTH="180" CONTENT="öre," />
+                        <String ID="_30002056_00010_region0_line9_word3" HPOS="1107" VPOS="1105" HEIGHT="127" WIDTH="358" CONTENT="men" />
+                        <String ID="_30002056_00010_region0_line9_word4" HPOS="1465" VPOS="1105" HEIGHT="127" WIDTH="179" CONTENT="att" />
+                        <String ID="_30002056_00010_region0_line9_word5" HPOS="1644" VPOS="1105" HEIGHT="127" WIDTH="358" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line9_word6" HPOS="2002" VPOS="1105" HEIGHT="127" WIDTH="359" CONTENT="deremot" />
+                        <String ID="_30002056_00010_region0_line9_word7" HPOS="2361" VPOS="1105" HEIGHT="127" WIDTH="269" CONTENT="icke" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line10" HPOS="480" VPOS="1207" HEIGHT="171" WIDTH="2125">
+                        <Shape>
+                            <Polygon POINTS="480,1207 480,1334 626,1378 981,1340 1032,1378 1216,1347 2472,1378 2605,1334 2605,1258 2472,1239 1799,1258 1450,1207 1381,1258 981,1245 924,1207 734,1239" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line10_word0" HPOS="480" VPOS="1207" HEIGHT="171" WIDTH="442" CONTENT="tillgripit" />
+                        <String ID="_30002056_00010_region0_line10_word1" HPOS="922" VPOS="1207" HEIGHT="171" WIDTH="443" CONTENT="några" />
+                        <String ID="_30002056_00010_region0_line10_word2" HPOS="1365" VPOS="1207" HEIGHT="171" WIDTH="443" CONTENT="burkar" />
+                        <String ID="_30002056_00010_region0_line10_word3" HPOS="1808" VPOS="1207" HEIGHT="171" WIDTH="354" CONTENT="med" />
+                        <String ID="_30002056_00010_region0_line10_word4" HPOS="2162" VPOS="1207" HEIGHT="171" WIDTH="443" CONTENT="rostadt" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line11" HPOS="454" VPOS="1359" HEIGHT="171" WIDTH="2075">
+                        <Shape>
+                            <Polygon POINTS="454,1359 454,1461 2053,1499 2148,1530 2180,1499 2529,1473 2529,1359 2237,1359 2231,1385 1945,1359 1907,1391 1698,1385 1691,1359" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line11_word0" HPOS="454" VPOS="1359" HEIGHT="171" WIDTH="345" CONTENT="kaffe" />
+                        <String ID="_30002056_00010_region0_line11_word1" HPOS="799" VPOS="1359" HEIGHT="171" WIDTH="260" CONTENT="eller" />
+                        <String ID="_30002056_00010_region0_line11_word2" HPOS="1059" VPOS="1359" HEIGHT="171" WIDTH="259" CONTENT="en" />
+                        <String ID="_30002056_00010_region0_line11_word3" HPOS="1318" VPOS="1359" HEIGHT="171" WIDTH="346" CONTENT="tygspåse" />
+                        <String ID="_30002056_00010_region0_line11_word4" HPOS="1664" VPOS="1359" HEIGHT="171" WIDTH="432" CONTENT="med" />
+                        <String ID="_30002056_00010_region0_line11_word5" HPOS="2096" VPOS="1359" HEIGHT="171" WIDTH="433" CONTENT="orostadt" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line12" HPOS="480" VPOS="1461" HEIGHT="171" WIDTH="399">
+                        <Shape>
+                            <Polygon POINTS="480,1461 480,1575 505,1575 581,1600 594,1613 594,1632 670,1632 670,1613 702,1594 791,1600 810,1613 810,1632 879,1632 879,1505 791,1492 778,1480 778,1461 638,1461 632,1486 619,1480 619,1461" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line12_word0" HPOS="480" VPOS="1461" HEIGHT="171" WIDTH="399" CONTENT="kaffe;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line13" HPOS="480" VPOS="1613" HEIGHT="114" WIDTH="2176">
+                        <Shape>
+                            <Polygon POINTS="480,1613 480,1702 822,1727 2656,1721 2656,1645 2611,1613" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line13_word0" HPOS="480" VPOS="1613" HEIGHT="114" WIDTH="181" CONTENT="att" />
+                        <String ID="_30002056_00010_region0_line13_word1" HPOS="661" VPOS="1613" HEIGHT="114" WIDTH="181" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line13_word2" HPOS="842" VPOS="1613" HEIGHT="114" WIDTH="363" CONTENT="jemväl" />
+                        <String ID="_30002056_00010_region0_line13_word3" HPOS="1205" VPOS="1613" HEIGHT="114" WIDTH="272" CONTENT="med" />
+                        <String ID="_30002056_00010_region0_line13_word4" HPOS="1477" VPOS="1613" HEIGHT="114" WIDTH="363" CONTENT="samma" />
+                        <String ID="_30002056_00010_region0_line13_word5" HPOS="1840" VPOS="1613" HEIGHT="114" WIDTH="272" CONTENT="knif" />
+                        <String ID="_30002056_00010_region0_line13_word6" HPOS="2112" VPOS="1613" HEIGHT="114" WIDTH="544" CONTENT="sönderbru¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line14" HPOS="480" VPOS="1714" HEIGHT="172" WIDTH="2023">
+                        <Shape>
+                            <Polygon POINTS="480,1714 480,1848 810,1854 873,1886 987,1848 1438,1835 2377,1886 2503,1816 2497,1759 2440,1714 2345,1759 2250,1753 2212,1714 2104,1753 1977,1714 1926,1759 1799,1759 1749,1714 1603,1759 1393,1753 1343,1714 1241,1753 1076,1753 1025,1714 860,1753 803,1714" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line14_word0" HPOS="480" VPOS="1714" HEIGHT="172" WIDTH="252" CONTENT="tit" />
+                        <String ID="_30002056_00010_region0_line14_word1" HPOS="732" VPOS="1714" HEIGHT="172" WIDTH="422" CONTENT="hänglåsen," />
+                        <String ID="_30002056_00010_region0_line14_word2" HPOS="1154" VPOS="1714" HEIGHT="172" WIDTH="337" CONTENT="som" />
+                        <String ID="_30002056_00010_region0_line14_word3" HPOS="1491" VPOS="1714" HEIGHT="172" WIDTH="253" CONTENT="varit" />
+                        <String ID="_30002056_00010_region0_line14_word4" HPOS="1744" VPOS="1714" HEIGHT="172" WIDTH="506" CONTENT="anbragta" />
+                        <String ID="_30002056_00010_region0_line14_word5" HPOS="2250" VPOS="1714" HEIGHT="172" WIDTH="253" CONTENT="för" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line15" HPOS="454" VPOS="1867" HEIGHT="133" WIDTH="2049">
+                        <Shape>
+                            <Polygon POINTS="454,1867 454,1975 2472,2000 2503,1968 2484,1867 1799,1867 1793,1892 1755,1867" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line15_word0" HPOS="454" VPOS="1867" HEIGHT="133" WIDTH="683" CONTENT="jernviduerna" />
+                        <String ID="_30002056_00010_region0_line15_word1" HPOS="1137" VPOS="1867" HEIGHT="133" WIDTH="256" CONTENT="till" />
+                        <String ID="_30002056_00010_region0_line15_word2" HPOS="1393" VPOS="1867" HEIGHT="133" WIDTH="683" CONTENT="målsegandena" />
+                        <String ID="_30002056_00010_region0_line15_word3" HPOS="2076" VPOS="1867" HEIGHT="133" WIDTH="427" CONTENT="Westers," />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line16" HPOS="480" VPOS="1968" HEIGHT="171" WIDTH="2023">
+                        <Shape>
+                            <Polygon POINTS="480,1968 480,2076 1431,2108 1457,2139 1704,2139 1730,2108 1996,2108 2028,2139 2459,2139 2503,2114 2503,2013 1292,2006 1241,1968 1000,2006 892,1968 822,1994" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line16_word0" HPOS="480" VPOS="1968" HEIGHT="171" WIDTH="590" CONTENT="Svalanders," />
+                        <String ID="_30002056_00010_region0_line16_word1" HPOS="1070" VPOS="1968" HEIGHT="171" WIDTH="590" CONTENT="Olaussons," />
+                        <String ID="_30002056_00010_region0_line16_word2" HPOS="1660" VPOS="1968" HEIGHT="171" WIDTH="674" CONTENT="Johanssons" />
+                        <String ID="_30002056_00010_region0_line16_word3" HPOS="2334" VPOS="1968" HEIGHT="171" WIDTH="169" CONTENT="och" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line17" HPOS="454" VPOS="2095" HEIGHT="171" WIDTH="2100">
+                        <Shape>
+                            <Polygon POINTS="454,2095 454,2222 1108,2228 1178,2266 1285,2228 1425,2228 1482,2266 1596,2266 1647,2228 1730,2266 1799,2241 2351,2266 2554,2228 2554,2146 2066,2146 1990,2095 1882,2133 1723,2095 1622,2139 1431,2095 1324,2133 1178,2095 1114,2120 987,2095 962,2127" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line17_word0" HPOS="454" VPOS="2095" HEIGHT="171" WIDTH="437" CONTENT="Lidholms" />
+                        <String ID="_30002056_00010_region0_line17_word1" HPOS="891" VPOS="2095" HEIGHT="171" WIDTH="438" CONTENT="bodar," />
+                        <String ID="_30002056_00010_region0_line17_word2" HPOS="1329" VPOS="2095" HEIGHT="171" WIDTH="525" CONTENT="hvarefter" />
+                        <String ID="_30002056_00010_region0_line17_word3" HPOS="1854" VPOS="2095" HEIGHT="171" WIDTH="262" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line17_word4" HPOS="2116" VPOS="2095" HEIGHT="171" WIDTH="438" CONTENT="genom" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line18" HPOS="454" VPOS="2222" HEIGHT="171" WIDTH="2049">
+                        <Shape>
+                            <Polygon POINTS="454,2222 454,2349 1584,2342 1812,2349 1901,2393 2370,2393 2503,2355 2503,2266 2320,2254 2281,2222 1768,2266 1685,2222 1552,2260 1450,2254 1431,2222 1362,2247 1260,2222 1241,2254" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line18_word0" HPOS="454" VPOS="2222" HEIGHT="171" WIDTH="341" CONTENT="öppna" />
+                        <String ID="_30002056_00010_region0_line18_word1" HPOS="795" VPOS="2222" HEIGHT="171" WIDTH="342" CONTENT="dörrar" />
+                        <String ID="_30002056_00010_region0_line18_word2" HPOS="1137" VPOS="2222" HEIGHT="171" WIDTH="426" CONTENT="sedan" />
+                        <String ID="_30002056_00010_region0_line18_word3" HPOS="1563" VPOS="2222" HEIGHT="171" WIDTH="342" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line18_word4" HPOS="1905" VPOS="2222" HEIGHT="171" WIDTH="598" CONTENT="uppskjutit" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line19" HPOS="454" VPOS="2349" HEIGHT="171" WIDTH="2049">
+                        <Shape>
+                            <Polygon POINTS="454,2349 454,2457 759,2450 918,2488 1203,2463 1520,2488 1558,2520 1584,2495 1672,2520 1711,2488 2377,2520 2503,2476 2503,2387 2097,2400 1615,2381 1590,2349 1393,2349 1343,2381 1152,2374 1146,2349" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line19_word0" HPOS="454" VPOS="2349" HEIGHT="171" WIDTH="426" CONTENT="ridåerna" />
+                        <String ID="_30002056_00010_region0_line19_word1" HPOS="880" VPOS="2349" HEIGHT="171" WIDTH="513" CONTENT="genom" />
+                        <String ID="_30002056_00010_region0_line19_word2" HPOS="1393" VPOS="2349" HEIGHT="171" WIDTH="341" CONTENT="öppna" />
+                        <String ID="_30002056_00010_region0_line19_word3" HPOS="1734" VPOS="2349" HEIGHT="171" WIDTH="427" CONTENT="dörrar" />
+                        <String ID="_30002056_00010_region0_line19_word4" HPOS="2161" VPOS="2349" HEIGHT="171" WIDTH="342" CONTENT="insatt" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line20" HPOS="454" VPOS="2476" HEIGHT="171" WIDTH="1111">
+                        <Shape>
+                            <Polygon POINTS="454,2476 454,2571 975,2590 1095,2615 1235,2596 1317,2615 1336,2647 1476,2647 1482,2622 1565,2590 1565,2526 1514,2507 1362,2514 1330,2476 1152,2476 1152,2495 1121,2507 879,2501 873,2476" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line20_word0" HPOS="454" VPOS="2476" HEIGHT="171" WIDTH="92" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line20_word1" HPOS="546" VPOS="2476" HEIGHT="171" WIDTH="463" CONTENT="bodarne" />
+                        <String ID="_30002056_00010_region0_line20_word2" HPOS="1009" VPOS="2476" HEIGHT="171" WIDTH="231" CONTENT="och" />
+                        <String ID="_30002056_00010_region0_line20_word3" HPOS="1240" VPOS="2476" HEIGHT="171" WIDTH="325" CONTENT="tillgrijs" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line21" HPOS="454" VPOS="2603" HEIGHT="171" WIDTH="2024">
+                        <Shape>
+                            <Polygon POINTS="454,2603 454,2723 1780,2736 1837,2774 1952,2774 1971,2742 2053,2774 2434,2774 2478,2736 2478,2641 2440,2603 2288,2603 2262,2634 1990,2603 1914,2641 1818,2634 1799,2603 1717,2634 1666,2603 1482,2603 1393,2641 1273,2603 1108,2603 1063,2634 994,2634 975,2603" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line21_word0" HPOS="454" VPOS="2603" HEIGHT="171" WIDTH="168" CONTENT="att" />
+                        <String ID="_30002056_00010_region0_line21_word1" HPOS="622" VPOS="2603" HEIGHT="171" WIDTH="253" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line21_word2" HPOS="875" VPOS="2603" HEIGHT="171" WIDTH="422" CONTENT="tillgripit:" />
+                        <String ID="_30002056_00010_region0_line21_word3" HPOS="1297" VPOS="2603" HEIGHT="171" WIDTH="84" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line21_word4" HPOS="1381" VPOS="2603" HEIGHT="171" WIDTH="422" CONTENT="Svalande" />
+                        <String ID="_30002056_00010_region0_line21_word5" HPOS="1803" VPOS="2603" HEIGHT="171" WIDTH="169" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line21_word6" HPOS="1972" VPOS="2603" HEIGHT="171" WIDTH="253" CONTENT="Westers" />
+                        <String ID="_30002056_00010_region0_line21_word7" HPOS="2225" VPOS="2603" HEIGHT="171" WIDTH="253" CONTENT="bod:" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line22" HPOS="429" VPOS="2729" HEIGHT="146" WIDTH="2125">
+                        <Shape>
+                            <Polygon POINTS="429,2729 429,2850 524,2875 607,2844 746,2875 994,2875 1000,2850 2516,2875 2554,2844 2554,2780 2072,2761 2047,2729 1907,2768 1799,2729 1121,2729 1082,2761 994,2729 810,2729 803,2755" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line22_word0" HPOS="429" VPOS="2729" HEIGHT="146" WIDTH="265" CONTENT="dels" />
+                        <String ID="_30002056_00010_region0_line22_word1" HPOS="694" VPOS="2729" HEIGHT="146" WIDTH="177" CONTENT="ur" />
+                        <String ID="_30002056_00010_region0_line22_word2" HPOS="871" VPOS="2729" HEIGHT="146" WIDTH="177" CONTENT="två" />
+                        <String ID="_30002056_00010_region0_line22_word3" HPOS="1048" VPOS="2729" HEIGHT="146" WIDTH="354" CONTENT="olåsta" />
+                        <String ID="_30002056_00010_region0_line22_word4" HPOS="1402" VPOS="2729" HEIGHT="146" WIDTH="532" CONTENT="disklådor" />
+                        <String ID="_30002056_00010_region0_line22_word5" HPOS="1934" VPOS="2729" HEIGHT="146" WIDTH="620" CONTENT="tillsammans" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line23" HPOS="429" VPOS="2856" HEIGHT="146" WIDTH="2151">
+                        <Shape>
+                            <Polygon POINTS="429,2856 429,2971 607,2971 626,3002 2580,2977 2580,2894 2516,2856 2066,2856 2034,2888 1812,2888 1787,2856 1603,2856 1596,2882" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line23_word0" HPOS="429" VPOS="2856" HEIGHT="146" WIDTH="537" CONTENT="vexelmynt" />
+                        <String ID="_30002056_00010_region0_line23_word1" HPOS="966" VPOS="2856" HEIGHT="146" WIDTH="538" CONTENT="uppgående" />
+                        <String ID="_30002056_00010_region0_line23_word2" HPOS="1504" VPOS="2856" HEIGHT="146" WIDTH="359" CONTENT="till" />
+                        <String ID="_30002056_00010_region0_line23_word3" HPOS="1863" VPOS="2856" HEIGHT="146" WIDTH="268" CONTENT="minst" />
+                        <String ID="_30002056_00010_region0_line23_word4" HPOS="2131" VPOS="2856" HEIGHT="146" WIDTH="180" CONTENT="2" />
+                        <String ID="_30002056_00010_region0_line23_word5" HPOS="2311" VPOS="2856" HEIGHT="146" WIDTH="269" CONTENT="kro¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line24" HPOS="429" VPOS="2983" HEIGHT="171" WIDTH="2100">
+                        <Shape>
+                            <Polygon POINTS="429,2983 429,3104 2097,3123 2136,3154 2529,3104 2529,3028 2459,2983 2370,2983 2351,3015 2085,2983 2009,3028 1920,3015 1907,2983 1831,2983 1812,3015 1755,2983 1488,2983 1469,3015 1381,2983 899,2983 892,3009 873,2983" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line24_word0" HPOS="429" VPOS="2983" HEIGHT="171" WIDTH="262" CONTENT="nor" />
+                        <String ID="_30002056_00010_region0_line24_word1" HPOS="691" VPOS="2983" HEIGHT="171" WIDTH="175" CONTENT="och" />
+                        <String ID="_30002056_00010_region0_line24_word2" HPOS="866" VPOS="2983" HEIGHT="171" WIDTH="263" CONTENT="dels" />
+                        <String ID="_30002056_00010_region0_line24_word3" HPOS="1129" VPOS="2983" HEIGHT="171" WIDTH="175" CONTENT="ett" />
+                        <String ID="_30002056_00010_region0_line24_word4" HPOS="1304" VPOS="2983" HEIGHT="171" WIDTH="175" CONTENT="å" />
+                        <String ID="_30002056_00010_region0_line24_word5" HPOS="1479" VPOS="2983" HEIGHT="171" WIDTH="612" CONTENT="boddisken" />
+                        <String ID="_30002056_00010_region0_line24_word6" HPOS="2091" VPOS="2983" HEIGHT="171" WIDTH="438" CONTENT="liggande" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line25" HPOS="429" VPOS="3110" HEIGHT="133" WIDTH="1567">
+                        <Shape>
+                            <Polygon POINTS="429,3110 429,3237 1952,3243 1996,3218 1996,3154 1971,3154 1952,3110 1241,3110 1235,3135 1171,3135 1165,3110 1051,3110 1044,3135 1013,3110 867,3110 822,3142 676,3135 670,3110" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line25_word0" HPOS="429" VPOS="3110" HEIGHT="133" WIDTH="326" CONTENT="större" />
+                        <String ID="_30002056_00010_region0_line25_word1" HPOS="755" VPOS="3110" HEIGHT="133" WIDTH="457" CONTENT="stycke" />
+                        <String ID="_30002056_00010_region0_line25_word2" HPOS="1212" VPOS="3110" HEIGHT="133" WIDTH="457" CONTENT="säärkt" />
+                        <String ID="_30002056_00010_region0_line25_word3" HPOS="1669" VPOS="3110" HEIGHT="133" WIDTH="327" CONTENT="kött;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line26" HPOS="454" VPOS="3237" HEIGHT="127" WIDTH="2202">
+                        <Shape>
+                            <Polygon POINTS="454,3237 454,3364 2656,3357 2656,3281 2605,3237 2497,3269 2358,3237 2155,3237 2129,3269 2047,3237 1933,3269 1844,3237 1622,3237 1596,3269 1425,3237 1121,3262 949,3237 899,3269 848,3237 550,3262" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line26_word0" HPOS="454" VPOS="3237" HEIGHT="127" WIDTH="91" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line26_word1" HPOS="545" VPOS="3237" HEIGHT="127" WIDTH="551" CONTENT="Svalanders" />
+                        <String ID="_30002056_00010_region0_line26_word2" HPOS="1096" VPOS="3237" HEIGHT="127" WIDTH="367" CONTENT="bod:" />
+                        <String ID="_30002056_00010_region0_line26_word3" HPOS="1463" VPOS="3237" HEIGHT="127" WIDTH="183" CONTENT="en" />
+                        <String ID="_30002056_00010_region0_line26_word4" HPOS="1646" VPOS="3237" HEIGHT="127" WIDTH="459" CONTENT="helbutelj" />
+                        <String ID="_30002056_00010_region0_line26_word5" HPOS="2105" VPOS="3237" HEIGHT="127" WIDTH="551" CONTENT="hallonsaft¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line27" HPOS="454" VPOS="3364" HEIGHT="146" WIDTH="2151">
+                        <Shape>
+                            <Polygon POINTS="454,3364 454,3472 2605,3510 2605,3421 2421,3364 2180,3364 2174,3389 1958,3364 1901,3402 1584,3396 1558,3364" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line27_word0" HPOS="454" VPOS="3364" HEIGHT="146" WIDTH="89" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line27_word1" HPOS="543" VPOS="3364" HEIGHT="146" WIDTH="448" CONTENT="Olaussons" />
+                        <String ID="_30002056_00010_region0_line27_word2" HPOS="991" VPOS="3364" HEIGHT="146" WIDTH="359" CONTENT="bod:" />
+                        <String ID="_30002056_00010_region0_line27_word3" HPOS="1350" VPOS="3364" HEIGHT="146" WIDTH="269" CONTENT="dels" />
+                        <String ID="_30002056_00010_region0_line27_word4" HPOS="1619" VPOS="3364" HEIGHT="146" WIDTH="89" CONTENT="ur" />
+                        <String ID="_30002056_00010_region0_line27_word5" HPOS="1708" VPOS="3364" HEIGHT="146" WIDTH="180" CONTENT="en" />
+                        <String ID="_30002056_00010_region0_line27_word6" HPOS="1888" VPOS="3364" HEIGHT="146" WIDTH="268" CONTENT="låst" />
+                        <String ID="_30002056_00010_region0_line27_word7" HPOS="2156" VPOS="3364" HEIGHT="146" WIDTH="449" CONTENT="disklåda," />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line28" HPOS="404" VPOS="3491" HEIGHT="171" WIDTH="2201">
+                        <Shape>
+                            <Polygon POINTS="404,3491 404,3605 1672,3618 2047,3630 2097,3662 2167,3630 2503,3662 2605,3624 2605,3535 2351,3529 2294,3491 2002,3529 1958,3491 1914,3516 1787,3491 1755,3522 1603,3522 1571,3491 867,3491 860,3516" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line28_word0" HPOS="404" VPOS="3491" HEIGHT="171" WIDTH="275" CONTENT="som" />
+                        <String ID="_30002056_00010_region0_line28_word1" HPOS="679" VPOS="3491" HEIGHT="171" WIDTH="183" CONTENT="han" />
+                        <String ID="_30002056_00010_region0_line28_word2" HPOS="862" VPOS="3491" HEIGHT="171" WIDTH="459" CONTENT="uppbrutit" />
+                        <String ID="_30002056_00010_region0_line28_word3" HPOS="1321" VPOS="3491" HEIGHT="171" WIDTH="183" CONTENT="med" />
+                        <String ID="_30002056_00010_region0_line28_word4" HPOS="1504" VPOS="3491" HEIGHT="171" WIDTH="183" CONTENT="en" />
+                        <String ID="_30002056_00010_region0_line28_word5" HPOS="1687" VPOS="3491" HEIGHT="171" WIDTH="92" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line28_word6" HPOS="1779" VPOS="3491" HEIGHT="171" WIDTH="367" CONTENT="boden" />
+                        <String ID="_30002056_00010_region0_line28_word7" HPOS="2146" VPOS="3491" HEIGHT="171" WIDTH="459" CONTENT="påträffad" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line29" HPOS="404" VPOS="3618" HEIGHT="139" WIDTH="2201">
+                        <Shape>
+                            <Polygon POINTS="404,3618 404,3757 2605,3744 2605,3675 2377,3649 2351,3618 2053,3662 1901,3618 1679,3618 1647,3656 1362,3649 1343,3618 962,3618 956,3643" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line29_word0" HPOS="404" VPOS="3618" HEIGHT="139" WIDTH="275" CONTENT="yxa," />
+                        <String ID="_30002056_00010_region0_line29_word1" HPOS="679" VPOS="3618" HEIGHT="139" WIDTH="366" CONTENT="minst" />
+                        <String ID="_30002056_00010_region0_line29_word2" HPOS="1045" VPOS="3618" HEIGHT="139" WIDTH="92" CONTENT="3" />
+                        <String ID="_30002056_00010_region0_line29_word3" HPOS="1137" VPOS="3618" HEIGHT="139" WIDTH="367" CONTENT="kronor" />
+                        <String ID="_30002056_00010_region0_line29_word4" HPOS="1504" VPOS="3618" HEIGHT="139" WIDTH="183" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line29_word5" HPOS="1687" VPOS="3618" HEIGHT="139" WIDTH="367" CONTENT="silfver" />
+                        <String ID="_30002056_00010_region0_line29_word6" HPOS="2054" VPOS="3618" HEIGHT="139" WIDTH="184" CONTENT="och" />
+                        <String ID="_30002056_00010_region0_line29_word7" HPOS="2238" VPOS="3618" HEIGHT="139" WIDTH="367" CONTENT="brans¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line30" HPOS="404" VPOS="3744" HEIGHT="172" WIDTH="2125">
+                        <Shape>
+                            <Polygon POINTS="404,3744 404,3865 1996,3871 2066,3916 2212,3916 2262,3884 2529,3871 2529,3795 2199,3783 2148,3744 2021,3744 1971,3783 1863,3776 1850,3744 1742,3776 1660,3744 822,3744 816,3770 803,3744 619,3744 613,3770" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line30_word0" HPOS="404" VPOS="3744" HEIGHT="172" WIDTH="354" CONTENT="mynt" />
+                        <String ID="_30002056_00010_region0_line30_word1" HPOS="758" VPOS="3744" HEIGHT="172" WIDTH="177" CONTENT="och" />
+                        <String ID="_30002056_00010_region0_line30_word2" HPOS="935" VPOS="3744" HEIGHT="172" WIDTH="265" CONTENT="dels" />
+                        <String ID="_30002056_00010_region0_line30_word3" HPOS="1200" VPOS="3744" HEIGHT="172" WIDTH="177" CONTENT="å" />
+                        <String ID="_30002056_00010_region0_line30_word4" HPOS="1377" VPOS="3744" HEIGHT="172" WIDTH="620" CONTENT="boddisken" />
+                        <String ID="_30002056_00010_region0_line30_word5" HPOS="1997" VPOS="3744" HEIGHT="172" WIDTH="532" CONTENT="liggande" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line31" HPOS="404" VPOS="3871" HEIGHT="172" WIDTH="1973">
+                        <Shape>
+                            <Polygon POINTS="404,3871 404,3998 1279,3992 1381,4043 1495,4043 1533,4011 2021,4011 2091,4043 2186,4011 2300,4043 2377,4005 2377,3909 2047,3903 2021,3871 1685,3871 1679,3897 1520,3871 1463,3909 1222,3897 1216,3871" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line31_word0" HPOS="404" VPOS="3871" HEIGHT="172" WIDTH="328" CONTENT="minst" />
+                        <String ID="_30002056_00010_region0_line31_word1" HPOS="732" VPOS="3871" HEIGHT="172" WIDTH="247" CONTENT="2" />
+                        <String ID="_30002056_00010_region0_line31_word2" HPOS="979" VPOS="3871" HEIGHT="172" WIDTH="411" CONTENT="kilogram" />
+                        <String ID="_30002056_00010_region0_line31_word3" HPOS="1390" VPOS="3871" HEIGHT="172" WIDTH="493" CONTENT="färskt" />
+                        <String ID="_30002056_00010_region0_line31_word4" HPOS="1883" VPOS="3871" HEIGHT="172" WIDTH="247" CONTENT="kött;" />
+                        <String ID="_30002056_00010_region0_line31_word5" HPOS="2130" VPOS="3871" HEIGHT="172" WIDTH="247" CONTENT="och" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region0_line32" HPOS="429" VPOS="3998" HEIGHT="171" WIDTH="2176">
+                        <Shape>
+                            <Polygon POINTS="429,3998 429,4169 1076,4169 1114,4138 1247,4169 1362,4144 2364,4169 2605,4125 2605,4055 2516,3998 2104,4049 1381,4036 1343,3998 1095,3998 1063,4030" />
+                        </Shape>
+                        <String ID="_30002056_00010_region0_line32_word0" HPOS="429" VPOS="3998" HEIGHT="171" WIDTH="90" CONTENT="i" />
+                        <String ID="_30002056_00010_region0_line32_word1" HPOS="519" VPOS="3998" HEIGHT="171" WIDTH="544" CONTENT="Johanssons" />
+                        <String ID="_30002056_00010_region0_line32_word2" HPOS="1063" VPOS="3998" HEIGHT="171" WIDTH="272" CONTENT="bod:" />
+                        <String ID="_30002056_00010_region0_line32_word3" HPOS="1335" VPOS="3998" HEIGHT="171" WIDTH="272" CONTENT="dels" />
+                        <String ID="_30002056_00010_region0_line32_word4" HPOS="1607" VPOS="3998" HEIGHT="171" WIDTH="182" CONTENT="ur" />
+                        <String ID="_30002056_00010_region0_line32_word5" HPOS="1789" VPOS="3998" HEIGHT="171" WIDTH="181" CONTENT="en" />
+                        <String ID="_30002056_00010_region0_line32_word6" HPOS="1970" VPOS="3998" HEIGHT="171" WIDTH="181" CONTENT="olåst" />
+                        <String ID="_30002056_00010_region0_line32_word7" HPOS="2151" VPOS="3998" HEIGHT="171" WIDTH="454" CONTENT="disk¬" />
+                    </TextLine>
+                </TextBlock>
+                <TextBlock ID="_30002056_00010_region1" HPOS="2975" VPOS="230" HEIGHT="4093" WIDTH="2311" CS="false">
+                    <Shape>
+                        <Polygon POINTS="2975,230 2975,4323 5286,4323 5286,230" />
+                    </Shape>
+                    <TextLine ID="_30002056_00010_region1_line0" HPOS="3043" VPOS="268" HEIGHT="147" WIDTH="2142">
+                        <Shape>
+                            <Polygon POINTS="3043,268 3043,383 3382,377 3446,415 3574,383 4335,383 4367,415 5185,383 5185,300 5128,268 4987,293 4507,268 4456,306 4347,300 4335,268 4015,306 3823,300 3797,268 3503,268 3497,293 3324,268 3299,300" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line0_word0" HPOS="3043" VPOS="268" HEIGHT="147" WIDTH="267" CONTENT="låda" />
+                        <String ID="_30002056_00010_region1_line0_word1" HPOS="3310" VPOS="268" HEIGHT="147" WIDTH="179" CONTENT="den" />
+                        <String ID="_30002056_00010_region1_line0_word2" HPOS="3489" VPOS="268" HEIGHT="147" WIDTH="625" CONTENT="portmonnä" />
+                        <String ID="_30002056_00010_region1_line0_word3" HPOS="4114" VPOS="268" HEIGHT="147" WIDTH="357" CONTENT="som" />
+                        <String ID="_30002056_00010_region1_line0_word4" HPOS="4471" VPOS="268" HEIGHT="147" WIDTH="624" CONTENT="påträffats" />
+                        <String ID="_30002056_00010_region1_line0_word5" HPOS="5095" VPOS="268" HEIGHT="147" WIDTH="90" CONTENT="i" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line1" HPOS="3043" VPOS="396" HEIGHT="108" WIDTH="2193">
+                        <Shape>
+                            <Polygon POINTS="3043,396 3043,498 5236,504 5236,396 4942,396 4936,421 4808,396 4776,428 4744,396 4565,396 4546,428 4431,434 4207,428 4181,396 3989,421 3893,396 3861,428 3791,396 3554,421 3343,396 3318,428" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line1_word0" HPOS="3043" VPOS="396" HEIGHT="108" WIDTH="274" CONTENT="hans" />
+                        <String ID="_30002056_00010_region1_line1_word1" HPOS="3317" VPOS="396" HEIGHT="108" WIDTH="457" CONTENT="bostad" />
+                        <String ID="_30002056_00010_region1_line1_word2" HPOS="3774" VPOS="396" HEIGHT="108" WIDTH="182" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line1_word3" HPOS="3956" VPOS="396" HEIGHT="108" WIDTH="274" CONTENT="dels" />
+                        <String ID="_30002056_00010_region1_line1_word4" HPOS="4230" VPOS="396" HEIGHT="108" WIDTH="183" CONTENT="ur" />
+                        <String ID="_30002056_00010_region1_line1_word5" HPOS="4413" VPOS="396" HEIGHT="108" WIDTH="183" CONTENT="en" />
+                        <String ID="_30002056_00010_region1_line1_word6" HPOS="4596" VPOS="396" HEIGHT="108" WIDTH="274" CONTENT="olåst" />
+                        <String ID="_30002056_00010_region1_line1_word7" HPOS="4870" VPOS="396" HEIGHT="108" WIDTH="366" CONTENT="disk¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line2" HPOS="3043" VPOS="524" HEIGHT="115" WIDTH="2193">
+                        <Shape>
+                            <Polygon POINTS="3043,524 3043,620 3254,639 5236,632 5236,562 5179,524 5038,524 5013,556 4814,556 4770,524 4629,524 4590,556 4443,524 4277,549 3970,524 3906,556 3797,524 3657,524 3631,556" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line2_word0" HPOS="3043" VPOS="524" HEIGHT="115" WIDTH="274" CONTENT="lada," />
+                        <String ID="_30002056_00010_region1_line2_word1" HPOS="3317" VPOS="524" HEIGHT="115" WIDTH="365" CONTENT="som" />
+                        <String ID="_30002056_00010_region1_line2_word2" HPOS="3682" VPOS="524" HEIGHT="115" WIDTH="274" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line2_word3" HPOS="3956" VPOS="524" HEIGHT="115" WIDTH="457" CONTENT="uppbrutit" />
+                        <String ID="_30002056_00010_region1_line2_word4" HPOS="4413" VPOS="524" HEIGHT="115" WIDTH="366" CONTENT="med" />
+                        <String ID="_30002056_00010_region1_line2_word5" HPOS="4779" VPOS="524" HEIGHT="115" WIDTH="91" CONTENT="en" />
+                        <String ID="_30002056_00010_region1_line2_word6" HPOS="4870" VPOS="524" HEIGHT="115" WIDTH="183" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line2_word7" HPOS="5053" VPOS="524" HEIGHT="115" WIDTH="183" CONTENT="bo¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line3" HPOS="3043" VPOS="652" HEIGHT="115" WIDTH="2117">
+                        <Shape>
+                            <Polygon POINTS="3043,652 3043,748 3215,767 4750,767 5160,735 5160,696 5025,652 4693,652 4686,677" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line3_word0" HPOS="3043" VPOS="652" HEIGHT="115" WIDTH="264" CONTENT="den" />
+                        <String ID="_30002056_00010_region1_line3_word1" HPOS="3307" VPOS="652" HEIGHT="115" WIDTH="529" CONTENT="påträffad" />
+                        <String ID="_30002056_00010_region1_line3_word2" HPOS="3836" VPOS="652" HEIGHT="115" WIDTH="265" CONTENT="yxa," />
+                        <String ID="_30002056_00010_region1_line3_word3" HPOS="4101" VPOS="652" HEIGHT="115" WIDTH="176" CONTENT="12" />
+                        <String ID="_30002056_00010_region1_line3_word4" HPOS="4277" VPOS="652" HEIGHT="115" WIDTH="441" CONTENT="kronor" />
+                        <String ID="_30002056_00010_region1_line3_word5" HPOS="4718" VPOS="652" HEIGHT="115" WIDTH="89" CONTENT="19" />
+                        <String ID="_30002056_00010_region1_line3_word6" HPOS="4807" VPOS="652" HEIGHT="115" WIDTH="264" CONTENT="öre" />
+                        <String ID="_30002056_00010_region1_line3_word7" HPOS="5071" VPOS="652" HEIGHT="115" WIDTH="89" CONTENT="i" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line4" HPOS="3043" VPOS="779" HEIGHT="116" WIDTH="1375">
+                        <Shape>
+                            <Polygon POINTS="3043,779 3043,875 3132,895 3676,869 4162,895 4418,875 4418,779 4252,779 4245,805 4085,805 4079,779 3957,779 3951,805 3919,805 3913,779 3708,779 3702,805 3676,779 3535,779 3529,805 3369,805 3363,779" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line4_word0" HPOS="3043" VPOS="779" HEIGHT="116" WIDTH="458" CONTENT="silfver" />
+                        <String ID="_30002056_00010_region1_line4_word1" HPOS="3501" VPOS="779" HEIGHT="116" WIDTH="172" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line4_word2" HPOS="3673" VPOS="779" HEIGHT="116" WIDTH="745" CONTENT="bronsmynt;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line5" HPOS="3043" VPOS="907" HEIGHT="122" WIDTH="2168">
+                        <Shape>
+                            <Polygon POINTS="3043,907 3043,997 3401,1003 3407,1029 3522,1003 5211,1029 5211,939 5166,907 4814,907 4808,933 4770,907 4629,907 4622,933 4558,907" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line5_word0" HPOS="3043" VPOS="907" HEIGHT="122" WIDTH="180" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line5_word1" HPOS="3223" VPOS="907" HEIGHT="122" WIDTH="181" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line5_word2" HPOS="3404" VPOS="907" HEIGHT="122" WIDTH="271" CONTENT="efter" />
+                        <String ID="_30002056_00010_region1_line5_word3" HPOS="3675" VPOS="907" HEIGHT="122" WIDTH="542" CONTENT="inbrottets" />
+                        <String ID="_30002056_00010_region1_line5_word4" HPOS="4217" VPOS="907" HEIGHT="122" WIDTH="542" CONTENT="föröfvande" />
+                        <String ID="_30002056_00010_region1_line5_word5" HPOS="4759" VPOS="907" HEIGHT="122" WIDTH="181" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line5_word6" HPOS="4940" VPOS="907" HEIGHT="122" WIDTH="271" CONTENT="måls¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line6" HPOS="3043" VPOS="1010" HEIGHT="147" WIDTH="2117">
+                        <Shape>
+                            <Polygon POINTS="3043,1010 3043,1131 3081,1157 3152,1125 5160,1157 5160,1074 4993,1042 4277,1061 4181,1010 4015,1010 3970,1048 3887,1048 3849,1010 3484,1010 3452,1048 3369,1048 3331,1010 3247,1035" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line6_word0" HPOS="3043" VPOS="1010" HEIGHT="147" WIDTH="441" CONTENT="eganden" />
+                        <String ID="_30002056_00010_region1_line6_word1" HPOS="3484" VPOS="1010" HEIGHT="147" WIDTH="441" CONTENT="Lidholms" />
+                        <String ID="_30002056_00010_region1_line6_word2" HPOS="3925" VPOS="1010" HEIGHT="147" WIDTH="264" CONTENT="bod" />
+                        <String ID="_30002056_00010_region1_line6_word3" HPOS="4189" VPOS="1010" HEIGHT="147" WIDTH="529" CONTENT="innevarit" />
+                        <String ID="_30002056_00010_region1_line6_word4" HPOS="4718" VPOS="1010" HEIGHT="147" WIDTH="89" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line6_word5" HPOS="4807" VPOS="1010" HEIGHT="147" WIDTH="353" CONTENT="boden" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line7" HPOS="3043" VPOS="1163" HEIGHT="122" WIDTH="2040">
+                        <Shape>
+                            <Polygon POINTS="3043,1163 3043,1253 3235,1259 3241,1285 3318,1259 5077,1285 5083,1246 5038,1163 5019,1189 4993,1163 4833,1163 4827,1189 4654,1163 4610,1195 4456,1189 4450,1163 4252,1189 4245,1163 4207,1189 4181,1163 4028,1163 4021,1189" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line7_word0" HPOS="3043" VPOS="1163" HEIGHT="122" WIDTH="170" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line7_word1" HPOS="3213" VPOS="1163" HEIGHT="122" WIDTH="510" CONTENT="eftersökt" />
+                        <String ID="_30002056_00010_region1_line7_word2" HPOS="3723" VPOS="1163" HEIGHT="122" WIDTH="595" CONTENT="penningar," />
+                        <String ID="_30002056_00010_region1_line7_word3" HPOS="4318" VPOS="1163" HEIGHT="122" WIDTH="340" CONTENT="men," />
+                        <String ID="_30002056_00010_region1_line7_word4" HPOS="4658" VPOS="1163" HEIGHT="122" WIDTH="170" CONTENT="då" />
+                        <String ID="_30002056_00010_region1_line7_word5" HPOS="4828" VPOS="1163" HEIGHT="122" WIDTH="255" CONTENT="han" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line8" HPOS="3043" VPOS="1266" HEIGHT="134" WIDTH="2117">
+                        <Shape>
+                            <Polygon POINTS="3043,1291 3043,1368 3222,1400 5160,1387 5160,1266 5006,1266 4961,1310 4859,1310 4814,1266 4763,1291 4667,1266 4610,1310 4456,1304 4411,1266 4188,1310 3970,1298 3951,1266 3606,1266 3580,1298 3484,1298 3465,1266 3363,1266 3343,1298 3068,1266" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line8_word0" HPOS="3043" VPOS="1266" HEIGHT="134" WIDTH="264" CONTENT="icke" />
+                        <String ID="_30002056_00010_region1_line8_word1" HPOS="3307" VPOS="1266" HEIGHT="134" WIDTH="441" CONTENT="funnit" />
+                        <String ID="_30002056_00010_region1_line8_word2" HPOS="3748" VPOS="1266" HEIGHT="134" WIDTH="441" CONTENT="sådana," />
+                        <String ID="_30002056_00010_region1_line8_word3" HPOS="4189" VPOS="1266" HEIGHT="134" WIDTH="529" CONTENT="aflägsnat" />
+                        <String ID="_30002056_00010_region1_line8_word4" HPOS="4718" VPOS="1266" HEIGHT="134" WIDTH="177" CONTENT="sig" />
+                        <String ID="_30002056_00010_region1_line8_word5" HPOS="4895" VPOS="1266" HEIGHT="134" WIDTH="265" CONTENT="utan" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line9" HPOS="3043" VPOS="1419" HEIGHT="115" WIDTH="1989">
+                        <Shape>
+                            <Polygon POINTS="3043,1419 3043,1502 3657,1489 3849,1534 5032,1521 5000,1419" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line9_word0" HPOS="3043" VPOS="1419" HEIGHT="115" WIDTH="248" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line9_word1" HPOS="3291" VPOS="1419" HEIGHT="115" WIDTH="415" CONTENT="föröfva" />
+                        <String ID="_30002056_00010_region1_line9_word2" HPOS="3706" VPOS="1419" HEIGHT="115" WIDTH="331" CONTENT="något" />
+                        <String ID="_30002056_00010_region1_line9_word3" HPOS="4037" VPOS="1419" HEIGHT="115" WIDTH="497" CONTENT="tillgrepp" />
+                        <String ID="_30002056_00010_region1_line9_word4" HPOS="4534" VPOS="1419" HEIGHT="115" WIDTH="498" CONTENT="derstädes," />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line10" HPOS="3375" VPOS="1496" HEIGHT="96" WIDTH="403">
+                        <Shape>
+                            <Polygon POINTS="3375,1496 3375,1592 3452,1592 3458,1566 3484,1566 3490,1592 3542,1592 3548,1566 3612,1566 3618,1592 3631,1592 3631,1573 3657,1560 3721,1560 3778,1547 3778,1496" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line10_word0" HPOS="3375" VPOS="1496" HEIGHT="96" WIDTH="184" CONTENT="som" />
+                        <String ID="_30002056_00010_region1_line10_word1" HPOS="3559" VPOS="1496" HEIGHT="96" WIDTH="219" CONTENT="före" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line11" HPOS="3043" VPOS="1547" HEIGHT="147" WIDTH="2117">
+                        <Shape>
+                            <Polygon POINTS="3043,1547 3043,1630 3363,1662 3829,1643 3951,1662 3964,1694 4143,1694 4194,1649 5160,1649 5160,1585 5096,1547 5006,1573 3644,1547 3606,1579 3574,1547 3542,1579 3478,1547 3458,1573" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line11_word0" HPOS="3043" VPOS="1547" HEIGHT="147" WIDTH="176" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line11_word1" HPOS="3219" VPOS="1547" HEIGHT="147" WIDTH="176" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line11_word2" HPOS="3395" VPOS="1547" HEIGHT="147" WIDTH="177" CONTENT="vid" />
+                        <String ID="_30002056_00010_region1_line11_word3" HPOS="3572" VPOS="1547" HEIGHT="147" WIDTH="529" CONTENT="inbrottets" />
+                        <String ID="_30002056_00010_region1_line11_word4" HPOS="4101" VPOS="1547" HEIGHT="147" WIDTH="617" CONTENT="föröfvande" />
+                        <String ID="_30002056_00010_region1_line11_word5" HPOS="4718" VPOS="1547" HEIGHT="147" WIDTH="89" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line11_word6" HPOS="4807" VPOS="1547" HEIGHT="147" WIDTH="353" CONTENT="måls¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line12" HPOS="3043" VPOS="1649" HEIGHT="135" WIDTH="2040">
+                        <Shape>
+                            <Polygon POINTS="3043,1649 3043,1777 5083,1784 5083,1707 4667,1700 4578,1649 4501,1688 4175,1649 4130,1694 3887,1681 3868,1649 3503,1649 3458,1688 3363,1681 3343,1649 3254,1675" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line12_word0" HPOS="3043" VPOS="1649" HEIGHT="135" WIDTH="425" CONTENT="eganden" />
+                        <String ID="_30002056_00010_region1_line12_word1" HPOS="3468" VPOS="1649" HEIGHT="135" WIDTH="595" CONTENT="Gustafssons" />
+                        <String ID="_30002056_00010_region1_line12_word2" HPOS="4063" VPOS="1649" HEIGHT="135" WIDTH="340" CONTENT="bod" />
+                        <String ID="_30002056_00010_region1_line12_word3" HPOS="4403" VPOS="1649" HEIGHT="135" WIDTH="510" CONTENT="påträffat" />
+                        <String ID="_30002056_00010_region1_line12_word4" HPOS="4913" VPOS="1649" HEIGHT="135" WIDTH="170" CONTENT="en" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line13" HPOS="3068" VPOS="1803" HEIGHT="121" WIDTH="2066">
+                        <Shape>
+                            <Polygon POINTS="3068,1803 3068,1924 3145,1899 3420,1924 3484,1892 5096,1924 5134,1879 5096,1803 5006,1803 5000,1828 4949,1803 4840,1803 4833,1828 4750,1803" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line13_word0" HPOS="3068" VPOS="1803" HEIGHT="121" WIDTH="516" CONTENT="sammal" />
+                        <String ID="_30002056_00010_region1_line13_word1" HPOS="3584" VPOS="1803" HEIGHT="121" WIDTH="947" CONTENT="klädningskjortel" />
+                        <String ID="_30002056_00010_region1_line13_word2" HPOS="4531" VPOS="1803" HEIGHT="121" WIDTH="430" CONTENT="hängande" />
+                        <String ID="_30002056_00010_region1_line13_word3" HPOS="4961" VPOS="1803" HEIGHT="121" WIDTH="173" CONTENT="å" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line14" HPOS="3043" VPOS="1931" HEIGHT="147" WIDTH="2142">
+                        <Shape>
+                            <Polygon POINTS="3043,1931 3043,2014 5045,2039 5108,2078 5185,2046 5185,1956 5153,1931" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line14_word0" HPOS="3043" VPOS="1931" HEIGHT="147" WIDTH="178" CONTENT="en" />
+                        <String ID="_30002056_00010_region1_line14_word1" HPOS="3221" VPOS="1931" HEIGHT="147" WIDTH="268" CONTENT="dörr" />
+                        <String ID="_30002056_00010_region1_line14_word2" HPOS="3489" VPOS="1931" HEIGHT="147" WIDTH="178" CONTENT="till" />
+                        <String ID="_30002056_00010_region1_line14_word3" HPOS="3667" VPOS="1931" HEIGHT="147" WIDTH="179" CONTENT="en" />
+                        <String ID="_30002056_00010_region1_line14_word4" HPOS="3846" VPOS="1931" HEIGHT="147" WIDTH="625" CONTENT="närbelägen" />
+                        <String ID="_30002056_00010_region1_line14_word5" HPOS="4471" VPOS="1931" HEIGHT="147" WIDTH="357" CONTENT="lokal," />
+                        <String ID="_30002056_00010_region1_line14_word6" HPOS="4828" VPOS="1931" HEIGHT="147" WIDTH="267" CONTENT="till" />
+                        <String ID="_30002056_00010_region1_line14_word7" HPOS="5095" VPOS="1931" HEIGHT="147" WIDTH="90" CONTENT="sig" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line15" HPOS="3017" VPOS="2033" HEIGHT="147" WIDTH="2219">
+                        <Shape>
+                            <Polygon POINTS="3017,2033 3017,2142 3279,2142 3331,2180 3465,2135 5236,2180 5217,2091 5096,2071 4482,2078 4367,2033 3906,2033 3861,2065 3702,2065 3682,2033" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line15_word0" HPOS="3017" VPOS="2033" HEIGHT="147" WIDTH="277" CONTENT="tagit" />
+                        <String ID="_30002056_00010_region1_line15_word1" HPOS="3294" VPOS="2033" HEIGHT="147" WIDTH="462" CONTENT="kjorteln" />
+                        <String ID="_30002056_00010_region1_line15_word2" HPOS="3756" VPOS="2033" HEIGHT="147" WIDTH="278" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line15_word3" HPOS="4034" VPOS="2033" HEIGHT="147" WIDTH="277" CONTENT="hållit" />
+                        <String ID="_30002056_00010_region1_line15_word4" HPOS="4311" VPOS="2033" HEIGHT="147" WIDTH="647" CONTENT="densamme" />
+                        <String ID="_30002056_00010_region1_line15_word5" HPOS="4958" VPOS="2033" HEIGHT="147" WIDTH="278" CONTENT="öfver" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line16" HPOS="2992" VPOS="2161" HEIGHT="173" WIDTH="2270">
+                        <Shape>
+                            <Polygon POINTS="2992,2161 2992,2257 3145,2282 4968,2295 5013,2334 5262,2308 5262,2218 5045,2161 4923,2212 4443,2199 4411,2161 4162,2161 4111,2199 3989,2161 3855,2186" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line16_word0" HPOS="2992" VPOS="2161" HEIGHT="173" WIDTH="662" CONTENT="bodfönstret" />
+                        <String ID="_30002056_00010_region1_line16_word1" HPOS="3654" VPOS="2161" HEIGHT="173" WIDTH="283" CONTENT="samt" />
+                        <String ID="_30002056_00010_region1_line16_word2" HPOS="3937" VPOS="2161" HEIGHT="173" WIDTH="379" CONTENT="med" />
+                        <String ID="_30002056_00010_region1_line16_word3" HPOS="4316" VPOS="2161" HEIGHT="173" WIDTH="473" CONTENT="händerna" />
+                        <String ID="_30002056_00010_region1_line16_word4" HPOS="4789" VPOS="2161" HEIGHT="173" WIDTH="473" CONTENT="intrycko¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line17" HPOS="3017" VPOS="2289" HEIGHT="115" WIDTH="761">
+                        <Shape>
+                            <Polygon POINTS="3017,2289 3017,2404 3100,2385 3401,2391 3433,2378 3778,2391 3778,2327 3689,2314 3682,2289 3535,2289 3529,2314 3516,2289" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line17_word0" HPOS="3017" VPOS="2289" HEIGHT="115" WIDTH="761" CONTENT="fönstret;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line18" HPOS="3375" VPOS="2366" HEIGHT="147" WIDTH="1733">
+                        <Shape>
+                            <Polygon POINTS="3375,2366 3375,2449 4296,2468 4379,2442 4418,2513 4443,2481 4501,2513 4776,2513 4782,2481 4936,2481 5108,2423 5070,2366 4431,2366 4373,2410 4341,2366 3765,2366 3753,2398" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line18_word0" HPOS="3375" VPOS="2366" HEIGHT="147" WIDTH="144" CONTENT=" " />
+                        <String ID="_30002056_00010_region1_line18_word1" HPOS="3519" VPOS="2366" HEIGHT="147" WIDTH="144" CONTENT="derefter" />
+                        <String ID="_30002056_00010_region1_line18_word2" HPOS="3663" VPOS="2366" HEIGHT="147" WIDTH="1445" CONTENT="handen" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line19" HPOS="3375" VPOS="2366" HEIGHT="121" WIDTH="1017">
+                        <Shape>
+                            <Polygon POINTS="3375,2366 3375,2449 3497,2455 3522,2468 3522,2487 3586,2487 3606,2455 3708,2449 3810,2455 3829,2487 3938,2487 3945,2461 3977,2455 4130,2461 4136,2487 4322,2487 4328,2461 4392,2442 4392,2410 4360,2404 4341,2366 3772,2366 3772,2385 3740,2404 3618,2398 3593,2385 3593,2366" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line19_word0" HPOS="3375" VPOS="2366" HEIGHT="121" WIDTH="84" CONTENT=" " />
+                        <String ID="_30002056_00010_region1_line19_word1" HPOS="3459" VPOS="2366" HEIGHT="121" WIDTH="212" CONTENT="derefter" />
+                        <String ID="_30002056_00010_region1_line19_word2" HPOS="3671" VPOS="2366" HEIGHT="121" WIDTH="721" CONTENT="handen" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line20" HPOS="3094" VPOS="2417" HEIGHT="147" WIDTH="2040">
+                        <Shape>
+                            <Polygon POINTS="3094,2417 3094,2513 4885,2519 4955,2564 5134,2519 5134,2474 5064,2417 4955,2449 4833,2417 4782,2455 4571,2442 4565,2417 4322,2417 4303,2449 4200,2449 4175,2417 3708,2417 3682,2449 3625,2417" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line20_word0" HPOS="3094" VPOS="2417" HEIGHT="147" WIDTH="170" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line20_word1" HPOS="3264" VPOS="2417" HEIGHT="147" WIDTH="170" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line20_word2" HPOS="3434" VPOS="2417" HEIGHT="147" WIDTH="510" CONTENT="instuckit" />
+                        <String ID="_30002056_00010_region1_line20_word3" HPOS="3944" VPOS="2417" HEIGHT="147" WIDTH="425" CONTENT="armen" />
+                        <String ID="_30002056_00010_region1_line20_word4" HPOS="4369" VPOS="2417" HEIGHT="147" WIDTH="425" CONTENT="genom" />
+                        <String ID="_30002056_00010_region1_line20_word5" HPOS="4794" VPOS="2417" HEIGHT="147" WIDTH="340" CONTENT="hålet" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line21" HPOS="3733" VPOS="2493" HEIGHT="96" WIDTH="1171">
+                        <Shape>
+                            <Polygon POINTS="3733,2493 3733,2564 3900,2564 4015,2589 4085,2570 4904,2570 4904,2525 4872,2519 4865,2493 4431,2493 4424,2519 4392,2519 4386,2493" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line21_word0" HPOS="3733" VPOS="2493" HEIGHT="96" WIDTH="195" CONTENT="efter" />
+                        <String ID="_30002056_00010_region1_line21_word1" HPOS="3928" VPOS="2493" HEIGHT="96" WIDTH="488" CONTENT="offenten" />
+                        <String ID="_30002056_00010_region1_line21_word2" HPOS="4416" VPOS="2493" HEIGHT="96" WIDTH="97" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line21_word3" HPOS="4513" VPOS="2493" HEIGHT="96" WIDTH="391" CONTENT="fönstret" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line22" HPOS="3043" VPOS="2519" HEIGHT="173" WIDTH="2065">
+                        <Shape>
+                            <Polygon POINTS="3043,2519 3043,2634 3567,2641 3695,2692 3804,2692 3849,2653 4175,2653 4207,2692 4341,2653 4827,2660 4859,2692 4987,2692 5108,2653 5108,2583 4955,2557 4827,2589 3977,2589 3823,2551 3810,2519 3152,2519 3145,2545" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line22_word0" HPOS="3043" VPOS="2519" HEIGHT="173" WIDTH="86" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line22_word1" HPOS="3129" VPOS="2519" HEIGHT="173" WIDTH="258" CONTENT="det" />
+                        <String ID="_30002056_00010_region1_line22_word2" HPOS="3387" VPOS="2519" HEIGHT="173" WIDTH="344" CONTENT="söndrige" />
+                        <String ID="_30002056_00010_region1_line22_word3" HPOS="3731" VPOS="2519" HEIGHT="173" WIDTH="516" CONTENT="fönstret" />
+                        <String ID="_30002056_00010_region1_line22_word4" HPOS="4247" VPOS="2519" HEIGHT="173" WIDTH="258" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line22_word5" HPOS="4505" VPOS="2519" HEIGHT="173" WIDTH="172" CONTENT="ur" />
+                        <String ID="_30002056_00010_region1_line22_word6" HPOS="4677" VPOS="2519" HEIGHT="173" WIDTH="172" CONTENT="en" />
+                        <String ID="_30002056_00010_region1_line22_word7" HPOS="4849" VPOS="2519" HEIGHT="173" WIDTH="259" CONTENT="obesen¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line23" HPOS="3017" VPOS="2647" HEIGHT="173" WIDTH="2194">
+                        <Shape>
+                            <Polygon POINTS="3017,2647 3017,2743 4347,2756 4846,2788 4897,2820 5160,2820 5211,2781 5211,2736 5140,2704 4738,2673 4578,2698 4495,2647 4360,2698 4162,2679 4143,2647 4053,2647 4015,2685" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line23_word0" HPOS="3017" VPOS="2647" HEIGHT="173" WIDTH="548" CONTENT="närheten" />
+                        <String ID="_30002056_00010_region1_line23_word1" HPOS="3565" VPOS="2647" HEIGHT="173" WIDTH="457" CONTENT="öppen" />
+                        <String ID="_30002056_00010_region1_line23_word2" HPOS="4022" VPOS="2647" HEIGHT="173" WIDTH="274" CONTENT="hylta," />
+                        <String ID="_30002056_00010_region1_line23_word3" HPOS="4296" VPOS="2647" HEIGHT="173" WIDTH="366" CONTENT="som" />
+                        <String ID="_30002056_00010_region1_line23_word4" HPOS="4662" VPOS="2647" HEIGHT="173" WIDTH="549" CONTENT="boddisken" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line24" HPOS="3452" VPOS="2749" HEIGHT="96" WIDTH="1017">
+                        <Shape>
+                            <Polygon POINTS="3452,2749 3452,2813 3574,2820 3580,2845 3964,2845 3970,2820 4104,2820 4111,2845 4424,2845 4431,2820 4469,2813 4469,2749" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line24_word0" HPOS="3452" VPOS="2749" HEIGHT="96" WIDTH="84" CONTENT="å" />
+                        <String ID="_30002056_00010_region1_line24_word1" HPOS="3536" VPOS="2749" HEIGHT="96" WIDTH="509" CONTENT="boddisken" />
+                        <String ID="_30002056_00010_region1_line24_word2" HPOS="4045" VPOS="2749" HEIGHT="96" WIDTH="424" CONTENT="stående" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line25" HPOS="2992" VPOS="2775" HEIGHT="173" WIDTH="2065">
+                        <Shape>
+                            <Polygon POINTS="2992,2775 2992,2877 3164,2916 3350,2896 3420,2948 3586,2896 5057,2903 5057,2832 3708,2839 3484,2813 3452,2775" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line25_word0" HPOS="2992" VPOS="2775" HEIGHT="173" WIDTH="516" CONTENT="tillgripit" />
+                        <String ID="_30002056_00010_region1_line25_word1" HPOS="3508" VPOS="2775" HEIGHT="173" WIDTH="258" CONTENT="Fyra" />
+                        <String ID="_30002056_00010_region1_line25_word2" HPOS="3766" VPOS="2775" HEIGHT="173" WIDTH="430" CONTENT="burkar" />
+                        <String ID="_30002056_00010_region1_line25_word3" HPOS="4196" VPOS="2775" HEIGHT="173" WIDTH="516" CONTENT="anjovis" />
+                        <String ID="_30002056_00010_region1_line25_word4" HPOS="4712" VPOS="2775" HEIGHT="173" WIDTH="345" CONTENT="samt" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line26" HPOS="2992" VPOS="2903" HEIGHT="140" WIDTH="1758">
+                        <Shape>
+                            <Polygon POINTS="2992,2903 2992,3005 4750,3043 4750,2954 4661,2903 4437,2903 4431,2928 4072,2935 4040,2903 3510,2903 3490,2935 3407,2935 3382,2903 3299,2903 3292,2928" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line26_word0" HPOS="2992" VPOS="2903" HEIGHT="140" WIDTH="219" CONTENT="två" />
+                        <String ID="_30002056_00010_region1_line26_word1" HPOS="3211" VPOS="2903" HEIGHT="140" WIDTH="293" CONTENT="eller" />
+                        <String ID="_30002056_00010_region1_line26_word2" HPOS="3504" VPOS="2903" HEIGHT="140" WIDTH="293" CONTENT="tre" />
+                        <String ID="_30002056_00010_region1_line26_word3" HPOS="3797" VPOS="2903" HEIGHT="140" WIDTH="293" CONTENT="större" />
+                        <String ID="_30002056_00010_region1_line26_word4" HPOS="4090" VPOS="2903" HEIGHT="140" WIDTH="660" CONTENT="ostbitar;" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line27" HPOS="3017" VPOS="3031" HEIGHT="128" WIDTH="2219">
+                        <Shape>
+                            <Polygon POINTS="3017,3031 3017,3107 5236,3159 5236,3107 4347,3056 4341,3031 4104,3031 4098,3056 4072,3031 3842,3031 3836,3056 3823,3031 3650,3031 3644,3056" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line27_word0" HPOS="3017" VPOS="3031" HEIGHT="128" WIDTH="184" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line27_word1" HPOS="3201" VPOS="3031" HEIGHT="128" WIDTH="185" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line27_word2" HPOS="3386" VPOS="3031" HEIGHT="128" WIDTH="555" CONTENT="medfört" />
+                        <String ID="_30002056_00010_region1_line27_word3" HPOS="3941" VPOS="3031" HEIGHT="128" WIDTH="185" CONTENT="de" />
+                        <String ID="_30002056_00010_region1_line27_word4" HPOS="4126" VPOS="3031" HEIGHT="128" WIDTH="185" CONTENT="till" />
+                        <String ID="_30002056_00010_region1_line27_word5" HPOS="4311" VPOS="3031" HEIGHT="128" WIDTH="370" CONTENT="rikne" />
+                        <String ID="_30002056_00010_region1_line27_word6" HPOS="4681" VPOS="3031" HEIGHT="128" WIDTH="555" CONTENT="matvaror¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line28" HPOS="2992" VPOS="3107" HEIGHT="116" WIDTH="1822">
+                        <Shape>
+                            <Polygon POINTS="2992,3107 2992,3184 4610,3223 4763,3223 4814,3191 4795,3152 4034,3139 4002,3107" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line28_word0" HPOS="2992" VPOS="3107" HEIGHT="116" WIDTH="607" CONTENT="karamellerna" />
+                        <String ID="_30002056_00010_region1_line28_word1" HPOS="3599" VPOS="3107" HEIGHT="116" WIDTH="228" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line28_word2" HPOS="3827" VPOS="3107" HEIGHT="116" WIDTH="303" CONTENT="buteljen" />
+                        <String ID="_30002056_00010_region1_line28_word3" HPOS="4130" VPOS="3107" HEIGHT="116" WIDTH="228" CONTENT="med" />
+                        <String ID="_30002056_00010_region1_line28_word4" HPOS="4358" VPOS="3107" HEIGHT="116" WIDTH="456" CONTENT="Rättensaft" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line29" HPOS="2992" VPOS="3159" HEIGHT="134" WIDTH="2244">
+                        <Shape>
+                            <Polygon POINTS="2992,3184 2992,3261 3120,3280 5236,3293 5236,3210 4833,3184 4629,3229 3235,3191 3145,3159" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line29_word0" HPOS="2992" VPOS="3159" HEIGHT="134" WIDTH="187" CONTENT="na" />
+                        <String ID="_30002056_00010_region1_line29_word1" HPOS="3179" VPOS="3159" HEIGHT="134" WIDTH="187" CONTENT="till" />
+                        <String ID="_30002056_00010_region1_line29_word2" HPOS="3366" VPOS="3159" HEIGHT="134" WIDTH="280" CONTENT="sin" />
+                        <String ID="_30002056_00010_region1_line29_word3" HPOS="3646" VPOS="3159" HEIGHT="134" WIDTH="468" CONTENT="bostad" />
+                        <String ID="_30002056_00010_region1_line29_word4" HPOS="4114" VPOS="3159" HEIGHT="134" WIDTH="187" CONTENT="och" />
+                        <String ID="_30002056_00010_region1_line29_word5" HPOS="4301" VPOS="3159" HEIGHT="134" WIDTH="654" CONTENT="sedermera" />
+                        <String ID="_30002056_00010_region1_line29_word6" HPOS="4955" VPOS="3159" HEIGHT="134" WIDTH="281" CONTENT="för¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line30" HPOS="2992" VPOS="3286" HEIGHT="148" WIDTH="2193">
+                        <Shape>
+                            <Polygon POINTS="2992,3286 2992,3376 3452,3382 3727,3434 5185,3434 5185,3331 5140,3363 4603,3344 4571,3286 4443,3331 4136,3331 4079,3286 3893,3286 3861,3325 3682,3286 3522,3286 3516,3312" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line30_word0" HPOS="2992" VPOS="3286" HEIGHT="148" WIDTH="274" CONTENT="tärt" />
+                        <String ID="_30002056_00010_region1_line30_word1" HPOS="3266" VPOS="3286" HEIGHT="148" WIDTH="639" CONTENT="desamma" />
+                        <String ID="_30002056_00010_region1_line30_word2" HPOS="3905" VPOS="3286" HEIGHT="148" WIDTH="457" CONTENT="tillsammans" />
+                        <String ID="_30002056_00010_region1_line30_word3" HPOS="4362" VPOS="3286" HEIGHT="148" WIDTH="274" CONTENT="med" />
+                        <String ID="_30002056_00010_region1_line30_word4" HPOS="4636" VPOS="3286" HEIGHT="148" WIDTH="92" CONTENT="sin" />
+                        <String ID="_30002056_00010_region1_line30_word5" HPOS="4728" VPOS="3286" HEIGHT="148" WIDTH="274" CONTENT="moder" />
+                        <String ID="_30002056_00010_region1_line30_word6" HPOS="5002" VPOS="3286" HEIGHT="148" WIDTH="183" CONTENT="och" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line31" HPOS="4578" VPOS="3286" HEIGHT="71" WIDTH="607">
+                        <Shape>
+                            <Polygon POINTS="4578,3286 4578,3344 4661,3344 4725,3357 5115,3357 5185,3331 5185,3286" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line31_word0" HPOS="4578" VPOS="3286" HEIGHT="71" WIDTH="202" CONTENT="andra" />
+                        <String ID="_30002056_00010_region1_line31_word1" HPOS="4780" VPOS="3286" HEIGHT="71" WIDTH="405" CONTENT="personer" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line32" HPOS="2992" VPOS="3363" HEIGHT="90" WIDTH="505">
+                        <Shape>
+                            <Polygon POINTS="2992,3363 2992,3446 3145,3440 3152,3446 3369,3453 3497,3440 3497,3389 3471,3389 3465,3363" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line32_word0" HPOS="2992" VPOS="3363" HEIGHT="90" WIDTH="189" CONTENT="Carl" />
+                        <String ID="_30002056_00010_region1_line32_word1" HPOS="3181" VPOS="3363" HEIGHT="90" WIDTH="316" CONTENT="Iso" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line33" HPOS="3017" VPOS="3414" HEIGHT="173" WIDTH="2143">
+                        <Shape>
+                            <Polygon POINTS="3017,3446 3017,3510 3465,3536 4750,3542 4910,3587 4993,3542 5160,3536 5160,3478 5006,3414 4885,3459 4738,3446 4718,3414 4642,3453 4418,3440 4411,3414 4335,3414 4322,3446 4149,3440 4143,3414" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line33_word0" HPOS="3017" VPOS="3414" HEIGHT="173" WIDTH="178" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line33_word1" HPOS="3195" VPOS="3414" HEIGHT="173" WIDTH="268" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line33_word2" HPOS="3463" VPOS="3414" HEIGHT="173" WIDTH="179" CONTENT="af" />
+                        <String ID="_30002056_00010_region1_line33_word3" HPOS="3642" VPOS="3414" HEIGHT="173" WIDTH="267" CONTENT="de" />
+                        <String ID="_30002056_00010_region1_line33_word4" HPOS="3909" VPOS="3414" HEIGHT="173" WIDTH="268" CONTENT="hos" />
+                        <String ID="_30002056_00010_region1_line33_word5" HPOS="4177" VPOS="3414" HEIGHT="173" WIDTH="715" CONTENT="målseganden" />
+                        <String ID="_30002056_00010_region1_line33_word6" HPOS="4892" VPOS="3414" HEIGHT="173" WIDTH="268" CONTENT="Jo¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line34" HPOS="2992" VPOS="3542" HEIGHT="128" WIDTH="2168">
+                        <Shape>
+                            <Polygon POINTS="2992,3542 2992,3638 5160,3670 5160,3625 4987,3581 4367,3593 4213,3581 4175,3542 4028,3542 4008,3574 3868,3574 3849,3542" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line34_word0" HPOS="2992" VPOS="3542" HEIGHT="128" WIDTH="361" CONTENT="hansson" />
+                        <String ID="_30002056_00010_region1_line34_word1" HPOS="3353" VPOS="3542" HEIGHT="128" WIDTH="632" CONTENT="tillgripne" />
+                        <String ID="_30002056_00010_region1_line34_word2" HPOS="3985" VPOS="3542" HEIGHT="128" WIDTH="904" CONTENT="penningarne" />
+                        <String ID="_30002056_00010_region1_line34_word3" HPOS="4889" VPOS="3542" HEIGHT="128" WIDTH="271" CONTENT="an¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line35" HPOS="2992" VPOS="3645" HEIGHT="198" WIDTH="2193">
+                        <Shape>
+                            <Polygon POINTS="2992,3645 2992,3760 4277,3798 4437,3843 4565,3843 4590,3811 4878,3843 4929,3804 5185,3798 5185,3734 4981,3689 3657,3696 3593,3645 3177,3645 3171,3670" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line35_word0" HPOS="2992" VPOS="3645" HEIGHT="198" WIDTH="365" CONTENT="vändt" />
+                        <String ID="_30002056_00010_region1_line35_word1" HPOS="3357" VPOS="3645" HEIGHT="198" WIDTH="183" CONTENT="7" />
+                        <String ID="_30002056_00010_region1_line35_word2" HPOS="3540" VPOS="3645" HEIGHT="198" WIDTH="274" CONTENT="kronor" />
+                        <String ID="_30002056_00010_region1_line35_word3" HPOS="3814" VPOS="3645" HEIGHT="198" WIDTH="274" CONTENT="till" />
+                        <String ID="_30002056_00010_region1_line35_word4" HPOS="4088" VPOS="3645" HEIGHT="198" WIDTH="366" CONTENT="inköp" />
+                        <String ID="_30002056_00010_region1_line35_word5" HPOS="4454" VPOS="3645" HEIGHT="198" WIDTH="274" CONTENT="af" />
+                        <String ID="_30002056_00010_region1_line35_word6" HPOS="4728" VPOS="3645" HEIGHT="198" WIDTH="91" CONTENT="ett" />
+                        <String ID="_30002056_00010_region1_line35_word7" HPOS="4819" VPOS="3645" HEIGHT="198" WIDTH="366" CONTENT="fick¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line36" HPOS="2992" VPOS="3773" HEIGHT="147" WIDTH="582">
+                        <Shape>
+                            <Polygon POINTS="2992,3773 2992,3881 3139,3888 3158,3900 3158,3920 3203,3920 3209,3894 3420,3894 3427,3920 3574,3920 3574,3773 3478,3773 3478,3792 3446,3811 3388,3798 3382,3773 3292,3773 3292,3792 3260,3804 3126,3804 3094,3792 3094,3773" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line36_word0" HPOS="2992" VPOS="3773" HEIGHT="147" WIDTH="242" CONTENT="ur;" />
+                        <String ID="_30002056_00010_region1_line36_word1" HPOS="3234" VPOS="3773" HEIGHT="147" WIDTH="340" CONTENT="samt" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line37" HPOS="2992" VPOS="3900" HEIGHT="173" WIDTH="2065">
+                        <Shape>
+                            <Polygon POINTS="2992,3900 2992,3996 4220,4048 4482,4022 4584,4041 4597,4073 5057,4041 5057,3971 4910,3939 4565,3952 4373,3932 4354,3900 4220,3939 4149,3900 3849,3900 3791,3939" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line37_word0" HPOS="2992" VPOS="3900" HEIGHT="173" WIDTH="172" CONTENT="att" />
+                        <String ID="_30002056_00010_region1_line37_word1" HPOS="3164" VPOS="3900" HEIGHT="173" WIDTH="344" CONTENT="han" />
+                        <String ID="_30002056_00010_region1_line37_word2" HPOS="3508" VPOS="3900" HEIGHT="173" WIDTH="430" CONTENT="användt" />
+                        <String ID="_30002056_00010_region1_line37_word3" HPOS="3938" VPOS="3900" HEIGHT="173" WIDTH="602" CONTENT="återstoden" />
+                        <String ID="_30002056_00010_region1_line37_word4" HPOS="4540" VPOS="3900" HEIGHT="173" WIDTH="258" CONTENT="af" />
+                        <String ID="_30002056_00010_region1_line37_word5" HPOS="4798" VPOS="3900" HEIGHT="173" WIDTH="259" CONTENT="de" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line38" HPOS="2992" VPOS="4028" HEIGHT="147" WIDTH="1989">
+                        <Shape>
+                            <Polygon POINTS="2992,4028 2992,4124 3120,4150 4520,4150 4744,4175 4981,4143 4981,4111 4833,4079 3727,4073 3631,4028 3446,4067 3388,4028" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line38_word0" HPOS="2992" VPOS="4028" HEIGHT="147" WIDTH="497" CONTENT="tillgifne" />
+                        <String ID="_30002056_00010_region1_line38_word1" HPOS="3489" VPOS="4028" HEIGHT="147" WIDTH="746" CONTENT="penningarne" />
+                        <String ID="_30002056_00010_region1_line38_word2" HPOS="4235" VPOS="4028" HEIGHT="147" WIDTH="331" CONTENT="på" />
+                        <String ID="_30002056_00010_region1_line38_word3" HPOS="4566" VPOS="4028" HEIGHT="147" WIDTH="415" CONTENT="nöjen," />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line39" HPOS="2975" VPOS="4131" HEIGHT="147" WIDTH="2261">
+                        <Shape>
+                            <Polygon POINTS="2975,4131 2975,4207 4104,4239 4162,4278 5185,4278 5236,4246 5236,4131 4706,4188 3893,4163 3797,4131 3567,4131 3497,4169 3395,4131" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line39_word0" HPOS="2975" VPOS="4131" HEIGHT="147" WIDTH="94" CONTENT="den" />
+                        <String ID="_30002056_00010_region1_line39_word1" HPOS="3069" VPOS="4131" HEIGHT="147" WIDTH="94" CONTENT="i" />
+                        <String ID="_30002056_00010_region1_line39_word2" HPOS="3163" VPOS="4131" HEIGHT="147" WIDTH="377" CONTENT="Rutgerssons" />
+                        <String ID="_30002056_00010_region1_line39_word3" HPOS="3540" VPOS="4131" HEIGHT="147" WIDTH="282" CONTENT="bostad" />
+                        <String ID="_30002056_00010_region1_line39_word4" HPOS="3822" VPOS="4131" HEIGHT="147" WIDTH="377" CONTENT="påträffade" />
+                        <String ID="_30002056_00010_region1_line39_word5" HPOS="4199" VPOS="4131" HEIGHT="147" WIDTH="660" CONTENT="portemonnäen" />
+                        <String ID="_30002056_00010_region1_line39_word6" HPOS="4859" VPOS="4131" HEIGHT="147" WIDTH="188" CONTENT="har" />
+                        <String ID="_30002056_00010_region1_line39_word7" HPOS="5047" VPOS="4131" HEIGHT="147" WIDTH="189" CONTENT="till¬" />
+                    </TextLine>
+                    <TextLine ID="_30002056_00010_region1_line40" HPOS="2975" VPOS="4207" HEIGHT="109" WIDTH="1213">
+                        <Shape>
+                            <Polygon POINTS="2975,4207 2975,4284 3657,4316 4156,4316 4188,4291 4117,4252 3650,4239 3625,4207 3586,4207 3580,4233 3478,4233 3471,4207" />
+                        </Shape>
+                        <String ID="_30002056_00010_region1_line40_word0" HPOS="2975" VPOS="4207" HEIGHT="109" WIDTH="252" CONTENT="ställts" />
+                        <String ID="_30002056_00010_region1_line40_word1" HPOS="3227" VPOS="4207" HEIGHT="109" WIDTH="506" CONTENT="målseganden" />
+                        <String ID="_30002056_00010_region1_line40_word2" HPOS="3733" VPOS="4207" HEIGHT="109" WIDTH="455" CONTENT="Johansson." />
+                    </TextLine>
+                </TextBlock>
+                <TextBlock ID="_30002056_00010_region2" HPOS="5059" VPOS="129" HEIGHT="127" WIDTH="160" CS="false">
+                    <Shape>
+                        <Polygon POINTS="5059,129 5059,256 5219,256 5219,129" />
+                    </Shape>
+                    <TextLine ID="_30002056_00010_region2_line0" HPOS="5079" VPOS="131" HEIGHT="123" WIDTH="127">
+                        <Shape>
+                            <Polygon POINTS="5079,140 5079,254 5206,254 5206,144 5190,142 5182,133 5200,131 5098,131 5104,134 5090,136 5090,142" />
+                        </Shape>
+                        <String ID="_30002056_00010_region2_line0_word0" HPOS="5079" VPOS="131" HEIGHT="123" WIDTH="127" CONTENT="7" />
+                    </TextLine>
+                </TextBlock>
+            </PrintSpace>
+        </Page>
+    </Layout>
+</alto>
