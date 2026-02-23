@@ -60,7 +60,7 @@ copyright = "&copy; 2025 Jane Doe"       # Footer copyright
 docs_dir = "docs"                        # Source directory (default)
 site_dir = "site"                        # Output directory (default)
 use_directory_urls = true                # Pretty URLs (default)
-dev_addr = "localhost:8000"              # Dev server address (default)
+dev_addr = "localhost:7860"              # Dev server address (default)
 ```
 
 ### Theme Variant

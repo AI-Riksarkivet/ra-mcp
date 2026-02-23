@@ -1,10 +1,20 @@
-ARG BASE_IMAGE=python:3.12-alpine
+ARG BASE_IMAGE=python:3.13-alpine
 ARG BUILDER_IMAGE=${BASE_IMAGE}
 ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
+# --- Stage 1: Build viewer-mcp frontend (Svelte/Vite) ---
+FROM node:22-alpine AS frontend-builder
+WORKDIR /app
+COPY packages/viewer-mcp/package*.json ./
+RUN npm ci --omit=dev
+COPY packages/viewer-mcp/tsconfig.json packages/viewer-mcp/vite.config.ts packages/viewer-mcp/mcp-app.html ./
+COPY packages/viewer-mcp/ui ./ui
+RUN npm run build
+
+# --- Stage 2: Build Python workspace with uv ---
 FROM ${BUILDER_IMAGE} AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:0.5.13@sha256:ea61e006cfec0e8d81fae901ad703e09d2c6cf1aa58abcb6507d124b50286f9f /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.4-alpine@sha256:40b4b624e6f8e674a038507efbbaa97f7535536808e75c8e3161602dc2ac8024 /uv /uvx /usr/local/bin/
 ENV UV_COMPILE_BYTECODE=1
 WORKDIR /app
 
@@ -14,9 +24,14 @@ COPY packages/ ./packages/
 COPY src/ ./src/
 COPY README.md LICENSE ./
 
+# Copy built frontend into viewer-mcp package before uv sync
+# vite outputs to src/ra_mcp_viewer_mcp/dist/, so --no-editable will include it in the wheel
+COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
+
 # Sync workspace packages (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable
 
+# --- Stage 3: Production runtime ---
 FROM ${PRODUCTION_IMAGE} AS production
 
 # Install runtime dependencies based on base image
@@ -34,9 +49,9 @@ RUN if command -v apk >/dev/null 2>&1; then \
 # Remove pip and setuptools to eliminate CVE-2025-8869 and CVE-2026-1703
 # We use uv for all package management, so pip is not needed at runtime
 # Use rm -rf directly instead of invoking pip to avoid executing a potentially vulnerable binary
-RUN rm -rf /usr/local/lib/python3.12/site-packages/pip* \
-           /usr/local/lib/python3.12/site-packages/setuptools* \
-           /usr/local/lib/python3.12/site-packages/wheel* \
+RUN rm -rf /usr/local/lib/python3.13/site-packages/pip* \
+           /usr/local/lib/python3.13/site-packages/setuptools* \
+           /usr/local/lib/python3.13/site-packages/wheel* \
            /usr/local/bin/pip* 2>/dev/null || true
 
 # Create non-root user for security

@@ -10,7 +10,7 @@
 [![Publish](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/publish.yml)
 [![Secret Leaks](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml/badge.svg)](https://github.com/AI-Riksarkivet/ra-mcp/actions/workflows/trufflehog.yml)
 
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Docker Pulls](https://img.shields.io/docker/pulls/riksarkivet/ra-mcp)](https://hub.docker.com/r/riksarkivet/ra-mcp)
@@ -149,7 +149,7 @@ make check
 dagger call checks
 
 # Start HTTP server for local development
-uv run ra serve --port 8000
+uv run ra serve --port 7860
 
 # Test with MCP Inspector
 npx @modelcontextprotocol/inspector uv run ra serve

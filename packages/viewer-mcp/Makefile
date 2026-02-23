@@ -16,11 +16,11 @@ dev:
 # Run server in HTTP mode (for testing with basic-host)
 serve: build
 	@lsof -ti:3001 | xargs kill -9 2>/dev/null || true
-	uv run python server.py
+	uv run python -m ra_mcp_viewer_mcp.server
 
 # Run server in stdio mode (for Claude Desktop)
 serve-stdio: build
-	uv run python server.py --stdio
+	uv run python -m ra_mcp_viewer_mcp.server --stdio
 
 # Open MCPJam inspector (run 'make serve' first in another terminal)
 inspect:
@@ -36,7 +36,7 @@ inspect-verbose:
 
 # Clean build artifacts
 clean:
-	rm -rf dist node_modules .venv
+	rm -rf src/ra_mcp_viewer_mcp/dist node_modules .venv
 
 # Full setup: install and build
 all: install build

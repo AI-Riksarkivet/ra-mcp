@@ -9,7 +9,7 @@ import (
 // testAndBuild runs tests and builds the container if tests pass
 // NOTE: Tests are currently skipped until test suite is implemented
 func (m *RaMcp) testAndBuild(ctx context.Context, source *dagger.Directory, operation string) (*dagger.Container, error) {
-	return m.testAndBuildWithBase(ctx, source, "python:3.12-alpine", operation)
+	return m.testAndBuildWithBase(ctx, source, "python:3.13-alpine", operation)
 }
 
 // testAndBuildWithBase runs tests and builds the container with specified base image
@@ -56,8 +56,8 @@ func (m *RaMcp) PublishDocker(
 	// Image tag (if empty, will use version from pyproject.toml with "v" prefix)
 	// +optional
 	tag string,
-	// Base image for the build (e.g., python:3.12-alpine, cgr.dev/chainguard/python:latest-dev)
-	// +default="python:3.12-alpine"
+	// Base image for the build (e.g., python:3.13-alpine, cgr.dev/chainguard/python:latest-dev)
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 	// Tag suffix to append (e.g., "-alpine", "-wolfi", "-chainguard")
@@ -76,7 +76,7 @@ func (m *RaMcp) PublishDocker(
 	skipValidation bool,
 ) (string, error) {
 	if baseImage == "" {
-		baseImage = "python:3.12-alpine"
+		baseImage = "python:3.13-alpine"
 	}
 
 	resolvedTag, err := m.resolveTag(ctx, source, tag, skipValidation)
@@ -128,7 +128,7 @@ func (m *RaMcp) PublishPypi(
 	// +optional
 	buildArgs []string,
 ) (string, error) {
-	_, err := m.Test(ctx, source, "python:3.12-alpine")
+	_, err := m.Test(ctx, source, "python:3.13-alpine")
 	if err != nil {
 		return "", fmt.Errorf("tests failed, aborting PyPI publish: %w", err)
 	}

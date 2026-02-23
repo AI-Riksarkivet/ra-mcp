@@ -16,7 +16,7 @@ func (m *RaMcp) BuildLocal(
 	// +default="riksarkivet/ra-mcp"
 	imageRepository string,
 	// Base image for builder and production stages
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	baseImage string,
 	// Environment variables for build customization (KEY=VALUE format)
 	// +default=[]
@@ -57,12 +57,12 @@ func (m *RaMcp) Build(
 	// +defaultPath="/"
 	source *dagger.Directory,
 	// Base image for builder and production stages
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 ) (*dagger.Container, error) {
 	if baseImage == "" {
-		baseImage = "python:3.12-alpine"
+		baseImage = "python:3.13-alpine"
 	}
 	return m.BuildLocal(ctx, source, DefaultImageRepo, baseImage, []string{}, DefaultRegistry)
 }

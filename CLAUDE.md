@@ -114,15 +114,15 @@ uv sync
 uv run ra serve
 
 # MCP server (HTTP/SSE) - for web clients, testing, and development
-uv run ra serve --port 8000
+uv run ra serve --port 7860
 
 # With verbose logging
-uv run ra serve --port 8000 --log
+uv run ra serve --port 7860 --log
 ```
 
 ### Docker Compose (via Dagger)
 
-Run the server using `docker-compose.yml` on the Dagger engine — no Docker daemon required.
+Run the server using `.docker/docker-compose.yml` on the Dagger engine — no Docker daemon required.
 Configuration mirrors the Helm chart ([charts/ra-mcp/values.yaml](charts/ra-mcp/values.yaml)).
 
 ```bash
@@ -291,8 +291,8 @@ This matches exactly what runs in GitHub Actions CI, preventing failed builds.
 npx @modelcontextprotocol/inspector uv run ra serve
 
 # Test HTTP/SSE server with curl
-uv run ra serve --port 8000
-curl http://localhost:8000/mcp
+uv run ra serve --port 7860
+curl http://localhost:7860/mcp
 ```
 
 ### Testing with Dagger
@@ -349,9 +349,9 @@ export PYPI_TOKEN="your-pypi-token"
 dagger call build --source=.
 
 # Build with specific base image
-dagger call build --source=. --base-image="python:3.12-alpine"
+dagger call build --source=. --base-image="python:3.13-alpine"
 dagger call build --source=. --base-image="cgr.dev/chainguard/python:latest-dev"
-dagger call build --source=. --base-image="python:3.12-slim"
+dagger call build --source=. --base-image="python:3.13-slim"
 
 # Run tests (currently skipped until test suite exists)
 dagger call test --source=.
@@ -360,7 +360,7 @@ dagger call test --source=.
 dagger call build-local \
   --source=. \
   --image-repository="riksarkivet/ra-mcp" \
-  --base-image="python:3.12-alpine"
+  --base-image="python:3.13-alpine"
 ```
 
 ### Security: SBOM and Attestations
@@ -370,15 +370,15 @@ The project supports generating Software Bill of Materials (SBOM) and security s
 **Generate SBOM (Software Bill of Materials):**
 ```bash
 # Generate SBOM in SPDX format (default)
-dagger call generate-sbom-spdx --source=. --base-image="python:3.12-alpine"
+dagger call generate-sbom-spdx --source=. --base-image="python:3.13-alpine"
 
 # Generate SBOM in CycloneDX format
-dagger call generate-sbom-cyclone-dx --source=. --base-image="python:3.12-alpine"
+dagger call generate-sbom-cyclone-dx --source=. --base-image="python:3.13-alpine"
 
 # Export SBOM to local file
 dagger call export-sbom \
   --source=. \
-  --base-image="python:3.12-alpine" \
+  --base-image="python:3.13-alpine" \
   --format="spdx-json" \
   --output-path="./sbom.spdx.json"
 ```
@@ -410,11 +410,11 @@ dagger call scan-sarif --source=. --output-path="trivy-results.sarif"
 The project supports multiple base images for different use cases:
 
 **Supported Base Images:**
-- `python:3.12-alpine` - Lightweight Alpine Linux (default)
+- `python:3.13-alpine` - Lightweight Alpine Linux (default)
 - `cgr.dev/chainguard/python:latest-dev` - Wolfi-based Chainguard image (minimal CVEs)
 - `cgr.dev/chainguard/python:latest` - Chainguard production image
-- `python:3.12-slim` - Debian slim variant
-- Any Python 3.12+ image with pip support
+- `python:3.13-slim` - Debian slim variant
+- Any Python 3.13+ image with pip support
 
 **Publishing Examples:**
 
@@ -425,7 +425,7 @@ dagger call publish-docker \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
   --tag="v0.3.0" \
-  --base-image="python:3.12-alpine" \
+  --base-image="python:3.13-alpine" \
   --tag-suffix="-alpine" \
   --source=.
 # Result: riksarkivet/ra-mcp:v0.3.0-alpine
@@ -447,7 +447,7 @@ dagger call publish-docker \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
   --tag="v0.3.0" \
-  --base-image="python:3.12-slim" \
+  --base-image="python:3.13-slim" \
   --tag-suffix="-slim" \
   --source=.
 # Result: riksarkivet/ra-mcp:v0.3.0-slim
@@ -457,7 +457,7 @@ dagger call publish-docker \
   --docker-username=env:DOCKER_USERNAME \
   --docker-password=env:DOCKER_PASSWORD \
   --image-repository="riksarkivet/ra-mcp" \
-  --base-image="python:3.12-alpine" \
+  --base-image="python:3.13-alpine" \
   --tag-suffix="-alpine" \
   --source=.
 ```
@@ -510,7 +510,7 @@ dagger call publish-pypi \
 
 ```bash
 # HTTP/SSE transport (recommended for development)
-claude mcp add --transport sse ra-mcp http://localhost:8000/sse
+claude mcp add --transport sse ra-mcp http://localhost:7860/sse
 
 # Verify connection
 claude mcp list
@@ -732,10 +732,10 @@ export RA_MCP_TIMEOUT=120
 npx @modelcontextprotocol/inspector uv run ra serve
 
 # Enable verbose logging with environment variable
-RA_MCP_LOG_LEVEL=DEBUG uv run ra serve --port 8000
+RA_MCP_LOG_LEVEL=DEBUG uv run ra serve --port 7860
 
 # Test HTTP endpoint
-curl -X POST http://localhost:8000/mcp \
+curl -X POST http://localhost:7860/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
@@ -835,7 +835,7 @@ For detailed information about the Model Context Protocol specification, impleme
 ### Common Issues
 
 **Issue**: Server won't start
-- Check if port 8000 is already in use: `lsof -i :8000`
+- Check if port 7860 is already in use: `lsof -i :7860`
 - Try a different port: `uv run ra serve --port 8001`
 
 **Issue**: No search results found
@@ -845,7 +845,7 @@ For detailed information about the Model Context Protocol specification, impleme
 
 **Issue**: Import errors
 - Reinstall dependencies: `uv sync --reinstall`
-- Check Python version: `python --version` (requires 3.12+)
+- Check Python version: `python --version` (requires 3.13+)
 
 **Issue**: Tests not running
 - Test infrastructure is being set up - see [Testing](#testing) section

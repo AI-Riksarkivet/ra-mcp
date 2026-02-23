@@ -23,7 +23,7 @@ from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_lay
 
 logger = logging.getLogger(__name__)
 
-DIST_DIR = Path(__file__).parent.parent / "dist"
+DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
 
 

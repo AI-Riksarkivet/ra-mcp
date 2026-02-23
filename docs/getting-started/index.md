@@ -216,10 +216,10 @@ cd ra-mcp
 uv sync
 
 # Run MCP server on HTTP
-uv run ra serve --port 8000
+uv run ra serve --port 7860
 
 # Then connect to it
-claude mcp add --transport http ra-mcp http://localhost:8000/mcp
+claude mcp add --transport http ra-mcp http://localhost:7860/mcp
 ```
 
 Or with Docker:

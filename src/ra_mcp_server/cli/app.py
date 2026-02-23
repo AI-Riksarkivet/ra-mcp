@@ -31,7 +31,7 @@ Quick Start:
   ra search "Stockholm"              # Search for a keyword
   ra browse "SE/RA/123" --page 5     # View a specific page
   ra tui "trolldom"                  # Launch interactive TUI
-  ra serve --port 8000               # Start MCP server
+  ra serve --port 7860               # Start MCP server
   ra serve --list-modules            # List available server modules
 
 For detailed help on any command:
@@ -80,10 +80,10 @@ def serve(
 
     Examples:
         ra serve                              # Start with all default modules (stdio)
-        ra serve --port 8000                  # Start HTTP server with all modules
+        ra serve --port 7860                  # Start HTTP server with all modules
         ra serve --modules search,browse      # Start with only search and browse
         ra serve --list-modules               # List available modules
-        ra serve --port 8000 --log            # HTTP server with API logging
+        ra serve --port 7860 --log            # HTTP server with API logging
     """
     from ..server import AVAILABLE_MODULES, run_server
 
@@ -108,7 +108,7 @@ def serve(
     if modules:
         console.print(f"[dim]Enabled modules: {modules}[/dim]")
 
-    run_server(http=port is not None, port=port or 8000, host=host, verbose=verbose, modules=modules)
+    run_server(http=port is not None, port=port or 7860, host=host, verbose=verbose, modules=modules)
 
 
 @app.callback()

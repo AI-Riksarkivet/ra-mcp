@@ -6,15 +6,15 @@ import (
 	"fmt"
 )
 
-// ComposeUp loads the docker-compose.yml and starts the ra-mcp service on the Dagger engine
+// ComposeUp loads .docker/docker-compose.yml and starts the ra-mcp service on the Dagger engine
 func (m *RaMcp) ComposeUp(
-	// Source directory containing docker-compose.yml and .docker/
+	// Source directory containing .docker/docker-compose.yml
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
 ) *dagger.Service {
 	project := dag.DockerCompose().Project(dagger.DockerComposeProjectOpts{
-		Source: source,
+		Source: source.Directory(".docker"),
 	})
 	return project.Service("ra-mcp").Up()
 }
@@ -22,7 +22,7 @@ func (m *RaMcp) ComposeUp(
 // ComposeTest starts the compose service and verifies it passes a health check
 func (m *RaMcp) ComposeTest(
 	ctx context.Context,
-	// Source directory containing docker-compose.yml and .docker/
+	// Source directory containing .docker/docker-compose.yml
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,

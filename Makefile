@@ -4,13 +4,18 @@
 install:
 	uv sync
 
+# Build viewer UI (Svelte → single HTML file)
+build-ui:
+	npm install --prefix packages/viewer-mcp
+	npm run build --prefix packages/viewer-mcp
+
 # Run MCP server (stdio transport)
-serve:
+serve: build-ui
 	uv run ra serve
 
 # Run MCP server (HTTP/SSE transport)
-serve-http:
-	uv run ra serve --port 8000
+serve-http: build-ui
+	uv run ra serve --port 7860
 
 # Open MCP Inspector
 inspect:
@@ -73,8 +78,8 @@ clean:
 
 # Expose local server to the internet using Cloudflare Tunnel, then add: <tunnel_url>/mcp
 tunnel:
-	npx cloudflared tunnel --url http://localhost:3001
+	npx cloudflared tunnel --url http://localhost:7860
 
 # Expose local server to the internet using ngrok, then add: <ngrok_url>/mcp
 ngrok:
-	npx ngrok http 3001
+	npx ngrok http 7860

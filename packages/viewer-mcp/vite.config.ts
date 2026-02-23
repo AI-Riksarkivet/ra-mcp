@@ -26,7 +26,7 @@ export default defineConfig({
     rollupOptions: {
       input: INPUT,
     },
-    outDir: "dist",
+    outDir: "src/ra_mcp_viewer_mcp/dist",
     emptyOutDir: false,
   },
 });

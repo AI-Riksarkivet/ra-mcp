@@ -11,8 +11,8 @@ func (m *RaMcp) Test(
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
-	// Base image to use (default: python:3.12-alpine)
-	// +default="python:3.12-alpine"
+	// Base image to use (default: python:3.13-alpine)
+	// +default="python:3.13-alpine"
 	baseImage string,
 ) (string, error) {
 	if source == nil {
@@ -22,14 +22,15 @@ func (m *RaMcp) Test(
 	// Create a test container with uv and dev dependencies
 	container := dag.Container().
 		From(baseImage).
-		WithFile("/usr/local/bin/uv", dag.Container().From("ghcr.io/astral-sh/uv:0.5.13").File("/uv")).
-		WithFile("/usr/local/bin/uvx", dag.Container().From("ghcr.io/astral-sh/uv:0.5.13").File("/uvx")).
+		WithFile("/usr/local/bin/uv", dag.Container().From("ghcr.io/astral-sh/uv:latest").File("/uv")).
+		WithFile("/usr/local/bin/uvx", dag.Container().From("ghcr.io/astral-sh/uv:latest").File("/uvx")).
 		WithWorkdir("/app").
 		WithDirectory("/app", source, dagger.ContainerWithDirectoryOpts{
 			Include: []string{
 				"pyproject.toml",
 				"uv.lock",
 				"packages/",
+				"src/",
 				"README.md",
 				"LICENSE",
 			},

@@ -197,9 +197,9 @@ func (m *RaMcp) VerifyTelemetry(
 
 	// 2. Build a dev container with full source (same approach as test.go)
 	appContainer := dag.Container().
-		From("python:3.12-alpine").
-		WithFile("/usr/local/bin/uv", dag.Container().From("ghcr.io/astral-sh/uv:0.5.13").File("/uv")).
-		WithFile("/usr/local/bin/uvx", dag.Container().From("ghcr.io/astral-sh/uv:0.5.13").File("/uvx")).
+		From("python:3.13-alpine").
+		WithFile("/usr/local/bin/uv", dag.Container().From("ghcr.io/astral-sh/uv:latest").File("/uv")).
+		WithFile("/usr/local/bin/uvx", dag.Container().From("ghcr.io/astral-sh/uv:latest").File("/uvx")).
 		WithWorkdir("/app").
 		WithDirectory("/app", source, dagger.ContainerWithDirectoryOpts{
 			Include: []string{

@@ -46,7 +46,7 @@ name = "ra-mcp-<name>-mcp"
 version = "0.3.0"                         # match current workspace version
 description = "<one-line description>"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     # Domain package (if one exists):
     # "ra-mcp-<name>",

@@ -130,7 +130,7 @@ func (m *RaMcp) GenerateSbom(
 	// +optional
 	source *dagger.Directory,
 	// Base image to use for the build
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 	// SBOM format (spdx-json, cyclonedx, spdx, github)
@@ -138,7 +138,7 @@ func (m *RaMcp) GenerateSbom(
 	format string,
 ) (*dagger.File, error) {
 	if baseImage == "" {
-		baseImage = "python:3.12-alpine"
+		baseImage = "python:3.13-alpine"
 	}
 
 	container, err := m.Build(ctx, source, baseImage)
@@ -171,7 +171,7 @@ func (m *RaMcp) GenerateSbomSpdx(
 	// +optional
 	source *dagger.Directory,
 	// Base image to use for the build
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 ) (*dagger.File, error) {
@@ -186,7 +186,7 @@ func (m *RaMcp) GenerateSbomCycloneDx(
 	// +optional
 	source *dagger.Directory,
 	// Base image to use for the build
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 ) (*dagger.File, error) {
@@ -201,7 +201,7 @@ func (m *RaMcp) ExportSbom(
 	// +optional
 	source *dagger.Directory,
 	// Base image to use for the build
-	// +default="python:3.12-alpine"
+	// +default="python:3.13-alpine"
 	// +optional
 	baseImage string,
 	// SBOM format (spdx-json, cyclonedx, spdx, github)
