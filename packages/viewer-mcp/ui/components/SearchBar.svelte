@@ -10,9 +10,11 @@ interface Props {
   onPrevMatch: () => void;
   onNextMatch: () => void;
   onClose: () => void;
+  globalTotalMatches?: number;
+  globalSearchLoading?: boolean;
 }
 
-let { searchTerm, matchCount, activeMatchIndex, rightOffset = 0, onSearchTermChange, onPrevMatch, onNextMatch, onClose }: Props = $props();
+let { searchTerm, matchCount, activeMatchIndex, rightOffset = 0, onSearchTermChange, onPrevMatch, onNextMatch, onClose, globalTotalMatches = 0, globalSearchLoading = false }: Props = $props();
 
 let inputEl: HTMLInputElement;
 
@@ -54,11 +56,16 @@ onMount(() => {
       {:else}
         No matches
       {/if}
+      {#if globalSearchLoading}
+        <span class="global-loading" title="Searching all pages...">...</span>
+      {:else if globalTotalMatches > 0}
+        <span class="global-total" title="Total matches across all pages">&middot; {globalTotalMatches} total</span>
+      {/if}
     </span>
-    <button class="search-btn" onclick={onPrevMatch} disabled={matchCount === 0} title="Previous (Shift+Enter)">
+    <button class="search-btn" onclick={onPrevMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Previous (Shift+Enter)">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8 7L5 3L2 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="search-btn" onclick={onNextMatch} disabled={matchCount === 0} title="Next (Enter)">
+    <button class="search-btn" onclick={onNextMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Next (Enter)">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   {/if}
@@ -142,5 +149,19 @@ onMount(() => {
 .search-btn:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+.global-loading {
+  letter-spacing: 1px;
+  animation: pulse-dots 1s infinite;
+}
+
+.global-total {
+  opacity: 0.7;
+}
+
+@keyframes pulse-dots {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 </style>

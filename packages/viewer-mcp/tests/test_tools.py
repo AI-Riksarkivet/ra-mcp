@@ -161,3 +161,103 @@ async def test_load_page_handles_fetch_error():
 
     assert not result.is_error
     assert "Errors" in result.content[0].text
+
+
+# ── search_all_pages ─────────────────────────────────────────────────
+
+
+async def test_search_all_pages_returns_matches(mock_fetchers):
+    """Searching for a term that exists in the fixture text layer should return matches."""
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["https://example.com/alto1.xml", "https://example.com/alto2.xml"],
+                "term": "Mommouth",
+            },
+        )
+
+    assert not result.is_error
+    sc = result.structured_content
+    assert sc["totalMatches"] > 0
+    assert len(sc["pageMatches"]) > 0
+    for m in sc["pageMatches"]:
+        assert "pageIndex" in m
+        assert "matchCount" in m
+        assert m["matchCount"] > 0
+
+
+async def test_search_all_pages_no_matches(mock_fetchers):
+    """Searching for a term not in the fixture should return zero matches."""
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["https://example.com/alto1.xml"],
+                "term": "xyznonexistentterm",
+            },
+        )
+
+    assert not result.is_error
+    sc = result.structured_content
+    assert sc["totalMatches"] == 0
+    assert sc["pageMatches"] == []
+
+
+async def test_search_all_pages_empty_term(mock_fetchers):
+    """Empty search term should return early with zero matches."""
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["https://example.com/alto1.xml"],
+                "term": "",
+            },
+        )
+
+    assert not result.is_error
+    sc = result.structured_content
+    assert sc["totalMatches"] == 0
+    assert sc["pageMatches"] == []
+
+
+async def test_search_all_pages_skips_empty_urls(mock_fetchers):
+    """Empty string URLs should be skipped without error."""
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["", "https://example.com/alto1.xml", ""],
+                "term": "Mommouth",
+            },
+        )
+
+    assert not result.is_error
+    sc = result.structured_content
+    assert sc["totalMatches"] > 0
+    # Only the valid URL (index 1) should appear in matches
+    page_indices = [m["pageIndex"] for m in sc["pageMatches"]]
+    assert 0 not in page_indices  # empty URL skipped
+    assert 1 in page_indices
+
+
+async def test_search_all_pages_case_insensitive(mock_fetchers):
+    """Search should be case-insensitive."""
+    async with Client(mcp) as client:
+        result_lower = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["https://example.com/alto1.xml"],
+                "term": "mommouth",
+            },
+        )
+        result_upper = await client.call_tool(
+            "search_all_pages",
+            {
+                "text_layer_urls": ["https://example.com/alto1.xml"],
+                "term": "MOMMOUTH",
+            },
+        )
+
+    assert result_lower.structured_content["totalMatches"] == result_upper.structured_content["totalMatches"]
+    assert result_lower.structured_content["totalMatches"] > 0

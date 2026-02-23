@@ -27,9 +27,14 @@ interface Props {
   onNextPage: () => void;
   highlightTerm?: string;
   highlightTermColor?: string;
+  pageMatchCounts?: Map<number, number>;
+  globalTotalMatches?: number;
+  globalSearchLoading?: boolean;
+  onGlobalSearch?: (term: string) => void;
+  onGlobalNavigate?: (direction: "prev" | "next") => void;
 }
 
-let { app, pageData, pageIndex, totalPages, pageMetadata, canFullscreen, isFullscreen, onToggleFullscreen, hasThumbnails, showThumbnails, onToggleThumbnails, onPrevPage, onNextPage, highlightTerm = "", highlightTermColor = HIGHLIGHT_DEFAULTS.color }: Props = $props();
+let { app, pageData, pageIndex, totalPages, pageMetadata, canFullscreen, isFullscreen, onToggleFullscreen, hasThumbnails, showThumbnails, onToggleThumbnails, onPrevPage, onNextPage, highlightTerm = "", highlightTermColor = HIGHLIGHT_DEFAULTS.color, pageMatchCounts, globalTotalMatches = 0, globalSearchLoading = false, onGlobalSearch, onGlobalNavigate }: Props = $props();
 
 let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
 
@@ -90,6 +95,7 @@ $effect(() => {
     highlightTermInitDone = true;
     searchTerm = highlightTerm;
     showSearch = true;
+    onGlobalSearch?.(highlightTerm);
   }
 });
 
@@ -180,7 +186,24 @@ function handlePanelLineClick(line: TextLine) {
 // ---------------------------------------------------------------------------
 
 function goToMatch(index: number) {
-  if (searchMatches.length === 0) return;
+  if (searchMatches.length === 0) {
+    // No matches on this page — navigate cross-page if available
+    if (onGlobalNavigate) {
+      onGlobalNavigate(index >= 0 ? "next" : "prev");
+    }
+    return;
+  }
+
+  // Cross-page navigation: past last match → next page, before first → prev page
+  if (index >= searchMatches.length && onGlobalNavigate) {
+    onGlobalNavigate("next");
+    return;
+  }
+  if (index < 0 && onGlobalNavigate) {
+    onGlobalNavigate("prev");
+    return;
+  }
+
   const wrappedIndex = ((index % searchMatches.length) + searchMatches.length) % searchMatches.length;
   activeMatchIndex = wrappedIndex;
   const match = searchMatches[wrappedIndex];
@@ -196,12 +219,14 @@ function goToMatch(index: number) {
 function handleSearchTermChange(term: string) {
   searchTerm = term;
   activeMatchIndex = 0;
+  onGlobalSearch?.(term);
 }
 
 function handleCloseSearch() {
   showSearch = false;
   searchTerm = "";
   activeMatchIndex = 0;
+  onGlobalSearch?.("");
   controller?.requestDraw();
 }
 
@@ -346,6 +371,8 @@ onDestroy(() => {
         onPrevMatch={() => goToMatch(activeMatchIndex - 1)}
         onNextMatch={() => goToMatch(activeMatchIndex + 1)}
         onClose={handleCloseSearch}
+        {globalTotalMatches}
+        {globalSearchLoading}
       />
     {/if}
 

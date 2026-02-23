@@ -13,9 +13,10 @@ interface Props {
   onPageSelect: (index: number) => void;
   width?: number;
   onWidthChange?: (width: number) => void;
+  pageMatchCounts?: Map<number, number>;
 }
 
-let { app, data, currentPageIndex, onPageSelect, width = 120, onWidthChange }: Props = $props();
+let { app, data, currentPageIndex, onPageSelect, width = 120, onWidthChange, pageMatchCounts }: Props = $props();
 
 // ---------------------------------------------------------------------------
 // State
@@ -252,6 +253,9 @@ function getThumbnailUrl(index: number): string | null {
           </div>
         {/if}
       </button>
+      {#if pageMatchCounts?.get(i)}
+        <span class="match-badge">{pageMatchCounts.get(i)}</span>
+      {/if}
     </div>
   {/each}
   <div style:height="{bottomSpacerHeight}px" style:flex-shrink="0"></div>
@@ -307,6 +311,7 @@ function getThumbnailUrl(index: number): string | null {
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .thumbnail-inner {
@@ -354,5 +359,23 @@ function getThumbnailUrl(index: number): string | null {
   font-size: var(--font-text-sm-size, 0.875rem);
   color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
   opacity: 0.6;
+}
+
+.match-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(245, 158, 11, 0.75);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  z-index: 2;
 }
 </style>

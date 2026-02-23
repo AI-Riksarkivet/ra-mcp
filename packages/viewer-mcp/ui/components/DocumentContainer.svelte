@@ -28,6 +28,13 @@ let showThumbnails = $state(true);
 let currentPageMetadata = $derived(data.pageMetadata[currentPageIndex] ?? "");
 let thumbnailStripWidth = $state(120);
 
+// Cross-page search state
+let pageMatchCounts = $state<Map<number, number>>(new Map());
+let globalTotalMatches = $state(0);
+let globalSearchLoading = $state(false);
+let globalSearchTerm = $state("");
+let globalSearchDebounce: ReturnType<typeof setTimeout> | null = null;
+
 // Client-side page cache with LRU eviction (max 10 entries ≈ 40 MB worst-case)
 let pageCache = new LRUCache<number, PageData>({ max: 10 });
 let inFlight = new Map<number, Promise<PageData | null>>();
@@ -56,6 +63,79 @@ function handleKeydown(e: KeyboardEvent) {
   } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
     e.preventDefault();
     handleNextPage();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Cross-page search
+// ---------------------------------------------------------------------------
+
+function handleGlobalSearch(term: string) {
+  if (globalSearchDebounce) clearTimeout(globalSearchDebounce);
+  globalSearchTerm = term;
+
+  if (!term || !term.trim()) {
+    pageMatchCounts = new Map();
+    globalTotalMatches = 0;
+    globalSearchLoading = false;
+    return;
+  }
+
+  globalSearchLoading = true;
+  globalSearchDebounce = setTimeout(async () => {
+    try {
+      const result = await app.callServerTool({
+        name: "search_all_pages",
+        arguments: {
+          text_layer_urls: data.pageUrls.map(u => u.textLayer),
+          term: term.trim(),
+        },
+      });
+
+      // Only apply if the term hasn't changed while we were fetching
+      if (globalSearchTerm !== term) return;
+
+      if (!result.isError) {
+        const sc = (result as any).structuredContent;
+        if (sc) {
+          const newCounts = new Map<number, number>();
+          for (const m of sc.pageMatches ?? []) {
+            newCounts.set(m.pageIndex, m.matchCount);
+          }
+          pageMatchCounts = newCounts;
+          globalTotalMatches = sc.totalMatches ?? 0;
+        }
+      }
+    } catch (e) {
+      console.error("search_all_pages failed:", e);
+    } finally {
+      if (globalSearchTerm === term) {
+        globalSearchLoading = false;
+      }
+    }
+  }, 300);
+}
+
+function handleGlobalNavigate(direction: "prev" | "next") {
+  const pagesWithMatches = Array.from(pageMatchCounts.keys()).sort((a, b) => a - b);
+  if (pagesWithMatches.length === 0) return;
+
+  if (direction === "next") {
+    const next = pagesWithMatches.find(p => p > currentPageIndex);
+    if (next !== undefined) {
+      currentPageIndex = next;
+    } else {
+      // Wrap to first page with matches
+      currentPageIndex = pagesWithMatches[0];
+    }
+  } else {
+    const prev = [...pagesWithMatches].reverse().find(p => p < currentPageIndex);
+    if (prev !== undefined) {
+      currentPageIndex = prev;
+    } else {
+      // Wrap to last page with matches
+      currentPageIndex = pagesWithMatches[pagesWithMatches.length - 1];
+    }
   }
 }
 
@@ -141,6 +221,7 @@ function prefetchAdjacentPages(index: number) {
 onDestroy(() => {
   pageCache.clear();
   inFlight.clear();
+  if (globalSearchDebounce) clearTimeout(globalSearchDebounce);
 });
 
 let lastRenderedIndex = -1;
@@ -164,6 +245,7 @@ $effect(() => {
         onPageSelect={handlePageSelect}
         width={thumbnailStripWidth}
         onWidthChange={(w) => thumbnailStripWidth = w}
+        {pageMatchCounts}
       />
     </div>
   {/if}
@@ -184,6 +266,11 @@ $effect(() => {
       onNextPage={handleNextPage}
       highlightTerm={data.highlightTerm}
       highlightTermColor={data.highlightTermColor}
+      {pageMatchCounts}
+      {globalTotalMatches}
+      {globalSearchLoading}
+      onGlobalSearch={handleGlobalSearch}
+      onGlobalNavigate={handleGlobalNavigate}
     />
   {:else}
     <div class="page-loading">

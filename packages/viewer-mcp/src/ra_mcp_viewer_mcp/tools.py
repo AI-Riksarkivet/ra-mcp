@@ -154,6 +154,62 @@ async def load_thumbnails(
     )
 
 
+@mcp.tool(
+    name="search_all_pages",
+    description="Search for a term across all document pages. Returns match counts per page.",
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+)
+async def search_all_pages(
+    text_layer_urls: Annotated[list[str], "List of text layer XML URLs to search across."],
+    term: Annotated[str, "The search term to find in page transcriptions."],
+) -> ToolResult:
+    """Search all pages concurrently and return per-page match counts."""
+    if not term or not term.strip():
+        return ToolResult(
+            content=[types.TextContent(type="text", text="No search term provided.")],
+            structured_content={"pageMatches": [], "totalMatches": 0},
+        )
+
+    term_lower = term.strip().lower()
+    sem = asyncio.Semaphore(6)
+    page_matches: list[dict] = []
+    total_matches = 0
+
+    async def _search_page(page_index: int, url: str) -> None:
+        nonlocal total_matches
+        if not url or not url.startswith(("http://", "https://")):
+            return
+        async with sem:
+            try:
+                text_layer = await fetch_and_parse_text_layer(url)
+            except Exception as e:
+                logger.warning("search_all_pages: failed to fetch page %d: %s", page_index, e)
+                return
+            count = 0
+            for line in text_layer.get("textLines", []):
+                transcription = line.get("transcription", "")
+                if term_lower in transcription.lower():
+                    count += 1
+            if count > 0:
+                page_matches.append({"pageIndex": page_index, "matchCount": count})
+                total_matches += count
+
+    async with asyncio.TaskGroup() as tg:
+        for i, url in enumerate(text_layer_urls):
+            tg.create_task(_search_page(i, url))
+
+    page_matches.sort(key=lambda m: m["pageIndex"])
+
+    pages_with_matches = len(page_matches)
+    summary = f"Found {total_matches} match{'es' if total_matches != 1 else ''} across {pages_with_matches} page{'s' if pages_with_matches != 1 else ''}."
+    logger.info("search_all_pages: term=%r, %s", term, summary)
+
+    return ToolResult(
+        content=[types.TextContent(type="text", text=summary)],
+        structured_content={"pageMatches": page_matches, "totalMatches": total_matches},
+    )
+
+
 @mcp.resource(uri=RESOURCE_URI)
 def get_ui_resource() -> str:
     html_path = DIST_DIR / "mcp-app.html"
