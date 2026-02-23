@@ -28,7 +28,7 @@ function getStructured(result: CallToolResult): Record<string, unknown> | null {
 }
 
 /**
- * Parse load-page tool result into a single PageData.
+ * Parse load_page tool result into a single PageData.
  */
 export function parsePageResult(result: CallToolResult): PageData | null {
   const sc = getStructured(result);
@@ -39,7 +39,7 @@ export function parsePageResult(result: CallToolResult): PageData | null {
 }
 
 /**
- * Parse load-thumbnails tool result into ThumbnailData array.
+ * Parse load_thumbnails tool result into ThumbnailData array.
  */
 export function parseThumbnailResult(result: CallToolResult): ThumbnailData[] {
   const sc = getStructured(result);

@@ -46,13 +46,13 @@ def mock_fetchers(alto_text_layer):
         yield {"text_layer": mock_text, "page": mock_page, "thumbnail": mock_thumb}
 
 
-# ── view-document ─────────────────────────────────────────────────────
+# ── view_document ─────────────────────────────────────────────────────
 
 
 async def test_view_document_returns_transcription(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
-            "view-document",
+            "view_document",
             {
                 "image_urls": ["https://example.com/img1.jpg"],
                 "text_layer_urls": ["https://example.com/alto1.xml"],
@@ -68,7 +68,7 @@ async def test_view_document_returns_transcription(mock_fetchers):
 async def test_view_document_mismatched_urls(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
-            "view-document",
+            "view_document",
             {
                 "image_urls": ["https://example.com/img1.jpg", "https://example.com/img2.jpg"],
                 "text_layer_urls": ["https://example.com/alto1.xml"],
@@ -79,13 +79,13 @@ async def test_view_document_mismatched_urls(mock_fetchers):
     assert "mismatched" in text.lower()
 
 
-# ── load-page ─────────────────────────────────────────────────────────
+# ── load_page ─────────────────────────────────────────────────────────
 
 
 async def test_load_page_returns_structured_content(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
-            "load-page",
+            "load_page",
             {
                 "image_url": "https://example.com/img.jpg",
                 "text_layer_url": "https://example.com/alto.xml",
@@ -101,13 +101,13 @@ async def test_load_page_returns_structured_content(mock_fetchers):
     assert isinstance(page["textLayer"]["textLines"], list)
 
 
-# ── load-thumbnails ──────────────────────────────────────────────────
+# ── load_thumbnails ──────────────────────────────────────────────────
 
 
 async def test_load_thumbnails_returns_list(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
-            "load-thumbnails",
+            "load_thumbnails",
             {
                 "image_urls": ["https://example.com/t1.jpg", "https://example.com/t2.jpg"],
                 "page_indices": [0, 1],
@@ -134,7 +134,7 @@ async def test_load_page_handles_fetch_error():
         )
         async with Client(mcp) as client:
             result = await client.call_tool(
-                "load-page",
+                "load_page",
                 {
                     "image_url": "https://bad-url.example.com/img.jpg",
                     "text_layer_url": "",

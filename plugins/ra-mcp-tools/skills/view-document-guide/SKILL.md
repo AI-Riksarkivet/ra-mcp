@@ -1,11 +1,11 @@
 ---
-name: view-document-guide
-description: Guide for the view-document tool. Use when the user asks to "view document", "display pages", "show document", "document viewer", or provides image/XML URLs to display in an interactive viewer. Covers required arguments, pairing rules, metadata, and common mistakes.
+name: view_document-guide
+description: Guide for the view_document tool. Use when the user asks to "view document", "display pages", "show document", "document viewer", or provides image/XML URLs to display in an interactive viewer. Covers required arguments, pairing rules, metadata, and common mistakes.
 ---
 
-# Using the `view-document` Tool
+# Using the `view_document` Tool
 
-The `view-document` tool opens an interactive viewer with zoomable page images and optional text-layer overlays (for search, selection, and accessibility).
+The `view_document` tool opens an interactive viewer with zoomable page images and optional text-layer overlays (for search, selection, and accessibility).
 
 ## Required Arguments
 

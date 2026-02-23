@@ -2,9 +2,9 @@
 Document Viewer MCP App — Tool & resource registrations.
 
 Tools:
-  - view-document: entry point, returns transcription for the model
-  - load-page: fetches a single page on demand (called by View via callServerTool)
-  - load-thumbnails: batch-fetches thumbnail images (called by View via callServerTool)
+  - view_document: entry point, returns transcription for the model
+  - load_page: fetches a single page on demand (called by View via callServerTool)
+  - load_thumbnails: batch-fetches thumbnail images (called by View via callServerTool)
 """
 
 import asyncio
@@ -28,7 +28,7 @@ RESOURCE_URI = "ui://document-viewer/mcp-app.html"
 
 
 @mcp.tool(
-    name="view-document",
+    name="view_document",
     description=(
         "Display document pages with zoomable images and text layer overlays. "
         "Provide paired lists: image_urls[i] pairs with text_layer_urls[i]. "
@@ -73,14 +73,14 @@ async def view_document(
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
-    logger.info(f"view-document: displaying {len(image_urls)} page(s) with {len(text_layer_urls)} text layer(s)")
+    logger.info(f"view_document: displaying {len(image_urls)} page(s) with {len(text_layer_urls)} text layer(s)")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
     )
 
 
 @mcp.tool(
-    name="load-page",
+    name="load_page",
     description="Load a single document page (image + text layer). Used by the viewer for pagination.",
     app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
 )
@@ -97,8 +97,8 @@ async def load_page(
     if errors:
         summary += f" Errors: {'; '.join(errors)}"
 
-    logger.info(f"load-page: page {page_index + 1} loaded, {total_lines} text lines")
-    logger.debug(f"load-page: image_url={image_url}, text_layer_url={text_layer_url}")
+    logger.info(f"load_page: page {page_index + 1} loaded, {total_lines} text lines")
+    logger.debug(f"load_page: image_url={image_url}, text_layer_url={text_layer_url}")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content={"page": page},
@@ -106,7 +106,7 @@ async def load_page(
 
 
 @mcp.tool(
-    name="load-thumbnails",
+    name="load_thumbnails",
     description="Load thumbnail images for a batch of document pages. Used by the viewer for lazy-loading the thumbnail strip.",
     app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
 )
@@ -144,7 +144,7 @@ async def load_thumbnails(
     if errors:
         summary += f" Errors: {'; '.join(errors)}"
 
-    logger.info(f"load-thumbnails: generated {len(thumbnails)} thumbnail(s)")
+    logger.info(f"load_thumbnails: generated {len(thumbnails)} thumbnail(s)")
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content={"thumbnails": thumbnails},

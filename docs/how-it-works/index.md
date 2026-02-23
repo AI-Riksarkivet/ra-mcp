@@ -59,7 +59,7 @@ Retrieves complete page transcriptions from a specific document. Each result inc
 
 Transcribes handwritten document images using AI-powered handwritten text recognition (HTRflow). Accepts image URLs and returns an interactive viewer, per-page transcription data, and archival exports in ALTO XML, PAGE XML, or JSON. Supports Swedish, Norwegian, English, and medieval documents.
 
-### view-document
+### view_document
 
 Displays document pages in an interactive viewer with zoomable images and text layer overlays. The viewer runs directly inside the MCP host (Claude, ChatGPT) as an MCP App.
 

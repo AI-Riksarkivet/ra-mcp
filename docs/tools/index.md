@@ -86,7 +86,7 @@ Transcribe handwritten document images using AI-powered handwritten text recogni
 
 **Returns**: URLs to an interactive viewer, per-page JSON transcriptions, and an archival export file.
 
-### view-document
+### view_document
 
 Display document pages with zoomable images and text layer overlays in an interactive viewer.
 
@@ -118,7 +118,7 @@ HTR workflow guide. Covers the full pipeline: determine image source, batch imag
 
 ### /view-document-guide
 
-Document viewer guide. Covers the `view-document` tool's arguments, pairing rules, and common mistakes.
+Document viewer guide. Covers the `view_document` tool's arguments, pairing rules, and common mistakes.
 
 ### /upload-files
 

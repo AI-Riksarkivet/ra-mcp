@@ -10,7 +10,7 @@ The viewer supports lazy-loading pages and thumbnails via app-visible tools that
 
 ## MCP Tools
 
-### `view-document` (user-visible)
+### `view_document` (user-visible)
 
 Entry point for displaying document pages. Returns page 1 transcription to the model and renders the viewer UI.
 
@@ -22,11 +22,11 @@ Entry point for displaying document pages. Returns page 1 transcription to the m
 
 Both lists must have the same length.
 
-### `load-page` (app-visible only)
+### `load_page` (app-visible only)
 
 Fetches a single page on demand — called by the viewer UI for pagination.
 
-### `load-thumbnails` (app-visible only)
+### `load_thumbnails` (app-visible only)
 
 Batch-fetches thumbnail images — called by the viewer UI for the thumbnail strip.
 
@@ -35,7 +35,7 @@ Batch-fetches thumbnail images — called by the viewer UI for the thumbnail str
 This is an **MCP App** — it uses FastMCP's `AppConfig` and `ui://` resources:
 
 ```
-Model calls view-document
+Model calls view_document
     |
     v
 Tool returns: text summary (for model) + structured content (for UI)
@@ -44,14 +44,14 @@ Tool returns: text summary (for model) + structured content (for UI)
 MCP host renders ui://document-viewer/mcp-app.html
     |
     v
-Viewer UI calls load-page / load-thumbnails via callServerTool
+Viewer UI calls load_page / load_thumbnails via callServerTool
 ```
 
 The HTML viewer is built from `src/ra_mcp_viewer_mcp/dist/mcp-app.html` and served as a `ui://` resource.
 
 ## Components
 
-- **tools.py**: Tool and resource registrations (`view-document`, `load-page`, `load-thumbnails`, UI resource)
+- **tools.py**: Tool and resource registrations (`view_document`, `load_page`, `load_thumbnails`, UI resource)
 - **fetchers.py**: Async functions for fetching page data, text layers, and thumbnail images
 - **parser.py**: ALTO/PAGE XML parser
 - **models.py**: Data models

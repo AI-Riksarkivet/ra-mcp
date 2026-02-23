@@ -30,9 +30,9 @@ HTR workflow guide. Covers the full pipeline: determine image source, batch all 
 
 **Trigger phrases**: transcribe handwriting, HTR, handwritten document, OCR historical document, digitize manuscript
 
-### `/view-document-guide`
+### `/view_document-guide`
 
-Document viewer guide. Covers the `view-document` tool's required arguments (`image_urls` paired 1:1 with `text_layer_urls`), optional metadata, and common mistakes (mismatched list lengths, non-public URLs, forgetting empty strings for missing text layers).
+Document viewer guide. Covers the `view_document` tool's required arguments (`image_urls` paired 1:1 with `text_layer_urls`), optional metadata, and common mistakes (mismatched list lengths, non-public URLs, forgetting empty strings for missing text layers).
 
 **Trigger phrases**: view document, display pages, show document, document viewer
 

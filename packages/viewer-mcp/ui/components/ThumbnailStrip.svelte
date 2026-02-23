@@ -97,7 +97,7 @@ async function fetchBatch(indices: number[]) {
   try {
     const imageUrls = indices.map(i => data.pageUrls[i].image);
     const result = await app.callServerTool({
-      name: "load-thumbnails",
+      name: "load_thumbnails",
       arguments: {
         image_urls: imageUrls,
         page_indices: indices,
@@ -120,7 +120,7 @@ async function fetchBatch(indices: number[]) {
       }
     }
   } catch (e) {
-    console.error("load-thumbnails failed:", e);
+    console.error("load_thumbnails failed:", e);
   } finally {
     for (const i of indices) inFlightIndices.delete(i);
     batchInFlight = false;

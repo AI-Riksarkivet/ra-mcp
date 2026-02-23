@@ -73,7 +73,7 @@ function fetchPageData(index: number): Promise<PageData | null> {
     try {
       const urls = data.pageUrls[index];
       const result = await app.callServerTool({
-        name: "load-page",
+        name: "load_page",
         arguments: {
           image_url: urls.image,
           text_layer_url: urls.textLayer,
@@ -83,7 +83,7 @@ function fetchPageData(index: number): Promise<PageData | null> {
 
       if (result.isError) {
         const errText = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
-        console.error("load-page error:", errText);
+        console.error("load_page error:", errText);
         return null;
       }
 
@@ -93,7 +93,7 @@ function fetchPageData(index: number): Promise<PageData | null> {
         return page;
       }
     } catch (e) {
-      console.error("load-page failed:", e);
+      console.error("load_page failed:", e);
     } finally {
       inFlight.delete(index);
     }

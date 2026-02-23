@@ -86,7 +86,7 @@ The root server has a registry of available modules:
 | `browse` | Enabled | `browse_document` |
 | `guide` | Enabled | Historical research guides (MCP resources) |
 | `htr` | Enabled | `htr_transcribe` |
-| `viewer` | Enabled | `view-document`, `load-page`, `load-thumbnails` |
+| `viewer` | Enabled | `view_document`, `load_page`, `load_thumbnails` |
 
 Modules can be selectively enabled:
 

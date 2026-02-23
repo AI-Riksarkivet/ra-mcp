@@ -106,7 +106,7 @@ Prefer batch upload over individual uploads when possible.
 Once you have public URLs, pass them to the appropriate tool:
 
 - **HTR transcription**: call `htr_transcribe` with `image_urls=[...]`
-- **Document viewer**: call `view-document` with `image_urls=[...]` and optionally `text_layer_urls=[...]`
+- **Document viewer**: call `view_document` with `image_urls=[...]` and optionally `text_layer_urls=[...]`
 
 ## Error handling
 
