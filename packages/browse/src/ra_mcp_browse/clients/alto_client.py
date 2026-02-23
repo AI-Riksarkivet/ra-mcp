@@ -92,7 +92,7 @@ class ALTOClient:
 
             # Extract and combine text
             text = self._extract_text_from_alto(xml_root)
-            result = text if text else ""
+            result = text or ""
             result_type = "success" if text else "empty"
             span.set_attribute("alto.result", result_type)
             span.set_attribute("alto.text_length", len(result))

@@ -34,6 +34,7 @@ from ra_mcp_htr_mcp.tools import htr_mcp
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
+from ra_mcp_viewer_mcp import viewer_mcp
 
 
 # Registry of available modules
@@ -56,6 +57,11 @@ AVAILABLE_MODULES = {
     "htr": {
         "server": htr_mcp,
         "description": "Transcribe handwritten documents using HTRflow",
+        "default": True,
+    },
+    "viewer": {
+        "server": viewer_mcp,
+        "description": "Interactive document viewer with zoomable images and text layer overlays",
         "default": True,
     },
 }
@@ -237,7 +243,7 @@ def setup_custom_routes(server: FastMCP) -> None:
 def run_server(
     *,
     http: bool = False,
-    port: int = 8000,
+    port: int = 7860,
     host: str = "0.0.0.0",
     verbose: bool = False,
     modules: str | None = None,
@@ -286,7 +292,7 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(description="Riksarkivet MCP Server")
     parser.add_argument("--http", action="store_true", help="Use HTTP transport instead of stdio")
-    parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)")
+    parser.add_argument("--port", type=int, default=7860, help="Port for HTTP transport (default: 7860)")
     parser.add_argument("--host", default="0.0.0.0", help="Host for HTTP transport (default: 0.0.0.0)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
     parser.add_argument("--modules", type=str, default=None, help="Comma-separated list of modules to enable")

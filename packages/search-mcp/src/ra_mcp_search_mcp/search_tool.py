@@ -170,10 +170,16 @@ def register_search_tool(mcp) -> None:
         year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
         year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
         name: Annotated[
-            str | None, Field(description="Person name search in dedicated name field (e.g. 'Nobel', 'Linné'). Combinable with keyword and place. Most name matches are non-digitised — set only_digitised=False.")
+            str | None,
+            Field(
+                description="Person name search in dedicated name field (e.g. 'Nobel', 'Linné'). Combinable with keyword and place. Most name matches are non-digitised — set only_digitised=False."
+            ),
         ] = None,
         place: Annotated[
-            str | None, Field(description="Place name search in dedicated place field (e.g. 'Stockholm', 'Göteborg'). Combinable with keyword and name. Most place matches are non-digitised — set only_digitised=False.")
+            str | None,
+            Field(
+                description="Place name search in dedicated place field (e.g. 'Stockholm', 'Göteborg'). Combinable with keyword and name. Most place matches are non-digitised — set only_digitised=False."
+            ),
         ] = None,
         dedup: Annotated[bool, Field(description="Session deduplication. True compacts already-seen documents; False forces full results.")] = True,
         research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,

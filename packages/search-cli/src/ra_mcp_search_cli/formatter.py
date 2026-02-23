@@ -58,7 +58,7 @@ class RichConsoleFormatter:
         """
         table = Table(
             *column_headers,
-            title=table_title if table_title else None,
+            title=table_title or None,
             show_lines=True,
             expand=True,
         )
@@ -87,7 +87,7 @@ class RichConsoleFormatter:
         """
         return Panel(
             panel_content,
-            title=panel_title if panel_title else None,
+            title=panel_title or None,
             border_style=panel_border_style,
             padding=(0, 1),
         )

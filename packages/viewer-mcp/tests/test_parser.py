@@ -1,6 +1,6 @@
 """Tests for ALTO v4 and PAGE XML parsing."""
 
-from src.parser import detect_and_parse, parse_alto_xml, parse_page_xml
+from ra_mcp_viewer_mcp.parser import detect_and_parse, parse_alto_xml, parse_page_xml
 
 
 # ── ALTO word-level (30002056) ──────────────────────────────────────────
@@ -89,7 +89,7 @@ def test_alto_and_page_same_output(alto_line_level_xml, page_xml):
     assert alto.page_height == page.page_height
     assert len(alto.text_lines) == len(page.text_lines)
 
-    for a, p in zip(alto.text_lines, page.text_lines):
+    for a, p in zip(alto.text_lines, page.text_lines, strict=True):
         assert a.id == p.id
         assert a.transcription == p.transcription
         # Confidence values come from the same source data

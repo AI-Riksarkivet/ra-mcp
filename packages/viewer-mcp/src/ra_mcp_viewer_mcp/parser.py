@@ -1,7 +1,8 @@
 import logging
 import xml.etree.ElementTree as ET
 
-from src.models import TextLayer, TextLine
+from ra_mcp_viewer_mcp.models import TextLayer, TextLine
+
 
 logger = logging.getLogger(__name__)
 
@@ -102,16 +103,18 @@ def parse_alto_xml(xml_string: str) -> TextLayer:
         if wc_valid:
             confidence = sum(wc_valid) / len(wc_valid)
 
-        lines.append(TextLine(
-            id=tl.get("ID", ""),
-            polygon=polygon,
-            transcription=transcription,
-            hpos=_int(tl.get("HPOS")),
-            vpos=_int(tl.get("VPOS")),
-            width=_int(tl.get("WIDTH")),
-            height=_int(tl.get("HEIGHT")),
-            confidence=confidence,
-        ))
+        lines.append(
+            TextLine(
+                id=tl.get("ID", ""),
+                polygon=polygon,
+                transcription=transcription,
+                hpos=_int(tl.get("HPOS")),
+                vpos=_int(tl.get("VPOS")),
+                width=_int(tl.get("WIDTH")),
+                height=_int(tl.get("HEIGHT")),
+                confidence=confidence,
+            )
+        )
 
     return _build_text_layer(lines, page_width, page_height, "ALTO")
 
@@ -146,16 +149,18 @@ def parse_page_xml(xml_string: str) -> TextLayer:
 
         hpos, vpos, width, height = _bbox_from_polygon(polygon) if polygon else (0, 0, 0, 0)
 
-        lines.append(TextLine(
-            id=tl.get("id", ""),
-            polygon=polygon,
-            transcription=transcription,
-            hpos=hpos,
-            vpos=vpos,
-            width=width,
-            height=height,
-            confidence=confidence,
-        ))
+        lines.append(
+            TextLine(
+                id=tl.get("id", ""),
+                polygon=polygon,
+                transcription=transcription,
+                hpos=hpos,
+                vpos=vpos,
+                width=width,
+                height=height,
+                confidence=confidence,
+            )
+        )
 
     return _build_text_layer(lines, page_width, page_height, "PAGE XML")
 

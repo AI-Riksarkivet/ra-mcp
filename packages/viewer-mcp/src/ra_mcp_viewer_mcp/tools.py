@@ -13,17 +13,19 @@ from pathlib import Path
 from typing import Annotated
 
 from fastmcp import Context
-from fastmcp.server.apps import AppConfig, UI_EXTENSION_ID
+from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig
 from fastmcp.tools import ToolResult
 from mcp import types
 
-from src import mcp
-from src.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
+from ra_mcp_viewer_mcp import viewer_mcp as mcp
+from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
+
 
 logger = logging.getLogger(__name__)
 
 DIST_DIR = Path(__file__).parent.parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
+
 
 @mcp.tool(
     name="view-document",
@@ -44,10 +46,12 @@ async def view_document(
     """View document pages with zoomable images and text layer overlays."""
     if len(image_urls) != len(text_layer_urls):
         return ToolResult(
-            content=[types.TextContent(
-                type="text",
-                text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layer files)",
-            )],
+            content=[
+                types.TextContent(
+                    type="text",
+                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layer files)",
+                )
+            ],
         )
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
@@ -123,12 +127,9 @@ async def load_thumbnails(
                 return None
 
     async with asyncio.TaskGroup() as tg:
-        tasks = [
-            tg.create_task(_fetch_one(url, idx))
-            for url, idx in zip(image_urls, page_indices)
-        ]
+        tasks = [tg.create_task(_fetch_one(url, idx)) for url, idx in zip(image_urls, page_indices, strict=True)]
 
-    for task, idx in zip(tasks, page_indices):
+    for task, idx in zip(tasks, page_indices, strict=True):
         result = task.result()
         if result:
             thumbnails.append(result)

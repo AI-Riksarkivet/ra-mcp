@@ -27,7 +27,7 @@ class PageViewer(Widget):
         self.query_one("#page-loading").display = False
         self.query_one("#page-text").display = True
 
-        text = page.full_text if page.full_text else "(Empty page - no transcribed text)"
+        text = page.full_text or "(Empty page - no transcribed text)"
         self.query_one("#page-text", TextArea).text = text
 
         parts = []

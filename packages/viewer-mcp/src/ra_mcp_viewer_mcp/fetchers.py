@@ -10,13 +10,15 @@ import asyncio
 import base64
 import io
 import logging
+from collections.abc import Coroutine
 
 import httpx
 from fastmcp.telemetry import get_tracer
 from key_value.aio.stores.memory import MemoryStore
 from PIL import Image
 
-from src.parser import detect_and_parse
+from ra_mcp_viewer_mcp.parser import detect_and_parse
+
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer()
@@ -45,7 +47,7 @@ _TTL_TEXT_LAYERS = 300
 _inflight: dict[str, asyncio.Task] = {}
 
 
-async def _dedup(key: str, coro):  # noqa: ANN001
+async def _dedup[T](key: str, coro: Coroutine[object, object, T]) -> T:
     """If a fetch for `key` is already in flight, await it instead of starting a new one."""
     if key in _inflight:
         return await _inflight[key]
@@ -76,7 +78,8 @@ async def fetch_xml_from_url(url: str) -> str:
 
 async def fetch_image_as_data_url(url: str) -> str:
     """Fetch image and return as base64 data URL. Cached + deduped by URL."""
-    async def _fetch():
+
+    async def _fetch() -> str:
         cached = await _cache_get(url, _COL_IMAGES)
         if cached is not None:
             return cached["data_url"]
@@ -90,6 +93,7 @@ async def fetch_image_as_data_url(url: str) -> str:
             data_url = f"data:{content_type};base64,{b64}"
         await _cache.put(key=url, value={"data_url": data_url}, collection=_COL_IMAGES, ttl=_TTL_IMAGES)
         return data_url
+
     return await _dedup(f"img:{url}", _fetch())
 
 
@@ -109,7 +113,8 @@ def _resize_thumbnail(raw: bytes, max_width: int) -> tuple[str, int, int]:
 
 async def fetch_thumbnail_as_data_url(url: str, max_width: int = 150) -> str:
     """Fetch image, resize to thumbnail, return as base64 data URL. Cached + deduped by URL."""
-    async def _fetch():
+
+    async def _fetch() -> str:
         cached = await _cache_get(url, _COL_THUMBNAILS)
         if cached is not None:
             return cached["data_url"]
@@ -121,12 +126,14 @@ async def fetch_thumbnail_as_data_url(url: str, max_width: int = 150) -> str:
             logger.info("Thumbnail: %dx%d", w, h)
         await _cache.put(key=url, value={"data_url": data_url}, collection=_COL_THUMBNAILS, ttl=_TTL_THUMBNAILS)
         return data_url
+
     return await _dedup(f"thumb:{url}", _fetch())
 
 
 async def fetch_and_parse_text_layer(url: str) -> dict:
     """Fetch ALTO/PAGE XML and parse into a text layer dict. Cached + deduped by URL."""
-    async def _fetch():
+
+    async def _fetch() -> dict:
         cached = await _cache_get(url, _COL_TEXT_LAYERS)
         if cached is not None:
             return cached
@@ -140,6 +147,7 @@ async def fetch_and_parse_text_layer(url: str) -> dict:
             }
         await _cache.put(key=url, value=result, collection=_COL_TEXT_LAYERS, ttl=_TTL_TEXT_LAYERS)
         return result
+
     return await _dedup(f"text:{url}", _fetch())
 
 
