@@ -1,0 +1,31 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "https://lbiiif.riksarkivet.se/collection/arkiv/R0001203",
+  "type": "Collection",
+  "label": {
+    "sv": ["Trolldomskommissionen i Mora"]
+  },
+  "items": [
+    {
+      "id": "https://lbiiif.riksarkivet.se/arkis!R0001203/manifest",
+      "type": "Manifest",
+      "label": {
+        "sv": ["Volym 1"]
+      }
+    },
+    {
+      "id": "https://lbiiif.riksarkivet.se/arkis!R0001204/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Volume 2"]
+      }
+    },
+    {
+      "id": "https://lbiiif.riksarkivet.se/canvas/abc123",
+      "type": "Canvas",
+      "label": {
+        "none": ["Page image"]
+      }
+    }
+  ]
+}

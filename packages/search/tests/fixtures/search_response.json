@@ -1,0 +1,204 @@
+{
+    "totalHits": 42,
+    "hits": 2,
+    "offset": 0,
+    "facets": [
+        {
+            "name": "ObjectType",
+            "values": [
+                {
+                    "value": "Record",
+                    "hits": 42,
+                    "url": "https://data.riksarkivet.se/api/records?transcribed_text=trolldom&only_digitised_materials=true&facet=ObjectType%3ARecord&offset=0&limit=2&sort=relevance",
+                    "subFacets": [
+                        {
+                            "name": "Type",
+                            "values": [
+                                {
+                                    "value": "Volume",
+                                    "hits": 34,
+                                    "url": "https://data.riksarkivet.se/api/records?transcribed_text=trolldom&only_digitised_materials=true&facet=ObjectType%3ARecord%3BType%3AVolume&offset=0&limit=2&sort=relevance"
+                                },
+                                {
+                                    "value": "Dossier",
+                                    "hits": 8,
+                                    "url": "https://data.riksarkivet.se/api/records?transcribed_text=trolldom&only_digitised_materials=true&facet=ObjectType%3ARecord%3BType%3ADossier&offset=0&limit=2&sort=relevance"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "items": [
+        {
+            "id": "yGQHHgW0hQVANqVjuw6fZ1",
+            "objectType": "Record",
+            "type": "Volume",
+            "metadata": {
+                "referenceCode": "SE/RA/310187/1",
+                "hierarchy": [
+                    {
+                        "caption": "Kommissorialr\u00e4tt i Stockholm ang trolldomsv\u00e4sendet",
+                        "uri": "http://data.riksarkivet.se/archive/HIUNeBUQrH6d0002H087k3"
+                    }
+                ],
+                "provenance": [
+                    {
+                        "caption": "Kommissorialr\u00e4tt i Stockholm ang trolldomsv\u00e4sendet",
+                        "uri": "http://data.riksarkivet.se/agent/iFeTA8hDrH646m3GjpvwY3",
+                        "date": "1676 - "
+                    }
+                ],
+                "archivalInstitution": [
+                    {
+                        "caption": "Riksarkivet i Stockholm/T\u00e4by",
+                        "uri": "http://data.riksarkivet.se/agent/nyzaW7QeDCHdbK0a2Umzd9"
+                    }
+                ],
+                "date": "1676 - 1677",
+                "note": "Protokoll 30 juni 1676 - 3 juli 1677. Band",
+                "onlyDigitisedMaterials": true
+            },
+            "transcribedText": {
+                "snippets": [
+                    {
+                        "text": "Kommissorialr\u00e4tt i Stockholm ang. <em>trolldom</em> 1676 ...",
+                        "score": 0,
+                        "pages": [
+                            {
+                                "id": "_00002",
+                                "width": 1281,
+                                "height": 3743
+                            }
+                        ],
+                        "regions": [
+                            {
+                                "ulx": 360,
+                                "uly": 3077,
+                                "lrx": 866,
+                                "lry": 3508,
+                                "text": "Kommissorialr\u00e4tt i Stockholm ang. <em>trolldom</em> 1676 ...",
+                                "pageIdx": 0
+                            }
+                        ],
+                        "highlights": [
+                            [
+                                {
+                                    "ulx": 467,
+                                    "uly": 3226,
+                                    "lrx": 760,
+                                    "lry": 3348,
+                                    "text": "trolldom",
+                                    "parentRegionIdx": 0
+                                }
+                            ]
+                        ]
+                    },
+                    {
+                        "text": "sk\u00e4ligt sin emillan f\u00f6rafskeda, och det eftter Kongl. Senarens f\u00f6rordning, att alla dhe, som sig medh n\u00e5gon klagom\u00e5hl \u00f6fwer detta <em>Trolldoms</em> w\u00e4sen\u00acde h\u00e4r angifwa",
+                        "score": 0,
+                        "pages": [
+                            {
+                                "id": "_00007",
+                                "width": 4789,
+                                "height": 3691
+                            }
+                        ],
+                        "regions": null,
+                        "highlights": null
+                    },
+                    {
+                        "text": "Lind hafwer bekandt sig wara till Bl\u00e5kulla f\u00f6rdh af sin egen Moder och af henne l\u00e4rdt, som f\u00f6r\u00ac <em>Trolldom</em> i G\u00e4fle f\u00e4ngzlig f\u00f6rledne \u00e5hr insadt war?",
+                        "score": 0,
+                        "pages": [
+                            {
+                                "id": "_00009",
+                                "width": 4787,
+                                "height": 3687
+                            }
+                        ],
+                        "regions": null,
+                        "highlights": null
+                    }
+                ],
+                "numTotal": 12
+            },
+            "_links": {
+                "self": "http://data.riksarkivet.se/archive/yGQHHgW0hQVANqVjuw6fZ1",
+                "html": "https://sok.riksarkivet.se/arkiv/yGQHHgW0hQVANqVjuw6fZ1",
+                "rdf/xml": "https://data.riksarkivet.se/archive/yGQHHgW0hQVANqVjuw6fZ1.rdfxml",
+                "json-ld": "https://data.riksarkivet.se/archive/yGQHHgW0hQVANqVjuw6fZ1.jsonld",
+                "ead/ra": "https://oai-pmh.riksarkivet.se/OAI/?verb=GetRecord&identifier=SE/RA/310187/1&metadataPrefix=oai_ra_ead",
+                "ead/ape": "https://oai-pmh.riksarkivet.se/OAI/?verb=GetRecord&identifier=SE/RA/310187/1&metadataPrefix=oai_ape_ead",
+                "image": [
+                    "https://lbiiif.riksarkivet.se/arkis!R0001203/manifest"
+                ]
+            }
+        },
+        {
+            "id": "Ll4xWwMXZ4g3eQsWDfx9b1",
+            "objectType": "Record",
+            "type": "Volume",
+            "metadata": {
+                "referenceCode": "SE/RA/310187/6",
+                "hierarchy": [
+                    {
+                        "caption": "Kommissorialr\u00e4tt i Stockholm ang trolldomsv\u00e4sendet",
+                        "uri": "http://data.riksarkivet.se/archive/HIUNeBUQrH6d0002H087k3"
+                    }
+                ],
+                "provenance": [
+                    {
+                        "caption": "Kommissorialr\u00e4tt i Stockholm ang trolldomsv\u00e4sendet",
+                        "uri": "http://data.riksarkivet.se/agent/iFeTA8hDrH646m3GjpvwY3",
+                        "date": "1676 - "
+                    }
+                ],
+                "archivalInstitution": [
+                    {
+                        "caption": "Riksarkivet i Stockholm/T\u00e4by",
+                        "uri": "http://data.riksarkivet.se/agent/nyzaW7QeDCHdbK0a2Umzd9"
+                    }
+                ],
+                "date": "1676 - 1677",
+                "note": "Ber\u00e4ttelse till Kungl. Maj:t, odat. samt domar och resolutioner 1676 m.m.",
+                "onlyDigitisedMaterials": true
+            },
+            "transcribedText": {
+                "snippets": [
+                    {
+                        "text": "hon f\u00f6rst bleef insatt, si\u00e4lf hade f\u00f6r\u00acklaradt skyldig wara lefwandes att br\u00e4n\u00acnas. Emoth de\u00dfe <em>Trolldoms</em> tillwytelser",
+                        "score": 0,
+                        "pages": [
+                            {
+                                "id": "_00027",
+                                "width": 4607,
+                                "height": 3563
+                            }
+                        ],
+                        "regions": null,
+                        "highlights": null
+                    }
+                ],
+                "numTotal": 4
+            },
+            "_links": {
+                "self": "http://data.riksarkivet.se/archive/Ll4xWwMXZ4g3eQsWDfx9b1",
+                "html": "https://sok.riksarkivet.se/arkiv/Ll4xWwMXZ4g3eQsWDfx9b1",
+                "rdf/xml": "https://data.riksarkivet.se/archive/Ll4xWwMXZ4g3eQsWDfx9b1.rdfxml",
+                "json-ld": "https://data.riksarkivet.se/archive/Ll4xWwMXZ4g3eQsWDfx9b1.jsonld",
+                "ead/ra": "https://oai-pmh.riksarkivet.se/OAI/?verb=GetRecord&identifier=SE/RA/310187/6&metadataPrefix=oai_ra_ead",
+                "ead/ape": "https://oai-pmh.riksarkivet.se/OAI/?verb=GetRecord&identifier=SE/RA/310187/6&metadataPrefix=oai_ape_ead",
+                "image": [
+                    "https://lbiiif.riksarkivet.se/arkis!R0001208/manifest"
+                ]
+            }
+        }
+    ],
+    "_links": {
+        "self": "https://data.riksarkivet.se/api/records?transcribed_text=trolldom&only_digitised_materials=true&limit=2&offset=0&sort=relevance",
+        "next": "https://data.riksarkivet.se/api/records?transcribed_text=trolldom&only_digitised_materials=true&offset=2&limit=2&sort=relevance"
+    }
+}
