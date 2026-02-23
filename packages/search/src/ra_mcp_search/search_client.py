@@ -30,7 +30,7 @@ class SearchClient:
         self.http_client = http_client
         self.logger = logging.getLogger("ra_mcp.search.client")
 
-    def search(
+    async def search(
         self,
         text: str | None = None,
         transcribed_text: str | None = None,
@@ -116,7 +116,7 @@ class SearchClient:
                 if year_max is not None:
                     params["year_max"] = year_max
 
-                response_data = self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
+                response_data = await self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
                 # Parse entire API response with Pydantic
                 response = RecordsResponse(**response_data)
@@ -139,7 +139,7 @@ class SearchClient:
                 self.logger.error("✗ Search failed: %s: %s", type(error).__name__, error)
                 raise
 
-    def search_transcribed_text(
+    async def search_transcribed_text(
         self,
         transcribed_text: str,
         limit: int = DEFAULT_LIMIT,
@@ -160,7 +160,7 @@ class SearchClient:
         Returns:
             RecordsResponse with all API fields populated
         """
-        return self.search(
+        return await self.search(
             transcribed_text=transcribed_text,
             only_digitised_materials=True,
             limit=limit,

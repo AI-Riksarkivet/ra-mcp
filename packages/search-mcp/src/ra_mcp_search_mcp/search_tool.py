@@ -94,7 +94,7 @@ def register_search_tool(mcp) -> None:
 
             logger.info("Executing transcribed text search for '%s'...", keyword)
             session_id = ctx.session_id if ctx is not None else None
-            search_result = search_operations.search(
+            search_result = await search_operations.search(
                 keyword=keyword,
                 transcribed_only=True,  # Always search transcribed text
                 only_digitised=True,  # Transcriptions only exist for digitised materials
@@ -208,7 +208,7 @@ def register_search_tool(mcp) -> None:
 
             logger.info("Executing metadata search for '%s' in %s...", keyword, material_scope)
             session_id = ctx.session_id if ctx is not None else None
-            search_result = search_operations.search(
+            search_result = await search_operations.search(
                 keyword=keyword,
                 transcribed_only=False,  # Search metadata fields
                 only_digitised=only_digitised,

@@ -2,6 +2,7 @@
 Search command for CLI.
 """
 
+import asyncio
 from typing import Annotated
 
 import typer
@@ -97,12 +98,14 @@ def search(
                     total=None,
                 )
 
-                search_result = search_operations.search(
-                    keyword=keyword,
-                    transcribed_only=transcribed_only,
-                    only_digitised=only_digitised,
-                    limit=limit,
-                    max_snippets_per_record=max_snippets_per_record,
+                search_result = asyncio.run(
+                    search_operations.search(
+                        keyword=keyword,
+                        transcribed_only=transcribed_only,
+                        only_digitised=only_digitised,
+                        limit=limit,
+                        max_snippets_per_record=max_snippets_per_record,
+                    )
                 )
 
             snippet_count = search_result.count_snippets()

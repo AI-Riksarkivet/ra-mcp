@@ -2,6 +2,7 @@
 Browse command for CLI.
 """
 
+import asyncio
 from typing import Annotated
 
 import typer
@@ -80,11 +81,13 @@ def browse(
             ) as progress:
                 progress.add_task("Loading document...", total=None)
 
-                browse_result = browse_operations.browse_document(
-                    reference_code=reference_code,
-                    pages=requested_pages or "1-20",
-                    highlight_term=search_term,
-                    max_pages=max_display,
+                browse_result = asyncio.run(
+                    browse_operations.browse_document(
+                        reference_code=reference_code,
+                        pages=requested_pages or "1-20",
+                        highlight_term=search_term,
+                        max_pages=max_display,
+                    )
                 )
 
             if not browse_result.contexts and not browse_result.oai_metadata:

@@ -38,7 +38,7 @@ class BrowseOperations:
         self.oai_client = OAIPMHClient(http_client=http_client)
         self.iiif_client = IIIFClient(http_client=http_client)
 
-    def browse_document(
+    async def browse_document(
         self,
         reference_code: str,
         pages: str,
@@ -76,7 +76,7 @@ class BrowseOperations:
         ) as span:
             try:
                 # Fetch OAI-PMH metadata once and derive manifest ID from it
-                oai_metadata = self.oai_client.get_metadata(reference_code)
+                oai_metadata = await self.oai_client.get_metadata(reference_code)
                 manifest_id = self.oai_client.manifest_id_from_metadata(oai_metadata)
 
                 if not manifest_id:
@@ -92,7 +92,7 @@ class BrowseOperations:
                         oai_metadata=oai_metadata,
                     )
 
-                page_contexts = self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
+                page_contexts = await self._fetch_page_contexts(manifest_id, pages, max_pages, reference_code, highlight_term)
 
                 # Count empty pages (blank but digitised)
                 empty_count = sum(1 for ctx in page_contexts if not ctx.full_text)
@@ -115,7 +115,7 @@ class BrowseOperations:
                 _browse_counter.add(1, {"browse.status": "error"})
                 raise
 
-    def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
+    async def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
         """Resolve IIIF manifest identifier from persistent identifier.
 
         Attempts to find the appropriate IIIF manifest for a given PID.
@@ -128,7 +128,7 @@ class BrowseOperations:
         Returns:
             IIIF manifest identifier or original PID if no manifest found.
         """
-        iiif_collection = self.iiif_client.get_collection(persistent_identifier)
+        iiif_collection = await self.iiif_client.get_collection(persistent_identifier)
 
         # Return first manifest ID if available, otherwise use PID
         if iiif_collection and iiif_collection.manifests:
@@ -136,7 +136,7 @@ class BrowseOperations:
 
         return persistent_identifier
 
-    def _fetch_page_contexts(
+    async def _fetch_page_contexts(
         self,
         manifest_identifier: str,
         page_specification: str,
@@ -149,7 +149,7 @@ class BrowseOperations:
         Retrieves full page content for each specified page number,
         with optional keyword highlighting.
 
-        Early exit optimization: If the first page fails to fetch (404 on ALTO),
+        Early exit optimization: If the first pages fail to fetch (404 on ALTO),
         stop attempting subsequent pages since they will also fail for non-transcribed materials.
 
         Args:
@@ -178,7 +178,7 @@ class BrowseOperations:
             MAX_CONSECUTIVE_FAILURES = 3  # Try at least 3 pages before giving up
 
             for page_number in page_numbers:
-                page_context = self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
+                page_context = await self._get_page_context(manifest_identifier, str(page_number), reference_code, highlight_keyword)
                 if page_context:
                     page_contexts.append(page_context)
                     consecutive_failures = 0  # Reset counter on success
@@ -193,7 +193,7 @@ class BrowseOperations:
             span.set_attribute("browse.pages_fetched", len(page_contexts))
             return page_contexts
 
-    def _get_page_context(
+    async def _get_page_context(
         self,
         manifest_id: str,
         page_number: str,
@@ -219,7 +219,7 @@ class BrowseOperations:
         if not alto_xml_url:
             return None
 
-        full_text = self.alto_client.fetch_content(alto_xml_url)
+        full_text = await self.alto_client.fetch_content(alto_xml_url)
 
         # None = ALTO doesn't exist (404), empty string = ALTO exists but blank page
         if full_text is None:

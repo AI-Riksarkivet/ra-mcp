@@ -27,12 +27,12 @@ class OAIPMHClient:
         self.http_client = http_client
         self.base_url = base_url
 
-    def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> dict[str, str | list | dict]:
+    async def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> dict[str, str | list | dict]:
         """Get a specific record with full metadata (raw dict format)."""
         with _tracer.start_as_current_span("OAIPMHClient.get_record", attributes={"oai.identifier": identifier}):
             oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
 
-            xml_response_root = self._make_request(oai_request_parameters)
+            xml_response_root = await self._make_request(oai_request_parameters)
             oai_record_element = self._extract_record_from_response(xml_response_root)
 
             extracted_record_data = self._build_basic_record_result(oai_record_element, metadata_prefix)
@@ -43,11 +43,11 @@ class OAIPMHClient:
 
             return extracted_record_data
 
-    def get_metadata(self, identifier: str) -> OAIPMHMetadata | None:
+    async def get_metadata(self, identifier: str) -> OAIPMHMetadata | None:
         """Get record metadata as typed OAIPMHMetadata model."""
         with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
             try:
-                record = self.get_record(identifier, "oai_ape_ead")
+                record = await self.get_record(identifier, "oai_ape_ead")
 
                 # Helper to safely extract string values
                 def get_str(key: str, default: str | None = None) -> str | None:
@@ -112,12 +112,12 @@ class OAIPMHClient:
             "datestamp": self._get_text(header_element, f"{oai_ns}datestamp") or "",
         }
 
-    def extract_manifest_id(self, identifier: str) -> str | None:
+    async def extract_manifest_id(self, identifier: str) -> str | None:
         """Extract PID from a record for IIIF access."""
         with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}) as span:
             try:
                 # Use typed metadata to get nad_link safely
-                metadata = self.get_metadata(identifier)
+                metadata = await self.get_metadata(identifier)
                 return self.manifest_id_from_metadata(metadata)
             except Exception as e:
                 logger.warning("Failed to extract manifest ID for %s: %s", identifier, e)
@@ -141,10 +141,10 @@ class OAIPMHClient:
             return manifest_id
         return ""
 
-    def _make_request(self, request_parameters: dict[str, str | int]) -> ET.Element:
+    async def _make_request(self, request_parameters: dict[str, str | int]) -> ET.Element:
         """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
         try:
-            xml_content = self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
+            xml_content = await self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
 
             xml_response_root = self._parse_xml_response(xml_content)
             self._check_oai_response_errors(xml_response_root)

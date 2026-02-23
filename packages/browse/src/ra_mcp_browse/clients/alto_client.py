@@ -49,7 +49,7 @@ class ALTOClient:
         """
         self.http_client = http_client
 
-    def fetch_content(self, alto_url: str, timeout: int = 10) -> str | None:
+    async def fetch_content(self, alto_url: str, timeout: int = 10) -> str | None:
         """
         Fetch and parse an ALTO XML file to extract full text content.
 
@@ -73,7 +73,7 @@ class ALTOClient:
         with _tracer.start_as_current_span("ALTOClient.fetch_content", attributes={"alto.url": alto_url}) as span:
             # Fetch raw XML content
             headers = {"Accept": "application/xml, text/xml, */*"}
-            xml_content = self.http_client.get_content(alto_url, timeout=timeout, headers=headers)
+            xml_content = await self.http_client.get_content(alto_url, timeout=timeout, headers=headers)
             if not xml_content:
                 span.set_attribute("alto.result", "not_found")
                 _fetch_counter.add(1, {"alto.result": "not_found"})

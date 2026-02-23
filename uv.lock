@@ -1497,11 +1497,15 @@ name = "ra-mcp-common"
 version = "0.3.0"
 source = { editable = "packages/common" }
 dependencies = [
+    { name = "httpx" },
     { name = "opentelemetry-api" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "opentelemetry-api", specifier = ">=1.28.0" }]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28.0" },
+    { name = "opentelemetry-api", specifier = ">=1.28.0" },
+]
 
 [[package]]
 name = "ra-mcp-guide-mcp"

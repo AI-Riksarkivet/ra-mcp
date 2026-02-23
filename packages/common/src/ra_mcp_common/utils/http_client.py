@@ -1,6 +1,6 @@
 """
-HTTP client utility using urllib for all API requests.
-Centralizes urllib boilerplate code to avoid duplication.
+HTTP client utility using httpx for all API requests.
+Centralizes HTTP boilerplate code to avoid duplication.
 
 Environment variables for debugging:
 - RA_MCP_LOG_API: Enable API logging to file (ra_mcp_api.log)
@@ -8,15 +8,14 @@ Environment variables for debugging:
 - RA_MCP_TIMEOUT: Override default timeout in seconds
 """
 
-import http.client
+import asyncio
+import contextlib
 import json
 import logging
 import os
 import time
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
 
+import httpx
 from opentelemetry.trace import SpanKind, StatusCode
 
 from ra_mcp_common.telemetry import get_meter, get_tracer
@@ -30,20 +29,8 @@ _DEFAULT_MAX_RETRIES = 3
 _DEFAULT_BACKOFF_BASE = 0.5
 
 
-def _is_timeout_error(e: Exception) -> bool:
-    """Check if an exception represents a timeout."""
-    return isinstance(e, TimeoutError) or (isinstance(e, URLError) and isinstance(e.reason, (TimeoutError, OSError)) and "timed out" in str(e.reason))
-
-
-def _build_url(url: str, params: dict[str, str | int] | None) -> str:
-    """Build a full URL with optional query parameters."""
-    if params:
-        return f"{url}?{urlencode(params)}"
-    return url
-
-
 class HTTPClient:
-    """Centralized HTTP client using urllib with comprehensive logging and retry."""
+    """Centralized async HTTP client using httpx with comprehensive logging and retry."""
 
     def __init__(self, user_agent: str | None = None, max_retries: int = _DEFAULT_MAX_RETRIES, backoff_base: float = _DEFAULT_BACKOFF_BASE):
         if user_agent is None:
@@ -54,6 +41,13 @@ class HTTPClient:
         self.max_retries = max_retries
         self.backoff_base = backoff_base
 
+        self._client = httpx.AsyncClient(
+            headers={"User-Agent": user_agent},
+            timeout=httpx.Timeout(30.0),
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+            follow_redirects=True,
+        )
+
         # Telemetry
         self._tracer = get_tracer("ra_mcp.http_client")
         meter = get_meter("ra_mcp.http_client")
@@ -63,45 +57,46 @@ class HTTPClient:
         self._response_size_histogram = meter.create_histogram("ra_mcp.http.response.size", unit="By", description="HTTP response body size")
         self._retry_counter = meter.create_counter("ra_mcp.http.retries", description="HTTP request retry attempts")
 
-    def _execute_with_retry(self, request, timeout, url) -> http.client.HTTPResponse:
+    async def _execute_with_retry(
+        self, method: str, url: str, *, params: dict | None = None, headers: dict[str, str] | None = None, timeout: float
+    ) -> httpx.Response:
         """Execute a request with exponential backoff retry on transient errors.
 
-        Returns the response object (caller must read content within context).
+        Returns the response object.
         Raises on non-retryable errors or after all retries exhausted.
         """
         last_exception: Exception = Exception("All retries exhausted")
         for attempt in range(self.max_retries):
             try:
-                response = urlopen(request, timeout=timeout)
-                if response.status in _RETRYABLE_STATUS_CODES:
+                response = await self._client.request(method, url, params=params, headers=headers, timeout=timeout)
+                if response.status_code in _RETRYABLE_STATUS_CODES:
                     wait = self.backoff_base * (2**attempt)
-                    logger.warning("Retryable status %d from %s, attempt %d/%d, waiting %.1fs", response.status, url, attempt + 1, self.max_retries, wait)
-                    response.close()
-                    self._retry_counter.add(1, {"retry.reason": str(response.status)})
-                    time.sleep(wait)
-                    last_exception = Exception(f"HTTP {response.status}")
+                    logger.warning("Retryable status %d from %s, attempt %d/%d, waiting %.1fs", response.status_code, url, attempt + 1, self.max_retries, wait)
+                    self._retry_counter.add(1, {"retry.reason": str(response.status_code)})
+                    await asyncio.sleep(wait)
+                    last_exception = Exception(f"HTTP {response.status_code}")
                     continue
                 return response
-            except HTTPError as e:
-                if e.code in _RETRYABLE_STATUS_CODES:
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code in _RETRYABLE_STATUS_CODES:
                     wait = self.backoff_base * (2**attempt)
-                    logger.warning("Retryable HTTP %d from %s, attempt %d/%d, waiting %.1fs", e.code, url, attempt + 1, self.max_retries, wait)
-                    self._retry_counter.add(1, {"retry.reason": str(e.code)})
-                    time.sleep(wait)
+                    logger.warning("Retryable HTTP %d from %s, attempt %d/%d, waiting %.1fs", e.response.status_code, url, attempt + 1, self.max_retries, wait)
+                    self._retry_counter.add(1, {"retry.reason": str(e.response.status_code)})
+                    await asyncio.sleep(wait)
                     last_exception = e
                     continue
                 raise
-            except (TimeoutError, URLError) as e:
-                reason = "TimeoutError" if _is_timeout_error(e) else type(e).__name__
+            except (httpx.TimeoutException, httpx.ConnectError) as e:
+                reason = "TimeoutError" if isinstance(e, httpx.TimeoutException) else type(e).__name__
                 wait = self.backoff_base * (2**attempt)
                 logger.warning("Retryable %s from %s, attempt %d/%d, waiting %.1fs", reason, url, attempt + 1, self.max_retries, wait)
                 self._retry_counter.add(1, {"retry.reason": reason})
-                time.sleep(wait)
+                await asyncio.sleep(wait)
                 last_exception = e
                 continue
         raise last_exception
 
-    def get_json(
+    async def get_json(
         self,
         url: str,
         params: dict[str, str | int] | None = None,
@@ -121,98 +116,88 @@ class HTTPClient:
             Parsed JSON response
 
         Raises:
-            TimeoutError: On request timeout (including URLError-wrapped timeouts)
-            urllib.error.HTTPError: On non-success HTTP status code
-            urllib.error.URLError: On network/URL connection error
+            TimeoutError: On request timeout
+            httpx.HTTPStatusError: On non-success HTTP status code
+            httpx.ConnectError: On network connection error
             json.JSONDecodeError: On invalid JSON response
         """
         # Allow timeout override from environment (useful for Hugging Face)
         timeout = int(os.getenv("RA_MCP_TIMEOUT", timeout))
 
-        # Build URL with parameters
-        full_url = _build_url(url, params)
-
         # Log request details
-        logger.info("GET JSON: %s", full_url)
+        logger.info("GET JSON: %s", url)
         logger.debug("Timeout: %ds, Params: %s", timeout, params)
 
-        # Create request with headers
-        request = Request(full_url)
-        request.add_header("User-Agent", self.user_agent)
-        request.add_header("Accept", "application/json")
-
+        request_headers = {"Accept": "application/json"}
         if headers:
-            for key, value in headers.items():
-                request.add_header(key, value)
+            request_headers.update(headers)
             logger.debug("Headers: %s", headers)
 
-        span_attrs = {"http.request.method": "GET", "url.full": full_url}
+        span_attrs = {"http.request.method": "GET", "url.full": url}
 
         with self._tracer.start_as_current_span("HTTP GET", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
             start_time = time.perf_counter()
 
             try:
                 logger.debug("Opening connection to %s...", url)
-                with self._execute_with_retry(request, timeout, url) as response:
-                    logger.debug("Connection established, status: %d", response.status)
+                response = await self._execute_with_retry("GET", url, params=params, headers=request_headers, timeout=float(timeout))
+                logger.debug("Connection established, status: %d", response.status_code)
 
-                    if response.status != 200:
-                        logger.error("Unexpected status code: %d", response.status)
-                        raise Exception(f"HTTP {response.status}")
+                if response.status_code != 200:
+                    logger.error("Unexpected status code: %d", response.status_code)
+                    raise Exception(f"HTTP {response.status_code}")
 
-                    logger.debug("Reading response content...")
-                    content = response.read()
-                    content_size = len(content)
-                    logger.debug("Received %d bytes", content_size)
+                logger.debug("Reading response content...")
+                content = response.content
+                content_size = len(content)
+                logger.debug("Received %d bytes", content_size)
 
-                    logger.debug("Parsing JSON...")
-                    result = json.loads(content)
+                logger.debug("Parsing JSON...")
+                result = json.loads(content)
 
-                    duration = time.perf_counter() - start_time
-                    logger.info("✓ GET JSON %s - %.3fs - %d bytes - 200 OK", full_url, duration, content_size)
-
-                    span.set_attribute("http.response.status_code", response.status)
-                    span.set_attribute("http.response.body.size", content_size)
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
-
-                    return result
-
-            except TimeoutError as e:
                 duration = time.perf_counter() - start_time
-                logger.error("✗ TIMEOUT after %.3fs on %s", duration, full_url)
+                logger.info("✓ GET JSON %s - %.3fs - %d bytes - 200 OK", url, duration, content_size)
+
+                span.set_attribute("http.response.status_code", response.status_code)
+                span.set_attribute("http.response.body.size", content_size)
+                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+
+                return result
+
+            except httpx.TimeoutException as e:
+                duration = time.perf_counter() - start_time
+                logger.error("✗ TIMEOUT after %.3fs on %s", duration, url)
                 logger.error("Timeout limit was %ds", timeout)
                 span.set_status(StatusCode.ERROR, f"Timeout after {timeout}s")
                 span.record_exception(e)
                 self._error_counter.add(1, {"error.type": "TimeoutError"})
+                raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
+
+            except httpx.HTTPStatusError as e:
+                duration = time.perf_counter() - start_time
+                error_body = ""
+                try:
+                    error_body = e.response.text[:500]
+                    logger.error("Error response body: %s", error_body)
+                except Exception:
+                    pass
+
+                logger.error("✗ GET JSON %s - %.3fs - HTTPStatusError: %s", url, duration, e.response.status_code)
+
+                span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
+                span.record_exception(e)
+                span.set_attribute("http.response.status_code", e.response.status_code)
+                self._error_counter.add(1, {"error.type": "HTTPStatusError"})
                 raise
 
-            except (HTTPError, URLError, json.JSONDecodeError) as e:
+            except (httpx.ConnectError, json.JSONDecodeError) as e:
                 duration = time.perf_counter() - start_time
+                error_type = type(e).__name__
+                logger.error("✗ GET JSON %s - %.3fs - %s: %s", url, duration, error_type, e)
 
-                # urllib wraps socket timeouts in URLError — classify them as TimeoutError
-                is_timeout = _is_timeout_error(e)
-                error_type = "TimeoutError" if is_timeout else type(e).__name__
-                error_msg = str(e.code) if hasattr(e, "code") else str(e)
-
-                error_body = ""
-                if isinstance(e, HTTPError):
-                    try:
-                        # Get first 500 chars of error body
-                        error_body = e.read().decode("utf-8")[:500]
-                        logger.error("Error response body: %s", error_body)
-                    except Exception:
-                        pass
-
-                logger.error("✗ GET JSON %s - %.3fs - %s: %s", full_url, duration, error_type, error_msg)
-
-                span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
+                span.set_status(StatusCode.ERROR, f"{error_type}: {e}")
                 span.record_exception(e)
-                if isinstance(e, HTTPError):
-                    span.set_attribute("http.response.status_code", e.code)
                 self._error_counter.add(1, {"error.type": error_type})
-
-                if is_timeout:
-                    raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
                 raise
 
             except Exception as e:
@@ -227,7 +212,7 @@ class HTTPClient:
                 self._request_counter.add(1, {"http.request.method": "GET"})
                 self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
 
-    def get_xml(
+    async def get_xml(
         self,
         url: str,
         params: dict[str, str | int] | None = None,
@@ -247,72 +232,69 @@ class HTTPClient:
             XML response as bytes
 
         Raises:
-            TimeoutError: On request timeout (including URLError-wrapped timeouts)
-            urllib.error.HTTPError: On non-success HTTP status code
-            urllib.error.URLError: On network/URL connection error
+            TimeoutError: On request timeout
+            httpx.HTTPStatusError: On non-success HTTP status code
+            httpx.ConnectError: On network connection error
         """
-        # Build URL with parameters
-        full_url = _build_url(url, params)
+        logger.debug("GET XML: %s", url)
 
-        logger.debug("GET XML: %s", full_url)
-
-        # Create request with headers
-        request = Request(full_url)
-        request.add_header("User-Agent", self.user_agent)
-        request.add_header("Accept", "application/xml, text/xml, */*")
-
+        request_headers = {"Accept": "application/xml, text/xml, */*"}
         if headers:
-            for key, value in headers.items():
-                request.add_header(key, value)
+            request_headers.update(headers)
 
-        span_attrs = {"http.request.method": "GET", "url.full": full_url}
+        span_attrs = {"http.request.method": "GET", "url.full": url}
 
         with self._tracer.start_as_current_span("HTTP GET", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
             start_time = time.perf_counter()
 
             try:
-                with self._execute_with_retry(request, timeout, url) as response:
-                    if response.status != 200:
-                        raise Exception(f"HTTP {response.status}")
+                response = await self._execute_with_retry("GET", url, params=params, headers=request_headers, timeout=float(timeout))
+                if response.status_code != 200:
+                    raise Exception(f"HTTP {response.status_code}")
 
-                    content = response.read()
-                    content_size = len(content)
-                    duration = time.perf_counter() - start_time
-                    logger.info("GET XML %s - %.3fs - 200 OK", full_url, duration)
-
-                    span.set_attribute("http.response.status_code", response.status)
-                    span.set_attribute("http.response.body.size", content_size)
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
-
-                    return content
-
-            except (HTTPError, URLError, TimeoutError) as e:
+                content = response.content
+                content_size = len(content)
                 duration = time.perf_counter() - start_time
-                is_timeout = _is_timeout_error(e)
-                error_type = "TimeoutError" if is_timeout else type(e).__name__
-                error_msg = str(e.code) if hasattr(e, "code") else str(e)
-                error_body = ""
-                if isinstance(e, HTTPError):
-                    try:
-                        error_body = e.read().decode("utf-8")[:500]
-                        error_body = f" - Body: {error_body}"
-                    except Exception:
-                        pass
-                logger.error("GET XML %s - %.3fs - ERROR: %s%s", full_url, duration, error_msg, error_body)
+                logger.info("GET XML %s - %.3fs - 200 OK", url, duration)
 
-                span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
+                span.set_attribute("http.response.status_code", response.status_code)
+                span.set_attribute("http.response.body.size", content_size)
+                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+
+                return content
+
+            except httpx.TimeoutException as e:
+                duration = time.perf_counter() - start_time
+                logger.error("GET XML %s - %.3fs - ERROR: TimeoutError", url, duration)
+                span.set_status(StatusCode.ERROR, f"TimeoutError: {e}")
                 span.record_exception(e)
-                if isinstance(e, HTTPError):
-                    span.set_attribute("http.response.status_code", e.code)
-                self._error_counter.add(1, {"error.type": error_type})
+                self._error_counter.add(1, {"error.type": "TimeoutError"})
+                raise TimeoutError(f"Request timeout: {url}") from e
 
-                if is_timeout:
-                    raise TimeoutError(f"Request timeout: {url}") from e
+            except httpx.HTTPStatusError as e:
+                duration = time.perf_counter() - start_time
+                error_body = ""
+                with contextlib.suppress(Exception):
+                    error_body = f" - Body: {e.response.text[:500]}"
+                logger.error("GET XML %s - %.3fs - ERROR: %s%s", url, duration, e.response.status_code, error_body)
+
+                span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
+                span.record_exception(e)
+                span.set_attribute("http.response.status_code", e.response.status_code)
+                self._error_counter.add(1, {"error.type": "HTTPStatusError"})
+                raise
+
+            except httpx.ConnectError as e:
+                duration = time.perf_counter() - start_time
+                logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
+                span.set_status(StatusCode.ERROR, f"ConnectError: {e}")
+                span.record_exception(e)
+                self._error_counter.add(1, {"error.type": "ConnectError"})
                 raise
 
             except Exception as e:
                 duration = time.perf_counter() - start_time
-                logger.error("GET XML %s - %.3fs - ERROR: %s", full_url, duration, e)
+                logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
                 span.set_status(StatusCode.ERROR, str(e))
                 span.record_exception(e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
@@ -322,7 +304,7 @@ class HTTPClient:
                 self._request_counter.add(1, {"http.request.method": "GET"})
                 self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
 
-    def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
+    async def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
         """
         Make a GET request and return raw content.
         Returns None on 404 or errors.
@@ -337,13 +319,9 @@ class HTTPClient:
         """
         logger.debug("GET CONTENT: %s", url)
 
-        # Create request with headers
-        request = Request(url)
-        request.add_header("User-Agent", self.user_agent)
-
+        request_headers: dict[str, str] = {}
         if headers:
-            for key, value in headers.items():
-                request.add_header(key, value)
+            request_headers.update(headers)
 
         span_attrs = {"http.request.method": "GET", "url.full": url}
 
@@ -351,29 +329,29 @@ class HTTPClient:
             start_time = time.perf_counter()
 
             try:
-                with self._execute_with_retry(request, timeout, url) as response:
-                    duration = time.perf_counter() - start_time
-                    span.set_attribute("http.response.status_code", response.status)
-
-                    if response.status == 404:
-                        logger.info("GET %s - %.3fs - 404 NOT FOUND", url, duration)
-                        return None
-                    if response.status != 200:
-                        logger.warning("GET %s - %.3fs - %d", url, duration, response.status)
-                        return None
-
-                    content = response.read()
-                    content_size = len(content)
-                    logger.info("GET %s - %.3fs - 200 OK", url, duration)
-
-                    span.set_attribute("http.response.body.size", content_size)
-                    self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
-                    return content
-
-            except (HTTPError, URLError, TimeoutError) as e:
+                response = await self._execute_with_retry("GET", url, headers=request_headers, timeout=float(timeout))
                 duration = time.perf_counter() - start_time
-                error_type = "TimeoutError" if _is_timeout_error(e) else type(e).__name__
-                error_msg = str(e.code) if hasattr(e, "code") else str(e)
+                span.set_attribute("http.response.status_code", response.status_code)
+
+                if response.status_code == 404:
+                    logger.info("GET %s - %.3fs - 404 NOT FOUND", url, duration)
+                    return None
+                if response.status_code != 200:
+                    logger.warning("GET %s - %.3fs - %d", url, duration, response.status_code)
+                    return None
+
+                content = response.content
+                content_size = len(content)
+                logger.info("GET %s - %.3fs - 200 OK", url, duration)
+
+                span.set_attribute("http.response.body.size", content_size)
+                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+                return content
+
+            except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError) as e:
+                duration = time.perf_counter() - start_time
+                error_type = "TimeoutError" if isinstance(e, httpx.TimeoutException) else type(e).__name__
+                error_msg = str(e.response.status_code) if isinstance(e, httpx.HTTPStatusError) else str(e)
                 logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 span.record_exception(e)
@@ -389,6 +367,10 @@ class HTTPClient:
             finally:
                 self._request_counter.add(1, {"http.request.method": "GET"})
                 self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
+
+    async def aclose(self) -> None:
+        """Close the underlying httpx client."""
+        await self._client.aclose()
 
 
 default_http_client = HTTPClient()

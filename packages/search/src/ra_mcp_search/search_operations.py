@@ -30,7 +30,7 @@ class SearchOperations:
     def __init__(self, http_client: HTTPClient):
         self.search_api = SearchClient(http_client=http_client)
 
-    def search(
+    async def search(
         self,
         keyword: str,
         transcribed_only: bool = True,
@@ -82,7 +82,7 @@ class SearchOperations:
         ) as span:
             try:
                 # Execute search using API parameter names
-                response = self.search_api.search(
+                response = await self.search_api.search(
                     transcribed_text=keyword if transcribed_only else None,
                     text=keyword if not transcribed_only else None,
                     only_digitised_materials=only_digitised,
@@ -106,7 +106,7 @@ class SearchOperations:
                 _search_counter.add(1, {"search.type": search_type, "search.status": "error"})
                 raise
 
-    def search_transcribed(
+    async def search_transcribed(
         self,
         keyword: str,
         offset: int = 0,
@@ -127,6 +127,6 @@ class SearchOperations:
         Returns:
             SearchResult containing documents, total count, and metadata.
         """
-        return self.search(
+        return await self.search(
             keyword=keyword, transcribed_only=True, only_digitised=True, offset=offset, limit=limit, max_snippets_per_record=max_snippets_per_record
         )

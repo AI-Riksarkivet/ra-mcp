@@ -21,11 +21,11 @@ class IIIFClient:
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
 
-    def explore_collection(self, pid: str, timeout: int = 30) -> dict[str, str | list[dict[str, str]]] | None:
+    async def explore_collection(self, pid: str, timeout: int = 30) -> dict[str, str | list[dict[str, str]]] | None:
         """Explore IIIF collection to get manifests (legacy dict format)."""
         collection_endpoint_url = self._build_collection_url(pid)
 
-        collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
+        collection_response = await self._fetch_collection_data(collection_endpoint_url, timeout)
         if not collection_response:
             return None
 
@@ -34,12 +34,12 @@ class IIIFClient:
 
         return self._build_collection_result(collection_title, available_manifests, collection_endpoint_url)
 
-    def get_collection(self, pid: str, timeout: int = 30) -> IIIFCollection | None:
+    async def get_collection(self, pid: str, timeout: int = 30) -> IIIFCollection | None:
         """Get IIIF collection with typed model."""
         with _tracer.start_as_current_span("IIIFClient.get_collection", attributes={"iiif.pid": pid}) as span:
             collection_endpoint_url = self._build_collection_url(pid)
 
-            collection_response = self._fetch_collection_data(collection_endpoint_url, timeout)
+            collection_response = await self._fetch_collection_data(collection_endpoint_url, timeout)
             if not collection_response:
                 span.set_attribute("iiif.result", "not_found")
                 return None
@@ -59,10 +59,10 @@ class IIIFClient:
         """Build the collection API URL."""
         return f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
 
-    def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> dict | None:
+    async def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> dict | None:
         """Fetch collection data from IIIF endpoint using centralized HTTP client."""
         try:
-            return self.http_client.get_json(collection_url, timeout=timeout_seconds)
+            return await self.http_client.get_json(collection_url, timeout=timeout_seconds)
         except Exception as e:
             logger.warning("Failed to fetch IIIF collection from %s: %s", collection_url, e)
             return None

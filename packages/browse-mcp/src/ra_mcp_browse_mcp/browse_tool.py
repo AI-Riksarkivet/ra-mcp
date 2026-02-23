@@ -76,7 +76,7 @@ def register_browse_tool(mcp) -> None:
             formatter = PlainTextFormatter()
 
             session_id = ctx.session_id if ctx is not None else None
-            browse_result = _fetch_document_pages(
+            browse_result = await _fetch_document_pages(
                 browse_operations,
                 reference_code=reference_code,
                 pages=pages,
@@ -129,9 +129,9 @@ def register_browse_tool(mcp) -> None:
             )
 
 
-def _fetch_document_pages(browse_operations, **browse_params) -> BrowseResult:
+async def _fetch_document_pages(browse_operations, **browse_params) -> BrowseResult:
     """Fetch document pages with the given parameters."""
-    return browse_operations.browse_document(**browse_params)
+    return await browse_operations.browse_document(**browse_params)
 
 
 def _generate_no_pages_found_message(reference_code) -> str:
