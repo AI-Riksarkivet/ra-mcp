@@ -52,8 +52,6 @@ def register_search_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search AI-transcribed text in digitised historical documents from the Swedish National Archives. "
-            "Currently covers court records (Svea/Göta hovrätt, Trolldomskommissionen, poliskammare, magistrat) "
-            "from the 17th-18th centuries (~1.6M pages). For person names, places, or document titles use search_metadata instead.\n"
             'Supports Solr syntax: wildcards (troll*), fuzzy (stockholm~1), Boolean ((A AND B)), proximity ("term1 term2"~10). '
             "Always group Boolean queries with outer parentheses. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
             "Paginate with offset (0, 50, 100...). Session dedup: re-calling returns stubs for already-seen documents."
@@ -157,7 +155,6 @@ def register_search_tool(mcp) -> None:
             "Covers 2M+ records when only_digitised=False, including non-digitised materials. "
             "Use the dedicated name parameter for person searches and place parameter for place searches — these can be combined with keyword.\n"
             "Does NOT search transcribed page text — use search_transcribed for that. "
-            "Prefer this tool for genealogy (church records, estate inventories) since those are cataloged but mostly not AI-transcribed.\n"
             "Same Solr syntax as search_transcribed. Session dedup: re-calling returns stubs for already-seen documents.\n"
             "Important: name and place filter a dedicated metadata field that is sparsely populated. "
             "Most person/place matches are NOT digitised, so set only_digitised=False when using name or place to avoid empty results."
