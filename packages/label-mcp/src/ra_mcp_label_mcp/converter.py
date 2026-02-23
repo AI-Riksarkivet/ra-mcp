@@ -105,12 +105,18 @@ def parse_alto(alto_xml: str) -> dict:
     }
 
 
-def to_label_studio_task(parsed: dict, image_url: str | None = None) -> dict:
+def to_label_studio_task(
+    parsed: dict,
+    image_url: str | None = None,
+    feedback: list[str] | None = None,
+) -> dict:
     """Convert parsed ALTO data into a Label Studio task dict.
 
     Args:
         parsed: Output from parse_alto().
         image_url: Full URL to the page image. Falls back to local-files path.
+        feedback: List of feedback choice values (e.g. ["Transcription", "Segmentation"])
+                  applied as per-region choices on every textline.
 
     Returns:
         Label Studio task dict with data and predictions.
@@ -174,6 +180,25 @@ def to_label_studio_task(parsed: dict, image_url: str | None = None) -> dict:
             }
         )
 
+        # Feedback choices region (linked to same region_id)
+        if feedback:
+            results.append(
+                {
+                    "id": region_id,
+                    "type": "choices",
+                    "from_name": "feedback",
+                    "to_name": "image",
+                    "original_width": pw,
+                    "original_height": ph,
+                    "image_rotation": 0,
+                    "value": {
+                        "vertices": vertices,
+                        "closed": True,
+                        "choices": feedback,
+                    },
+                }
+            )
+
     return {
         "data": {"ocr": image_url},
         "predictions": [{"result": results}],
@@ -182,25 +207,26 @@ def to_label_studio_task(parsed: dict, image_url: str | None = None) -> dict:
 
 def convert_alto_to_tasks(
     alto_xmls: list[str],
-    image_base_url: str | None = None,
+    image_urls: list[str] | None = None,
+    feedback_list: list[list[str]] | None = None,
 ) -> list[dict]:
     """Convert multiple ALTO XML strings to Label Studio tasks.
 
     Args:
         alto_xmls: List of ALTO XML strings.
-        image_base_url: Base URL prefix for images (appended with filename).
+        image_urls: List of image URLs paired by index with alto_xmls.
+        feedback_list: List of feedback choice lists paired by index.
+                       Each entry is e.g. ["Transcription"] or ["Transcription", "Segmentation"].
 
     Returns:
         List of Label Studio task dicts.
     """
     tasks: list[dict] = []
-    for alto_xml in alto_xmls:
+    for i, alto_xml in enumerate(alto_xmls):
         parsed = parse_alto(alto_xml)
-        if image_base_url:
-            image_url = f"{image_base_url.rstrip('/')}/{parsed['filename']}"
-        else:
-            image_url = None
-        tasks.append(to_label_studio_task(parsed, image_url=image_url))
+        image_url = image_urls[i] if image_urls and i < len(image_urls) else None
+        feedback = feedback_list[i] if feedback_list and i < len(feedback_list) else None
+        tasks.append(to_label_studio_task(parsed, image_url=image_url, feedback=feedback))
 
     logger.info(f"Converted {len(tasks)} ALTO file(s) to Label Studio tasks")
     return tasks

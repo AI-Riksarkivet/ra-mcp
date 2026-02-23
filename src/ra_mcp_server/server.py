@@ -68,8 +68,8 @@ AVAILABLE_MODULES = {
     },
     "label": {
         "server": label_mcp,
-        "description": "Convert ALTO XML to Label Studio tasks and import via API",
-        "default": False,
+        "description": "Import pages to Label Studio for human annotation and feedback",
+        "default": True,
     },
 }
 

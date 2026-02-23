@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "fastmcp>=3.0.0",
     "httpx>=0.28.0",
+    "label-studio-sdk>=2.0.17",
     "ra-mcp-common",
 ]
 license = "Apache-2.0"
