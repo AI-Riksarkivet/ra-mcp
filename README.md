@@ -20,7 +20,7 @@
 [![Signed with Sigstore](https://img.shields.io/badge/Sigstore-Signed-purple?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMyA3VjEyQzMgMTYuNTUgNi44NCAxOS43NCAxMiAyMUMxNy4xNiAxOS43NCAyMSAxNi41NSAyMSAxMlY3TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=)](https://www.sigstore.dev/)
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-green)](https://github.com/AI-Riksarkivet/ra-mcp/releases/latest)
 
-A [Model Context Protocol](https://modelcontextprotocol.io/) server and CLI for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet). Provides full-text search across millions of AI-transcribed pages, complete page transcriptions, high-resolution IIIF image access, and archival research guides — all as MCP tools that any LLM client can use.
+A [Model Context Protocol](https://modelcontextprotocol.io/) server and CLI for searching and browsing transcribed historical documents from the Swedish National Archives (Riksarkivet). Provides full-text search across millions of AI-transcribed pages, complete page transcriptions, handwritten text recognition, interactive document viewing, and archival research guides — all as MCP tools that any LLM client can use.
 
 ## Quick Start (MCP)
 
@@ -62,111 +62,16 @@ ra search "((Stockholm OR Göteborg) AND troll*)"
 
 # Browse specific pages
 ra browse "SE/RA/310187/1" --pages "7,8,52" --search-term "trolldom"
+
+# Interactive terminal browser
+ra tui "trolldom"
 ```
 
-See [packages/search-cli](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/packages/search-cli) and [packages/browse-cli](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/packages/browse-cli) for full syntax and search operators.
+## Documentation
 
-## Architecture
+For architecture, development setup, deployment, tool reference, CLI reference, and more:
 
-The project is a **uv workspace** with eight modular packages plus a root server:
-
-| Package | Purpose | README |
-|---------|---------|--------|
-| **ra-mcp** (root) | Server composition and Typer CLI entry point | — |
-| **ra-mcp-common** | Shared HTTP client, telemetry helpers | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/README.md) |
-| **ra-mcp-search** | Search domain: models, API client, operations | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search/README.md) |
-| **ra-mcp-browse** | Browse domain: models, ALTO/IIIF/OAI-PMH clients | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse/README.md) |
-| **ra-mcp-search-mcp** | MCP tools: `search_transcribed`, `search_metadata` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search-mcp/README.md) |
-| **ra-mcp-browse-mcp** | MCP tool: `browse_document` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse-mcp/README.md) |
-| **ra-mcp-search-cli** | CLI command: `ra search` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/search-cli/README.md) |
-| **ra-mcp-browse-cli** | CLI command: `ra browse` | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/browse-cli/README.md) |
-| **ra-mcp-guide-mcp** | MCP resources: archival research guides | [README](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/guide-mcp/README.md) |
-
-```
-ra-mcp-common              (no internal deps)
-       ↑
-ra-mcp-search              (depends on common)
-ra-mcp-browse              (depends on common)
-       ↑
-ra-mcp-search-mcp          (depends on search + fastmcp)
-ra-mcp-browse-mcp          (depends on browse + fastmcp)
-ra-mcp-guide-mcp           (depends on common + fastmcp)
-ra-mcp-search-cli          (depends on search + typer + rich)
-ra-mcp-browse-cli          (depends on browse + typer + rich)
-       ↑
-ra-mcp (root)              (composes all MCP and CLI packages)
-```
-
-## Deployment
-
-**Docker:**
-
-```bash
-docker run -p 7860:7860 riksarkivet/ra-mcp:latest
-```
-
-**Helm:**
-
-```bash
-helm install ra-mcp charts/ra-mcp \
-  --set image.tag=v0.4.2-alpine \
-  --set opentelemetry.enabled=true
-```
-
-See [charts/ra-mcp/](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/charts/ra-mcp) for the full values reference (autoscaling, ingress, PDB, security contexts, etc.).
-
-**Health endpoints** (available when running with HTTP transport):
-
-| Endpoint | Purpose |
-|----------|---------|
-| `/health` | Liveness — always returns `{"status": "ok"}` |
-| `/ready` | Readiness — returns mounted modules or 503 if none loaded |
-
-## Observability
-
-Telemetry is gated on a single environment variable. When enabled, traces, metrics, and logs are exported via OTLP.
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `RA_MCP_OTEL_ENABLED` | `false` | Master switch |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | Collector endpoint |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
-| `OTEL_SERVICE_NAME` | `ra-mcp` | Service name |
-| `RA_MCP_OTEL_LOG_BRIDGE` | `true` | Bridge Python logging to OTel |
-
-Instrumented components: HTTP client (spans + request/error/duration/size metrics), search and browse operations, ALTO/IIIF/OAI-PMH clients, and CLI commands. FastMCP adds automatic spans for all `tools/call` and `resources/read` operations.
-
-## Development
-
-```bash
-git clone https://github.com/AI-Riksarkivet/ra-mcp.git && cd ra-mcp
-uv sync
-
-# Run code quality checks (format + lint + typecheck)
-make check
-
-# Or via Dagger (same as CI)
-dagger call checks
-
-# Start HTTP server for local development
-uv run ra serve --port 7860
-
-# Test with MCP Inspector
-npx @modelcontextprotocol/inspector uv run ra serve
-```
-
-## APIs & Data Sources
-
-| API | Endpoint | Documentation |
-|-----|----------|---------------|
-| Search API | `https://data.riksarkivet.se/api/records` | [Wiki](https://github.com/Riksarkivet/dataplattform/wiki/Search-API) |
-| IIIF Collections | `https://lbiiif.riksarkivet.se/collection/arkiv` | [Wiki](https://github.com/Riksarkivet/dataplattform/wiki/IIIF) |
-| IIIF Images | `https://lbiiif.riksarkivet.se` | — |
-| ALTO XML | `https://sok.riksarkivet.se/dokument/alto` | — |
-| Bildvisning | `https://sok.riksarkivet.se/bildvisning` | — |
-| OAI-PMH | `https://oai-pmh.riksarkivet.se/OAI` | [Wiki](https://github.com/Riksarkivet/dataplattform/wiki/OAI-PMH) |
-
-Additional resources: [Riksarkivet Data Platform Wiki](https://github.com/Riksarkivet/dataplattform/wiki), [Förvaltningshistorik](https://forvaltningshistorik.riksarkivet.se/Index.htm) (semantic search, experimental), [HTRflow](https://pypi.org/project/htrflow/) (handwritten text recognition).
+**[ai-riksarkivet.github.io/ra-mcp](https://ai-riksarkivet.github.io/ra-mcp/)**
 
 ## License
 

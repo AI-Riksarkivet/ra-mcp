@@ -205,6 +205,23 @@ ra search "((Stockholm OR Goteborg) AND troll*)"
 ra browse "SE/RA/310187/1" --pages "7,8,52" --search-term "trolldom"
 ```
 
+### Interactive TUI
+
+For a full terminal browser experience:
+
+```bash
+uv pip install "ra-mcp[tui]"
+```
+
+```bash
+ra tui                # Launch empty
+ra tui "trolldom"     # Launch with pre-filled search
+```
+
+The TUI provides keyboard-driven search, document browsing, and page viewing. Press `?` for keybindings help.
+
+See [CLI Reference](../cli/index.md) for full command documentation.
+
 ## Run Your Own Server
 
 For development or private deployments:
