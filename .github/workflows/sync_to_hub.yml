@@ -1,6 +1,9 @@
 name: Sync to Hugging Face hub
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
