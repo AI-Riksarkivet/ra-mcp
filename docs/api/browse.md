@@ -12,7 +12,7 @@ Domain package for browsing and retrieving full page transcriptions from histori
 
 ## ALTO Client
 
-::: ra_mcp_alto.client.ALTOClient
+::: ra_mcp_xml.client.ALTOClient
 
 ## IIIF Client
 

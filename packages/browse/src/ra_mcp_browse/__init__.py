@@ -7,9 +7,9 @@ Clients (ALTOClient, IIIFClient, OAIPMHClient) live in their own packages.
 
 __version__ = "0.3.0"
 
-from ra_mcp_alto import ALTOClient
 from ra_mcp_iiif import IIIFClient
 from ra_mcp_oai_pmh import OAIPMHClient, OAIPMHMetadata
+from ra_mcp_xml import ALTOClient
 
 from .browse_operations import BrowseOperations
 from .models import BrowseResult, PageContext

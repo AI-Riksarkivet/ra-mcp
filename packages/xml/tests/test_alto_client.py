@@ -3,8 +3,8 @@
 import httpx
 import respx
 
-from ra_mcp_alto import ALTOClient, TextLayer
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_xml import ALTOClient, TextLayer
 
 
 ALTO_URL = "https://sok.riksarkivet.se/dokument/alto/R000/R0001203/R0001203_00007.xml"

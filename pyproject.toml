@@ -77,7 +77,7 @@ members = ["packages/*"]
 
 [tool.uv.sources]
 ra-mcp-common = { workspace = true }
-ra-mcp-alto = { workspace = true }
+ra-mcp-xml = { workspace = true }
 ra-mcp-iiif = { workspace = true }
 ra-mcp-oai-pmh = { workspace = true }
 ra-mcp-search = { workspace = true }
@@ -152,7 +152,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_alto", "ra_mcp_iiif", "ra_mcp_oai_pmh", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_label_mcp", "ra_mcp_tui", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif", "ra_mcp_oai_pmh", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_label_mcp", "ra_mcp_tui", "ra_mcp_server"]
 
 [tool.ty.terminal]
 error-on-warning = true

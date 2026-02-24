@@ -1,6 +1,6 @@
 """Tests for ALTO v4 and PAGE XML parsing."""
 
-from ra_mcp_alto.parser import detect_and_parse, parse_alto_xml, parse_page_xml
+from ra_mcp_xml.parser import detect_and_parse, parse_alto_xml, parse_page_xml
 
 
 # -- ALTO word-level (30002056) -----------------------------------------------

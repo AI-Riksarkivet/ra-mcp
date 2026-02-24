@@ -1,4 +1,4 @@
-"""Shared fixtures for alto package tests."""
+"""Shared fixtures for xml package tests."""
 
 from pathlib import Path
 

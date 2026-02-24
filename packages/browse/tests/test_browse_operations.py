@@ -2,10 +2,10 @@
 
 from unittest.mock import AsyncMock, patch
 
-from ra_mcp_alto import TextLayer
 from ra_mcp_browse.browse_operations import BrowseOperations
 from ra_mcp_browse.models import OAIPMHMetadata, PageContext
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_xml import TextLayer
 
 
 REFERENCE_CODE = "SE/RA/310187/1"

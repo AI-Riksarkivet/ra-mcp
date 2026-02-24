@@ -5,11 +5,11 @@ Handles document browsing, page fetching, and metadata retrieval.
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_alto import ALTOClient
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 from ra_mcp_iiif import IIIFClient
 from ra_mcp_oai_pmh import OAIPMHClient
+from ra_mcp_xml import ALTOClient
 
 from . import url_generator
 from .models import BrowseResult, PageContext

@@ -1,7 +1,7 @@
 import logging
 import xml.etree.ElementTree as ET
 
-from ra_mcp_alto.models import TextLayer, TextLine
+from ra_mcp_xml.models import TextLayer, TextLine
 
 
 logger = logging.getLogger("ra_mcp.alto.parser")

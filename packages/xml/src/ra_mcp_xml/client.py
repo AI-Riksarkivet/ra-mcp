@@ -10,10 +10,10 @@ import logging
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_alto.models import TextLayer
-from ra_mcp_alto.parser import detect_and_parse
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_xml.models import TextLayer
+from ra_mcp_xml.parser import detect_and_parse
 
 
 logger = logging.getLogger("ra_mcp.alto_client")

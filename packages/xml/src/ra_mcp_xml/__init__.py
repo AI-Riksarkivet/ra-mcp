@@ -1,4 +1,4 @@
-"""RA-MCP ALTO: ALTO XML client for Riksarkivet."""
+"""RA-MCP XML: ALTO and PAGE XML client for Riksarkivet."""
 
 __version__ = "0.3.0"
 
