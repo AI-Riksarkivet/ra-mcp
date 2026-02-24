@@ -32,7 +32,18 @@ _DEFAULT_BACKOFF_BASE = 0.5
 class HTTPClient:
     """Centralized async HTTP client using httpx with comprehensive logging and retry."""
 
-    def __init__(self, user_agent: str | None = None, max_retries: int = _DEFAULT_MAX_RETRIES, backoff_base: float = _DEFAULT_BACKOFF_BASE):
+    def __init__(
+        self,
+        user_agent: str | None = None,
+        max_retries: int = _DEFAULT_MAX_RETRIES,
+        backoff_base: float = _DEFAULT_BACKOFF_BASE,
+        *,
+        http2: bool = False,
+        connect_timeout: float = 10.0,
+        read_timeout: float = 30.0,
+        write_timeout: float = 10.0,
+        pool_timeout: float = 5.0,
+    ):
         if user_agent is None:
             from importlib.metadata import version
 
@@ -43,9 +54,10 @@ class HTTPClient:
 
         self._client = httpx.AsyncClient(
             headers={"User-Agent": user_agent},
-            timeout=httpx.Timeout(30.0),
+            timeout=httpx.Timeout(connect=connect_timeout, read=read_timeout, write=write_timeout, pool=pool_timeout),
             limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
             follow_redirects=True,
+            http2=http2,
         )
 
         # Telemetry

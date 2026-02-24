@@ -4,6 +4,7 @@ version = "0.3.0"
 description = "ALTO XML client for Riksarkivet transcribed documents"
 requires-python = ">=3.13"
 dependencies = [
+    "pydantic>=2.0.0",
     "ra-mcp-common",
 ]
 license = "Apache-2.0"
