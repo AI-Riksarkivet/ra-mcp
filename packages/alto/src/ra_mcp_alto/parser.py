@@ -9,8 +9,20 @@ logger = logging.getLogger("ra_mcp.alto.parser")
 _DEFAULT_PAGE_WIDTH = 6192
 _DEFAULT_PAGE_HEIGHT = 5432
 
-_NS_ALTO = {"a": "http://www.loc.gov/standards/alto/ns-v4#"}
 _NS_PAGE = {"p": "http://schema.primaresearch.org/PAGE/gts/pagecontent/2019-07-15"}
+
+
+def _detect_alto_ns(root: ET.Element) -> dict[str, str]:
+    """Extract the ALTO namespace from the root element tag.
+
+    Supports v2, v3, and v4 namespaces. Returns an empty dict when the
+    document has no namespace (bare ``<alto>`` root).
+    """
+    tag = root.tag
+    if tag.startswith("{"):
+        uri = tag[1 : tag.index("}")]
+        return {"a": uri}
+    return {}
 
 
 def _build_text_layer(
@@ -19,7 +31,7 @@ def _build_text_layer(
     page_height: int,
     format_label: str,
 ) -> TextLayer:
-    """Filter lines with both polygon and transcription, log skips, return TextLayer."""
+    """Filter lines with transcription, log skips, return TextLayer."""
     valid: list[TextLine] = []
     transcription_lines: list[str] = []
     skipped_no_polygon = 0
@@ -30,13 +42,13 @@ def _build_text_layer(
             skipped_no_polygon += 1
         if not line.transcription:
             skipped_no_transcription += 1
-        if line.polygon and line.transcription:
-            valid.append(line)
-            transcription_lines.append(line.transcription)
+            continue
+        valid.append(line)
+        transcription_lines.append(line.transcription)
 
     logger.info("%s parsed: %d text lines, page %dx%d", format_label, len(valid), page_width, page_height)
     if skipped_no_polygon:
-        logger.warning("Skipped %d lines with no polygon", skipped_no_polygon)
+        logger.warning("%d lines with no polygon", skipped_no_polygon)
     if skipped_no_transcription:
         logger.warning("Skipped %d lines with no transcription", skipped_no_transcription)
 
@@ -95,11 +107,10 @@ def _float(value: str | None) -> float | None:
 
 
 def parse_alto_xml(xml_string: str) -> TextLayer:
-    """Parse ALTO v4 XML into a TextLayer. Joins word-level Strings per TextLine."""
+    """Parse ALTO XML (v2/v3/v4) into a TextLayer. Joins word-level Strings per TextLine."""
     root = ET.fromstring(xml_string)
 
-    # Fall back to no-namespace queries if the document lacks xmlns
-    ns = _NS_ALTO if root.tag.startswith("{") else {}
+    ns = _detect_alto_ns(root)
     prefix = "a:" if ns else ""
 
     page_el = root.find(f".//{prefix}Page", ns)
@@ -110,8 +121,11 @@ def parse_alto_xml(xml_string: str) -> TextLayer:
         page_width, page_height = _DEFAULT_PAGE_WIDTH, _DEFAULT_PAGE_HEIGHT
         logger.warning("No <Page> element found, using defaults: %dx%d", page_width, page_height)
 
+    ns_uri = ns.get("a", "")
+    tag_textline = f"{{{ns_uri}}}TextLine" if ns_uri else "TextLine"
+
     lines: list[TextLine] = []
-    for tl in root.iter(f"{{{_NS_ALTO['a']}}}" + "TextLine" if ns else "TextLine"):
+    for tl in root.iter(tag_textline):
         polygon_el = tl.find(f"{prefix}Shape/{prefix}Polygon", ns)
         polygon = polygon_el.get("POINTS", "") if polygon_el is not None else ""
 

@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, patch
 
+from ra_mcp_alto import TextLayer
 from ra_mcp_browse.browse_operations import BrowseOperations
 from ra_mcp_browse.models import OAIPMHMetadata, PageContext
 from ra_mcp_common.utils.http_client import HTTPClient
@@ -118,7 +119,7 @@ async def test_fetch_page_contexts_resets_failure_counter():
         nonlocal call_count
         call_count += 1
         if call_count == 3:  # page 3 succeeds
-            return "text on page 3"
+            return TextLayer(text_lines=[], page_width=0, page_height=0, full_text="text on page 3")
         return None
 
     with patch.object(ops.alto_client, "fetch_content", side_effect=mock_fetch_content):

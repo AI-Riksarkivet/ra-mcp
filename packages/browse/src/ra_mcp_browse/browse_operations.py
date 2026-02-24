@@ -221,18 +221,17 @@ class BrowseOperations:
         if not alto_xml_url:
             return None
 
-        full_text = await self.alto_client.fetch_content(alto_xml_url)
+        text_layer = await self.alto_client.fetch_content(alto_xml_url)
 
-        # None = ALTO doesn't exist (404), empty string = ALTO exists but blank page
-        if full_text is None:
+        # None = ALTO doesn't exist (404), TextLayer with empty full_text = blank page
+        if text_layer is None:
             return None
 
-        # Allow empty string through - it means the page exists but is blank
         return PageContext(
             page_number=int(page_number) if page_number.isdigit() else 0,
             page_id=page_number,
             reference_code=reference_code,
-            full_text=full_text,
+            full_text=text_layer.full_text,
             alto_url=alto_xml_url,
             image_url=image_url_link or "",
             bildvisning_url=bildvisning_link or "",

@@ -3,7 +3,7 @@
 import httpx
 import respx
 
-from ra_mcp_alto import ALTOClient
+from ra_mcp_alto import ALTOClient, TextLayer
 from ra_mcp_common.utils.http_client import HTTPClient
 
 
@@ -21,13 +21,13 @@ async def test_fetch_content_success(respx_mock, alto_sample_xml):
     finally:
         await http.aclose()
 
-    assert result is not None
+    assert isinstance(result, TextLayer)
     # Real data from R0001203 page 7 (htrflow transcription)
-    assert "högstbonde" in result
-    assert "hans" in result
-    assert "Kongl." in result
-    assert "Remissorial," in result
-    assert "Fsenatens" in result
+    assert "högstbonde" in result.full_text
+    assert "hans" in result.full_text
+    assert "Kongl." in result.full_text
+    assert "Remissorial," in result.full_text
+    assert "Fsenatens" in result.full_text
 
 
 @respx.mock(assert_all_called=False)
@@ -41,7 +41,8 @@ async def test_fetch_content_blank_page(respx_mock, alto_blank_xml):
     finally:
         await http.aclose()
 
-    assert result == ""
+    assert isinstance(result, TextLayer)
+    assert result.full_text == ""
 
 
 @respx.mock(assert_all_called=False)
@@ -99,7 +100,7 @@ async def test_fetch_content_alto_v2_namespace(respx_mock):
     finally:
         await http.aclose()
 
-    assert result == "Hej världen"
+    assert result.full_text == "Hej världen"
 
 
 @respx.mock(assert_all_called=False)
@@ -128,4 +129,4 @@ async def test_fetch_content_no_namespace(respx_mock):
     finally:
         await http.aclose()
 
-    assert result == "Test"
+    assert result.full_text == "Test"
