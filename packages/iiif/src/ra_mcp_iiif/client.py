@@ -21,144 +21,96 @@ class IIIFClient:
     def __init__(self, http_client: HTTPClient):
         self.http_client = http_client
 
-    async def explore_collection(self, pid: str, timeout: int = 30) -> dict[str, str | list[dict[str, str]]] | None:
-        """Explore IIIF collection to get manifests (legacy dict format)."""
-        collection_endpoint_url = self._build_collection_url(pid)
-
-        collection_response = await self._fetch_collection_data(collection_endpoint_url, timeout)
-        if not collection_response:
-            return None
-
-        collection_title = self._extract_collection_title(collection_response)
-        available_manifests = self._extract_all_manifests(collection_response)
-
-        return self._build_collection_result(collection_title, available_manifests, collection_endpoint_url)
-
     async def get_collection(self, pid: str, timeout: int = 30) -> IIIFCollection | None:
-        """Get IIIF collection with typed model."""
-        with _tracer.start_as_current_span("IIIFClient.get_collection", attributes={"iiif.pid": pid}) as span:
-            collection_endpoint_url = self._build_collection_url(pid)
+        """Get IIIF collection with typed model.
 
-            collection_response = await self._fetch_collection_data(collection_endpoint_url, timeout)
-            if not collection_response:
+        Args:
+            pid: Persistent identifier for the collection.
+            timeout: Request timeout in seconds.
+
+        Returns:
+            Parsed collection with manifests, or None on fetch failure.
+        """
+        with _tracer.start_as_current_span("IIIFClient.get_collection", attributes={"iiif.pid": pid}) as span:
+            url = f"{COLLECTION_API_BASE_URL}/{pid}"
+            data = await self._fetch_json(url, timeout)
+            if not data:
                 span.set_attribute("iiif.result", "not_found")
                 return None
 
-            collection_id = collection_response.get("id", pid)
-            collection_title = self._extract_collection_title(collection_response)
-            available_manifests = self._extract_all_manifests(collection_response)
+            manifests = self._parse_manifests(data.get("items", []))
+            span.set_attribute("iiif.manifests_found", len(manifests))
 
-            # Convert to typed models
-            manifest_models = [IIIFManifest(id=m["id"], label=m.get("label")) for m in available_manifests]
+            return IIIFCollection(
+                id=data.get("id", pid),
+                label=self._extract_iiif_label(data.get("label")),
+                manifests=manifests,
+            )
 
-            span.set_attribute("iiif.manifests_found", len(manifest_models))
-
-            return IIIFCollection(id=collection_id, label=collection_title, manifests=manifest_models)
-
-    def _build_collection_url(self, persistent_identifier: str) -> str:
-        """Build the collection API URL."""
-        return f"{COLLECTION_API_BASE_URL}/{persistent_identifier}"
-
-    async def _fetch_collection_data(self, collection_url: str, timeout_seconds: int) -> dict | None:
-        """Fetch collection data from IIIF endpoint using centralized HTTP client."""
-        try:
-            return await self.http_client.get_json(collection_url, timeout=timeout_seconds)
-        except Exception as e:
-            logger.warning("Failed to fetch IIIF collection from %s: %s", collection_url, e)
-            return None
-
-    def _extract_collection_title(self, collection_data: dict) -> str:
-        """Extract title from collection data."""
-        collection_label = collection_data.get("label", {})
-        return self._extract_iiif_label(collection_label, "Unknown Collection")
-
-    def _extract_all_manifests(self, collection_data: dict) -> list[dict[str, str]]:
-        """Extract all manifests from collection items."""
-        extracted_manifests = []
-        collection_items = collection_data.get("items", [])
-
-        for item in collection_items:
-            if self._is_manifest_item(item):
-                manifest_info = self._process_manifest_item(item)
-                extracted_manifests.append(manifest_info)
-
-        return extracted_manifests
-
-    def _is_manifest_item(self, item: dict) -> bool:
-        """Check if an item is a manifest."""
-        return item.get("type") == "Manifest"
-
-    def _process_manifest_item(self, manifest_item: dict) -> dict[str, str]:
-        """Process a single manifest item into structured data."""
-        manifest_label = self._extract_manifest_label(manifest_item)
-        manifest_endpoint_url = manifest_item.get("id", "")
-        manifest_identifier = self._extract_manifest_identifier(manifest_endpoint_url)
-
-        return {
-            "id": manifest_identifier or manifest_endpoint_url,
-            "label": manifest_label,
-            "url": manifest_endpoint_url,
-        }
-
-    def _extract_manifest_label(self, manifest_item: dict) -> str:
-        """Extract label from manifest item."""
-        item_label = manifest_item.get("label", {})
-        return self._extract_iiif_label(item_label, "Untitled")
+    def _parse_manifests(self, items: list[dict]) -> list[IIIFManifest]:
+        """Parse Manifest items from a IIIF collection items list."""
+        manifests: list[IIIFManifest] = []
+        for item in items:
+            if item.get("type") != "Manifest":
+                continue
+            url = item.get("id", "")
+            manifests.append(
+                IIIFManifest(
+                    id=self._extract_manifest_identifier(url) or url,
+                    label=self._extract_iiif_label(item.get("label")),
+                )
+            )
+        return manifests
 
     def _extract_manifest_identifier(self, manifest_url: str) -> str:
-        """Extract manifest identifier from URL."""
+        """Extract manifest identifier from URL.
+
+        For ``https://…/arkis!R0001203/manifest`` returns ``arkis!R0001203``.
+        For ``https://…/arkis/R0001203`` returns ``R0001203``.
+        """
         if not manifest_url:
             return ""
 
-        url_without_trailing_slash = manifest_url.rstrip("/")
-        url_segments = url_without_trailing_slash.split("/")
+        segments = manifest_url.rstrip("/").split("/")
+        if "/manifest" in manifest_url and len(segments) >= 2:
+            return segments[-2]
+        return segments[-1] if segments else ""
 
-        if "/manifest" in manifest_url and len(url_segments) >= 2:
-            return url_segments[-2]
+    # -- IIIF label helpers --
 
-        return url_segments[-1] if url_segments else ""
+    def _extract_iiif_label(self, label: str | dict | list | None, default: str = "Unknown") -> str:
+        """Extract a display string from a IIIF label (language map, string, or None)."""
+        if not label:
+            return default
+        if isinstance(label, str):
+            return label
+        if isinstance(label, dict):
+            return self._label_from_language_map(label) or default
+        return default
 
-    def _build_collection_result(self, title: str, manifests: list[dict[str, str]], collection_url: str) -> dict[str, str | list[dict[str, str]]]:
-        """Build the final collection result structure."""
-        return {
-            "title": title,
-            "manifests": manifests,
-            "collection_url": collection_url,
-        }
-
-    def _extract_iiif_label(self, label_object: str | dict | list | None, default_value: str = "Unknown") -> str:
-        """Smart IIIF label extraction supporting all language map formats."""
-        if not label_object:
-            return default_value
-
-        if isinstance(label_object, str):
-            return label_object
-
-        if isinstance(label_object, dict):
-            extracted_label = self._extract_label_from_language_map(label_object)
-            if extracted_label:
-                return extracted_label
-
-        return str(label_object) if label_object else default_value
-
-    def _extract_label_from_language_map(self, language_map: dict) -> str | None:
-        """Extract label from IIIF language map."""
-        preferred_languages = ["sv", "en", "none"]
-
-        for language_code in preferred_languages:
-            if language_code in language_map:
-                language_value = language_map[language_code]
-                return self._extract_value_from_language_entry(language_value)
-
-        first_available_language = next(iter(language_map.keys()), None)
-        if first_available_language:
-            language_value = language_map[first_available_language]
-            return self._extract_value_from_language_entry(language_value)
-
+    def _label_from_language_map(self, language_map: dict) -> str | None:
+        """Pick the best label from a IIIF language map (sv > en > none > first)."""
+        for key in ("sv", "en", "none"):
+            if key in language_map:
+                return self._first_str(language_map[key])
+        first_key = next(iter(language_map), None)
+        if first_key is not None:
+            return self._first_str(language_map[first_key])
         return None
 
-    def _extract_value_from_language_entry(self, language_entry: str | list) -> str:
-        """Extract string value from language entry."""
-        if isinstance(language_entry, list) and language_entry:
-            return str(language_entry[0])
-        return str(language_entry)
+    @staticmethod
+    def _first_str(value: str | list) -> str:
+        """Return the first string from a value that is either a string or a list."""
+        if isinstance(value, list) and value:
+            return str(value[0])
+        return str(value)
+
+    # -- HTTP --
+
+    async def _fetch_json(self, url: str, timeout: int) -> dict | None:
+        """Fetch JSON from a URL, returning None on failure."""
+        try:
+            return await self.http_client.get_json(url, timeout=timeout)
+        except Exception as e:
+            logger.warning("Failed to fetch IIIF collection from %s: %s", url, e)
+            return None
