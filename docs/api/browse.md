@@ -12,15 +12,15 @@ Domain package for browsing and retrieving full page transcriptions from histori
 
 ## ALTO Client
 
-::: ra_mcp_browse.clients.alto_client.ALTOClient
+::: ra_mcp_alto.client.ALTOClient
 
 ## IIIF Client
 
-::: ra_mcp_browse.clients.iiif_client.IIIFClient
+::: ra_mcp_iiif.client.IIIFClient
 
 ## OAI-PMH Client
 
-::: ra_mcp_browse.clients.oai_pmh_client.OAIPMHClient
+::: ra_mcp_oai_pmh.client.OAIPMHClient
 
 ## URL Generator
 
