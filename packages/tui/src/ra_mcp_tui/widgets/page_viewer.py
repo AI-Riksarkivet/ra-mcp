@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Label, LoadingIndicator, TextArea
 
-from ra_mcp_browse.models import PageContext
+from ra_mcp_browse_lib.models import PageContext
 
 
 class PageViewer(Widget):

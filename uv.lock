@@ -16,21 +16,21 @@ resolution-markers = [
 [manifest]
 members = [
     "ra-mcp",
-    "ra-mcp-alto",
-    "ra-mcp-browse",
     "ra-mcp-browse-cli",
+    "ra-mcp-browse-lib",
     "ra-mcp-browse-mcp",
     "ra-mcp-common",
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
-    "ra-mcp-iiif",
+    "ra-mcp-iiif-lib",
     "ra-mcp-label-mcp",
-    "ra-mcp-oai-pmh",
-    "ra-mcp-search",
+    "ra-mcp-oai-pmh-lib",
     "ra-mcp-search-cli",
+    "ra-mcp-search-lib",
     "ra-mcp-search-mcp",
     "ra-mcp-tui",
     "ra-mcp-viewer-mcp",
+    "ra-mcp-xml",
 ]
 
 [[package]]
@@ -2049,7 +2049,6 @@ dependencies = [
     { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-htr-mcp" },
-    { name = "ra-mcp-label-mcp" },
     { name = "ra-mcp-search-mcp" },
     { name = "ra-mcp-viewer-mcp" },
     { name = "starlette" },
@@ -2059,6 +2058,9 @@ dependencies = [
 cli = [
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-search-cli" },
+]
+label = [
+    { name = "ra-mcp-label-mcp" },
 ]
 tui = [
     { name = "ra-mcp-tui" },
@@ -2091,14 +2093,14 @@ requires-dist = [
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
-    { name = "ra-mcp-label-mcp", editable = "packages/label-mcp" },
+    { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "tui"]
+provides-extras = ["cli", "label", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2118,54 +2120,39 @@ docs = [
 ]
 
 [[package]]
-name = "ra-mcp-alto"
-version = "0.3.0"
-source = { editable = "packages/alto" }
-dependencies = [
-    { name = "pydantic" },
-    { name = "ra-mcp-common" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "ra-mcp-common", editable = "packages/common" },
-]
-
-[[package]]
-name = "ra-mcp-browse"
-version = "0.3.0"
-source = { editable = "packages/browse" }
-dependencies = [
-    { name = "ra-mcp-alto" },
-    { name = "ra-mcp-common" },
-    { name = "ra-mcp-iiif" },
-    { name = "ra-mcp-oai-pmh" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "ra-mcp-alto", editable = "packages/alto" },
-    { name = "ra-mcp-common", editable = "packages/common" },
-    { name = "ra-mcp-iiif", editable = "packages/iiif" },
-    { name = "ra-mcp-oai-pmh", editable = "packages/oai-pmh" },
-]
-
-[[package]]
 name = "ra-mcp-browse-cli"
 version = "0.3.0"
 source = { editable = "packages/browse-cli" }
 dependencies = [
-    { name = "ra-mcp-browse" },
+    { name = "ra-mcp-browse-lib" },
     { name = "rich" },
     { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "ra-mcp-browse", editable = "packages/browse" },
+    { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.21.1" },
+]
+
+[[package]]
+name = "ra-mcp-browse-lib"
+version = "0.3.0"
+source = { editable = "packages/browse-lib" }
+dependencies = [
+    { name = "ra-mcp-common" },
+    { name = "ra-mcp-iiif-lib" },
+    { name = "ra-mcp-oai-pmh-lib" },
+    { name = "ra-mcp-xml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ra-mcp-common", editable = "packages/common" },
+    { name = "ra-mcp-iiif-lib", editable = "packages/iiif-lib" },
+    { name = "ra-mcp-oai-pmh-lib", editable = "packages/oai-pmh-lib" },
+    { name = "ra-mcp-xml", editable = "packages/xml" },
 ]
 
 [[package]]
@@ -2174,13 +2161,13 @@ version = "0.3.0"
 source = { editable = "packages/browse-mcp" }
 dependencies = [
     { name = "fastmcp" },
-    { name = "ra-mcp-browse" },
+    { name = "ra-mcp-browse-lib" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=3.0.0" },
-    { name = "ra-mcp-browse", editable = "packages/browse" },
+    { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
 ]
 
 [[package]]
@@ -2236,9 +2223,9 @@ requires-dist = [
 ]
 
 [[package]]
-name = "ra-mcp-iiif"
+name = "ra-mcp-iiif-lib"
 version = "0.3.0"
-source = { editable = "packages/iiif" }
+source = { editable = "packages/iiif-lib" }
 dependencies = [
     { name = "ra-mcp-common" },
 ]
@@ -2266,20 +2253,9 @@ requires-dist = [
 ]
 
 [[package]]
-name = "ra-mcp-oai-pmh"
+name = "ra-mcp-oai-pmh-lib"
 version = "0.3.0"
-source = { editable = "packages/oai-pmh" }
-dependencies = [
-    { name = "ra-mcp-common" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
-
-[[package]]
-name = "ra-mcp-search"
-version = "0.3.0"
-source = { editable = "packages/search" }
+source = { editable = "packages/oai-pmh-lib" }
 dependencies = [
     { name = "ra-mcp-common" },
 ]
@@ -2292,17 +2268,28 @@ name = "ra-mcp-search-cli"
 version = "0.3.0"
 source = { editable = "packages/search-cli" }
 dependencies = [
-    { name = "ra-mcp-search" },
+    { name = "ra-mcp-search-lib" },
     { name = "rich" },
     { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "ra-mcp-search", editable = "packages/search" },
+    { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "typer", specifier = ">=0.21.1" },
 ]
+
+[[package]]
+name = "ra-mcp-search-lib"
+version = "0.3.0"
+source = { editable = "packages/search-lib" }
+dependencies = [
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-search-mcp"
@@ -2310,13 +2297,13 @@ version = "0.3.0"
 source = { editable = "packages/search-mcp" }
 dependencies = [
     { name = "fastmcp" },
-    { name = "ra-mcp-search" },
+    { name = "ra-mcp-search-lib" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=3.0.0" },
-    { name = "ra-mcp-search", editable = "packages/search" },
+    { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
 ]
 
 [[package]]
@@ -2324,16 +2311,16 @@ name = "ra-mcp-tui"
 version = "0.3.0"
 source = { editable = "packages/tui" }
 dependencies = [
-    { name = "ra-mcp-browse" },
-    { name = "ra-mcp-search" },
+    { name = "ra-mcp-browse-lib" },
+    { name = "ra-mcp-search-lib" },
     { name = "textual" },
     { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "ra-mcp-browse", editable = "packages/browse" },
-    { name = "ra-mcp-search", editable = "packages/search" },
+    { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
+    { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
     { name = "textual", specifier = ">=3.0.0" },
     { name = "typer", specifier = ">=0.21.1" },
 ]
@@ -2369,6 +2356,21 @@ dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "respx", specifier = ">=0.22.0" },
+]
+
+[[package]]
+name = "ra-mcp-xml"
+version = "0.3.0"
+source = { editable = "packages/xml" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "ra-mcp-common", editable = "packages/common" },
 ]
 
 [[package]]

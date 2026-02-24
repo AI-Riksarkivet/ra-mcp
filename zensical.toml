@@ -132,11 +132,11 @@ default_handler = "python"
 [project.plugins.mkdocstrings.handlers.python]
 paths = [
   "packages/common/src",
-  "packages/search/src",
-  "packages/browse/src",
-  "packages/alto/src",
-  "packages/iiif/src",
-  "packages/oai-pmh/src",
+  "packages/search-lib/src",
+  "packages/browse-lib/src",
+  "packages/xml/src",
+  "packages/iiif-lib/src",
+  "packages/oai-pmh-lib/src",
   "packages/search-mcp/src",
   "packages/browse-mcp/src",
   "packages/guide-mcp/src",

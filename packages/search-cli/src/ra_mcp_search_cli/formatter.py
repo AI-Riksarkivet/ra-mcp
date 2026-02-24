@@ -9,13 +9,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ra_mcp_common.utils.formatting import (
+from ra_mcp_common.formatting import (
     format_example_browse_command,
     trim_page_number,
     trim_page_numbers,
     truncate_text,
 )
-from ra_mcp_search.models import SearchRecord, SearchResult
+from ra_mcp_search_lib.models import SearchRecord, SearchResult
 
 
 class RichConsoleFormatter:

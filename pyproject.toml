@@ -10,7 +10,6 @@ dependencies = [
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
     "ra-mcp-viewer-mcp",
-    "ra-mcp-label-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
@@ -41,6 +40,7 @@ cli = [
     "ra-mcp-search-cli",
     "ra-mcp-browse-cli",
 ]
+label = ["ra-mcp-label-mcp"]
 tui = ["ra-mcp-tui"]
 
 
@@ -77,13 +77,13 @@ members = ["packages/*"]
 
 [tool.uv.sources]
 ra-mcp-common = { workspace = true }
-ra-mcp-alto = { workspace = true }
-ra-mcp-iiif = { workspace = true }
-ra-mcp-oai-pmh = { workspace = true }
-ra-mcp-search = { workspace = true }
+ra-mcp-xml = { workspace = true }
+ra-mcp-iiif-lib = { workspace = true }
+ra-mcp-oai-pmh-lib = { workspace = true }
+ra-mcp-search-lib = { workspace = true }
 ra-mcp-search-cli = { workspace = true }
 ra-mcp-search-mcp = { workspace = true }
-ra-mcp-browse = { workspace = true }
+ra-mcp-browse-lib = { workspace = true }
 ra-mcp-browse-cli = { workspace = true }
 ra-mcp-browse-mcp = { workspace = true }
 ra-mcp-guide-mcp = { workspace = true }
@@ -152,10 +152,15 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_alto", "ra_mcp_iiif", "ra_mcp_oai_pmh", "ra_mcp_search", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_label_mcp", "ra_mcp_tui", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif_lib", "ra_mcp_oai_pmh_lib", "ra_mcp_search_lib", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse_lib", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_label_mcp", "ra_mcp_tui", "ra_mcp_server"]
 
 [tool.ty.terminal]
 error-on-warning = true
+
+[tool.ty.src]
+# label-mcp depends on label-studio-sdk (opencv) which has no Alpine/musl wheel;
+# exclude from type checking when the extra is not installed.
+exclude = ["packages/label-mcp"]
 
 [tool.ty.environment]
 python-version = "3.13"

@@ -4,8 +4,8 @@ from textual.app import ComposeResult
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ra_mcp_browse.models import OAIPMHMetadata
-from ra_mcp_search.models import SearchRecord
+from ra_mcp_browse_lib.models import OAIPMHMetadata
+from ra_mcp_search_lib.models import SearchRecord
 
 
 class MetadataPanel(Widget):

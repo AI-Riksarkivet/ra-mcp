@@ -9,10 +9,10 @@ import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from ra_mcp_common.http_client import get_http_client
 from ra_mcp_common.telemetry import get_tracer
-from ra_mcp_common.utils.http_client import get_http_client
-from ra_mcp_search.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY
-from ra_mcp_search.search_operations import SearchOperations
+from ra_mcp_search_lib.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY
+from ra_mcp_search_lib.search_operations import SearchOperations
 
 from .formatter import RichConsoleFormatter
 

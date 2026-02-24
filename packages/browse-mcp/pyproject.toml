@@ -5,13 +5,13 @@ description = "MCP tool for browsing Riksarkivet document pages"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "ra-mcp-browse",
+    "ra-mcp-browse-lib",
     "fastmcp>=3.0.0",
 ]
 license = "Apache-2.0"
 
 [tool.uv.sources]
-ra-mcp-browse = { workspace = true }
+ra-mcp-browse-lib = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

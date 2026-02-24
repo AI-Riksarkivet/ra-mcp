@@ -619,7 +619,7 @@ AVAILABLE_MODULES = {
 
 1. Create new client in the appropriate domain package (e.g., [packages/browse/src/ra_mcp_browse/clients/](packages/browse/src/ra_mcp_browse/clients/))
 2. Follow existing patterns (see [alto_client.py](packages/browse/src/ra_mcp_browse/clients/alto_client.py))
-3. Use the centralized HTTPClient from `ra_mcp_common.utils`
+3. Use the centralized HTTPClient from `ra_mcp_common`
 4. Add comprehensive error handling
 5. Use dependency injection for HTTP client
 

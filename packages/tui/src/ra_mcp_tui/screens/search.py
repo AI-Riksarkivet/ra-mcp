@@ -11,8 +11,8 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header
 from textual.worker import Worker, WorkerState
 
-from ra_mcp_browse.models import BrowseResult
-from ra_mcp_search.models import SearchRecord, SearchResult
+from ra_mcp_browse_lib.models import BrowseResult
+from ra_mcp_search_lib.models import SearchRecord, SearchResult
 
 from ..widgets.result_list import ResultList
 from ..widgets.search_bar import SearchBar

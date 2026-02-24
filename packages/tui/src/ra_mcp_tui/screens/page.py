@@ -11,7 +11,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header
 from textual.worker import Worker, WorkerState
 
-from ra_mcp_browse.models import BrowseResult, PageContext
+from ra_mcp_browse_lib.models import BrowseResult, PageContext
 
 from ..widgets.page_viewer import PageViewer
 
