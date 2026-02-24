@@ -9,8 +9,8 @@ import logging
 
 from opentelemetry.trace import StatusCode
 
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_common.telemetry import get_tracer
-from ra_mcp_common.utils.http_client import HTTPClient
 from ra_mcp_search_lib.config import DEFAULT_LIMIT, REQUEST_TIMEOUT, SEARCH_API_BASE_URL
 from ra_mcp_search_lib.models import RecordsResponse
 

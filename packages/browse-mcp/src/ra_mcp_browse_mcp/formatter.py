@@ -2,7 +2,7 @@
 Plain text formatter for MCP/LLM output without any Rich markup.
 """
 
-from ra_mcp_common.utils.formatting import highlight_keyword_markdown, iiif_manifest_to_bildvisaren, page_id_to_number
+from ra_mcp_common.formatting import highlight_keyword_markdown, iiif_manifest_to_bildvisaren, page_id_to_number
 
 
 class PlainTextFormatter:

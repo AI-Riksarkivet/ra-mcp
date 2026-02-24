@@ -3,7 +3,7 @@
 import httpx
 import respx
 
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_oai_pmh_lib import OAIPMHClient, OAIPMHMetadata
 from ra_mcp_oai_pmh_lib.config import OAI_BASE_URL
 

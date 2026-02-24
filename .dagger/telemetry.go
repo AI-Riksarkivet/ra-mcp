@@ -271,7 +271,7 @@ trace.set_tracer_provider(provider)
 print(f"TracerProvider configured with endpoint={JAEGER_OTLP_HTTP}/v1/traces", file=sys.stderr)
 
 # Run instrumented code — all spans export synchronously as they complete
-from ra_mcp_common.utils.http_client import default_http_client
+from ra_mcp_common.http_client import default_http_client
 from ra_mcp_search.operations import SearchOperations
 from ra_mcp_browse.operations import BrowseOperations
 from ra_mcp_common.telemetry import get_tracer

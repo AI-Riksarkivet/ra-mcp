@@ -3,7 +3,7 @@
 import httpx
 import respx
 
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_xml import ALTOClient, TextLayer
 
 

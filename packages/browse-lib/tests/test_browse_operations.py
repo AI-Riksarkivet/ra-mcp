@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_browse_lib.models import OAIPMHMetadata, PageContext
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_xml import TextLayer
 
 

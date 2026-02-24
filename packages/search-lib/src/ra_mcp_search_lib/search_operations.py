@@ -5,8 +5,8 @@ Handles keyword searching.
 
 from opentelemetry.trace import StatusCode
 
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_common.telemetry import get_meter, get_tracer
-from ra_mcp_common.utils.http_client import HTTPClient
 
 from .models import SearchResult
 from .search_client import SearchClient

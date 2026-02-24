@@ -10,8 +10,8 @@ from typing import Annotated
 from fastmcp import Context
 from pydantic import Field
 
-from ra_mcp_common.utils.formatting import page_id_to_number
-from ra_mcp_common.utils.http_client import default_http_client
+from ra_mcp_common.formatting import page_id_to_number
+from ra_mcp_common.http_client import default_http_client
 from ra_mcp_search_lib.search_operations import SearchOperations
 
 from .formatter import PlainTextFormatter

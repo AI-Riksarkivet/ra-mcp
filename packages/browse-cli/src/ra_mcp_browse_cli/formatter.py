@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from ra_mcp_browse_lib.models import BrowseResult, PageContext
-from ra_mcp_common.utils.formatting import (
+from ra_mcp_common.formatting import (
     format_example_browse_command,
     trim_page_number,
     trim_page_numbers,

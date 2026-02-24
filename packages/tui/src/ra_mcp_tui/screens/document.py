@@ -12,7 +12,7 @@ from textual.widgets import Footer, Header
 from textual.worker import Worker, WorkerState
 
 from ra_mcp_browse_lib.models import BrowseResult
-from ra_mcp_common.utils.formatting import page_id_to_number
+from ra_mcp_common.formatting import page_id_to_number
 from ra_mcp_search_lib.models import SearchRecord
 
 from ..widgets.metadata_panel import MetadataPanel

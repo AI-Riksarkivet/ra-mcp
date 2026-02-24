@@ -15,7 +15,7 @@ This is the foundation package with **no internal dependencies**. It provides th
 ## Usage
 
 ```python
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 
 client = HTTPClient()
 

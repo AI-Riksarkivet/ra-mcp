@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_search_lib.models import Metadata, PageInfo, RecordsResponse, SearchRecord, Snippet, TranscribedText
 from ra_mcp_search_lib.search_operations import SearchOperations
 

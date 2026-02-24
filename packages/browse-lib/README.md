@@ -37,7 +37,7 @@ BrowseResult   --> assembled pages with text + image links + metadata
 ## Usage
 
 ```python
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_browse.browse_operations import BrowseOperations
 
 ops = BrowseOperations(http_client=HTTPClient())

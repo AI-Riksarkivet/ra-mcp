@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 
-from ra_mcp_common.utils.formatting import format_error_message
+from ra_mcp_common.formatting import format_error_message
 
 
 guide_mcp = FastMCP(

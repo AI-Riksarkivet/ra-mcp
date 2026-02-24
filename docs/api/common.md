@@ -4,11 +4,11 @@ Shared utilities used across all ra-mcp packages.
 
 ## HTTP Client
 
-::: ra_mcp_common.utils.http_client.HTTPClient
+::: ra_mcp_common.http_client.HTTPClient
 
 ## Formatting Utilities
 
-::: ra_mcp_common.utils.formatting
+::: ra_mcp_common.formatting
 
 ## Telemetry
 

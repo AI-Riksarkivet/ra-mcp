@@ -12,8 +12,8 @@ from pydantic import Field
 
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_browse_lib.models import BrowseResult
-from ra_mcp_common.utils.formatting import format_error_message
-from ra_mcp_common.utils.http_client import default_http_client
+from ra_mcp_common.formatting import format_error_message
+from ra_mcp_common.http_client import default_http_client
 
 from .formatter import PlainTextFormatter
 

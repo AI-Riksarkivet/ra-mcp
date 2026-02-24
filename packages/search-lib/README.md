@@ -16,7 +16,7 @@ Contains the business logic for searching the Swedish National Archives. This is
 ## Usage
 
 ```python
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_search.search_operations import SearchOperations
 
 ops = SearchOperations(http_client=HTTPClient())

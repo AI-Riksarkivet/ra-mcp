@@ -5,7 +5,7 @@ import json
 import httpx
 import respx
 
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_iiif_lib import IIIFClient
 from ra_mcp_iiif_lib.config import COLLECTION_API_BASE_URL
 

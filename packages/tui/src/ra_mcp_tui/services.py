@@ -12,7 +12,7 @@ from collections.abc import Coroutine
 
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_browse_lib.models import BrowseResult
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_search_lib.models import SearchResult
 from ra_mcp_search_lib.search_operations import SearchOperations
 

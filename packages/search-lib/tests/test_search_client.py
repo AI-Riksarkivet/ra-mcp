@@ -4,7 +4,7 @@ import httpx
 import pytest
 import respx
 
-from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_search_lib.config import SEARCH_API_BASE_URL
 from ra_mcp_search_lib.search_client import SearchClient
 
