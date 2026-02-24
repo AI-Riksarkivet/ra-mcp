@@ -28,7 +28,7 @@ nav = [
     "tools/tools.md",
     "tools/skills.md",
   ]},
-  { "CLI Reference" = [
+  { "CLI" = [
     "cli/index.md",
     "cli/search.md",
     "cli/browse.md",
@@ -69,7 +69,6 @@ features = [
     "content.tabs.link",
     "content.tooltips",
     "navigation.footer",
-    "navigation.indexes",
     "navigation.instant",
     "navigation.instant.prefetch",
     "navigation.path",
