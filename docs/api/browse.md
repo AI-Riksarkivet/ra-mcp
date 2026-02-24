@@ -4,11 +4,11 @@ Domain package for browsing and retrieving full page transcriptions from histori
 
 ## Models
 
-::: ra_mcp_browse.models
+::: ra_mcp_browse_lib.models
 
 ## Operations
 
-::: ra_mcp_browse.browse_operations.BrowseOperations
+::: ra_mcp_browse_lib.browse_operations.BrowseOperations
 
 ## ALTO Client
 
@@ -16,12 +16,12 @@ Domain package for browsing and retrieving full page transcriptions from histori
 
 ## IIIF Client
 
-::: ra_mcp_iiif.client.IIIFClient
+::: ra_mcp_iiif_lib.client.IIIFClient
 
 ## OAI-PMH Client
 
-::: ra_mcp_oai_pmh.client.OAIPMHClient
+::: ra_mcp_oai_pmh_lib.client.OAIPMHClient
 
 ## URL Generator
 
-::: ra_mcp_browse.url_generator
+::: ra_mcp_browse_lib.url_generator

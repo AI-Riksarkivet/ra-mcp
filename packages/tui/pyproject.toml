@@ -5,16 +5,16 @@ description = "Terminal UI for browsing Riksarkivet historical documents"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "ra-mcp-search",
-    "ra-mcp-browse",
+    "ra-mcp-search-lib",
+    "ra-mcp-browse-lib",
     "textual>=3.0.0",
     "typer>=0.21.1",
 ]
 license = "Apache-2.0"
 
 [tool.uv.sources]
-ra-mcp-search = { workspace = true }
-ra-mcp-browse = { workspace = true }
+ra-mcp-search-lib = { workspace = true }
+ra-mcp-browse-lib = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

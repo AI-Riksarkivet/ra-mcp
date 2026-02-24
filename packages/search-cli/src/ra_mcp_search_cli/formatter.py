@@ -15,7 +15,7 @@ from ra_mcp_common.utils.formatting import (
     trim_page_numbers,
     truncate_text,
 )
-from ra_mcp_search.models import SearchRecord, SearchResult
+from ra_mcp_search_lib.models import SearchRecord, SearchResult
 
 
 class RichConsoleFormatter:

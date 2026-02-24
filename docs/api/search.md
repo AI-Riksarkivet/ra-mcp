@@ -4,12 +4,12 @@ Domain package for searching transcribed documents via the Riksarkivet Search AP
 
 ## Models
 
-::: ra_mcp_search.models
+::: ra_mcp_search_lib.models
 
 ## Client
 
-::: ra_mcp_search.search_client.SearchClient
+::: ra_mcp_search_lib.search_client.SearchClient
 
 ## Operations
 
-::: ra_mcp_search.search_operations.SearchOperations
+::: ra_mcp_search_lib.search_operations.SearchOperations
