@@ -14,18 +14,18 @@ def _make_records_response(total_hits: int = 10, num_records: int = 2) -> Record
     items = [
         SearchRecord(
             id=f"SE/RA/TEST/{i}",
-            objectType="Record",
+            object_type="Record",
             type="Volume",
             caption=f"Test Record {i}",
-            metadata=Metadata(referenceCode=f"SE/RA/TEST/{i}"),
-            transcribedText=TranscribedText(
-                numTotal=3,
+            metadata=Metadata(reference_code=f"SE/RA/TEST/{i}"),
+            transcribed_text=TranscribedText(
+                num_total=3,
                 snippets=[Snippet(text=f"Snippet {j} of record {i}", score=0.9 - j * 0.1, pages=[PageInfo(id=f"_{j:05d}")]) for j in range(3)],
             ),
         )
         for i in range(num_records)
     ]
-    return RecordsResponse(totalHits=total_hits, items=items, hits=num_records, offset=0)
+    return RecordsResponse(total_hits=total_hits, items=items, hits=num_records, offset=0)
 
 
 async def test_search_transcribed():

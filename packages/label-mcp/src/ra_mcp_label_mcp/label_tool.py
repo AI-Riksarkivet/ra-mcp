@@ -18,7 +18,7 @@ from fastmcp.exceptions import ToolError
 from pydantic import Field
 
 from ra_mcp_label_mcp.converter import convert_alto_to_tasks, tasks_to_json
-from ra_mcp_label_mcp.ls_client import import_tasks
+from ra_mcp_label_mcp.ls_client import assign_tasks, import_tasks
 
 
 logger = logging.getLogger("ra_mcp.label.tool")
@@ -59,7 +59,9 @@ def register_label_tool(mcp) -> None:
         image_urls: Annotated[list[str], Field(description="Image URLs to import (one per page).")],
         alto_urls: Annotated[
             list[str] | None,
-            Field(description="ALTO XML URLs paired by index with image_urls. If provided, creates pre-annotated tasks with VectorLabels polygons and transcriptions. If omitted, creates blank tasks for annotation from scratch."),
+            Field(
+                description="ALTO XML URLs paired by index with image_urls. If provided, creates pre-annotated tasks with VectorLabels polygons and transcriptions. If omitted, creates blank tasks for annotation from scratch."
+            ),
         ] = None,
         feedback: Annotated[
             list[list[str]] | None,
@@ -71,6 +73,9 @@ def register_label_tool(mcp) -> None:
         ls_url: Annotated[str | None, Field(description="Label Studio URL (e.g. 'https://your-ls.hf.space'). Falls back to LS_URL env var.")] = None,
         ls_token: Annotated[str | None, Field(description="Label Studio access token. Falls back to LS_TOKEN env var.")] = None,
         project_id: Annotated[int | None, Field(description="Label Studio project ID. Falls back to LS_PROJECT_ID env var.")] = None,
+        assign_to: Annotated[
+            str | None, Field(description="Email of a Label Studio user to assign the imported tasks to for annotation. If omitted, tasks are unassigned.")
+        ] = None,
         dry_run: Annotated[bool, Field(description="If true, return converted JSON without importing to Label Studio.")] = False,
         ctx: Context | None = None,
     ) -> str:
@@ -126,11 +131,19 @@ def register_label_tool(mcp) -> None:
 
         base = url.rstrip("/")
         lines = [f"Successfully imported {count} {mode} task(s) to project {pid}"]
+
+        # Optionally assign tasks to a user
+        if assign_to and task_ids:
+            try:
+                assignee = await asyncio.to_thread(assign_tasks, task_ids, assign_to, url, token, pid)
+                lines.append(f"Assigned to: {assignee}")
+            except RuntimeError as e:
+                lines.append(f"Assignment failed: {e}")
+
         if task_ids:
             lines.append("")
             lines.append("Label Studio task links:")
-            for tid in task_ids:
-                lines.append(f"  - {base}/projects/{pid}/data?task={tid}")
+            lines.extend(f"  - {base}/projects/{pid}/data?task={tid}" for tid in task_ids)
         return "\n".join(lines)
 
 

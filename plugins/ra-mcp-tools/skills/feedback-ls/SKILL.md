@@ -101,15 +101,32 @@ image-only mode.
 Each page gets its own list of feedback values. Use an empty list `[]` for pages
 that need general review without a specific feedback flag.
 
-### 3. Call the tool
+### 3. Optionally assign to a user
+
+Pass `assign_to` with a Label Studio user's email to auto-assign the imported
+tasks for annotation. If omitted, tasks are created unassigned.
+
+```json
+{
+  "image_urls": ["..."],
+  "alto_urls": ["..."],
+  "assign_to": "reviewer@example.com"
+}
+```
+
+### 4. Call the tool
 
 Label Studio URL, token, and project ID are configured via environment variables
 (`LS_URL`, `LS_TOKEN`, `LS_PROJECT_ID`) — no need to pass them unless overriding.
 
-### 4. Confirm to the user
+### 5. Confirm to the user
 
-Report back the number of tasks imported, the mode (pre-annotated or image-only),
-and the project they were sent to.
+The tool returns:
+- Number of tasks imported and the mode (pre-annotated or image-only)
+- Who the tasks were assigned to (if `assign_to` was provided)
+- Direct links to each task in Label Studio for labeling
+
+Share the task links with the user so they can go directly to Label Studio.
 
 ## Dry Run — Preview Before Import
 
