@@ -245,7 +245,7 @@ def setup_custom_routes(server: FastMCP) -> None:
 
     @server.custom_route("/", methods=["GET"])
     async def root(_) -> FileResponse:
-        return FileResponse("assets/index.html")
+        return FileResponse("docs/assets/index.html")
 
     @server.custom_route("/health", methods=["GET"])
     async def health(_) -> JSONResponse:

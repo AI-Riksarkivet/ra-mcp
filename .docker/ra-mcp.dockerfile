@@ -63,7 +63,7 @@ WORKDIR /app
 # Copy only what's needed at runtime (--chown avoids a separate chown layer)
 # With --no-editable, .venv is self-contained — no need to copy src/ or packages/
 COPY --from=builder --chown=ra-mcp:ra-mcp /app/.venv /app/.venv
-COPY --chown=ra-mcp:ra-mcp docs/assets/index.html ./assets/index.html
+COPY --chown=ra-mcp:ra-mcp docs/assets/ ./docs/assets/
 COPY --chown=ra-mcp:ra-mcp packages/guide-mcp/resources/ ./resources/
 COPY --chown=ra-mcp:ra-mcp plugins/ ./plugins/
 
