@@ -15,18 +15,30 @@ nav = [
   ]},
   { "Getting Started" = [
     "getting-started/index.md",
+    "getting-started/plugins.md",
+    "getting-started/local.md",
   ]},
   { "How it Works" = [
     "how-it-works/index.md",
+    "how-it-works/data-sources.md",
+    "how-it-works/architecture.md",
   ]},
   { "Tools & Skills" = [
     "tools/index.md",
+    "tools/tools.md",
+    "tools/skills.md",
   ]},
   { "CLI Reference" = [
     "cli/index.md",
+    "cli/search.md",
+    "cli/browse.md",
+    "cli/serve.md",
   ]},
   { "Development" = [
     "development/index.md",
+    "development/deployment.md",
+    "development/observability.md",
+    "development/security.md",
   ]},
   { "API" = [
     "api/index.md",
