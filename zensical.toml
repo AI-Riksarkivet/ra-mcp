@@ -34,18 +34,18 @@ nav = [
     {"ra browse" = "cli/browse.md"},
     {"ra serve & tui" = "cli/serve.md"},
   ]},
-  { "Development" = [
-    {"Setup" = "development/index.md"},
-    {"Deployment" = "development/deployment.md"},
-    {"Observability" = "development/observability.md"},
-    {"Security" = "development/security.md"},
-  ]},
   { "API" = [
     {"Overview" = "api/index.md"},
     {"Common" = "api/common.md"},
     {"Search" = "api/search.md"},
     {"Browse" = "api/browse.md"},
     {"MCP Tools" = "api/mcp-tools.md"},
+  ]},
+  { "Development" = [
+    {"Setup" = "development/index.md"},
+    {"Deployment" = "development/deployment.md"},
+    {"Observability" = "development/observability.md"},
+    {"Security" = "development/security.md"},
   ]},
 ]
 
