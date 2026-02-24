@@ -38,14 +38,15 @@ func (m *RaMcp) withUv(container *dagger.Container) *dagger.Container {
 // buildWithUv creates a development container with uv tooling and all dependencies (including CLI extras)
 func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dagger.Container, error) {
 	container := dag.Container().
-		From("python:3.13-slim").
+		From("python:3.13-alpine").
 		WithDirectory("/app", source).
 		WithWorkdir("/app")
 
 	container = m.withUv(container)
 
-	// Install all dependencies including optional CLI extras for type checking
-	container = container.WithExec([]string{"uv", "sync", "--frozen", "--no-cache", "--all-extras"})
+	// Install all dependencies including optional extras for type checking
+	// Exclude label extra: label-studio-sdk requires opencv which has no Alpine/musl wheel
+	container = container.WithExec([]string{"uv", "sync", "--frozen", "--no-cache", "--extra", "cli", "--extra", "tui"})
 
 	return container, nil
 }
@@ -54,7 +55,7 @@ func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dag
 func (m *RaMcp) getVersion(ctx context.Context, source *dagger.Directory) (string, error) {
 	// Use a builder container with source files (not the production image)
 	container := dag.Container().
-		From("python:3.13-slim").
+		From("python:3.13-alpine").
 		WithDirectory("/app", source).
 		WithWorkdir("/app")
 

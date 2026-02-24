@@ -30,7 +30,6 @@ from starlette.responses import FileResponse, JSONResponse
 from ra_mcp_browse_mcp.tools import browse_mcp
 from ra_mcp_guide_mcp.tools import guide_mcp
 from ra_mcp_htr_mcp.tools import htr_mcp
-from ra_mcp_label_mcp.tools import label_mcp
 
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
@@ -66,12 +65,19 @@ AVAILABLE_MODULES = {
         "default": True,
         "no_namespace": True,
     },
-    "label": {
+}
+
+# label-mcp is optional (requires glibc for opencv-python-headless via label-studio-sdk)
+try:
+    from ra_mcp_label_mcp.tools import label_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["label"] = {
         "server": label_mcp,
         "description": "Import pages to Label Studio for human annotation and feedback",
         "default": True,
-    },
-}
+    }
+except ImportError:
+    pass
 
 
 def setup_logging() -> logging.Logger:

@@ -2049,7 +2049,6 @@ dependencies = [
     { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-htr-mcp" },
-    { name = "ra-mcp-label-mcp" },
     { name = "ra-mcp-search-mcp" },
     { name = "ra-mcp-viewer-mcp" },
     { name = "starlette" },
@@ -2059,6 +2058,9 @@ dependencies = [
 cli = [
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-search-cli" },
+]
+label = [
+    { name = "ra-mcp-label-mcp" },
 ]
 tui = [
     { name = "ra-mcp-tui" },
@@ -2091,14 +2093,14 @@ requires-dist = [
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
-    { name = "ra-mcp-label-mcp", editable = "packages/label-mcp" },
+    { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "tui"]
+provides-extras = ["cli", "label", "tui"]
 
 [package.metadata.requires-dev]
 dev = [

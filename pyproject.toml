@@ -10,7 +10,6 @@ dependencies = [
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
     "ra-mcp-viewer-mcp",
-    "ra-mcp-label-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
@@ -41,6 +40,7 @@ cli = [
     "ra-mcp-search-cli",
     "ra-mcp-browse-cli",
 ]
+label = ["ra-mcp-label-mcp"]
 tui = ["ra-mcp-tui"]
 
 
@@ -156,6 +156,11 @@ known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif_lib", "ra_mcp_o
 
 [tool.ty.terminal]
 error-on-warning = true
+
+[tool.ty.src]
+# label-mcp depends on label-studio-sdk (opencv) which has no Alpine/musl wheel;
+# exclude from type checking when the extra is not installed.
+exclude = ["packages/label-mcp"]
 
 [tool.ty.environment]
 python-version = "3.13"
