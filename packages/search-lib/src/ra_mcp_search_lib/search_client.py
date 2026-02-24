@@ -119,7 +119,7 @@ class SearchClient:
                 response_data = await self.http_client.get_json(SEARCH_API_BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
 
                 # Parse entire API response with Pydantic
-                response = RecordsResponse(**response_data)  # type: ignore[missing-argument]  # fields provided via **kwargs
+                response = RecordsResponse(**response_data)  # fields provided via **kwargs
 
                 # Apply client-side snippet limiting if requested
                 if max_snippets_per_record:

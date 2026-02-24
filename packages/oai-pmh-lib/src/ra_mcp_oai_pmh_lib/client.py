@@ -88,7 +88,7 @@ class OAIPMHClient:
 
     # -- XML request / response helpers --
 
-    async def _make_request(self, params: dict[str, str]) -> ET.Element:
+    async def _make_request(self, params: dict[str, str | int]) -> ET.Element:
         """Make an OAI-PMH request and return parsed XML."""
         try:
             xml_bytes = await self.http_client.get_xml(self.base_url, params=params, timeout=30)

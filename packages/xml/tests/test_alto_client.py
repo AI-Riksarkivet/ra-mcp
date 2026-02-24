@@ -100,6 +100,7 @@ async def test_fetch_content_alto_v2_namespace(respx_mock):
     finally:
         await http.aclose()
 
+    assert result is not None
     assert result.full_text == "Hej världen"
 
 
@@ -129,4 +130,5 @@ async def test_fetch_content_no_namespace(respx_mock):
     finally:
         await http.aclose()
 
+    assert result is not None
     assert result.full_text == "Test"
