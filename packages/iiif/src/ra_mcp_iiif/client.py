@@ -4,10 +4,10 @@ IIIF client for Riksarkivet.
 
 import logging
 
-from ra_mcp_browse.config import COLLECTION_API_BASE_URL
-from ra_mcp_browse.models import IIIFCollection, IIIFManifest
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_iiif.config import COLLECTION_API_BASE_URL
+from ra_mcp_iiif.models import IIIFCollection, IIIFManifest
 
 
 logger = logging.getLogger("ra_mcp.iiif_client")

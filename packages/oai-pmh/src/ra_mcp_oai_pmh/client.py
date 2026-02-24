@@ -7,10 +7,10 @@ import xml.etree.ElementTree as ET
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_browse.config import NAMESPACES, OAI_BASE_URL
-from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_oai_pmh.config import NAMESPACES, OAI_BASE_URL
+from ra_mcp_oai_pmh.models import OAIPMHMetadata
 
 
 logger = logging.getLogger("ra_mcp.oai_pmh_client")

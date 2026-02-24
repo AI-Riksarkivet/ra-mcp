@@ -6,11 +6,17 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "ra-mcp-common",
+    "ra-mcp-alto",
+    "ra-mcp-iiif",
+    "ra-mcp-oai-pmh",
 ]
 license = "Apache-2.0"
 
 [tool.uv.sources]
 ra-mcp-common = { workspace = true }
+ra-mcp-alto = { workspace = true }
+ra-mcp-iiif = { workspace = true }
+ra-mcp-oai-pmh = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

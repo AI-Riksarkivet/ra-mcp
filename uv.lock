@@ -16,13 +16,16 @@ resolution-markers = [
 [manifest]
 members = [
     "ra-mcp",
+    "ra-mcp-alto",
     "ra-mcp-browse",
     "ra-mcp-browse-cli",
     "ra-mcp-browse-mcp",
     "ra-mcp-common",
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
+    "ra-mcp-iiif",
     "ra-mcp-label-mcp",
+    "ra-mcp-oai-pmh",
     "ra-mcp-search",
     "ra-mcp-search-cli",
     "ra-mcp-search-mcp",
@@ -2115,15 +2118,38 @@ docs = [
 ]
 
 [[package]]
-name = "ra-mcp-browse"
+name = "ra-mcp-alto"
 version = "0.3.0"
-source = { editable = "packages/browse" }
+source = { editable = "packages/alto" }
 dependencies = [
+    { name = "pydantic" },
     { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-browse"
+version = "0.3.0"
+source = { editable = "packages/browse" }
+dependencies = [
+    { name = "ra-mcp-alto" },
+    { name = "ra-mcp-common" },
+    { name = "ra-mcp-iiif" },
+    { name = "ra-mcp-oai-pmh" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ra-mcp-alto", editable = "packages/alto" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+    { name = "ra-mcp-iiif", editable = "packages/iiif" },
+    { name = "ra-mcp-oai-pmh", editable = "packages/oai-pmh" },
+]
 
 [[package]]
 name = "ra-mcp-browse-cli"
@@ -2166,11 +2192,18 @@ dependencies = [
     { name = "opentelemetry-api" },
 ]
 
+[package.optional-dependencies]
+http2 = [
+    { name = "httpx", extra = ["http2"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28.0" },
+    { name = "httpx", extras = ["http2"], marker = "extra == 'http2'", specifier = ">=0.28.0" },
     { name = "opentelemetry-api", specifier = ">=1.28.0" },
 ]
+provides-extras = ["http2"]
 
 [[package]]
 name = "ra-mcp-guide-mcp"
@@ -2203,6 +2236,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "ra-mcp-iiif"
+version = "0.3.0"
+source = { editable = "packages/iiif" }
+dependencies = [
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
+
+[[package]]
 name = "ra-mcp-label-mcp"
 version = "0.8.0"
 source = { editable = "packages/label-mcp" }
@@ -2220,6 +2264,17 @@ requires-dist = [
     { name = "label-studio-sdk", specifier = ">=2.0.17" },
     { name = "ra-mcp-common", editable = "packages/common" },
 ]
+
+[[package]]
+name = "ra-mcp-oai-pmh"
+version = "0.3.0"
+source = { editable = "packages/oai-pmh" }
+dependencies = [
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
 
 [[package]]
 name = "ra-mcp-search"

@@ -1,14 +1,18 @@
 """
 RA-MCP Browse: Browse domain for Riksarkivet document pages.
 
-Provides clients, operations, and models for browsing document pages.
+Provides operations and models for browsing document pages.
+Clients (ALTOClient, IIIFClient, OAIPMHClient) live in their own packages.
 """
 
 __version__ = "0.3.0"
 
+from ra_mcp_alto import ALTOClient
+from ra_mcp_iiif import IIIFClient
+from ra_mcp_oai_pmh import OAIPMHClient, OAIPMHMetadata
+
 from .browse_operations import BrowseOperations
-from .clients import ALTOClient, IIIFClient, OAIPMHClient
-from .models import BrowseResult, OAIPMHMetadata, PageContext
+from .models import BrowseResult, PageContext
 
 
 __all__ = [

@@ -3,7 +3,7 @@
 import httpx
 import respx
 
-from ra_mcp_browse.clients import ALTOClient
+from ra_mcp_alto import ALTOClient
 from ra_mcp_common.utils.http_client import HTTPClient
 
 

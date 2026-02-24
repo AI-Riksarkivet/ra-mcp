@@ -3,10 +3,9 @@
 import httpx
 import respx
 
-from ra_mcp_browse.clients import OAIPMHClient
-from ra_mcp_browse.config import OAI_BASE_URL
-from ra_mcp_browse.models import OAIPMHMetadata
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_oai_pmh import OAIPMHClient, OAIPMHMetadata
+from ra_mcp_oai_pmh.config import OAI_BASE_URL
 
 
 IDENTIFIER = "SE/RA/310187/1"

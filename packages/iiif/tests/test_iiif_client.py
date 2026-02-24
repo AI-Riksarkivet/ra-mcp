@@ -5,9 +5,9 @@ import json
 import httpx
 import respx
 
-from ra_mcp_browse.clients import IIIFClient
-from ra_mcp_browse.config import COLLECTION_API_BASE_URL
 from ra_mcp_common.utils.http_client import HTTPClient
+from ra_mcp_iiif import IIIFClient
+from ra_mcp_iiif.config import COLLECTION_API_BASE_URL
 
 
 PID = "R0001203"

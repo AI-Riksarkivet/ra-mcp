@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 from opentelemetry.trace import StatusCode
 
-from ra_mcp_browse.config import ALTO_NAMESPACES
+from ra_mcp_alto.config import ALTO_NAMESPACES
 from ra_mcp_common.telemetry import get_meter, get_tracer
 from ra_mcp_common.utils.http_client import HTTPClient
 
