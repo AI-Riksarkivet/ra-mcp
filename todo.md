@@ -1,0 +1,1 @@
+- [] fix icons https://gofastmcp.com/servers/icons
