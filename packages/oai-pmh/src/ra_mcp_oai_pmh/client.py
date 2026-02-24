@@ -19,6 +19,10 @@ _tracer = get_tracer("ra_mcp.oai_pmh_client")
 _meter = get_meter("ra_mcp.oai_pmh_client")
 _fetch_counter = _meter.create_counter("ra_mcp.oai_pmh.fetches", description="OAI-PMH metadata fetch outcomes")
 
+_OAI_NS = NAMESPACES["oai"]
+_EAD_NS = NAMESPACES["ead"]
+_XLINK_NS = NAMESPACES["xlink"]
+
 
 class OAIPMHClient:
     """Client for interacting with OAI-PMH repositories."""
@@ -27,46 +31,29 @@ class OAIPMHClient:
         self.http_client = http_client
         self.base_url = base_url
 
-    async def get_record(self, identifier: str, metadata_prefix: str = "oai_ape_ead") -> dict[str, str | list | dict]:
-        """Get a specific record with full metadata (raw dict format)."""
-        with _tracer.start_as_current_span("OAIPMHClient.get_record", attributes={"oai.identifier": identifier}):
-            oai_request_parameters = self._build_oai_request_parameters(identifier, metadata_prefix)
-
-            xml_response_root = await self._make_request(oai_request_parameters)
-            oai_record_element = self._extract_record_from_response(xml_response_root)
-
-            extracted_record_data = self._build_basic_record_result(oai_record_element, metadata_prefix)
-
-            if metadata_prefix == "oai_ape_ead":
-                ead_metadata = self._extract_ead_metadata(oai_record_element)
-                extracted_record_data.update(ead_metadata)
-
-            return extracted_record_data
-
     async def get_metadata(self, identifier: str) -> OAIPMHMetadata | None:
-        """Get record metadata as typed OAIPMHMetadata model."""
+        """Get record metadata as typed OAIPMHMetadata model.
+
+        Fetches the OAI-PMH GetRecord response for the given identifier and
+        parses the EAD metadata into a structured model.
+
+        Args:
+            identifier: Record identifier (e.g., "SE/RA/310187/1").
+
+        Returns:
+            Parsed metadata, or None on fetch/parse failure.
+        """
         with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
             try:
-                record = await self.get_record(identifier, "oai_ape_ead")
+                params = {"verb": "GetRecord", "identifier": identifier, "metadataPrefix": "oai_ape_ead"}
+                xml_root = await self._make_request(params)
+                record = self._extract_record(xml_root)
 
-                # Helper to safely extract string values
-                def get_str(key: str, default: str | None = None) -> str | None:
-                    value = record.get(key, default)
-                    return value if isinstance(value, str) else default
+                header_id, datestamp = self._parse_header(record)
+                metadata = self._parse_ead_metadata(record, header_id or identifier, datestamp)
 
                 _fetch_counter.add(1, {"oai_pmh.result": "success"})
-                return OAIPMHMetadata(
-                    identifier=get_str("identifier", identifier) or identifier,
-                    title=get_str("title"),
-                    unitid=get_str("unitid"),
-                    repository=get_str("repository"),
-                    nad_link=get_str("nad_link"),
-                    datestamp=get_str("datestamp"),
-                    unitdate=get_str("unitdate"),
-                    description=get_str("description"),
-                    iiif_manifest=get_str("iiif_manifest"),
-                    iiif_image=get_str("iiif_image"),
-                )
+                return metadata
             except Exception as e:
                 logger.warning("Failed to get OAI-PMH metadata for %s: %s", identifier, e)
                 span.set_status(StatusCode.ERROR, str(e))
@@ -74,49 +61,10 @@ class OAIPMHClient:
                 _fetch_counter.add(1, {"oai_pmh.result": "error"})
                 return None
 
-    def _build_oai_request_parameters(self, record_identifier: str, metadata_format: str) -> dict[str, str | int]:
-        """Build OAI-PMH request parameters."""
-        return {
-            "verb": "GetRecord",
-            "identifier": record_identifier,
-            "metadataPrefix": metadata_format,
-        }
-
-    def _extract_record_from_response(self, xml_root: ET.Element) -> ET.Element:
-        """Extract record element from OAI-PMH response."""
-        record_elements = xml_root.findall(".//{http://www.openarchives.org/OAI/2.0/}record")
-        if not record_elements:
-            raise Exception("No record found in OAI-PMH response")
-        return record_elements[0]
-
-    def _build_basic_record_result(self, record_element: ET.Element, metadata_format: str) -> dict[str, str | list | dict]:
-        """Build basic record result from header information."""
-        record_header = self._parse_header_information(record_element)
-
-        return {
-            "identifier": record_header.get("identifier", ""),
-            "datestamp": record_header.get("datestamp", ""),
-            "metadata_format": metadata_format,
-        }
-
-    def _parse_header_information(self, record_element: ET.Element) -> dict[str, str]:
-        """Parse header information from record element."""
-        oai_ns = "{http://www.openarchives.org/OAI/2.0/}"
-        header_elements = record_element.findall(f"./{oai_ns}header")
-        if not header_elements:
-            return {"identifier": "", "datestamp": ""}
-
-        header_element = header_elements[0]
-        return {
-            "identifier": self._get_text(header_element, f"{oai_ns}identifier") or "",
-            "datestamp": self._get_text(header_element, f"{oai_ns}datestamp") or "",
-        }
-
     async def extract_manifest_id(self, identifier: str) -> str | None:
         """Extract PID from a record for IIIF access."""
         with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}) as span:
             try:
-                # Use typed metadata to get nad_link safely
                 metadata = await self.get_metadata(identifier)
                 return self.manifest_id_from_metadata(metadata)
             except Exception as e:
@@ -135,161 +83,100 @@ class OAIPMHClient:
         """Extract Manifest ID from NAD link URL."""
         url_segments = nad_link_url.rstrip("/").split("/")
         if url_segments:
-            # Remove query parameters if present
-            manifest_id = url_segments[-1].split("?")[0]
-
-            return manifest_id
+            return url_segments[-1].split("?")[0]
         return ""
 
-    async def _make_request(self, request_parameters: dict[str, str | int]) -> ET.Element:
-        """Make an OAI-PMH request and return parsed XML using centralized HTTP client."""
+    # -- XML request / response helpers --
+
+    async def _make_request(self, params: dict[str, str]) -> ET.Element:
+        """Make an OAI-PMH request and return parsed XML."""
         try:
-            xml_content = await self.http_client.get_xml(self.base_url, params=request_parameters, timeout=30)
-
-            xml_response_root = self._parse_xml_response(xml_content)
-            self._check_oai_response_errors(xml_response_root)
-
-            return xml_response_root
-
+            xml_bytes = await self.http_client.get_xml(self.base_url, params=params, timeout=30)
+            xml_root = ET.fromstring(xml_bytes)
+            self._check_oai_errors(xml_root)
+            return xml_root
         except Exception as e:
             raise Exception(f"OAI-PMH request failed: {e}") from e
 
-    def _parse_xml_response(self, xml_data: bytes) -> ET.Element:
-        """Parse XML response content."""
-        try:
-            return ET.fromstring(xml_data)
-        except Exception as parse_error:
-            raise Exception(f"Failed to parse XML response: {parse_error}") from parse_error
+    def _check_oai_errors(self, xml_root: ET.Element) -> None:
+        """Raise on OAI-PMH error responses."""
+        error = xml_root.find(f".//{{{_OAI_NS}}}error")
+        if error is not None:
+            code = error.get("code", "unknown")
+            message = error.text or "No error message"
+            raise Exception(f"OAI-PMH Error [{code}]: {message}")
 
-    def _check_oai_response_errors(self, xml_root: ET.Element) -> None:
-        """Check for OAI-PMH errors in the response."""
-        error_elements = xml_root.findall(".//{http://www.openarchives.org/OAI/2.0/}error")
-        if error_elements:
-            error_code = error_elements[0].get("code", "unknown")
-            error_message = error_elements[0].text or "No error message"
-            raise Exception(f"OAI-PMH Error [{error_code}]: {error_message}")
+    def _extract_record(self, xml_root: ET.Element) -> ET.Element:
+        """Extract the <record> element from an OAI-PMH response."""
+        record = xml_root.find(f".//{{{_OAI_NS}}}record")
+        if record is None:
+            raise Exception("No record found in OAI-PMH response")
+        return record
 
-    def _extract_ead_metadata(self, record_element: ET.Element) -> dict[str, str | list | dict]:
-        """Extract metadata from EAD format."""
-        ead_metadata_element = self._extract_ead_element_from_record(record_element)
+    # -- Header parsing --
 
-        if ead_metadata_element is None:
-            return {}
+    def _parse_header(self, record: ET.Element) -> tuple[str, str]:
+        """Parse header, returning (identifier, datestamp)."""
+        header = record.find(f"./{{{_OAI_NS}}}header")
+        if header is None:
+            return "", ""
+        identifier = self._text(header, f"{{{_OAI_NS}}}identifier") or ""
+        datestamp = self._text(header, f"{{{_OAI_NS}}}datestamp") or ""
+        return identifier, datestamp
 
-        extracted_metadata = {}
+    # -- EAD metadata parsing --
 
-        document_title = self._extract_title_from_ead(ead_metadata_element)
-        if document_title:
-            extracted_metadata["title"] = document_title
+    def _parse_ead_metadata(self, record: ET.Element, identifier: str, datestamp: str) -> OAIPMHMetadata:
+        """Parse EAD metadata from a record element into OAIPMHMetadata."""
+        ead = record.find(f".//{{{_EAD_NS}}}ead")
+        if ead is None:
+            return OAIPMHMetadata(identifier=identifier, datestamp=datestamp or None)
 
-        unitid_value = self._extract_unitid_from_ead(ead_metadata_element)
-        if unitid_value:
-            extracted_metadata["unitid"] = unitid_value
+        return OAIPMHMetadata(
+            identifier=identifier,
+            datestamp=datestamp or None,
+            title=self._text(ead, f".//{{{_EAD_NS}}}unittitle") or None,
+            unitid=self._text(ead, f".//{{{_EAD_NS}}}unitid") or None,
+            repository=self._text(ead, f".//{{{_EAD_NS}}}repository") or None,
+            nad_link=self._dao_href(ead, "TEXT"),
+            unitdate=self._text(ead, f".//{{{_EAD_NS}}}unitdate") or None,
+            description=self._scopecontent_text(ead),
+            iiif_manifest=self._dao_href(ead, "MANIFEST"),
+            iiif_image=self._dao_href(ead, "IMAGE"),
+        )
 
-        repository_info = self._extract_repository_from_ead(ead_metadata_element)
-        if repository_info:
-            extracted_metadata["repository"] = repository_info
+    def _dao_href(self, ead: ET.Element, role: str) -> str | None:
+        """Extract xlink:href from a <dao> with the given xlink:role.
 
-        nad_link_url = self._extract_nad_link_from_ead(ead_metadata_element)
-        if nad_link_url:
-            extracted_metadata["nad_link"] = nad_link_url
-
-        unitdate_value = self._extract_unitdate_from_ead(ead_metadata_element)
-        if unitdate_value:
-            extracted_metadata["unitdate"] = unitdate_value
-
-        description_text = self._extract_description_from_ead(ead_metadata_element)
-        if description_text:
-            extracted_metadata["description"] = description_text
-
-        iiif_manifest_url = self._extract_iiif_manifest_from_ead(ead_metadata_element)
-        if iiif_manifest_url:
-            extracted_metadata["iiif_manifest"] = iiif_manifest_url
-
-        iiif_image_url = self._extract_iiif_image_from_ead(ead_metadata_element)
-        if iiif_image_url:
-            extracted_metadata["iiif_image"] = iiif_image_url
-
-        return extracted_metadata
-
-    def _extract_ead_element_from_record(self, record_element: ET.Element) -> ET.Element | None:
-        """Extract EAD element from record."""
-        ead_ns = NAMESPACES["ead"]
-        ead_elements = record_element.findall(f".//{{{ead_ns}}}ead")
-        return ead_elements[0] if ead_elements else None
-
-    def _extract_title_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract title from EAD element."""
-        ead_ns = NAMESPACES["ead"]
-        return self._get_text(ead_element, f".//{{{ead_ns}}}unittitle") or ""
-
-    def _extract_unitid_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract unit ID from EAD element."""
-        ead_ns = NAMESPACES["ead"]
-        return self._get_text(ead_element, f".//{{{ead_ns}}}unitid") or ""
-
-    def _extract_repository_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract repository information from EAD element."""
-        ead_ns = NAMESPACES["ead"]
-        return self._get_text(ead_element, f".//{{{ead_ns}}}repository") or ""
-
-    def _extract_nad_link_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract NAD link from EAD element (dao with xlink:role='TEXT')."""
-        ead_ns = NAMESPACES["ead"]
-        xlink_ns = "{http://www.w3.org/1999/xlink}"
-        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
+        Falls back to the first <dao> when *role* is ``"TEXT"`` and no
+        explicit TEXT dao exists.
+        """
+        xlink_role = f"{{{_XLINK_NS}}}role"
+        xlink_href = f"{{{_XLINK_NS}}}href"
+        dao_elements = ead.findall(f".//{{{_EAD_NS}}}dao")
         for dao in dao_elements:
-            if dao.get(f"{xlink_ns}role") == "TEXT":
-                return dao.get(f"{xlink_ns}href", "")
-        # Fallback to first dao if no TEXT role found
-        if dao_elements:
-            return dao_elements[0].get(f"{xlink_ns}href", "")
-        return ""
+            if dao.get(xlink_role) == role:
+                return dao.get(xlink_href) or None
+        # Fallback to first dao for TEXT role only
+        if role == "TEXT" and dao_elements:
+            return dao_elements[0].get(xlink_href) or None
+        return None
 
-    def _extract_unitdate_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract unit date from EAD element."""
-        ead_ns = NAMESPACES["ead"]
-        return self._get_text(ead_element, f".//{{{ead_ns}}}unitdate") or ""
+    def _scopecontent_text(self, ead: ET.Element) -> str | None:
+        """Join paragraph text from <scopecontent>."""
+        sc = ead.find(f".//{{{_EAD_NS}}}scopecontent")
+        if sc is None:
+            return None
+        paragraphs = sc.findall(f".//{{{_EAD_NS}}}p")
+        text = " ".join(p.text for p in paragraphs if p.text)
+        return text or None
 
-    def _extract_description_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract description/scopecontent from EAD element."""
-        ead_ns = NAMESPACES["ead"]
-        # scopecontent contains paragraphs, get all text
-        scopecontent_elements = ead_element.findall(f".//{{{ead_ns}}}scopecontent")
-        if scopecontent_elements:
-            # Get all paragraph text within scopecontent
-            paragraphs = scopecontent_elements[0].findall(f".//{{{ead_ns}}}p")
-            if paragraphs:
-                return " ".join(p.text for p in paragraphs if p.text)
-        return ""
+    # -- Utility --
 
-    def _extract_iiif_manifest_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract IIIF manifest URL from EAD element (dao with xlink:role='MANIFEST')."""
-        ead_ns = NAMESPACES["ead"]
-        xlink_ns = "{http://www.w3.org/1999/xlink}"
-        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
-        for dao in dao_elements:
-            if dao.get(f"{xlink_ns}role") == "MANIFEST":
-                return dao.get(f"{xlink_ns}href", "")
-        return ""
-
-    def _extract_iiif_image_from_ead(self, ead_element: ET.Element) -> str:
-        """Extract IIIF image URL from EAD element (dao with xlink:role='IMAGE')."""
-        ead_ns = NAMESPACES["ead"]
-        xlink_ns = "{http://www.w3.org/1999/xlink}"
-        dao_elements = ead_element.findall(f".//{{{ead_ns}}}dao")
-        for dao in dao_elements:
-            if dao.get(f"{xlink_ns}role") == "IMAGE":
-                return dao.get(f"{xlink_ns}href", "")
-        return ""
-
-    def _get_text(
-        self,
-        element: ET.Element,
-        tag_path: str,
-    ) -> str | None:
-        """Get text from element using tag path (with namespace)."""
-        matches = element.findall(tag_path)
-        if matches and matches[0].text:
-            return matches[0].text
+    @staticmethod
+    def _text(element: ET.Element, path: str) -> str | None:
+        """Get text content of the first matching sub-element, or None."""
+        match = element.find(path)
+        if match is not None and match.text:
+            return match.text
         return None
