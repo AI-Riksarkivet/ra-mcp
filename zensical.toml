@@ -145,7 +145,7 @@ paths = [
   "packages/common/src",
   "packages/search-lib/src",
   "packages/browse-lib/src",
-  "packages/xml/src",
+  "packages/xml-lib/src",
   "packages/iiif-lib/src",
   "packages/oai-pmh-lib/src",
   "packages/search-mcp/src",

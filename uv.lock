@@ -2152,7 +2152,7 @@ requires-dist = [
     { name = "ra-mcp-common", editable = "packages/common" },
     { name = "ra-mcp-iiif-lib", editable = "packages/iiif-lib" },
     { name = "ra-mcp-oai-pmh-lib", editable = "packages/oai-pmh-lib" },
-    { name = "ra-mcp-xml", editable = "packages/xml" },
+    { name = "ra-mcp-xml", editable = "packages/xml-lib" },
 ]
 
 [[package]]
@@ -2361,7 +2361,7 @@ dev = [
 [[package]]
 name = "ra-mcp-xml"
 version = "0.3.0"
-source = { editable = "packages/xml" }
+source = { editable = "packages/xml-lib" }
 dependencies = [
     { name = "pydantic" },
     { name = "ra-mcp-common" },
