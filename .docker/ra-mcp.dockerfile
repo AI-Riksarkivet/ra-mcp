@@ -14,7 +14,7 @@ RUN npm run build
 # --- Stage 2: Build Python workspace with uv ---
 FROM ${BUILDER_IMAGE} AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:0.10.4-alpine@sha256:40b4b624e6f8e674a038507efbbaa97f7535536808e75c8e3161602dc2ac8024 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.4-alpine /uv /uvx /usr/local/bin/
 ENV UV_COMPILE_BYTECODE=1
 WORKDIR /app
 
