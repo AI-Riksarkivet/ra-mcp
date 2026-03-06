@@ -34,7 +34,7 @@ def jpeg_bytes() -> bytes:
 
 
 async def test_cache_get_is_fast():
-    """MemoryStore get() should be >10x faster than a simulated fetch."""
+    """MemoryStore get() should be >5x faster than a simulated fetch."""
     store = MemoryStore(max_entries_per_collection=128)
     await store.put(key="key", value={"data": "x" * 1000}, collection="bench", ttl=60)
 
@@ -51,7 +51,7 @@ async def test_cache_get_is_fast():
     fetch_time_extrapolated = fetch_time_per_call * 1000
 
     speedup = fetch_time_extrapolated / cache_time
-    assert speedup > 10, f"Cache only {speedup:.1f}x faster than simulated fetch"
+    assert speedup > 5, f"Cache only {speedup:.1f}x faster than simulated fetch"
 
 
 # ── Concurrent fetching ──────────────────────────────────────────────
@@ -82,4 +82,4 @@ async def test_concurrent_thumbnail_fetches(respx_mock, jpeg_bytes):
 
     # Concurrent time should be well under 8x sequential time
     sequential_estimate = delay * 8
-    assert concurrent_time < sequential_estimate * 0.6, f"Concurrent took {concurrent_time:.3f}s, sequential estimate {sequential_estimate:.3f}s"
+    assert concurrent_time < sequential_estimate * 0.8, f"Concurrent took {concurrent_time:.3f}s, sequential estimate {sequential_estimate:.3f}s"

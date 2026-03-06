@@ -11,7 +11,7 @@ RUN npm run build
 FROM python:3.13-alpine AS python-builder
 WORKDIR /app
 RUN apk add --no-cache gcc musl-dev libffi-dev
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:latest /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
 COPY pyproject.toml uv.lock ./
 COPY src/ ./src/
 # Copy built frontend into package before uv sync
