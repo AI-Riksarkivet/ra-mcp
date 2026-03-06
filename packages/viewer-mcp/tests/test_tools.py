@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastmcp import Client
 
+from ra_mcp_browse_lib.models import BrowseResult, PageContext
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
 
 
@@ -30,12 +31,34 @@ def alto_text_layer() -> dict:
 
 
 @pytest.fixture()
-def mock_fetchers(alto_text_layer):
-    """Patch all async fetchers to avoid real HTTP calls."""
+def fake_browse_result() -> BrowseResult:
+    """A fake BrowseResult with one page context."""
+    return BrowseResult(
+        contexts=[
+            PageContext(
+                page_number=7,
+                page_id="7",
+                reference_code="SE/RA/310187/1",
+                full_text="skäligt sin emillan förafskeda, och det eftter Kongl. Mommouth",
+                alto_url="https://sok.riksarkivet.se/dokument/alto/R000/R0001203/R0001203_00007.xml",
+                image_url="https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/max/0/default.jpg",
+                bildvisning_url="https://sok.riksarkivet.se/bildvisning/R0001203_00007",
+            ),
+        ],
+        reference_code="SE/RA/310187/1",
+        pages_requested="7",
+        manifest_id="R0001203",
+    )
+
+
+@pytest.fixture()
+def mock_fetchers(alto_text_layer, fake_browse_result):
+    """Patch all async fetchers and BrowseOperations to avoid real HTTP calls."""
     with (
         patch("ra_mcp_viewer_mcp.tools.fetch_and_parse_text_layer", new_callable=AsyncMock) as mock_text,
         patch("ra_mcp_viewer_mcp.tools.build_page_data", new_callable=AsyncMock) as mock_page,
         patch("ra_mcp_viewer_mcp.tools.fetch_thumbnail_as_data_url", new_callable=AsyncMock) as mock_thumb,
+        patch("ra_mcp_viewer_mcp.tools.BrowseOperations") as mock_browse_cls,
     ):
         mock_text.return_value = alto_text_layer
         mock_page.return_value = (
@@ -43,7 +66,10 @@ def mock_fetchers(alto_text_layer):
             [],
         )
         mock_thumb.return_value = FAKE_THUMBNAIL_DATA_URL
-        yield {"text_layer": mock_text, "page": mock_page, "thumbnail": mock_thumb}
+        mock_browse = AsyncMock()
+        mock_browse.browse_document.return_value = fake_browse_result
+        mock_browse_cls.return_value = mock_browse
+        yield {"text_layer": mock_text, "page": mock_page, "thumbnail": mock_thumb, "browse": mock_browse}
 
 
 # ── view_document ─────────────────────────────────────────────────────
@@ -53,47 +79,37 @@ async def test_view_document_returns_transcription(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
             "view_document",
-            {
-                "image_urls": ["https://example.com/img1.jpg"],
-                "text_layer_urls": ["https://example.com/alto1.xml"],
-            },
+            {"reference_code": "SE/RA/310187/1", "pages": "7"},
         )
 
     assert not result.is_error
     text = result.content[0].text
-    assert "1-page document" in text
+    assert "1 page(s)" in text
     assert "Mommouth" in text
+    assert result.structured_content["image_urls"]
+    assert result.structured_content["text_layer_urls"]
 
 
 async def test_view_document_with_highlight_term(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
             "view_document",
-            {
-                "image_urls": ["https://example.com/img1.jpg"],
-                "text_layer_urls": ["https://example.com/alto1.xml"],
-                "highlight_term": "Stockholm",
-                "highlight_term_color": "#ef4444",
-            },
+            {"reference_code": "SE/RA/310187/1", "pages": "7", "highlight_term": "trolldom"},
         )
 
     assert not result.is_error
-    text = result.content[0].text
-    assert "1-page document" in text
+    assert result.structured_content["highlight_term"] == "trolldom"
 
 
-async def test_view_document_mismatched_urls(mock_fetchers):
+async def test_view_document_empty_reference_code(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
             "view_document",
-            {
-                "image_urls": ["https://example.com/img1.jpg", "https://example.com/img2.jpg"],
-                "text_layer_urls": ["https://example.com/alto1.xml"],
-            },
+            {"reference_code": "", "pages": "1"},
         )
 
     text = result.content[0].text
-    assert "mismatched" in text.lower()
+    assert "empty" in text.lower()
 
 
 # ── load_page ─────────────────────────────────────────────────────────
