@@ -60,11 +60,14 @@ async def view_document(
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
 
     transcription = ""
-    first_url = text_layer_urls[0]
+    first_url = text_layer_urls[0] if text_layer_urls else ""
     if first_url and first_url.startswith(("http://", "https://")):
-        first_text_layer = await fetch_and_parse_text_layer(first_url)
-        text_lines = first_text_layer.get("textLines", [])
-        transcription = "\n".join(line["transcription"] for line in text_lines)
+        try:
+            first_text_layer = await fetch_and_parse_text_layer(first_url)
+            text_lines = first_text_layer.get("textLines", [])
+            transcription = "\n".join(line["transcription"] for line in text_lines)
+        except Exception as e:
+            logger.warning("Failed to fetch first page text layer: %s", e)
 
     summary_parts = [f"Displaying {len(image_urls)}-page document. Page 1 transcription:"]
     if transcription:
