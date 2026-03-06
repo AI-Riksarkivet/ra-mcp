@@ -45,7 +45,7 @@ class OAIPMHClient:
         """
         with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
             try:
-                params = {"verb": "GetRecord", "identifier": identifier, "metadataPrefix": "oai_ape_ead"}
+                params: dict[str, str | int] = {"verb": "GetRecord", "identifier": identifier, "metadataPrefix": "oai_ape_ead"}
                 xml_root = await self._make_request(params)
                 record = self._extract_record(xml_root)
 

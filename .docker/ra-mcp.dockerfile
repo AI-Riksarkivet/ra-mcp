@@ -6,7 +6,7 @@ ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 COPY packages/viewer-mcp/package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 COPY packages/viewer-mcp/tsconfig.json packages/viewer-mcp/vite.config.ts packages/viewer-mcp/mcp-app.html ./
 COPY packages/viewer-mcp/ui ./ui
 RUN npm run build
