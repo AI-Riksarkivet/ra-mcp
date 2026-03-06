@@ -2043,7 +2043,7 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.8.0"
+version = "0.8.8"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
@@ -2338,6 +2338,7 @@ dependencies = [
     { name = "httpx", extra = ["http2"] },
     { name = "pillow" },
     { name = "py-key-value-aio", extra = ["memory"] },
+    { name = "ra-mcp-browse-lib" },
 ]
 
 [package.dev-dependencies]
@@ -2353,6 +2354,7 @@ requires-dist = [
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
     { name = "pillow", specifier = ">=12.1.1" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
+    { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
 ]
 
 [package.metadata.requires-dev]

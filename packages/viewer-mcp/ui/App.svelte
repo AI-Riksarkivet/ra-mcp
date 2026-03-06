@@ -108,36 +108,36 @@ onMount(async () => {
 
   instance.ontoolinput = (params) => {
     const args = params.arguments as Record<string, unknown>;
-    const imageUrls = args?.image_urls as string[] | undefined;
-    const textLayerUrls = args?.text_layer_urls as string[] | undefined;
-
-    if (!imageUrls || !textLayerUrls || imageUrls.length !== textLayerUrls.length) return;
-
     isStreaming = true;
-    const rawMetadata = args?.metadata as string[] | undefined;
-    const pageMetadata = Array.from(
-      { length: imageUrls.length },
-      (_, i) => rawMetadata?.[i] ?? "",
-    );
-
-    const highlightTerm = (args?.highlight_term as string) ?? "";
-    const highlightTermColor = (args?.highlight_term_color as string) ?? HIGHLIGHT_DEFAULTS.color;
-
-    viewerData = {
-      pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
-      pageMetadata,
-      highlightTerm,
-      highlightTermColor,
-    };
     error = null;
-    streamingMessage = `Loading ${imageUrls.length}-page document...`;
+    const refCode = args?.reference_code as string ?? "";
+    const pages = args?.pages as string ?? "";
+    streamingMessage = refCode ? `Loading ${refCode} pages ${pages}...` : "Loading document...";
   };
 
   instance.ontoolresult = (result) => {
     isStreaming = false;
     if (result.isError) {
       error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
+      return;
     }
+
+    const sc = result.structuredContent as Record<string, unknown> | undefined;
+    const imageUrls = sc?.image_urls as string[] | undefined;
+    const textLayerUrls = sc?.text_layer_urls as string[] | undefined;
+    const highlightTerm = (sc?.highlight_term as string) ?? "";
+
+    if (!imageUrls || !textLayerUrls || imageUrls.length !== textLayerUrls.length) {
+      error = "No pages found for this document.";
+      return;
+    }
+
+    viewerData = {
+      pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
+      pageMetadata: Array.from({ length: imageUrls.length }, () => ""),
+      highlightTerm,
+      highlightTermColor: HIGHLIGHT_DEFAULTS.color,
+    };
   };
 
   instance.ontoolcancelled = (params) => {

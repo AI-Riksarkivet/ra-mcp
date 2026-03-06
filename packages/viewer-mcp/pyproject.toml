@@ -8,6 +8,7 @@ dependencies = [
     "fastmcp>=3.0.2",
     "pillow>=12.1.1",
     "py-key-value-aio[memory]>=0.4.4",
+    "ra-mcp-browse-lib",
 ]
 license = "Apache-2.0"
 

@@ -2,7 +2,7 @@
 Document Viewer MCP App — Tool & resource registrations.
 
 Tools:
-  - view_document: entry point, returns transcription for the model
+  - view_document: entry point, resolves reference code → URLs, returns transcription for the model
   - load_page: fetches a single page on demand (called by View via callServerTool)
   - load_thumbnails: batch-fetches thumbnail images (called by View via callServerTool)
 """
@@ -16,7 +16,10 @@ from fastmcp import Context
 from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig
 from fastmcp.tools import ToolResult
 from mcp import types
+from pydantic import Field
 
+from ra_mcp_browse_lib.browse_operations import BrowseOperations
+from ra_mcp_common.http_client import default_http_client
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
 
@@ -31,57 +34,71 @@ RESOURCE_URI = "ui://document-viewer/mcp-app.html"
     name="view_document",
     description=(
         "Display document pages with zoomable images and text layer overlays. "
-        "Provide paired lists: image_urls[i] pairs with text_layer_urls[i]. "
-        "Empty text_layer_urls entries are allowed for pages without transcription. "
-        "Optionally include per-page metadata for display in the viewer. "
+        "Takes a reference code and page specification (same as browse_document). "
+        "Use after search to visually inspect document pages with transcription overlay. "
         "Use highlight_term to pre-populate the search bar and highlight matching text lines."
     ),
     app=AppConfig(resource_uri=RESOURCE_URI),
 )
 async def view_document(
-    image_urls: Annotated[list[str], "List of image URLs (one per page)."],
-    text_layer_urls: Annotated[list[str], "List of text layer XML URLs (ALTO/PAGE) paired with image_urls. Use empty string for pages without transcription."],
+    reference_code: Annotated[str, Field(description="Document reference code from search results (e.g. 'SE/RA/420422/01').")],
+    pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
     ctx: Context,
-    metadata: Annotated[list[str] | None, "Per-page metadata descriptions, paired with image_urls."] = None,
-    highlight_term: Annotated[str | None, "Optional search term to pre-populate the search bar and highlight matching text lines."] = None,
-    highlight_term_color: Annotated[str | None, "Optional hex color for search highlights (default: amber #f59e0b)."] = None,
+    highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
+    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
 ) -> ToolResult:
     """View document pages with zoomable images and text layer overlays."""
-    if len(image_urls) != len(text_layer_urls):
-        return ToolResult(
-            content=[
-                types.TextContent(
-                    type="text",
-                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layer files)",
-                )
-            ],
+    if not reference_code or not reference_code.strip():
+        return ToolResult(content=[types.TextContent(type="text", text="Error: reference_code must not be empty.")])
+    if not pages or not pages.strip():
+        return ToolResult(content=[types.TextContent(type="text", text="Error: pages must not be empty.")])
+
+    try:
+        browse_ops = BrowseOperations(http_client=default_http_client)
+        browse_result = await browse_ops.browse_document(
+            reference_code=reference_code,
+            pages=pages,
+            highlight_term=highlight_term,
+            max_pages=max_pages,
         )
+    except Exception as e:
+        logger.error("view_document: failed to resolve document: %s", e)
+        return ToolResult(content=[types.TextContent(type="text", text=f"Error resolving document: {e}")])
+
+    if not browse_result.contexts:
+        return ToolResult(content=[types.TextContent(type="text", text=f"No pages found for {reference_code} pages={pages}.")])
+
+    image_urls = [page_ctx.image_url for page_ctx in browse_result.contexts]
+    text_layer_urls = [page_ctx.alto_url for page_ctx in browse_result.contexts]
+    page_numbers = [page_ctx.page_number for page_ctx in browse_result.contexts]
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
 
-    transcription = ""
-    first_url = text_layer_urls[0] if text_layer_urls else ""
-    if first_url and first_url.startswith(("http://", "https://")):
-        try:
-            first_text_layer = await fetch_and_parse_text_layer(first_url)
-            text_lines = first_text_layer.get("textLines", [])
-            transcription = "\n".join(line["transcription"] for line in text_lines)
-        except Exception as e:
-            logger.warning("Failed to fetch first page text layer: %s", e)
+    # Build summary with first page transcription
+    first_page = browse_result.contexts[0]
+    transcription = first_page.full_text.strip() if first_page.full_text else ""
 
-    summary_parts = [f"Displaying {len(image_urls)}-page document. Page 1 transcription:"]
+    summary_parts = [f"Displaying {len(browse_result.contexts)} page(s) of {reference_code}."]
     if transcription:
+        summary_parts.append(f"Page {first_page.page_number} transcription:")
         summary_parts.append(transcription)
     else:
-        summary_parts.append("(no transcribed text on this page)")
+        summary_parts.append(f"Page {first_page.page_number}: (no transcribed text)")
 
     if not has_ui:
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
-    logger.info(f"view_document: displaying {len(image_urls)} page(s) with {len(text_layer_urls)} text layer(s)")
+    logger.info("view_document: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
+        structured_content={
+            "image_urls": image_urls,
+            "text_layer_urls": text_layer_urls,
+            "page_numbers": page_numbers,
+            "highlight_term": highlight_term or "",
+            "reference_code": reference_code,
+        },
     )
 
 
