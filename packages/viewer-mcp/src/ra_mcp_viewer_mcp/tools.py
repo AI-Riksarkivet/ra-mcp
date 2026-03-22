@@ -157,16 +157,28 @@ async def view_document_urls(
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
     page_numbers = list(range(1, len(image_urls) + 1))
 
-    # Try to get first page transcription for the model summary
-    transcription = ""
-    first_text_url = text_layer_urls[0] if text_layer_urls else ""
-    if first_text_url and first_text_url.startswith(("http://", "https://")):
+    view_id = str(uuid4())
+    state = ViewerState(
+        view_id=view_id,
+        image_urls=image_urls,
+        text_layer_urls=text_layer_urls,
+        page_numbers=page_numbers,
+        highlight_term=highlight_term or "",
+        reference_code="",
+    )
+
+    async def _fetch_first_transcription() -> str:
+        first_url = text_layer_urls[0] if text_layer_urls else ""
+        if not first_url or not first_url.startswith(("http://", "https://")):
+            return ""
         try:
-            first_text_layer = await fetch_and_parse_text_layer(first_text_url)
-            text_lines = first_text_layer.get("textLines", [])
-            transcription = "\n".join(line["transcription"] for line in text_lines)
+            tl = await fetch_and_parse_text_layer(first_url)
+            return "\n".join(line["transcription"] for line in tl.get("textLines", []))
         except Exception as e:
             logger.warning("view_document_urls: failed to fetch first page text layer: %s", e)
+            return ""
+
+    sc, transcription = await asyncio.gather(put_state(state), _fetch_first_transcription())
 
     summary_parts = [f"Displaying {len(image_urls)} page(s)."]
     if transcription:
@@ -178,17 +190,6 @@ async def view_document_urls(
     if not has_ui:
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
-
-    view_id = str(uuid4())
-    state = ViewerState(
-        view_id=view_id,
-        image_urls=image_urls,
-        text_layer_urls=text_layer_urls,
-        page_numbers=page_numbers,
-        highlight_term=highlight_term or "",
-        reference_code="",
-    )
-    sc = await put_state(state)
 
     logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
     return ToolResult(

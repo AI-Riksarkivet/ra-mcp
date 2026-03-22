@@ -152,24 +152,25 @@ async def fetch_and_parse_text_layer(url: str) -> dict:
 
 
 async def build_page_data(index: int, image_url: str, text_layer_url: str) -> tuple[dict, list[str]]:
-    """Fetch image + text layer for a single page. Returns (page_dict, errors)."""
-    page: dict = {"index": index}
+    """Fetch image + text layer for a single page in parallel. Returns (page_dict, errors)."""
     errors: list[str] = []
 
-    try:
-        page["imageDataUrl"] = await fetch_image_as_data_url(image_url)
-    except Exception as e:
-        logger.error("Image fetch failed for page %d: %s", index, e)
-        errors.append(f"Page {index + 1} image: {e}")
-        page["imageDataUrl"] = ""
-
-    if text_layer_url:
+    async def _fetch_image() -> str:
         try:
-            page["textLayer"] = await fetch_and_parse_text_layer(text_layer_url)
+            return await fetch_image_as_data_url(image_url)
+        except Exception as e:
+            logger.error("Image fetch failed for page %d: %s", index, e)
+            errors.append(f"Page {index + 1} image: {e}")
+            return ""
+
+    async def _fetch_text() -> dict:
+        if not text_layer_url:
+            return _EMPTY_TEXT_LAYER
+        try:
+            return await fetch_and_parse_text_layer(text_layer_url)
         except Exception as e:
             logger.error("Text layer fetch failed for page %d: %s", index, e)
-            page["textLayer"] = _EMPTY_TEXT_LAYER
-    else:
-        page["textLayer"] = _EMPTY_TEXT_LAYER
+            return _EMPTY_TEXT_LAYER
 
-    return page, errors
+    image_data, text_layer = await asyncio.gather(_fetch_image(), _fetch_text())
+    return {"index": index, "imageDataUrl": image_data, "textLayer": text_layer}, errors

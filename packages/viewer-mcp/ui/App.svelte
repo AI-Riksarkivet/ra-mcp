@@ -141,23 +141,38 @@ onMount(async () => {
   hostContext = instance.getHostContext();
   instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
 
-  let pollId: ReturnType<typeof setInterval> | null = null;
+  let pollTimer: ReturnType<typeof setTimeout> | null = null;
+  let pollInterval = 2000;
+  const POLL_MIN = 2000;
+  const POLL_MAX = 10000;
+
+  function schedulePoll() {
+    pollTimer = setTimeout(async () => {
+      if (!viewId) { schedulePoll(); return; }
+      try {
+        const prevVersion = lastSeenVersion;
+        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: viewId } });
+        if (!result.isError) {
+          const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
+          if (sc) applyViewerState(sc);
+        }
+        // Back off when idle, speed up on changes
+        pollInterval = lastSeenVersion > prevVersion
+          ? POLL_MIN
+          : Math.min(pollInterval + 1000, POLL_MAX);
+      } catch { /* poll failure is non-fatal */ }
+      schedulePoll();
+    }, pollInterval);
+  }
 
   function startPolling() {
-    if (pollId) return;
-    pollId = setInterval(async () => {
-      if (!viewId) return;
-      try {
-        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: viewId } });
-        if (result.isError) return;
-        const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
-        if (sc) applyViewerState(sc);
-      } catch { /* poll failure is non-fatal */ }
-    }, 2000);
+    if (pollTimer) return;
+    pollInterval = POLL_MIN;
+    schedulePoll();
   }
 
   return () => {
-    if (pollId) clearInterval(pollId);
+    if (pollTimer) clearTimeout(pollTimer);
   };
 });
 </script>
