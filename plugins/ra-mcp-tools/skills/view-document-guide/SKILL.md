@@ -117,6 +117,20 @@ With metadata labels and search highlight:
 
 ---
 
+## `viewer_go_to_page` — Jump to a Page in Open Viewer
+
+**Use this when the user asks to "go to page 3" or "show page 5".** Does NOT replace the loaded pages — just scrolls to that page within the already-loaded document.
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `page` | integer | Page number (1-based) |
+
+```json
+{"page": 3}
+```
+
+---
+
 ## `viewer_set_highlight` — Change Highlight in Open Viewer
 
 **IMPORTANT: Use this instead of calling `view_document`/`view_document_urls` again when the viewer is already open and the user just wants to highlight a different term.** Calling the original tools again creates a duplicate viewer.
@@ -161,8 +175,9 @@ If you already have URLs (e.g. from a IIIF manifest or previous browse result), 
 | Scenario | Tool |
 |----------|------|
 | First time viewing a document | `view_document` or `view_document_urls` |
+| User asks to "go to page 3" | `viewer_go_to_page` |
 | User asks to highlight/search a different term | `viewer_set_highlight` |
-| User asks to see different pages | `viewer_navigate` |
+| User asks to load a different set of pages | `viewer_navigate` or `viewer_navigate_urls` |
 | User asks to view a completely different document | `view_document` or `view_document_urls` |
 
 **Key rule: Never call `view_document`/`view_document_urls` twice in the same conversation if the viewer is already open. Use the update tools instead.**

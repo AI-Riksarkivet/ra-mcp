@@ -8,7 +8,7 @@ from fastmcp import Client
 
 from ra_mcp_browse_lib.models import BrowseResult, PageContext
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
-import ra_mcp_viewer_mcp.tools as _tools_mod
+import ra_mcp_viewer_mcp.state as _state_mod
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -16,14 +16,9 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 @pytest.fixture(autouse=True)
 def _reset_viewer_state():
-    """Reset server-side viewer state between tests."""
-    _tools_mod._viewer_state.update(
-        version=0, image_urls=[], text_layer_urls=[], page_numbers=[], highlight_term="", reference_code="",
-    )
+    _state_mod.latest_view_id = ""
     yield
-    _tools_mod._viewer_state.update(
-        version=0, image_urls=[], text_layer_urls=[], page_numbers=[], highlight_term="", reference_code="",
-    )
+    _state_mod.latest_view_id = ""
 
 FAKE_IMAGE_DATA_URL = "data:image/jpeg;base64,/9j/fakedata"
 FAKE_THUMBNAIL_DATA_URL = "data:image/jpeg;base64,/9j/thumbdata"
@@ -128,39 +123,68 @@ async def test_view_document_empty_reference_code(mock_fetchers):
 # ── get_viewer_state (polling) ────────────────────────────────────────
 
 
-async def test_get_viewer_state_returns_version(mock_fetchers):
-    """Calling view_document should update server state; get_viewer_state returns it."""
+async def test_viewer_state_multi_user_isolation(mock_fetchers):
+    """Two viewers get independent state — updating one does not affect the other."""
     async with Client(mcp) as client:
-        # State starts at version 0
-        result = await client.call_tool("get_viewer_state", {})
-        assert not result.is_error
-        assert result.structured_content["version"] == 0
-
-        # Call view_document to bump state
-        await client.call_tool(
+        # User A opens a document
+        doc_a = await client.call_tool(
             "view_document",
             {"reference_code": "SE/RA/310187/1", "pages": "7"},
         )
+        view_id_a = doc_a.structured_content["view_id"]
 
-        # Poll should now return version 1 with the new data
-        result = await client.call_tool("get_viewer_state", {})
+        # User B opens a different document
+        doc_b = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/other.jpg"],
+                "text_layer_urls": ["https://example.com/other.xml"],
+            },
+        )
+        view_id_b = doc_b.structured_content["view_id"]
+
+        assert view_id_a != view_id_b
+
+        # Update highlight on the latest viewer (B)
+        await client.call_tool("viewer_set_highlight", {"highlight_term": "test"})
+
+        # User A's state should be unchanged
+        state_a = await client.call_tool("get_viewer_state", {"view_id": view_id_a})
+        assert state_a.structured_content["highlight_term"] == ""
+        assert state_a.structured_content["version"] == 1
+
+        # User B's state should have the highlight
+        state_b = await client.call_tool("get_viewer_state", {"view_id": view_id_b})
+        assert state_b.structured_content["highlight_term"] == "test"
+        assert state_b.structured_content["version"] == 2
+
+
+async def test_get_viewer_state_returns_version(mock_fetchers):
+    async with Client(mcp) as client:
+        doc = await client.call_tool(
+            "view_document",
+            {"reference_code": "SE/RA/310187/1", "pages": "7"},
+        )
+        view_id = doc.structured_content["view_id"]
+
+        result = await client.call_tool("get_viewer_state", {"view_id": view_id})
         assert result.structured_content["version"] == 1
         assert len(result.structured_content["image_urls"]) == 1
         assert result.structured_content["reference_code"] == "SE/RA/310187/1"
 
 
 async def test_get_viewer_state_updates_on_view_document_urls(mock_fetchers):
-    """view_document_urls should also update the polling state."""
     async with Client(mcp) as client:
-        await client.call_tool(
+        doc = await client.call_tool(
             "view_document_urls",
             {
                 "image_urls": ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
                 "text_layer_urls": ["https://example.com/p1.xml", ""],
             },
         )
+        view_id = doc.structured_content["view_id"]
 
-        result = await client.call_tool("get_viewer_state", {})
+        result = await client.call_tool("get_viewer_state", {"view_id": view_id})
         assert result.structured_content["version"] >= 1
         assert len(result.structured_content["image_urls"]) == 2
         assert result.structured_content["reference_code"] == ""
@@ -170,22 +194,21 @@ async def test_get_viewer_state_updates_on_view_document_urls(mock_fetchers):
 
 
 async def test_viewer_set_highlight_updates_state(mock_fetchers):
-    """Setting highlight on an open viewer should bump version and update term."""
     async with Client(mcp) as client:
-        # First open the viewer
-        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
-
-        # Then update highlight
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
         result = await client.call_tool("viewer_set_highlight", {"highlight_term": "trolldom"})
 
     assert not result.is_error
     assert "Highlighting" in result.content[0].text
-    assert result.structured_content["highlight_term"] == "trolldom"
-    assert result.structured_content["version"] == 2  # bumped from 1
+
+    async with Client(mcp) as client:
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+    assert state.structured_content["highlight_term"] == "trolldom"
+    assert state.structured_content["version"] == 2
 
 
 async def test_viewer_set_highlight_without_viewer(mock_fetchers):
-    """Setting highlight with no viewer open should error."""
     async with Client(mcp) as client:
         result = await client.call_tool("viewer_set_highlight", {"highlight_term": "test"})
 
@@ -194,53 +217,58 @@ async def test_viewer_set_highlight_without_viewer(mock_fetchers):
 
 
 async def test_viewer_set_highlight_clear(mock_fetchers):
-    """Empty string should clear highlights."""
     async with Client(mcp) as client:
-        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
-        result = await client.call_tool("viewer_set_highlight", {"highlight_term": ""})
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
+        await client.call_tool("viewer_set_highlight", {"highlight_term": ""})
 
-    assert "Cleared" in result.content[0].text
-    assert result.structured_content["highlight_term"] == ""
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+    assert state.structured_content["highlight_term"] == ""
 
 
 # ── viewer_navigate ──────────────────────────────────────────────────
 
 
 async def test_viewer_navigate_updates_pages(mock_fetchers):
-    """Navigating should update state with new pages."""
     async with Client(mcp) as client:
-        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
         result = await client.call_tool("viewer_navigate", {"reference_code": "SE/RA/310187/1", "pages": "8"})
 
     assert not result.is_error
     assert "Navigated" in result.content[0].text
-    assert result.structured_content["version"] == 2
+
+    async with Client(mcp) as client:
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+    assert state.structured_content["version"] == 2
 
 
 async def test_viewer_navigate_with_highlight(mock_fetchers):
     async with Client(mcp) as client:
-        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
-        result = await client.call_tool(
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
+        await client.call_tool(
             "viewer_navigate",
             {"reference_code": "SE/RA/310187/1", "pages": "7", "highlight_term": "Stockholm"},
         )
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
 
-    assert result.structured_content["highlight_term"] == "Stockholm"
+    assert state.structured_content["highlight_term"] == "Stockholm"
 
 
 # ── viewer_navigate_urls ──────────────────────────────────────────────
 
 
 async def test_viewer_navigate_urls_updates_pages(mock_fetchers):
-    """Navigate with raw URLs should update state without creating new viewer."""
     async with Client(mcp) as client:
-        await client.call_tool(
+        doc = await client.call_tool(
             "view_document_urls",
             {
                 "image_urls": ["https://example.com/p1.jpg"],
                 "text_layer_urls": ["https://example.com/p1.xml"],
             },
         )
+        view_id = doc.structured_content["view_id"]
         result = await client.call_tool(
             "viewer_navigate_urls",
             {
@@ -251,8 +279,11 @@ async def test_viewer_navigate_urls_updates_pages(mock_fetchers):
 
     assert not result.is_error
     assert "Navigated" in result.content[0].text
-    assert result.structured_content["version"] == 2
-    assert len(result.structured_content["image_urls"]) == 2
+
+    async with Client(mcp) as client:
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+    assert state.structured_content["version"] == 2
+    assert len(state.structured_content["image_urls"]) == 2
 
 
 # ── view_document_urls ────────────────────────────────────────────────

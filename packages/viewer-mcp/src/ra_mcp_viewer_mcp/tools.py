@@ -13,6 +13,7 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Annotated
+from uuid import uuid4
 
 from fastmcp import Context
 from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig
@@ -20,49 +21,18 @@ from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
 
+import ra_mcp_viewer_mcp.state as viewer_state
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_common.http_client import default_http_client
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
+from ra_mcp_viewer_mcp.state import ViewerState, get_state, put_state
 
 
 logger = logging.getLogger("ra_mcp.viewer.tools")
 
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
-
-# ---------------------------------------------------------------------------
-# Server-side session state (like Brick Builder's "scene").
-# Model-visible tools update this; the View polls get_viewer_state to detect
-# changes, so the View survives iframe reuse and picks up new data without
-# the host needing to recreate the iframe.
-# ---------------------------------------------------------------------------
-
-_viewer_state: dict = {
-    "version": 0,
-    "image_urls": [],
-    "text_layer_urls": [],
-    "page_numbers": [],
-    "highlight_term": "",
-    "reference_code": "",
-}
-
-
-def _update_viewer_state(
-    image_urls: list[str],
-    text_layer_urls: list[str],
-    page_numbers: list[int],
-    highlight_term: str,
-    reference_code: str,
-) -> dict:
-    """Update the session state and bump version. Returns the new state."""
-    _viewer_state["version"] += 1
-    _viewer_state["image_urls"] = image_urls
-    _viewer_state["text_layer_urls"] = text_layer_urls
-    _viewer_state["page_numbers"] = page_numbers
-    _viewer_state["highlight_term"] = highlight_term
-    _viewer_state["reference_code"] = reference_code
-    return dict(_viewer_state)
 
 
 @mcp.tool(
@@ -124,12 +94,21 @@ async def view_document(
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
-    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", reference_code)
+    view_id = str(uuid4())
+    state = ViewerState(
+        view_id=view_id,
+        image_urls=image_urls,
+        text_layer_urls=text_layer_urls,
+        page_numbers=page_numbers,
+        highlight_term=highlight_term or "",
+        reference_code=reference_code,
+    )
+    sc = await put_state(state)
 
-    logger.info("view_document: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
+    logger.info("view_document: %s pages=%s, resolved %d page(s), view_id=%s", reference_code, pages, len(browse_result.contexts), view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
-        structured_content=state,
+        structured_content=sc,
     )
 
 
@@ -146,7 +125,9 @@ async def view_document(
 )
 async def view_document_urls(
     image_urls: Annotated[list[str], Field(description="List of image URLs (one per page, IIIF or direct JPEG/PNG).")],
-    text_layer_urls: Annotated[list[str], Field(description="List of text layer XML URLs (ALTO/PAGE) paired 1:1 with image_urls. Use empty string for pages without transcription.")],
+    text_layer_urls: Annotated[
+        list[str], Field(description="List of text layer XML URLs (ALTO/PAGE) paired 1:1 with image_urls. Use empty string for pages without transcription.")
+    ],
     ctx: Context,
     metadata: Annotated[list[str] | None, Field(description="Optional per-page labels paired 1:1 with image_urls.")] = None,
     highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
@@ -156,17 +137,21 @@ async def view_document_urls(
         return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
     if len(image_urls) != len(text_layer_urls):
         return ToolResult(
-            content=[types.TextContent(
-                type="text",
-                text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
-            )],
+            content=[
+                types.TextContent(
+                    type="text",
+                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
+                )
+            ],
         )
     if metadata and len(metadata) != len(image_urls):
         return ToolResult(
-            content=[types.TextContent(
-                type="text",
-                text=f"Error: metadata length ({len(metadata)}) must match image_urls length ({len(image_urls)}).",
-            )],
+            content=[
+                types.TextContent(
+                    type="text",
+                    text=f"Error: metadata length ({len(metadata)}) must match image_urls length ({len(image_urls)}).",
+                )
+            ],
         )
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
@@ -194,33 +179,63 @@ async def view_document_urls(
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
-    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", "")
+    view_id = str(uuid4())
+    state = ViewerState(
+        view_id=view_id,
+        image_urls=image_urls,
+        text_layer_urls=text_layer_urls,
+        page_numbers=page_numbers,
+        highlight_term=highlight_term or "",
+        reference_code="",
+    )
+    sc = await put_state(state)
 
-    logger.info("view_document_urls: displaying %d page(s)", len(image_urls))
+    logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
-        structured_content=state,
+        structured_content=sc,
     )
 
 
 @mcp.tool(
     name="get_viewer_state",
-    description="Get the current viewer state. Used by the viewer to poll for changes from LLM tool calls.",
+    description="Get the current viewer state by view_id. Used by the viewer to poll for changes.",
     app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
 )
-async def get_viewer_state() -> ToolResult:
-    """Return current viewer session state (the View polls this)."""
+async def get_viewer_state(
+    view_id: Annotated[str, Field(description="View ID from the initial tool result.")],
+) -> ToolResult:
+    state = await get_state(view_id)
     return ToolResult(
-        content=[types.TextContent(type="text", text=f"Viewer state v{_viewer_state['version']}")],
-        structured_content=dict(_viewer_state),
+        content=[types.TextContent(type="text", text=f"Viewer state v{state.version}")],
+        structured_content=state.model_dump(),
     )
 
 
-# ---------------------------------------------------------------------------
-# Model-visible update tools — share RESOURCE_URI so the host routes results
-# to the existing viewer iframe (same pattern as Brick Builder's brick_add,
-# brick_paint, etc.).
-# ---------------------------------------------------------------------------
+@mcp.tool(
+    name="viewer_go_to_page",
+    description=(
+        "Navigate the already-open document viewer to a specific page number. "
+        "Does NOT replace the loaded pages — just scrolls to the requested page. "
+        "Use this when the user asks to 'go to page 3' or 'show page 5'."
+    ),
+)
+async def viewer_go_to_page(
+    page: Annotated[int, Field(description="Page number to navigate to (1-based).")],
+) -> ToolResult:
+    if not viewer_state.latest_view_id:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
+
+    state = await get_state(viewer_state.latest_view_id)
+    total = len(state.image_urls)
+    if page < 1 or page > total:
+        return ToolResult(content=[types.TextContent(type="text", text=f"Error: page {page} out of range (1-{total}).")])
+
+    state.go_to_page = page - 1  # convert to 0-based index
+    await put_state(state)
+
+    logger.info("viewer_go_to_page: page %d (v%d)", page, state.version)
+    return ToolResult(content=[types.TextContent(type="text", text=f"Navigated to page {page}.")])
 
 
 @mcp.tool(
@@ -234,19 +249,19 @@ async def get_viewer_state() -> ToolResult:
 async def viewer_set_highlight(
     highlight_term: Annotated[str, Field(description="Search term to highlight in the viewer. Use empty string to clear highlights.")],
 ) -> ToolResult:
-    """Change the highlight term in the existing viewer."""
-    if _viewer_state["version"] == 0:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: no document is currently displayed. Use view_document or view_document_urls first.")])
+    if not viewer_state.latest_view_id:
+        return ToolResult(
+            content=[types.TextContent(type="text", text="Error: no document is currently displayed. Use view_document or view_document_urls first.")]
+        )
 
-    _viewer_state["highlight_term"] = highlight_term
-    _viewer_state["version"] += 1
-    state = dict(_viewer_state)
+    state = await get_state(viewer_state.latest_view_id)
+    state.highlight_term = highlight_term
+    await put_state(state)
 
     action = f"Highlighting '{highlight_term}'" if highlight_term else "Cleared highlights"
-    logger.info("viewer_set_highlight: %s (v%d)", action, state["version"])
+    logger.info("viewer_set_highlight: %s (v%d)", action, state.version)
     return ToolResult(
         content=[types.TextContent(type="text", text=f"{action} in the document viewer.")],
-        structured_content=state,
     )
 
 
@@ -289,12 +304,20 @@ async def viewer_navigate(
     text_layer_urls = [page_ctx.alto_url for page_ctx in browse_result.contexts]
     page_numbers = [page_ctx.page_number for page_ctx in browse_result.contexts]
 
-    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", reference_code)
+    if not viewer_state.latest_view_id:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
+
+    state = await get_state(viewer_state.latest_view_id)
+    state.image_urls = image_urls
+    state.text_layer_urls = text_layer_urls
+    state.page_numbers = page_numbers
+    state.highlight_term = highlight_term or ""
+    state.reference_code = reference_code
+    await put_state(state)
 
     logger.info("viewer_navigate: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
     return ToolResult(
         content=[types.TextContent(type="text", text=f"Navigated to {len(browse_result.contexts)} page(s) of {reference_code}.")],
-        structured_content=state,
     )
 
 
@@ -308,27 +331,36 @@ async def viewer_navigate(
 )
 async def viewer_navigate_urls(
     image_urls: Annotated[list[str], Field(description="List of image URLs (one per page).")],
-    text_layer_urls: Annotated[list[str], Field(description="List of text layer XML URLs paired 1:1 with image_urls. Use empty string for pages without transcription.")],
+    text_layer_urls: Annotated[
+        list[str], Field(description="List of text layer XML URLs paired 1:1 with image_urls. Use empty string for pages without transcription.")
+    ],
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
 ) -> ToolResult:
-    """Navigate the existing viewer to new pages from raw URLs."""
     if not image_urls:
         return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
     if len(image_urls) != len(text_layer_urls):
         return ToolResult(
-            content=[types.TextContent(
-                type="text",
-                text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
-            )],
+            content=[
+                types.TextContent(
+                    type="text",
+                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
+                )
+            ],
         )
+    if not viewer_state.latest_view_id:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
 
-    page_numbers = list(range(1, len(image_urls) + 1))
-    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", "")
+    state = await get_state(viewer_state.latest_view_id)
+    state.image_urls = image_urls
+    state.text_layer_urls = text_layer_urls
+    state.page_numbers = list(range(1, len(image_urls) + 1))
+    state.highlight_term = highlight_term or ""
+    state.reference_code = ""
+    await put_state(state)
 
     logger.info("viewer_navigate_urls: navigated to %d page(s)", len(image_urls))
     return ToolResult(
         content=[types.TextContent(type="text", text=f"Navigated to {len(image_urls)} page(s).")],
-        structured_content=state,
     )
 
 

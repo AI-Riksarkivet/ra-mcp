@@ -41,6 +41,7 @@ export interface ViewerData {
   pageMetadata: string[];
   highlightTerm: string;
   highlightTermColor: string;
+  goToPage: number; // -1 = no nav request, 0+ = jump to this page index
 }
 
 export interface TooltipState {

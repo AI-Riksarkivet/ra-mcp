@@ -110,10 +110,8 @@ let prevHighlightTerm = "";
 $effect(() => {
   if (highlightTerm !== prevHighlightTerm) {
     prevHighlightTerm = highlightTerm;
-    if (highlightTerm) {
-      searchTerm = highlightTerm;
-      showSearch = true;
-    }
+    searchTerm = highlightTerm;
+    showSearch = !!highlightTerm;
   }
 });
 

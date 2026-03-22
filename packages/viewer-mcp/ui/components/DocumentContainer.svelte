@@ -70,6 +70,11 @@ $effect(() => {
   if (data.highlightTerm && data.highlightTerm !== globalSearchTerm) {
     handleGlobalSearch(data.highlightTerm);
   }
+
+  // Jump to requested page
+  if (data.goToPage >= 0 && data.goToPage < data.pageUrls.length) {
+    currentPageIndex = data.goToPage;
+  }
 });
 
 // ---------------------------------------------------------------------------

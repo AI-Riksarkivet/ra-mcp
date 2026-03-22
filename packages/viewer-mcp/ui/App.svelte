@@ -12,9 +12,6 @@ import DocumentContainer from "./components/DocumentContainer.svelte";
 import type { ViewerData } from "./lib/types";
 import { HIGHLIGHT_DEFAULTS } from "./lib/constants";
 
-const CARD_HEIGHT = 300;
-const VIEWER_HEIGHT = 550;
-
 let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();
 let viewerData = $state.raw<ViewerData | null>(null);
@@ -24,12 +21,8 @@ let streamingMessage = $state("");
 let isFullscreen = $derived(hostContext?.displayMode === "fullscreen");
 let canFullscreen = $derived(hostContext?.availableDisplayModes?.includes("fullscreen") ?? false);
 let hasData = $derived(viewerData && viewerData.pageUrls.length > 0);
-let isCardState = $derived((!hasData && !isStreaming) || !!error || !app);
-
-// Tracked separately from hostContext to avoid feedback loops in the sizing effect
-let containerDims = $state<Record<string, number> | undefined>();
-let lastSentHeight = 0;
 let lastSeenVersion = 0;
+let viewId = "";
 
 function urlsChanged(newImageUrls: string[]): boolean {
   if (!viewerData) return true;
@@ -37,12 +30,13 @@ function urlsChanged(newImageUrls: string[]): boolean {
   return viewerData.pageUrls.some((p, i) => p.image !== newImageUrls[i]);
 }
 
-/** Apply server state from ontoolresult or poll. Skips unchanged versions. */
 function applyViewerState(sc: Record<string, unknown>) {
   const imageUrls = sc.image_urls as string[] | undefined;
   const textLayerUrls = sc.text_layer_urls as string[] | undefined;
   const highlightTerm = (sc.highlight_term as string) ?? "";
+  const goToPage = (sc.go_to_page as number) ?? -1;
   const version = (sc.version as number) ?? 0;
+  const scViewId = (sc.view_id as string) ?? "";
 
   if (!imageUrls || !textLayerUrls || imageUrls.length === 0 || imageUrls.length !== textLayerUrls.length) {
     return;
@@ -50,10 +44,13 @@ function applyViewerState(sc: Record<string, unknown>) {
 
   if (version > 0 && version <= lastSeenVersion) return;
   lastSeenVersion = version;
+  if (scViewId) viewId = scViewId;
 
   if (!urlsChanged(imageUrls)) {
-    if (viewerData && viewerData.highlightTerm !== highlightTerm) {
-      viewerData = { ...viewerData, highlightTerm, highlightTermColor: HIGHLIGHT_DEFAULTS.color };
+    const changed = (viewerData && viewerData.highlightTerm !== highlightTerm)
+      || (viewerData && viewerData.goToPage !== goToPage);
+    if (changed) {
+      viewerData = { ...viewerData!, highlightTerm, highlightTermColor: HIGHLIGHT_DEFAULTS.color, goToPage };
     }
     return;
   }
@@ -63,6 +60,7 @@ function applyViewerState(sc: Record<string, unknown>) {
     pageMetadata: Array.from({ length: imageUrls.length }, () => ""),
     highlightTerm,
     highlightTermColor: HIGHLIGHT_DEFAULTS.color,
+    goToPage,
   };
 }
 
@@ -73,30 +71,8 @@ $effect(() => {
 });
 
 $effect(() => {
-  if (!app) return;
-
-  if (isFullscreen) {
-    document.documentElement.style.height = "100vh";
-    return;
-  }
-
-  const desired = (isCardState && !isStreaming) ? CARD_HEIGHT : VIEWER_HEIGHT;
-
-  if (containerDims && "height" in containerDims) {
-    document.documentElement.style.height = "100vh";
-    return;
-  }
-
-  const maxH = containerDims?.maxHeight;
-  const targetHeight = maxH ? Math.min(desired, maxH) : desired;
-  if (targetHeight === lastSentHeight) return;
-
-  document.documentElement.style.height = "";
-  const timerId = setTimeout(() => {
-    lastSentHeight = targetHeight;
-    app?.sendSizeChanged({ height: targetHeight });
-  }, 50);
-  return () => clearTimeout(timerId);
+  if (!app || isFullscreen) return;
+  app.sendSizeChanged({ height: 550 });
 });
 
 async function toggleFullscreen() {
@@ -158,15 +134,11 @@ onMount(async () => {
 
   instance.onhostcontextchanged = (params) => {
     hostContext = { ...hostContext, ...params };
-    if (params.containerDimensions !== undefined) {
-      containerDims = params.containerDimensions as Record<string, number> | undefined;
-    }
   };
 
   await instance.connect();
   app = instance;
   hostContext = instance.getHostContext();
-  containerDims = hostContext?.containerDimensions as Record<string, number> | undefined;
   instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
 
   let pollId: ReturnType<typeof setInterval> | null = null;
@@ -174,8 +146,9 @@ onMount(async () => {
   function startPolling() {
     if (pollId) return;
     pollId = setInterval(async () => {
+      if (!viewId) return;
       try {
-        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: {} });
+        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: viewId } });
         if (result.isError) return;
         const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
         if (sc) applyViewerState(sc);
@@ -193,8 +166,6 @@ onMount(async () => {
 
 <main
   class="main"
-  class:card-state={isCardState}
-  class:fullscreen={isFullscreen}
   style:padding-top={hostContext?.safeAreaInsets?.top ? `${hostContext.safeAreaInsets.top}px` : undefined}
   style:padding-right={hostContext?.safeAreaInsets?.right ? `${hostContext.safeAreaInsets.right}px` : undefined}
   style:padding-bottom={hostContext?.safeAreaInsets?.bottom ? `${hostContext.safeAreaInsets.bottom}px` : undefined}
@@ -234,26 +205,11 @@ onMount(async () => {
 
 <style>
 .main {
-  position: relative;
   width: 100%;
-  height: 100%;
-  padding: var(--spacing-sm, 0.5rem);
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-background-primary, light-dark(#faf9f5, #1a1815));
-  border-radius: var(--border-radius-lg, 10px);
-  border: 1px solid var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
   overflow: hidden;
-}
-
-.main.fullscreen {
-  border-radius: 0;
-  border: none;
-}
-
-.main.card-state {
-  justify-content: center;
-  align-items: center;
 }
 
 .loading {
