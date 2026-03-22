@@ -1,41 +1,35 @@
-image_urls:
-  [
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00002/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00003/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00004/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00005/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00006/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00007/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00008/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00009/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00010/full/max/0/default.jpg",
-    "https://lbiiif.riksarkivet.se/arkis!30002056_00011/full/max/0/default.jpg"
-  ]
+Example view_document tool calls
+=================================
 
-alto_urls:
-  [
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00002.xml",
-    "",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00004.xml",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00005.xml",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00006.xml",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00007.xml",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00008.xml",
-    "",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00010.xml",
-    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00011.xml"
-  ]
+Single page:
+  view_document(reference_code="SE/RA/420422/01", pages="7")
 
-metadata:
-  [
-    "metadata1",
-    "metadata1",
-    "metadata1",
-    "",
-    "metadata1",
-    "metadata1",
-    "metadata1",
-    "metadata1",
-    "metadata1",
-    "metadata1"
-  ]
+Page range:
+  view_document(reference_code="SE/RA/420422/01", pages="1-10")
+
+Specific pages:
+  view_document(reference_code="SE/RA/310187/1", pages="5,7,9")
+
+With search highlight:
+  view_document(reference_code="SE/RA/420422/01", pages="1-10", highlight_term="Stockholm")
+
+The tool resolves the reference code to IIIF image URLs and ALTO XML text
+layer URLs automatically via BrowseOperations. The structuredContent returned
+to the View contains:
+
+  {
+    "image_urls": ["https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/max/0/default.jpg"],
+    "text_layer_urls": ["https://sok.riksarkivet.se/dokument/alto/R000/R0001203/R0001203_00007.xml"],
+    "page_numbers": [7],
+    "highlight_term": "Stockholm",
+    "reference_code": "SE/RA/420422/01"
+  }
+
+Test fixtures in this directory:
+  - 30002056_00010.xml    ALTO v4, word-level (multiple <String> per TextLine)
+  - 451511_1512_01_alto.xml  ALTO v4, line-level (single <String>, WC attribute)
+  - 451511_1512_01_page.xml  PAGE XML (TextEquiv/Unicode, conf attribute)
+  - R0001203_00010.xml    ALTO v4 from Transkribus (BASELINE, no Shape/Polygon)
+  - 30002056_00010.jpg    Sample page image (word-level fixture)
+  - 451511_1512_01.jpg    Sample page image (line-level fixture)
+  - R0001203_00010.jpg    Sample page image (Transkribus fixture)

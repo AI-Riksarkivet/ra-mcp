@@ -8,9 +8,22 @@ from fastmcp import Client
 
 from ra_mcp_browse_lib.models import BrowseResult, PageContext
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
+import ra_mcp_viewer_mcp.tools as _tools_mod
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+def _reset_viewer_state():
+    """Reset server-side viewer state between tests."""
+    _tools_mod._viewer_state.update(
+        version=0, image_urls=[], text_layer_urls=[], page_numbers=[], highlight_term="", reference_code="",
+    )
+    yield
+    _tools_mod._viewer_state.update(
+        version=0, image_urls=[], text_layer_urls=[], page_numbers=[], highlight_term="", reference_code="",
+    )
 
 FAKE_IMAGE_DATA_URL = "data:image/jpeg;base64,/9j/fakedata"
 FAKE_THUMBNAIL_DATA_URL = "data:image/jpeg;base64,/9j/thumbdata"
@@ -110,6 +123,239 @@ async def test_view_document_empty_reference_code(mock_fetchers):
 
     text = result.content[0].text
     assert "empty" in text.lower()
+
+
+# ── get_viewer_state (polling) ────────────────────────────────────────
+
+
+async def test_get_viewer_state_returns_version(mock_fetchers):
+    """Calling view_document should update server state; get_viewer_state returns it."""
+    async with Client(mcp) as client:
+        # State starts at version 0
+        result = await client.call_tool("get_viewer_state", {})
+        assert not result.is_error
+        assert result.structured_content["version"] == 0
+
+        # Call view_document to bump state
+        await client.call_tool(
+            "view_document",
+            {"reference_code": "SE/RA/310187/1", "pages": "7"},
+        )
+
+        # Poll should now return version 1 with the new data
+        result = await client.call_tool("get_viewer_state", {})
+        assert result.structured_content["version"] == 1
+        assert len(result.structured_content["image_urls"]) == 1
+        assert result.structured_content["reference_code"] == "SE/RA/310187/1"
+
+
+async def test_get_viewer_state_updates_on_view_document_urls(mock_fetchers):
+    """view_document_urls should also update the polling state."""
+    async with Client(mcp) as client:
+        await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
+                "text_layer_urls": ["https://example.com/p1.xml", ""],
+            },
+        )
+
+        result = await client.call_tool("get_viewer_state", {})
+        assert result.structured_content["version"] >= 1
+        assert len(result.structured_content["image_urls"]) == 2
+        assert result.structured_content["reference_code"] == ""
+
+
+# ── viewer_set_highlight ──────────────────────────────────────────────
+
+
+async def test_viewer_set_highlight_updates_state(mock_fetchers):
+    """Setting highlight on an open viewer should bump version and update term."""
+    async with Client(mcp) as client:
+        # First open the viewer
+        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+
+        # Then update highlight
+        result = await client.call_tool("viewer_set_highlight", {"highlight_term": "trolldom"})
+
+    assert not result.is_error
+    assert "Highlighting" in result.content[0].text
+    assert result.structured_content["highlight_term"] == "trolldom"
+    assert result.structured_content["version"] == 2  # bumped from 1
+
+
+async def test_viewer_set_highlight_without_viewer(mock_fetchers):
+    """Setting highlight with no viewer open should error."""
+    async with Client(mcp) as client:
+        result = await client.call_tool("viewer_set_highlight", {"highlight_term": "test"})
+
+    text = result.content[0].text
+    assert "no document" in text.lower()
+
+
+async def test_viewer_set_highlight_clear(mock_fetchers):
+    """Empty string should clear highlights."""
+    async with Client(mcp) as client:
+        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        result = await client.call_tool("viewer_set_highlight", {"highlight_term": ""})
+
+    assert "Cleared" in result.content[0].text
+    assert result.structured_content["highlight_term"] == ""
+
+
+# ── viewer_navigate ──────────────────────────────────────────────────
+
+
+async def test_viewer_navigate_updates_pages(mock_fetchers):
+    """Navigating should update state with new pages."""
+    async with Client(mcp) as client:
+        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        result = await client.call_tool("viewer_navigate", {"reference_code": "SE/RA/310187/1", "pages": "8"})
+
+    assert not result.is_error
+    assert "Navigated" in result.content[0].text
+    assert result.structured_content["version"] == 2
+
+
+async def test_viewer_navigate_with_highlight(mock_fetchers):
+    async with Client(mcp) as client:
+        await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        result = await client.call_tool(
+            "viewer_navigate",
+            {"reference_code": "SE/RA/310187/1", "pages": "7", "highlight_term": "Stockholm"},
+        )
+
+    assert result.structured_content["highlight_term"] == "Stockholm"
+
+
+# ── viewer_navigate_urls ──────────────────────────────────────────────
+
+
+async def test_viewer_navigate_urls_updates_pages(mock_fetchers):
+    """Navigate with raw URLs should update state without creating new viewer."""
+    async with Client(mcp) as client:
+        await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/p1.jpg"],
+                "text_layer_urls": ["https://example.com/p1.xml"],
+            },
+        )
+        result = await client.call_tool(
+            "viewer_navigate_urls",
+            {
+                "image_urls": ["https://example.com/p3.jpg", "https://example.com/p4.jpg"],
+                "text_layer_urls": ["https://example.com/p3.xml", ""],
+            },
+        )
+
+    assert not result.is_error
+    assert "Navigated" in result.content[0].text
+    assert result.structured_content["version"] == 2
+    assert len(result.structured_content["image_urls"]) == 2
+
+
+# ── view_document_urls ────────────────────────────────────────────────
+
+
+async def test_view_document_urls_returns_structured_content(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": [
+                    "https://lbiiif.riksarkivet.se/arkis!30002056_00010/full/max/0/default.jpg",
+                    "https://lbiiif.riksarkivet.se/arkis!30002056_00011/full/max/0/default.jpg",
+                ],
+                "text_layer_urls": [
+                    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00010.xml",
+                    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00011.xml",
+                ],
+            },
+        )
+
+    assert not result.is_error
+    text = result.content[0].text
+    assert "2 page(s)" in text
+    sc = result.structured_content
+    assert len(sc["image_urls"]) == 2
+    assert len(sc["text_layer_urls"]) == 2
+    assert sc["page_numbers"] == [1, 2]
+    assert sc["reference_code"] == ""
+
+
+async def test_view_document_urls_with_highlight_term(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/page1.jpg"],
+                "text_layer_urls": ["https://example.com/page1.xml"],
+                "highlight_term": "trolldom",
+            },
+        )
+
+    assert not result.is_error
+    assert result.structured_content["highlight_term"] == "trolldom"
+
+
+async def test_view_document_urls_mismatched_lengths(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/page1.jpg", "https://example.com/page2.jpg"],
+                "text_layer_urls": ["https://example.com/page1.xml"],
+            },
+        )
+
+    text = result.content[0].text
+    assert "mismatched" in text.lower()
+
+
+async def test_view_document_urls_empty_image_urls(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": [],
+                "text_layer_urls": [],
+            },
+        )
+
+    text = result.content[0].text
+    assert "empty" in text.lower()
+
+
+async def test_view_document_urls_with_empty_text_layers(mock_fetchers):
+    """Pages without transcription should use empty string in text_layer_urls."""
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
+                "text_layer_urls": ["https://example.com/p1.xml", ""],
+            },
+        )
+
+    assert not result.is_error
+    sc = result.structured_content
+    assert sc["text_layer_urls"][1] == ""
+
+
+async def test_view_document_urls_metadata_length_mismatch(mock_fetchers):
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "view_document_urls",
+            {
+                "image_urls": ["https://example.com/p1.jpg"],
+                "text_layer_urls": ["https://example.com/p1.xml"],
+                "metadata": ["label1", "label2"],
+            },
+        )
+
+    text = result.content[0].text
+    assert "metadata length" in text.lower()
 
 
 # ── load_page ─────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onDestroy } from "svelte";
+import { SvelteMap } from "svelte/reactivity";
 import { LRUCache } from "lru-cache";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { ViewerData, PageData } from "../lib/types";
@@ -29,7 +30,7 @@ let currentPageMetadata = $derived(data.pageMetadata[currentPageIndex] ?? "");
 let thumbnailStripWidth = $state(120);
 
 // Cross-page search state
-let pageMatchCounts = $state<Map<number, number>>(new Map());
+let pageMatchCounts = new SvelteMap<number, number>();
 let globalTotalMatches = $state(0);
 let globalSearchLoading = $state(false);
 let globalSearchTerm = $state("");
@@ -38,7 +39,42 @@ let globalSearchDebounce: ReturnType<typeof setTimeout> | null = null;
 // Client-side page cache with LRU eviction (max 10 entries ≈ 40 MB worst-case)
 let pageCache = new LRUCache<number, PageData>({ max: 10 });
 let inFlight = new Map<number, Promise<PageData | null>>();
-let currentPage = $state<PageData | null>(null);
+let currentPage = $state.raw<PageData | null>(null);
+let lastRenderedIndex = -1;
+let prevPageUrls: ViewerData["pageUrls"] | null = null;
+
+// ---------------------------------------------------------------------------
+// React to data prop changes (new document or highlight update from poll)
+// ---------------------------------------------------------------------------
+
+$effect(() => {
+  const urlsChanged = !prevPageUrls
+    || prevPageUrls.length !== data.pageUrls.length
+    || prevPageUrls.some((p, i) => p.image !== data.pageUrls[i].image);
+
+  prevPageUrls = data.pageUrls;
+
+  if (urlsChanged) {
+    // New document — full reset
+    currentPageIndex = 0;
+    lastRenderedIndex = -1;
+    pageCache.clear();
+    inFlight.clear();
+    currentPage = null;
+    pageMatchCounts.clear();
+    globalTotalMatches = 0;
+    globalSearchTerm = "";
+  }
+
+  // Trigger cross-page search when highlight term changes
+  if (data.highlightTerm && data.highlightTerm !== globalSearchTerm) {
+    handleGlobalSearch(data.highlightTerm);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Navigation
+// ---------------------------------------------------------------------------
 
 function handlePageSelect(index: number) {
   currentPageIndex = index;
@@ -75,7 +111,7 @@ function handleGlobalSearch(term: string) {
   globalSearchTerm = term;
 
   if (!term || !term.trim()) {
-    pageMatchCounts = new Map();
+    pageMatchCounts.clear();
     globalTotalMatches = 0;
     globalSearchLoading = false;
     return;
@@ -98,12 +134,17 @@ function handleGlobalSearch(term: string) {
       if (!result.isError) {
         const sc = (result as any).structuredContent;
         if (sc) {
-          const newCounts = new Map<number, number>();
+          pageMatchCounts.clear();
           for (const m of sc.pageMatches ?? []) {
-            newCounts.set(m.pageIndex, m.matchCount);
+            pageMatchCounts.set(m.pageIndex, m.matchCount);
           }
-          pageMatchCounts = newCounts;
           globalTotalMatches = sc.totalMatches ?? 0;
+
+          // Jump to the first page with matches if current page has none
+          if (!pageMatchCounts.has(currentPageIndex) && pageMatchCounts.size > 0) {
+            const firstMatchPage = Math.min(...pageMatchCounts.keys());
+            currentPageIndex = firstMatchPage;
+          }
         }
       }
     } catch (e) {
@@ -202,7 +243,6 @@ function prefetchAdjacentPages(index: number) {
   const neighbors = [index - 1, index + 1];
   for (const n of neighbors) {
     if (n >= 0 && n < totalPages && !pageCache.has(n)) {
-      // Fire and forget — don't await, don't block rendering
       fetchPageData(n);
     }
   }
@@ -218,7 +258,6 @@ onDestroy(() => {
   if (globalSearchDebounce) clearTimeout(globalSearchDebounce);
 });
 
-let lastRenderedIndex = -1;
 $effect(() => {
   const idx = currentPageIndex;
   if (idx !== lastRenderedIndex) {

@@ -34,7 +34,28 @@ interface Props {
   onGlobalNavigate?: (direction: "prev" | "next") => void;
 }
 
-let { app, pageData, pageIndex, totalPages, pageMetadata, canFullscreen, isFullscreen, onToggleFullscreen, hasThumbnails, showThumbnails, onToggleThumbnails, onPrevPage, onNextPage, highlightTerm = "", highlightTermColor = HIGHLIGHT_DEFAULTS.color, pageMatchCounts, globalTotalMatches = 0, globalSearchLoading = false, onGlobalSearch, onGlobalNavigate }: Props = $props();
+let {
+  app,
+  pageData,
+  pageIndex,
+  totalPages,
+  pageMetadata,
+  canFullscreen,
+  isFullscreen,
+  onToggleFullscreen,
+  hasThumbnails,
+  showThumbnails,
+  onToggleThumbnails,
+  onPrevPage,
+  onNextPage,
+  highlightTerm = "",
+  highlightTermColor = HIGHLIGHT_DEFAULTS.color,
+  pageMatchCounts,
+  globalTotalMatches = 0,
+  globalSearchLoading = false,
+  onGlobalSearch,
+  onGlobalNavigate,
+}: Props = $props();
 
 let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
 
@@ -85,17 +106,14 @@ let wrapperEl: HTMLDivElement;
 
 let controller: CanvasController;
 
-// ---------------------------------------------------------------------------
-// Init: open search bar if highlightTerm was provided
-// ---------------------------------------------------------------------------
-
-let highlightTermInitDone = false;
+let prevHighlightTerm = "";
 $effect(() => {
-  if (highlightTerm && !highlightTermInitDone) {
-    highlightTermInitDone = true;
-    searchTerm = highlightTerm;
-    showSearch = true;
-    onGlobalSearch?.(highlightTerm);
+  if (highlightTerm !== prevHighlightTerm) {
+    prevHighlightTerm = highlightTerm;
+    if (highlightTerm) {
+      searchTerm = highlightTerm;
+      showSearch = true;
+    }
   }
 });
 
@@ -266,9 +284,9 @@ function getContextState() {
 // ---------------------------------------------------------------------------
 
 $effect(() => {
-  // Subscribe to all three style values + search state
-  polygonColor; polygonThickness; polygonOpacity;
-  searchMatchPolygons; showHighlights;
+  // Track all style values + search state as explicit dependencies
+  const _ = [polygonColor, polygonThickness, polygonOpacity, searchMatchPolygons, showHighlights];
+  void _;
   controller?.requestDraw();
 });
 

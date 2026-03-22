@@ -1,6 +1,4 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
-
 const SWATCHES = [
   "#c15f3c", // terracotta
   "#3b82f6", // blue
@@ -31,11 +29,9 @@ function onWindowClick(e: MouseEvent) {
   }
 }
 
-onMount(() => {
+$effect(() => {
   window.addEventListener('click', onWindowClick, true);
-});
-onDestroy(() => {
-  window.removeEventListener('click', onWindowClick, true);
+  return () => window.removeEventListener('click', onWindowClick, true);
 });
 </script>
 

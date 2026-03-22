@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onDestroy } from "svelte";
-import { SvelteSet } from "svelte/reactivity";
+import { SvelteMap } from "svelte/reactivity";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { ViewerData } from "../lib/types";
 import { resizeHandle } from "../lib/resize";
@@ -24,12 +24,9 @@ let { app, data, currentPageIndex, onPageSelect, width = 120, onWidthChange, pag
 
 let totalPages = $derived(data.pageUrls.length);
 
-// Cache: page index → thumbnail data URL (capped to limit memory)
+// Cache: page index → thumbnail data URL (capped to limit memory, reactive)
 const THUMB_CACHE_MAX = 50;
-let thumbnailCache = new Map<number, string>();
-
-// Tracks which thumbnails have been rendered (triggers reactivity)
-let loadedIndices = new SvelteSet<number>();
+let thumbnailCache = new SvelteMap<number, string>();
 
 // Container ref for scrolling
 let containerEl: HTMLDivElement;
@@ -111,13 +108,11 @@ async function fetchBatch(indices: number[]) {
       const thumbnails = parseThumbnailResult(result);
       for (const thumb of thumbnails) {
         thumbnailCache.set(thumb.index, thumb.dataUrl);
-        loadedIndices.add(thumb.index);
       }
       // Evict oldest entries if cache exceeds limit
       while (thumbnailCache.size > THUMB_CACHE_MAX) {
         const oldest = thumbnailCache.keys().next().value!;
         thumbnailCache.delete(oldest);
-        loadedIndices.delete(oldest);
       }
     }
   } catch (e) {
@@ -217,14 +212,10 @@ onDestroy(() => {
 });
 
 function getThumbnailUrl(index: number): string | null {
-  if (loadedIndices.has(index)) {
-    return thumbnailCache.get(index) ?? null;
-  }
-  return null;
+  return thumbnailCache.get(index) ?? null;
 }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="thumbnail-strip" class:resizing bind:this={containerEl} style:width="{width}px" style:min-width="{width}px" onscroll={handleScroll}>
   <div
     class="resize-handle"

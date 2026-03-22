@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
+import { onMount } from "svelte";
 import {
   App,
   applyDocumentTheme,
@@ -17,19 +17,54 @@ const VIEWER_HEIGHT = 550;
 
 let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();
-let viewerData = $state<ViewerData | null>(null);
+let viewerData = $state.raw<ViewerData | null>(null);
 let error = $state<string | null>(null);
 let isStreaming = $state(false);
 let streamingMessage = $state("");
-let isFullscreen = $state(false);
+let isFullscreen = $derived(hostContext?.displayMode === "fullscreen");
 let canFullscreen = $derived(hostContext?.availableDisplayModes?.includes("fullscreen") ?? false);
-
 let hasData = $derived(viewerData && viewerData.pageUrls.length > 0);
 let isCardState = $derived((!hasData && !isStreaming) || !!error || !app);
 
-// Separate container dimensions tracking (avoids feedback loop with hostContext)
+// Tracked separately from hostContext to avoid feedback loops in the sizing effect
 let containerDims = $state<Record<string, number> | undefined>();
 let lastSentHeight = 0;
+let lastSeenVersion = 0;
+
+function urlsChanged(newImageUrls: string[]): boolean {
+  if (!viewerData) return true;
+  if (viewerData.pageUrls.length !== newImageUrls.length) return true;
+  return viewerData.pageUrls.some((p, i) => p.image !== newImageUrls[i]);
+}
+
+/** Apply server state from ontoolresult or poll. Skips unchanged versions. */
+function applyViewerState(sc: Record<string, unknown>) {
+  const imageUrls = sc.image_urls as string[] | undefined;
+  const textLayerUrls = sc.text_layer_urls as string[] | undefined;
+  const highlightTerm = (sc.highlight_term as string) ?? "";
+  const version = (sc.version as number) ?? 0;
+
+  if (!imageUrls || !textLayerUrls || imageUrls.length === 0 || imageUrls.length !== textLayerUrls.length) {
+    return;
+  }
+
+  if (version > 0 && version <= lastSeenVersion) return;
+  lastSeenVersion = version;
+
+  if (!urlsChanged(imageUrls)) {
+    if (viewerData && viewerData.highlightTerm !== highlightTerm) {
+      viewerData = { ...viewerData, highlightTerm, highlightTermColor: HIGHLIGHT_DEFAULTS.color };
+    }
+    return;
+  }
+
+  viewerData = {
+    pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
+    pageMetadata: Array.from({ length: imageUrls.length }, () => ""),
+    highlightTerm,
+    highlightTermColor: HIGHLIGHT_DEFAULTS.color,
+  };
+}
 
 $effect(() => {
   if (hostContext?.theme) applyDocumentTheme(hostContext.theme);
@@ -37,14 +72,6 @@ $effect(() => {
   if (hostContext?.styles?.css?.fonts) applyHostFonts(hostContext.styles.css.fonts);
 });
 
-// Track display mode from host context
-$effect(() => {
-  if (hostContext?.displayMode !== undefined) {
-    isFullscreen = hostContext.displayMode === "fullscreen";
-  }
-});
-
-// Adapt sizing — reads only stable derived values to avoid feedback loops.
 $effect(() => {
   if (!app) return;
 
@@ -62,8 +89,6 @@ $effect(() => {
 
   const maxH = containerDims?.maxHeight;
   const targetHeight = maxH ? Math.min(desired, maxH) : desired;
-
-  // Only send if height actually changed
   if (targetHeight === lastSentHeight) return;
 
   document.documentElement.style.height = "";
@@ -76,24 +101,18 @@ $effect(() => {
 
 async function toggleFullscreen() {
   if (!app) return;
-  const newMode = isFullscreen ? "inline" : "fullscreen";
   try {
-    const result = await app.requestDisplayMode({ mode: newMode });
-    isFullscreen = result.mode === "fullscreen";
+    await app.requestDisplayMode({ mode: isFullscreen ? "inline" : "fullscreen" });
   } catch (err) {
     console.error("Failed to change display mode:", err);
   }
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape" && isFullscreen) {
-    toggleFullscreen();
-  }
+  if (e.key === "Escape" && isFullscreen) toggleFullscreen();
 }
 
 onMount(async () => {
-  document.addEventListener("keydown", handleKeydown);
-
   const instance = new App(
     { name: "Document Viewer", version: "1.0.0" },
     { availableDisplayModes: ["inline", "fullscreen"] },
@@ -101,9 +120,7 @@ onMount(async () => {
   );
 
   instance.ontoolinputpartial = () => {
-    if (!viewerData) {
-      isStreaming = true;
-    }
+    if (!viewerData) isStreaming = true;
   };
 
   instance.ontoolinput = (params) => {
@@ -121,23 +138,12 @@ onMount(async () => {
       error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
       return;
     }
-
     const sc = result.structuredContent as Record<string, unknown> | undefined;
-    const imageUrls = sc?.image_urls as string[] | undefined;
-    const textLayerUrls = sc?.text_layer_urls as string[] | undefined;
-    const highlightTerm = (sc?.highlight_term as string) ?? "";
-
-    if (!imageUrls || !textLayerUrls || imageUrls.length !== textLayerUrls.length) {
-      error = "No pages found for this document.";
-      return;
+    if (sc) {
+      lastSeenVersion = 0;
+      applyViewerState(sc);
+      startPolling();
     }
-
-    viewerData = {
-      pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
-      pageMetadata: Array.from({ length: imageUrls.length }, () => ""),
-      highlightTerm,
-      highlightTermColor: HIGHLIGHT_DEFAULTS.color,
-    };
   };
 
   instance.ontoolcancelled = (params) => {
@@ -152,7 +158,6 @@ onMount(async () => {
 
   instance.onhostcontextchanged = (params) => {
     hostContext = { ...hostContext, ...params };
-    // Track containerDimensions separately to avoid feedback loops in sizing effect
     if (params.containerDimensions !== undefined) {
       containerDims = params.containerDimensions as Record<string, number> | undefined;
     }
@@ -162,14 +167,30 @@ onMount(async () => {
   app = instance;
   hostContext = instance.getHostContext();
   containerDims = hostContext?.containerDimensions as Record<string, number> | undefined;
-});
+  instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
 
-onDestroy(() => {
-  document.removeEventListener("keydown", handleKeydown);
+  let pollId: ReturnType<typeof setInterval> | null = null;
+
+  function startPolling() {
+    if (pollId) return;
+    pollId = setInterval(async () => {
+      try {
+        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: {} });
+        if (result.isError) return;
+        const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
+        if (sc) applyViewerState(sc);
+      } catch { /* poll failure is non-fatal */ }
+    }, 2000);
+  }
+
+  return () => {
+    if (pollId) clearInterval(pollId);
+  };
 });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
+<svelte:document onkeydown={handleKeydown} />
+
 <main
   class="main"
   class:card-state={isCardState}
@@ -196,15 +217,13 @@ onDestroy(() => {
       </div>
     </div>
   {:else if viewerData && hasData && !error}
-    {#key viewerData}
-      <DocumentContainer
-        app={app}
-        data={viewerData}
-        {canFullscreen}
-        {isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
-      />
-    {/key}
+    <DocumentContainer
+      app={app}
+      data={viewerData}
+      {canFullscreen}
+      {isFullscreen}
+      onToggleFullscreen={toggleFullscreen}
+    />
   {:else if error}
     <div class="error-state">
       <h2>Error</h2>

@@ -3,6 +3,8 @@ Document Viewer MCP App — Tool & resource registrations.
 
 Tools:
   - view_document: entry point, resolves reference code → URLs, returns transcription for the model
+  - view_document_urls: entry point with raw image/text-layer URLs (no reference code resolution)
+  - get_viewer_state: app-only polling tool — returns current viewer state (View polls this)
   - load_page: fetches a single page on demand (called by View via callServerTool)
   - load_thumbnails: batch-fetches thumbnail images (called by View via callServerTool)
 """
@@ -28,6 +30,39 @@ logger = logging.getLogger("ra_mcp.viewer.tools")
 
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
+
+# ---------------------------------------------------------------------------
+# Server-side session state (like Brick Builder's "scene").
+# Model-visible tools update this; the View polls get_viewer_state to detect
+# changes, so the View survives iframe reuse and picks up new data without
+# the host needing to recreate the iframe.
+# ---------------------------------------------------------------------------
+
+_viewer_state: dict = {
+    "version": 0,
+    "image_urls": [],
+    "text_layer_urls": [],
+    "page_numbers": [],
+    "highlight_term": "",
+    "reference_code": "",
+}
+
+
+def _update_viewer_state(
+    image_urls: list[str],
+    text_layer_urls: list[str],
+    page_numbers: list[int],
+    highlight_term: str,
+    reference_code: str,
+) -> dict:
+    """Update the session state and bump version. Returns the new state."""
+    _viewer_state["version"] += 1
+    _viewer_state["image_urls"] = image_urls
+    _viewer_state["text_layer_urls"] = text_layer_urls
+    _viewer_state["page_numbers"] = page_numbers
+    _viewer_state["highlight_term"] = highlight_term
+    _viewer_state["reference_code"] = reference_code
+    return dict(_viewer_state)
 
 
 @mcp.tool(
@@ -89,16 +124,211 @@ async def view_document(
         summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
     summary = "\n".join(summary_parts)
 
+    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", reference_code)
+
     logger.info("view_document: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
-        structured_content={
-            "image_urls": image_urls,
-            "text_layer_urls": text_layer_urls,
-            "page_numbers": page_numbers,
-            "highlight_term": highlight_term or "",
-            "reference_code": reference_code,
-        },
+        structured_content=state,
+    )
+
+
+@mcp.tool(
+    name="view_document_urls",
+    description=(
+        "Display document pages with zoomable images and text layer overlays from raw URLs. "
+        "Provide paired lists: image_urls[i] pairs with text_layer_urls[i]. "
+        "Use empty string for pages without transcription. "
+        "Use this when you already have IIIF image URLs and ALTO XML URLs. "
+        "Prefer view_document (with reference_code) when you have an archive reference code."
+    ),
+    app=AppConfig(resource_uri=RESOURCE_URI),
+)
+async def view_document_urls(
+    image_urls: Annotated[list[str], Field(description="List of image URLs (one per page, IIIF or direct JPEG/PNG).")],
+    text_layer_urls: Annotated[list[str], Field(description="List of text layer XML URLs (ALTO/PAGE) paired 1:1 with image_urls. Use empty string for pages without transcription.")],
+    ctx: Context,
+    metadata: Annotated[list[str] | None, Field(description="Optional per-page labels paired 1:1 with image_urls.")] = None,
+    highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
+) -> ToolResult:
+    """View document pages from raw image and text layer URLs."""
+    if not image_urls:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
+    if len(image_urls) != len(text_layer_urls):
+        return ToolResult(
+            content=[types.TextContent(
+                type="text",
+                text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
+            )],
+        )
+    if metadata and len(metadata) != len(image_urls):
+        return ToolResult(
+            content=[types.TextContent(
+                type="text",
+                text=f"Error: metadata length ({len(metadata)}) must match image_urls length ({len(image_urls)}).",
+            )],
+        )
+
+    has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
+    page_numbers = list(range(1, len(image_urls) + 1))
+
+    # Try to get first page transcription for the model summary
+    transcription = ""
+    first_text_url = text_layer_urls[0] if text_layer_urls else ""
+    if first_text_url and first_text_url.startswith(("http://", "https://")):
+        try:
+            first_text_layer = await fetch_and_parse_text_layer(first_text_url)
+            text_lines = first_text_layer.get("textLines", [])
+            transcription = "\n".join(line["transcription"] for line in text_lines)
+        except Exception as e:
+            logger.warning("view_document_urls: failed to fetch first page text layer: %s", e)
+
+    summary_parts = [f"Displaying {len(image_urls)} page(s)."]
+    if transcription:
+        summary_parts.append("Page 1 transcription:")
+        summary_parts.append(transcription)
+    else:
+        summary_parts.append("Page 1: (no transcribed text)")
+
+    if not has_ui:
+        summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
+    summary = "\n".join(summary_parts)
+
+    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", "")
+
+    logger.info("view_document_urls: displaying %d page(s)", len(image_urls))
+    return ToolResult(
+        content=[types.TextContent(type="text", text=summary)],
+        structured_content=state,
+    )
+
+
+@mcp.tool(
+    name="get_viewer_state",
+    description="Get the current viewer state. Used by the viewer to poll for changes from LLM tool calls.",
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+)
+async def get_viewer_state() -> ToolResult:
+    """Return current viewer session state (the View polls this)."""
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"Viewer state v{_viewer_state['version']}")],
+        structured_content=dict(_viewer_state),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Model-visible update tools — share RESOURCE_URI so the host routes results
+# to the existing viewer iframe (same pattern as Brick Builder's brick_add,
+# brick_paint, etc.).
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="viewer_set_highlight",
+    description=(
+        "Update the search highlight in an already-open document viewer. "
+        "Use this INSTEAD of calling view_document/view_document_urls again when the viewer is already showing pages "
+        "and the user asks to highlight or search for a different term."
+    ),
+)
+async def viewer_set_highlight(
+    highlight_term: Annotated[str, Field(description="Search term to highlight in the viewer. Use empty string to clear highlights.")],
+) -> ToolResult:
+    """Change the highlight term in the existing viewer."""
+    if _viewer_state["version"] == 0:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: no document is currently displayed. Use view_document or view_document_urls first.")])
+
+    _viewer_state["highlight_term"] = highlight_term
+    _viewer_state["version"] += 1
+    state = dict(_viewer_state)
+
+    action = f"Highlighting '{highlight_term}'" if highlight_term else "Cleared highlights"
+    logger.info("viewer_set_highlight: %s (v%d)", action, state["version"])
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"{action} in the document viewer.")],
+        structured_content=state,
+    )
+
+
+@mcp.tool(
+    name="viewer_navigate",
+    description=(
+        "Navigate an already-open document viewer to different pages of the same or a new document. "
+        "Use this INSTEAD of calling view_document/view_document_urls again when the viewer is already open "
+        "and the user asks to see different pages."
+    ),
+)
+async def viewer_navigate(
+    reference_code: Annotated[str, Field(description="Document reference code (e.g. 'SE/RA/420422/01').")],
+    pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
+    highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
+    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
+) -> ToolResult:
+    """Navigate the existing viewer to new pages."""
+    if not reference_code or not reference_code.strip():
+        return ToolResult(content=[types.TextContent(type="text", text="Error: reference_code must not be empty.")])
+    if not pages or not pages.strip():
+        return ToolResult(content=[types.TextContent(type="text", text="Error: pages must not be empty.")])
+
+    try:
+        browse_ops = BrowseOperations(http_client=default_http_client)
+        browse_result = await browse_ops.browse_document(
+            reference_code=reference_code,
+            pages=pages,
+            highlight_term=highlight_term,
+            max_pages=max_pages,
+        )
+    except Exception as e:
+        logger.error("viewer_navigate: failed to resolve document: %s", e)
+        return ToolResult(content=[types.TextContent(type="text", text=f"Error resolving document: {e}")])
+
+    if not browse_result.contexts:
+        return ToolResult(content=[types.TextContent(type="text", text=f"No pages found for {reference_code} pages={pages}.")])
+
+    image_urls = [page_ctx.image_url for page_ctx in browse_result.contexts]
+    text_layer_urls = [page_ctx.alto_url for page_ctx in browse_result.contexts]
+    page_numbers = [page_ctx.page_number for page_ctx in browse_result.contexts]
+
+    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", reference_code)
+
+    logger.info("viewer_navigate: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"Navigated to {len(browse_result.contexts)} page(s) of {reference_code}.")],
+        structured_content=state,
+    )
+
+
+@mcp.tool(
+    name="viewer_navigate_urls",
+    description=(
+        "Navigate an already-open document viewer to new pages using raw URLs. "
+        "Use this INSTEAD of calling view_document_urls again when the viewer is already open. "
+        "Provide new paired lists of image and text layer URLs."
+    ),
+)
+async def viewer_navigate_urls(
+    image_urls: Annotated[list[str], Field(description="List of image URLs (one per page).")],
+    text_layer_urls: Annotated[list[str], Field(description="List of text layer XML URLs paired 1:1 with image_urls. Use empty string for pages without transcription.")],
+    highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
+) -> ToolResult:
+    """Navigate the existing viewer to new pages from raw URLs."""
+    if not image_urls:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
+    if len(image_urls) != len(text_layer_urls):
+        return ToolResult(
+            content=[types.TextContent(
+                type="text",
+                text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
+            )],
+        )
+
+    page_numbers = list(range(1, len(image_urls) + 1))
+    state = _update_viewer_state(image_urls, text_layer_urls, page_numbers, highlight_term or "", "")
+
+    logger.info("viewer_navigate_urls: navigated to %d page(s)", len(image_urls))
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"Navigated to {len(image_urls)} page(s).")],
+        structured_content=state,
     )
 
 

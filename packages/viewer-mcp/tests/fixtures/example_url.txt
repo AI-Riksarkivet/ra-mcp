@@ -1,0 +1,41 @@
+image_urls:
+  [
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00002/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00003/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00004/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00005/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00006/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00007/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00008/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00009/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00010/full/max/0/default.jpg",
+    "https://lbiiif.riksarkivet.se/arkis!30002056_00011/full/max/0/default.jpg"
+  ]
+
+alto_urls:
+  [
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00002.xml",
+    "",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00004.xml",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00005.xml",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00006.xml",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00007.xml",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00008.xml",
+    "",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00010.xml",
+    "https://sok.riksarkivet.se/dokument/alto/3000/30002056/30002056_00011.xml"
+  ]
+
+metadata:
+  [
+    "metadata1",
+    "metadata1",
+    "metadata1",
+    "",
+    "metadata1",
+    "metadata1",
+    "metadata1",
+    "metadata1",
+    "metadata1",
+    "metadata1"
+  ]
