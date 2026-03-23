@@ -177,6 +177,7 @@ If you already have URLs (e.g. from a IIIF manifest or previous browse result), 
 | First time viewing a document | `view_document` or `view_document_urls` |
 | User asks to "go to page 3" | `viewer_go_to_page` |
 | User asks to highlight/search a different term | `viewer_set_highlight` |
+| User says "show the viewer again" / "open the document" | `viewer_reopen` |
 | User asks to load a different set of pages | `viewer_navigate` or `viewer_navigate_urls` |
 | User asks to view a completely different document | `view_document` or `view_document_urls` |
 

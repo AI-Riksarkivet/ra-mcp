@@ -27,6 +27,7 @@ class ViewerState(BaseModel):
     highlight_term: str = ""
     reference_code: str = ""
     go_to_page: int = -1  # -1 = no navigation request, 0+ = jump to this page index
+    request_fullscreen: bool = False
 
 
 async def get_state(view_id: str) -> ViewerState:

@@ -24,20 +24,30 @@ let { app, data, currentPageIndex, onPageSelect, width = 120, onWidthChange, pag
 
 let totalPages = $derived(data.pageUrls.length);
 
-// Cache: page index → thumbnail data URL (capped to limit memory, reactive)
 const THUMB_CACHE_MAX = 50;
 let thumbnailCache = new SvelteMap<number, string>();
-
-// Container ref for scrolling
 let containerEl: HTMLDivElement;
-
-// Batch loading state
 let pendingIndices = new Set<number>();
 let inFlightIndices = new Set<number>();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let batchInFlight = false;
 let batchQueue: number[] = [];
 let destroyed = false;
+
+let prevThumbUrls: typeof data.pageUrls | null = null;
+$effect(() => {
+  const changed = !prevThumbUrls
+    || prevThumbUrls.length !== data.pageUrls.length
+    || prevThumbUrls.some((p, i) => p.image !== data.pageUrls[i].image);
+  prevThumbUrls = data.pageUrls;
+  if (changed) {
+    thumbnailCache.clear();
+    pendingIndices.clear();
+    inFlightIndices.clear();
+    batchQueue.length = 0;
+    batchInFlight = false;
+  }
+});
 
 let resizing = $state(false);
 

@@ -35,6 +35,7 @@ function applyViewerState(sc: Record<string, unknown>) {
   const textLayerUrls = sc.text_layer_urls as string[] | undefined;
   const highlightTerm = (sc.highlight_term as string) ?? "";
   const goToPage = (sc.go_to_page as number) ?? -1;
+  const requestFullscreen = (sc.request_fullscreen as boolean) ?? false;
   const version = (sc.version as number) ?? 0;
   const scViewId = (sc.view_id as string) ?? "";
 
@@ -45,6 +46,10 @@ function applyViewerState(sc: Record<string, unknown>) {
   if (version > 0 && version <= lastSeenVersion) return;
   lastSeenVersion = version;
   if (scViewId) viewId = scViewId;
+
+  if (requestFullscreen && app && !isFullscreen) {
+    app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+  }
 
   if (!urlsChanged(imageUrls)) {
     const changed = (viewerData && viewerData.highlightTerm !== highlightTerm)

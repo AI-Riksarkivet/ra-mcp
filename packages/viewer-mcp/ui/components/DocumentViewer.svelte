@@ -297,6 +297,7 @@ $effect(() => {
 
   highlightedLineId = null;
   tooltip = null;
+  resetContextState();
 
   const img = new Image();
   let cancelled = false;

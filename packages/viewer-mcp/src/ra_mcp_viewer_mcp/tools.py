@@ -240,6 +240,26 @@ async def viewer_go_to_page(
 
 
 @mcp.tool(
+    name="viewer_reopen",
+    description=(
+        "Bring back the document viewer to fullscreen. "
+        "Use when the user has scrolled past the viewer and wants to see it again, "
+        "or says 'show the viewer' / 'open the document again'."
+    ),
+)
+async def viewer_reopen() -> ToolResult:
+    if not viewer_state.latest_view_id:
+        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open. Use view_document or view_document_urls first.")])
+
+    state = await get_state(viewer_state.latest_view_id)
+    state.request_fullscreen = True
+    await put_state(state)
+
+    logger.info("viewer_reopen: requesting fullscreen (v%d)", state.version)
+    return ToolResult(content=[types.TextContent(type="text", text="Document viewer reopened in fullscreen.")])
+
+
+@mcp.tool(
     name="viewer_set_highlight",
     description=(
         "Update the search highlight in an already-open document viewer. "

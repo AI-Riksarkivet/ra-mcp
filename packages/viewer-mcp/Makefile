@@ -41,6 +41,6 @@ clean:
 # Full setup: install and build
 all: install build
 
-# Expose local server to the internet using Cloudflare Tunnel, than add: <tunnel_url>/mcp
-tunnel: 
-	npx cloudflared tunnel --url http://localhost:3001
+# Expose local server via ngrok (add <ngrok_url>/mcp to Claude)
+tunnel:
+	ngrok http 3001
