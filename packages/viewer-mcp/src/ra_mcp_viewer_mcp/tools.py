@@ -1,14 +1,3 @@
-"""
-Document Viewer MCP App — Tool & resource registrations.
-
-Tools:
-  - view_document: entry point, resolves reference code → URLs, returns transcription for the model
-  - view_document_urls: entry point with raw image/text-layer URLs (no reference code resolution)
-  - get_viewer_state: app-only polling tool — returns current viewer state (View polls this)
-  - load_page: fetches a single page on demand (called by View via callServerTool)
-  - load_thumbnails: batch-fetches thumbnail images (called by View via callServerTool)
-"""
-
 import asyncio
 import logging
 from pathlib import Path
@@ -21,12 +10,12 @@ from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
 
-import ra_mcp_viewer_mcp.state as viewer_state
-from ra_mcp_browse_lib.browse_operations import BrowseOperations
-from ra_mcp_common.http_client import default_http_client
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
-from ra_mcp_viewer_mcp.state import ViewerState, get_state, put_state
+from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
+from ra_mcp_viewer_mcp.models import ViewerState
+from ra_mcp_viewer_mcp.resolve import browse_resolve_document, validate_url_pairs
+from ra_mcp_viewer_mcp.state import get_active_state, get_state, put_state
 
 
 logger = logging.getLogger("ra_mcp.viewer.tools")
@@ -53,59 +42,41 @@ async def view_document(
     max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
 ) -> ToolResult:
     """View document pages with zoomable images and text layer overlays."""
-    if not reference_code or not reference_code.strip():
-        return ToolResult(content=[types.TextContent(type="text", text="Error: reference_code must not be empty.")])
-    if not pages or not pages.strip():
-        return ToolResult(content=[types.TextContent(type="text", text="Error: pages must not be empty.")])
-
     try:
-        browse_ops = BrowseOperations(http_client=default_http_client)
-        browse_result = await browse_ops.browse_document(
-            reference_code=reference_code,
-            pages=pages,
-            highlight_term=highlight_term,
-            max_pages=max_pages,
+        resolved = await browse_resolve_document(
+            reference_code,
+            pages,
+            highlight_term,
+            max_pages,
         )
+    except (ValueError, LookupError) as e:
+        return error_result(str(e))
     except Exception as e:
         logger.error("view_document: failed to resolve document: %s", e)
-        return ToolResult(content=[types.TextContent(type="text", text=f"Error resolving document: {e}")])
-
-    if not browse_result.contexts:
-        return ToolResult(content=[types.TextContent(type="text", text=f"No pages found for {reference_code} pages={pages}.")])
-
-    image_urls = [page_ctx.image_url for page_ctx in browse_result.contexts]
-    text_layer_urls = [page_ctx.alto_url for page_ctx in browse_result.contexts]
-    page_numbers = [page_ctx.page_number for page_ctx in browse_result.contexts]
+        return error_result(f"Error resolving document: {e}")
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
-
-    # Build summary with first page transcription
-    first_page = browse_result.contexts[0]
-    transcription = first_page.full_text.strip() if first_page.full_text else ""
-
-    summary_parts = [f"Displaying {len(browse_result.contexts)} page(s) of {reference_code}."]
-    if transcription:
-        summary_parts.append(f"Page {first_page.page_number} transcription:")
-        summary_parts.append(transcription)
-    else:
-        summary_parts.append(f"Page {first_page.page_number}: (no transcribed text)")
-
-    if not has_ui:
-        summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
-    summary = "\n".join(summary_parts)
+    summary = build_summary(
+        len(resolved.image_urls),
+        resolved.first_transcription,
+        resolved.page_numbers[0],
+        has_ui,
+        resolved.image_urls,
+        reference_code,
+    )
 
     view_id = str(uuid4())
     state = ViewerState(
         view_id=view_id,
-        image_urls=image_urls,
-        text_layer_urls=text_layer_urls,
-        page_numbers=page_numbers,
+        image_urls=resolved.image_urls,
+        text_layer_urls=resolved.text_layer_urls,
+        page_numbers=resolved.page_numbers,
         highlight_term=highlight_term or "",
         reference_code=reference_code,
     )
     sc = await put_state(state)
 
-    logger.info("view_document: %s pages=%s, resolved %d page(s), view_id=%s", reference_code, pages, len(browse_result.contexts), view_id)
+    logger.info("view_document: %s pages=%s, resolved %d page(s), view_id=%s", reference_code, pages, len(resolved.image_urls), view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content=sc,
@@ -133,28 +104,9 @@ async def view_document_urls(
     highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
 ) -> ToolResult:
     """View document pages from raw image and text layer URLs."""
-    if not image_urls:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
-    if len(image_urls) != len(text_layer_urls):
-        return ToolResult(
-            content=[
-                types.TextContent(
-                    type="text",
-                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
-                )
-            ],
-        )
-    if metadata and len(metadata) != len(image_urls):
-        return ToolResult(
-            content=[
-                types.TextContent(
-                    type="text",
-                    text=f"Error: metadata length ({len(metadata)}) must match image_urls length ({len(image_urls)}).",
-                )
-            ],
-        )
+    if err := validate_url_pairs(image_urls, text_layer_urls, metadata):
+        return error_result(err)
 
-    has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
     page_numbers = list(range(1, len(image_urls) + 1))
 
     view_id = str(uuid4())
@@ -180,16 +132,8 @@ async def view_document_urls(
 
     sc, transcription = await asyncio.gather(put_state(state), _fetch_first_transcription())
 
-    summary_parts = [f"Displaying {len(image_urls)} page(s)."]
-    if transcription:
-        summary_parts.append("Page 1 transcription:")
-        summary_parts.append(transcription)
-    else:
-        summary_parts.append("Page 1: (no transcribed text)")
-
-    if not has_ui:
-        summary_parts.append("\nImage URLs:\n" + "\n".join(image_urls))
-    summary = "\n".join(summary_parts)
+    has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
+    summary = build_summary(len(image_urls), transcription, 1, has_ui, image_urls)
 
     logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
     return ToolResult(
@@ -224,19 +168,20 @@ async def get_viewer_state(
 async def viewer_go_to_page(
     page: Annotated[int, Field(description="Page number to navigate to (1-based).")],
 ) -> ToolResult:
-    if not viewer_state.latest_view_id:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
+    try:
+        state = await get_active_state()
+    except LookupError as e:
+        return error_result(str(e))
 
-    state = await get_state(viewer_state.latest_view_id)
     total = len(state.image_urls)
     if page < 1 or page > total:
-        return ToolResult(content=[types.TextContent(type="text", text=f"Error: page {page} out of range (1-{total}).")])
+        return error_result(f"Page {page} out of range (1-{total}).")
 
     state.go_to_page = page - 1  # convert to 0-based index
     await put_state(state)
 
     logger.info("viewer_go_to_page: page %d (v%d)", page, state.version)
-    return ToolResult(content=[types.TextContent(type="text", text=f"Navigated to page {page}.")])
+    return text_result(f"Navigated to page {page}.")
 
 
 @mcp.tool(
@@ -248,15 +193,16 @@ async def viewer_go_to_page(
     ),
 )
 async def viewer_reopen() -> ToolResult:
-    if not viewer_state.latest_view_id:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open. Use view_document or view_document_urls first.")])
+    try:
+        state = await get_active_state()
+    except LookupError:
+        return error_result("No viewer is open. Use view_document or view_document_urls first.")
 
-    state = await get_state(viewer_state.latest_view_id)
     state.request_fullscreen = True
     await put_state(state)
 
     logger.info("viewer_reopen: requesting fullscreen (v%d)", state.version)
-    return ToolResult(content=[types.TextContent(type="text", text="Document viewer reopened in fullscreen.")])
+    return text_result("Document viewer reopened in fullscreen.")
 
 
 @mcp.tool(
@@ -270,20 +216,17 @@ async def viewer_reopen() -> ToolResult:
 async def viewer_set_highlight(
     highlight_term: Annotated[str, Field(description="Search term to highlight in the viewer. Use empty string to clear highlights.")],
 ) -> ToolResult:
-    if not viewer_state.latest_view_id:
-        return ToolResult(
-            content=[types.TextContent(type="text", text="Error: no document is currently displayed. Use view_document or view_document_urls first.")]
-        )
+    try:
+        state = await get_active_state()
+    except LookupError:
+        return error_result("No document is currently displayed. Use view_document or view_document_urls first.")
 
-    state = await get_state(viewer_state.latest_view_id)
     state.highlight_term = highlight_term
     await put_state(state)
 
     action = f"Highlighting '{highlight_term}'" if highlight_term else "Cleared highlights"
     logger.info("viewer_set_highlight: %s (v%d)", action, state.version)
-    return ToolResult(
-        content=[types.TextContent(type="text", text=f"{action} in the document viewer.")],
-    )
+    return text_result(f"{action} in the document viewer.")
 
 
 @mcp.tool(
@@ -301,45 +244,33 @@ async def viewer_navigate(
     max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
 ) -> ToolResult:
     """Navigate the existing viewer to new pages."""
-    if not reference_code or not reference_code.strip():
-        return ToolResult(content=[types.TextContent(type="text", text="Error: reference_code must not be empty.")])
-    if not pages or not pages.strip():
-        return ToolResult(content=[types.TextContent(type="text", text="Error: pages must not be empty.")])
+    try:
+        state = await get_active_state()
+    except LookupError as e:
+        return error_result(str(e))
 
     try:
-        browse_ops = BrowseOperations(http_client=default_http_client)
-        browse_result = await browse_ops.browse_document(
-            reference_code=reference_code,
-            pages=pages,
-            highlight_term=highlight_term,
-            max_pages=max_pages,
+        resolved = await browse_resolve_document(
+            reference_code,
+            pages,
+            highlight_term,
+            max_pages,
         )
+    except (ValueError, LookupError) as e:
+        return error_result(str(e))
     except Exception as e:
         logger.error("viewer_navigate: failed to resolve document: %s", e)
-        return ToolResult(content=[types.TextContent(type="text", text=f"Error resolving document: {e}")])
+        return error_result(f"Error resolving document: {e}")
 
-    if not browse_result.contexts:
-        return ToolResult(content=[types.TextContent(type="text", text=f"No pages found for {reference_code} pages={pages}.")])
-
-    image_urls = [page_ctx.image_url for page_ctx in browse_result.contexts]
-    text_layer_urls = [page_ctx.alto_url for page_ctx in browse_result.contexts]
-    page_numbers = [page_ctx.page_number for page_ctx in browse_result.contexts]
-
-    if not viewer_state.latest_view_id:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
-
-    state = await get_state(viewer_state.latest_view_id)
-    state.image_urls = image_urls
-    state.text_layer_urls = text_layer_urls
-    state.page_numbers = page_numbers
+    state.image_urls = resolved.image_urls
+    state.text_layer_urls = resolved.text_layer_urls
+    state.page_numbers = resolved.page_numbers
     state.highlight_term = highlight_term or ""
     state.reference_code = reference_code
     await put_state(state)
 
-    logger.info("viewer_navigate: %s pages=%s, resolved %d page(s)", reference_code, pages, len(browse_result.contexts))
-    return ToolResult(
-        content=[types.TextContent(type="text", text=f"Navigated to {len(browse_result.contexts)} page(s) of {reference_code}.")],
-    )
+    logger.info("viewer_navigate: %s pages=%s, resolved %d page(s)", reference_code, pages, len(resolved.image_urls))
+    return text_result(f"Navigated to {len(resolved.image_urls)} page(s) of {reference_code}.")
 
 
 @mcp.tool(
@@ -357,21 +288,14 @@ async def viewer_navigate_urls(
     ],
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
 ) -> ToolResult:
-    if not image_urls:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: image_urls must not be empty.")])
-    if len(image_urls) != len(text_layer_urls):
-        return ToolResult(
-            content=[
-                types.TextContent(
-                    type="text",
-                    text=f"Error: mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers).",
-                )
-            ],
-        )
-    if not viewer_state.latest_view_id:
-        return ToolResult(content=[types.TextContent(type="text", text="Error: no viewer is open.")])
+    if err := validate_url_pairs(image_urls, text_layer_urls):
+        return error_result(err)
 
-    state = await get_state(viewer_state.latest_view_id)
+    try:
+        state = await get_active_state()
+    except LookupError as e:
+        return error_result(str(e))
+
     state.image_urls = image_urls
     state.text_layer_urls = text_layer_urls
     state.page_numbers = list(range(1, len(image_urls) + 1))
@@ -380,9 +304,7 @@ async def viewer_navigate_urls(
     await put_state(state)
 
     logger.info("viewer_navigate_urls: navigated to %d page(s)", len(image_urls))
-    return ToolResult(
-        content=[types.TextContent(type="text", text=f"Navigated to {len(image_urls)} page(s).")],
-    )
+    return text_result(f"Navigated to {len(image_urls)} page(s).")
 
 
 @mcp.tool(
