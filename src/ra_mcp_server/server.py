@@ -1,19 +1,3 @@
-"""
-Riksarkivet MCP Server - Composable Main Entry Point
-
-This server uses composition to combine multiple tool servers.
-Modules can be enabled/disabled via command-line flags for flexible deployment.
-
-Default modules:
-- search: Search tools for transcribed document search
-- browse: Browse tools for viewing document pages
-- guide: Historical documentation and archival guides
-
-Environment variables for debugging:
-- RA_MCP_LOG_LEVEL: Set logging level (DEBUG, INFO, WARNING, ERROR) - default: INFO
-- RA_MCP_LOG_API: Enable API call logging to file (ra_mcp_api.log)
-- RA_MCP_TIMEOUT: Override default timeout in seconds (default: 60)
-"""
 
 import argparse
 import atexit

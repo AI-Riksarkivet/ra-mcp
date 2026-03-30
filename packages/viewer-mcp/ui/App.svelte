@@ -141,6 +141,11 @@ onMount(async () => {
     hostContext = { ...hostContext, ...params };
   };
 
+  instance.onteardown = async () => {
+    stopPolling();
+    return {};
+  };
+
   await instance.connect();
   app = instance;
   hostContext = instance.getHostContext();
@@ -148,12 +153,14 @@ onMount(async () => {
 
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let pollInterval = 2000;
+  let pollActive = true;
   const POLL_MIN = 2000;
   const POLL_MAX = 10000;
 
   function schedulePoll() {
+    if (!pollActive) return;
     pollTimer = setTimeout(async () => {
-      if (!viewId) { schedulePoll(); return; }
+      if (!viewId || !pollActive) { schedulePoll(); return; }
       try {
         const prevVersion = lastSeenVersion;
         const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: viewId } });
@@ -161,7 +168,6 @@ onMount(async () => {
           const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
           if (sc) applyViewerState(sc);
         }
-        // Back off when idle, speed up on changes
         pollInterval = lastSeenVersion > prevVersion
           ? POLL_MIN
           : Math.min(pollInterval + 1000, POLL_MAX);
@@ -172,12 +178,18 @@ onMount(async () => {
 
   function startPolling() {
     if (pollTimer) return;
+    pollActive = true;
     pollInterval = POLL_MIN;
     schedulePoll();
   }
 
+  function stopPolling() {
+    pollActive = false;
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  }
+
   return () => {
-    if (pollTimer) clearTimeout(pollTimer);
+    stopPolling();
   };
 });
 </script>

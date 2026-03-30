@@ -9,9 +9,9 @@
     "dev": "cross-env NODE_ENV=development cross-env INPUT=mcp-app.html vite build --watch"
   },
   "dependencies": {
-    "@modelcontextprotocol/ext-apps": "^1.1.0",
+    "@modelcontextprotocol/ext-apps": "^1.3.2",
     "lru-cache": "^11.2.6",
-    "svelte": "^5.53.7"
+    "svelte": "^5.55.1"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.0",

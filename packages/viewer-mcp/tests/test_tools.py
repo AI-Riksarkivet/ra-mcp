@@ -20,6 +20,7 @@ def _reset_viewer_state():
     yield
     _state_mod.latest_view_id = ""
 
+
 FAKE_IMAGE_DATA_URL = "data:image/jpeg;base64,/9j/fakedata"
 FAKE_THUMBNAIL_DATA_URL = "data:image/jpeg;base64,/9j/thumbdata"
 

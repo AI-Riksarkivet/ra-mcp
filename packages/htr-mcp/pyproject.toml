@@ -5,7 +5,7 @@ description = "MCP tool for HTR transcription via remote Gradio Space"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastmcp>=3.0.0",
+    "fastmcp>=3.1.1",
     "gradio-client",
 ]
 license = "Apache-2.0"
