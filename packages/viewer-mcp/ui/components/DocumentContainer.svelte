@@ -28,6 +28,8 @@ let hasThumbnails = $derived(data.pageUrls.length > 1);
 let showThumbnails = $state(true);
 let currentPageMetadata = $derived(data.pageMetadata[currentPageIndex] ?? "");
 let currentBildvisningUrl = $derived(data.pageUrls[currentPageIndex]?.bildvisning ?? "");
+let innerWidth = $state(typeof window !== "undefined" ? window.innerWidth : 1024);
+let isNarrow = $derived(innerWidth < 640);
 let thumbnailStripWidth = $state(120);
 
 // Cross-page search state
@@ -273,9 +275,20 @@ $effect(() => {
 });
 </script>
 
+<svelte:window bind:innerWidth />
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="split-layout" tabindex="-1" onkeydown={handleKeydown}>
-  {#if hasThumbnails}
+<div class="split-layout" class:narrow={isNarrow} tabindex="-1" onkeydown={handleKeydown}>
+  {#if hasThumbnails && isNarrow && showThumbnails}
+    <ThumbnailStrip
+      {app}
+      {data}
+      {currentPageIndex}
+      horizontal
+      onPageSelect={handlePageSelect}
+      {pageMatchCounts}
+    />
+  {/if}
+  {#if hasThumbnails && !isNarrow}
     <div class="thumbnail-wrapper" class:collapsed={!showThumbnails} style:width="{showThumbnails ? thumbnailStripWidth : 0}px" style:min-width="{showThumbnails ? thumbnailStripWidth : 0}px">
       <ThumbnailStrip
         {app}
@@ -295,7 +308,7 @@ $effect(() => {
       pageIndex={currentPageIndex}
       {totalPages}
       pageMetadata={currentPageMetadata}
-      {canFullscreen}
+      canFullscreen={canFullscreen && !isNarrow}
       {isFullscreen}
       {onToggleFullscreen}
       {hasThumbnails}
@@ -312,6 +325,7 @@ $effect(() => {
       {globalSearchLoading}
       onGlobalSearch={handleGlobalSearch}
       onGlobalNavigate={handleGlobalNavigate}
+      {isNarrow}
     />
   {:else}
     <div class="page-loading">
@@ -328,6 +342,10 @@ $effect(() => {
   max-height: 100%;
   overflow: hidden;
   gap: 0;
+}
+
+.split-layout.narrow {
+  flex-direction: column;
 }
 
 .split-layout:focus {

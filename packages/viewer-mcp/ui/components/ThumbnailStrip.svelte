@@ -11,12 +11,13 @@ interface Props {
   data: ViewerData;
   currentPageIndex: number;
   onPageSelect: (index: number) => void;
+  horizontal?: boolean;
   width?: number;
   onWidthChange?: (width: number) => void;
   pageMatchCounts?: Map<number, number>;
 }
 
-let { app, data, currentPageIndex, onPageSelect, width = 120, onWidthChange, pageMatchCounts }: Props = $props();
+let { app, data, currentPageIndex, onPageSelect, horizontal = false, width = 120, onWidthChange, pageMatchCounts }: Props = $props();
 
 // ---------------------------------------------------------------------------
 // State
@@ -226,11 +227,13 @@ function getThumbnailUrl(index: number): string | null {
 }
 </script>
 
-<div class="thumbnail-strip" class:resizing bind:this={containerEl} style:width="{width}px" style:min-width="{width}px" onscroll={handleScroll}>
-  <div
-    class="resize-handle"
-    use:resizeHandle={{ edge: 'right', min: 80, max: 250, onResize: (w) => onWidthChange?.(w), onResizeStart: () => resizing = true, onResizeEnd: () => resizing = false }}
-  ></div>
+<div class="thumbnail-strip" class:resizing class:horizontal bind:this={containerEl} style:width={horizontal ? undefined : `${width}px`} style:min-width={horizontal ? undefined : `${width}px`} onscroll={handleScroll}>
+  {#if !horizontal}
+    <div
+      class="resize-handle"
+      use:resizeHandle={{ edge: 'right', min: 80, max: 250, onResize: (w) => onWidthChange?.(w), onResizeStart: () => resizing = true, onResizeEnd: () => resizing = false }}
+    ></div>
+  {/if}
   <div style:height="{topSpacerHeight}px" style:flex-shrink="0"></div>
   {#each visibleIndices as i (i)}
     {@const thumbUrl = getThumbnailUrl(i)}
@@ -278,6 +281,25 @@ function getThumbnailUrl(index: number): string | null {
   position: relative;
 }
 
+.thumbnail-strip.horizontal {
+  height: auto;
+  width: 100% !important;
+  min-width: 100% !important;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: none;
+  border-bottom: 1px solid var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
+  border-radius: var(--border-radius-lg, 10px) var(--border-radius-lg, 10px) 0 0;
+  padding: 0.25rem 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.thumbnail-strip.horizontal::-webkit-scrollbar {
+  display: none;
+}
+
 .resize-handle {
   position: absolute;
   top: 0;
@@ -313,6 +335,23 @@ function getThumbnailUrl(index: number): string | null {
   gap: 2px;
   flex-shrink: 0;
   position: relative;
+}
+
+.horizontal .thumbnail-slot {
+  flex-direction: row;
+}
+
+.horizontal .thumbnail-inner {
+  width: 56px;
+  min-height: 64px;
+}
+
+.horizontal .thumbnail-img {
+  height: 64px;
+}
+
+.horizontal .thumbnail-placeholder {
+  height: 64px;
 }
 
 .thumbnail-inner {

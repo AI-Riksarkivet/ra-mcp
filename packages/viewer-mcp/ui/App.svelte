@@ -48,7 +48,7 @@ function applyViewerState(sc: Record<string, unknown>) {
   lastSeenVersion = version;
   if (scViewId) viewId = scViewId;
 
-  if (requestFullscreen && app && !isFullscreen) {
+  if (requestFullscreen && app && !isFullscreen && window.innerWidth >= 640) {
     app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
 
@@ -157,7 +157,9 @@ onMount(async () => {
   await instance.connect();
   app = instance;
   hostContext = instance.getHostContext();
-  instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+  if (window.innerWidth >= 640) {
+    instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+  }
 
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let pollInterval = 2000;

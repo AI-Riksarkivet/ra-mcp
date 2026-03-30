@@ -155,7 +155,7 @@ let showPopover = $state(false);
   z-index: 15;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

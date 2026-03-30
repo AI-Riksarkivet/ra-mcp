@@ -140,6 +140,23 @@ export class CanvasController {
     this.draw();
   }
 
+  /** Zoom and pan so the given image-space rectangle fills the viewport with padding. */
+  zoomToRect(x: number, y: number, w: number, h: number, padding = 40): void {
+    if (!this.canvas) return;
+    const cw = this.canvas.clientWidth;
+    const ch = this.canvas.clientHeight;
+    const scaleX = (cw - padding * 2) / w;
+    const scaleY = (ch - padding * 2) / h;
+    const scale = Math.min(scaleX, scaleY);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    this.transform.scale = scale;
+    this.transform.x = cw / 2 - cx * scale;
+    this.transform.y = ch / 2 - cy * scale;
+    this.targetScale = scale;
+    this.draw();
+  }
+
   requestDraw(): void {
     if (!this.isVisible) {
       this.pendingDraw = true;

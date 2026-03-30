@@ -34,6 +34,7 @@ interface Props {
   globalSearchLoading?: boolean;
   onGlobalSearch?: (term: string) => void;
   onGlobalNavigate?: (direction: "prev" | "next") => void;
+  isNarrow?: boolean;
 }
 
 let {
@@ -59,6 +60,7 @@ let {
   globalSearchLoading = false,
   onGlobalSearch,
   onGlobalNavigate,
+  isNarrow = false,
 }: Props = $props();
 
 let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
@@ -70,6 +72,11 @@ let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
 let tooltip = $state<TooltipState | null>(null);
 let highlightedLineId = $state<string | null>(null);
 let showPanel = $state(false);
+
+// Auto-open panel when entering fullscreen on desktop
+$effect.pre(() => {
+  if (isFullscreen && !isNarrow) showPanel = true;
+});
 let panelWidth = $state(280);
 
 // Polygon style controls
@@ -85,6 +92,8 @@ let activeMatchIndex = $state(0);
 
 let textLines = $derived(pageData?.textLayer?.textLines ?? []);
 let hasTextLines = $derived(textLines.length > 0);
+let hasPanelContent = $derived(hasTextLines || !!documentInfo || !!bildvisningUrl);
+// Panel is always available — shows empty state when no content
 let currentPolygons = $derived(textLines.length > 0 ? buildPolygonHits(textLines) : []);
 
 // Search-derived values
@@ -198,6 +207,11 @@ function handlePanelLineClick(line: TextLine) {
   if (!controller?.isPointVisible(centerX, centerY)) {
     controller?.centerOn(centerX, centerY);
   }
+  scheduleContextUpdate(getContextState(), line);
+}
+
+function handlePanelLineDblClick(line: TextLine) {
+  controller?.zoomToRect(line.hpos, line.vpos, line.width, line.height);
   scheduleContextUpdate(getContextState(), line);
 }
 
@@ -356,7 +370,7 @@ onDestroy(() => {
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="viewer-wrapper" bind:this={wrapperEl} onkeydown={handleViewerKeydown}>
   <!-- Canvas -->
-  <div class="canvas-container" bind:this={containerEl}>
+  <div class="canvas-container" class:panel-open={showPanel && !isNarrow} style:--panel-width="{panelWidth}px" bind:this={containerEl}>
     <canvas
       bind:this={canvasEl}
       style="cursor: grab"
@@ -388,7 +402,7 @@ onDestroy(() => {
         {searchTerm}
         matchCount={searchMatches.length}
         {activeMatchIndex}
-        rightOffset={showPanel ? panelWidth : 0}
+        rightOffset={showPanel && !isNarrow ? panelWidth : 0}
         onSearchTermChange={handleSearchTermChange}
         onPrevMatch={() => goToMatch(activeMatchIndex - 1)}
         onNextMatch={() => goToMatch(activeMatchIndex + 1)}
@@ -400,12 +414,12 @@ onDestroy(() => {
 
     <CanvasToolbar
       showTranscription={showPanel}
-      hasTranscription={hasTextLines}
+      hasTranscription={true}
       {canFullscreen}
       {isFullscreen}
       {hasThumbnails}
       {showThumbnails}
-      rightOffset={showPanel ? panelWidth : 0}
+      rightOffset={showPanel && !isNarrow ? panelWidth : 0}
       onToggleTranscription={() => showPanel = !showPanel}
       onResetView={() => controller?.resetView()}
       {onToggleFullscreen}
@@ -430,21 +444,38 @@ onDestroy(() => {
       onToggleHighlights={(v) => { showHighlights = v; }}
     />
 
-    {#if hasTextLines}
+    {#if !isNarrow}
       <TranscriptionPanel
+          {textLines}
+          {highlightedLineId}
+          {documentInfo}
+          {bildvisningUrl}
+          position="right"
+          open={showPanel}
+          width={panelWidth}
+          onWidthChange={(w) => panelWidth = w}
+          onLineHover={handlePanelLineHover}
+          onLineClick={handlePanelLineClick}
+          onLineDblClick={handlePanelLineDblClick}
+          searchMatchIds={searchMatchIdSet}
+        />
+    {/if}
+  </div>
+  {#if isNarrow}
+    <TranscriptionPanel
         {textLines}
         {highlightedLineId}
         {documentInfo}
         {bildvisningUrl}
+        position="bottom"
         open={showPanel}
-        width={panelWidth}
-        onWidthChange={(w) => panelWidth = w}
+        height={200}
         onLineHover={handlePanelLineHover}
         onLineClick={handlePanelLineClick}
+        onLineDblClick={handlePanelLineDblClick}
         searchMatchIds={searchMatchIdSet}
       />
-    {/if}
-  </div>
+  {/if}
 </div>
 
 <!-- Tooltip -->
@@ -470,6 +501,10 @@ onDestroy(() => {
   overflow: hidden;
   position: relative;
   border-radius: var(--border-radius-md, 6px);
+}
+
+.canvas-container.panel-open {
+  padding-right: var(--panel-width, 280px);
 }
 .canvas-container canvas {
   display: block;
