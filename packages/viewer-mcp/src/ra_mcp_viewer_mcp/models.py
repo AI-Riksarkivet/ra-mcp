@@ -9,7 +9,6 @@ class ResolvedDocument(NamedTuple):
     image_urls: list[str]
     text_layer_urls: list[str]
     page_numbers: list[int]
-    first_transcription: str
 
 
 class TextLine(BaseModel):

@@ -58,8 +58,7 @@ async def view_document(
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
     summary = build_summary(
         len(resolved.image_urls),
-        resolved.first_transcription,
-        resolved.page_numbers[0],
+        resolved.page_numbers,
         has_ui,
         resolved.image_urls,
         reference_code,
@@ -119,21 +118,10 @@ async def view_document_urls(
         reference_code="",
     )
 
-    async def _fetch_first_transcription() -> str:
-        first_url = text_layer_urls[0] if text_layer_urls else ""
-        if not first_url or not first_url.startswith(("http://", "https://")):
-            return ""
-        try:
-            tl = await fetch_and_parse_text_layer(first_url)
-            return "\n".join(line["transcription"] for line in tl.get("textLines", []))
-        except Exception as e:
-            logger.warning("view_document_urls: failed to fetch first page text layer: %s", e)
-            return ""
-
-    sc, transcription = await asyncio.gather(put_state(state), _fetch_first_transcription())
+    sc = await put_state(state)
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
-    summary = build_summary(len(image_urls), transcription, 1, has_ui, image_urls)
+    summary = build_summary(len(image_urls), page_numbers, has_ui, image_urls)
 
     logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
     return ToolResult(

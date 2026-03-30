@@ -33,12 +33,10 @@ async def browse_resolve_document(
     if not result.contexts:
         raise LookupError(f"No pages found for {reference_code} pages={pages}.")
 
-    first = result.contexts[0]
     return ResolvedDocument(
         image_urls=[c.image_url for c in result.contexts],
         text_layer_urls=[c.alto_url for c in result.contexts],
         page_numbers=[c.page_number for c in result.contexts],
-        first_transcription=first.full_text.strip() if first.full_text else "",
     )
 
 
