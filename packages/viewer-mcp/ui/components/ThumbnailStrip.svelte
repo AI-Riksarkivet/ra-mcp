@@ -26,7 +26,7 @@ let totalPages = $derived(data.pageUrls.length);
 
 const THUMB_CACHE_MAX = 50;
 let thumbnailCache = new SvelteMap<number, string>();
-let containerEl: HTMLDivElement;
+let containerEl = $state<HTMLDivElement>(undefined!);
 let pendingIndices = new Set<number>();
 let inFlightIndices = new Set<number>();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;

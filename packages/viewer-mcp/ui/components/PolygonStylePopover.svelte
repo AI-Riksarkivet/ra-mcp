@@ -20,7 +20,7 @@ interface Props {
 
 let { color, thickness, opacity, onChange, onClose, showHighlights, onToggleHighlights }: Props = $props();
 
-let popoverEl: HTMLDivElement;
+let popoverEl = $state<HTMLDivElement>(undefined!);
 
 function onWindowClick(e: MouseEvent) {
   const target = e.target as Node;

@@ -16,7 +16,7 @@ interface Props {
 
 let { searchTerm, matchCount, activeMatchIndex, rightOffset = 0, onSearchTermChange, onPrevMatch, onNextMatch, onClose, globalTotalMatches = 0, globalSearchLoading = false }: Props = $props();
 
-let inputEl: HTMLInputElement;
+let inputEl = $state<HTMLInputElement>(undefined!);
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === "Escape") {

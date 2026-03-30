@@ -34,7 +34,7 @@ function renderMarkdown(md: string): string {
 }
 
 let lineEls: HTMLButtonElement[] = [];
-let containerEl: HTMLDivElement;
+let containerEl = $state<HTMLDivElement>(undefined!);
 let resizing = $state(false);
 
 // Auto-scroll to highlighted line when changed externally (from canvas hover)

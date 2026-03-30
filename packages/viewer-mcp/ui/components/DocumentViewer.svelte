@@ -104,9 +104,9 @@ let highlightStyle = $derived({
 });
 
 // Canvas element refs
-let canvasEl: HTMLCanvasElement;
-let containerEl: HTMLDivElement;
-let wrapperEl: HTMLDivElement;
+let canvasEl = $state<HTMLCanvasElement>(undefined!);
+let containerEl = $state<HTMLDivElement>(undefined!);
+let wrapperEl = $state<HTMLDivElement>(undefined!);
 
 let controller: CanvasController;
 
