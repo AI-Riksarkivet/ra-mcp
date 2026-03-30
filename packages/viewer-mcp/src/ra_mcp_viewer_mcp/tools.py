@@ -70,6 +70,8 @@ async def view_document(
         image_urls=resolved.image_urls,
         text_layer_urls=resolved.text_layer_urls,
         page_numbers=resolved.page_numbers,
+        bildvisning_urls=resolved.bildvisning_urls,
+        document_info=resolved.document_info,
         highlight_term=highlight_term or "",
         reference_code=reference_code,
     )
@@ -99,11 +101,11 @@ async def view_document_urls(
         list[str], Field(description="List of text layer XML URLs (ALTO/PAGE) paired 1:1 with image_urls. Use empty string for pages without transcription.")
     ],
     ctx: Context,
-    metadata: Annotated[list[str] | None, Field(description="Optional per-page labels paired 1:1 with image_urls.")] = None,
+    document_info: Annotated[str | None, Field(description="Optional markdown-formatted document metadata shown in the info panel.")] = None,
     highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
 ) -> ToolResult:
     """View document pages from raw image and text layer URLs."""
-    if err := validate_url_pairs(image_urls, text_layer_urls, metadata):
+    if err := validate_url_pairs(image_urls, text_layer_urls):
         return error_result(err)
 
     page_numbers = list(range(1, len(image_urls) + 1))
@@ -114,6 +116,7 @@ async def view_document_urls(
         image_urls=image_urls,
         text_layer_urls=text_layer_urls,
         page_numbers=page_numbers,
+        document_info=document_info or "",
         highlight_term=highlight_term or "",
         reference_code="",
     )
@@ -253,6 +256,8 @@ async def viewer_navigate(
     state.image_urls = resolved.image_urls
     state.text_layer_urls = resolved.text_layer_urls
     state.page_numbers = resolved.page_numbers
+    state.bildvisning_urls = resolved.bildvisning_urls
+    state.document_info = resolved.document_info
     state.highlight_term = highlight_term or ""
     state.reference_code = reference_code
     await put_state(state)

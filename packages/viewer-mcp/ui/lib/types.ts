@@ -28,7 +28,9 @@ export interface PageData {
 export interface PageUrl {
   image: string;
   textLayer: string;
+  bildvisning: string;
 }
+
 
 export interface ThumbnailData {
   index: number;
@@ -39,6 +41,7 @@ export interface ThumbnailData {
 export interface ViewerData {
   pageUrls: PageUrl[];
   pageMetadata: string[];
+  documentInfo: string;  // markdown-formatted metadata
   highlightTerm: string;
   highlightTermColor: string;
   goToPage: number; // -1 = no nav request, 0+ = jump to this page index

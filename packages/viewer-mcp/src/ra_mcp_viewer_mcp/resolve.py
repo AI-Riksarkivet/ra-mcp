@@ -37,19 +37,39 @@ async def browse_resolve_document(
         image_urls=[c.image_url for c in result.contexts],
         text_layer_urls=[c.alto_url for c in result.contexts],
         page_numbers=[c.page_number for c in result.contexts],
+        bildvisning_urls=[c.bildvisning_url for c in result.contexts],
+        document_info=_format_oai_metadata(result.oai_metadata, reference_code),
     )
+
+
+def _format_oai_metadata(oai_metadata: object | None, reference_code: str) -> str:
+    """Format OAI-PMH metadata as markdown for the info panel."""
+    lines = [f"**Reference code:** {reference_code}"]
+    if oai_metadata is None:
+        return "\n\n".join(lines)
+
+    oai = oai_metadata
+    if title := getattr(oai, "title", None):
+        lines.insert(0, f"## {title}")
+    if unitdate := getattr(oai, "unitdate", None):
+        lines.append(f"**Date:** {unitdate}")
+    if repository := getattr(oai, "repository", None):
+        lines.append(f"**Repository:** {repository}")
+    if unitid := getattr(oai, "unitid", None):
+        lines.append(f"**Unit ID:** {unitid}")
+    if description := getattr(oai, "description", None):
+        lines.append(f"\n{description}")
+
+    return "\n\n".join(lines)
 
 
 def validate_url_pairs(
     image_urls: list[str],
     text_layer_urls: list[str],
-    metadata: list[str] | None = None,
 ) -> str | None:
     """Return error message if URL lists are invalid, else None."""
     if not image_urls:
         return "image_urls must not be empty."
     if len(image_urls) != len(text_layer_urls):
         return f"Mismatched URL counts ({len(image_urls)} images vs {len(text_layer_urls)} text layers)."
-    if metadata and len(metadata) != len(image_urls):
-        return f"metadata length ({len(metadata)}) must match image_urls length ({len(image_urls)})."
     return None

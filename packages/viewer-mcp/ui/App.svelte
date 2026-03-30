@@ -33,6 +33,7 @@ function urlsChanged(newImageUrls: string[]): boolean {
 function applyViewerState(sc: Record<string, unknown>) {
   const imageUrls = sc.image_urls as string[] | undefined;
   const textLayerUrls = sc.text_layer_urls as string[] | undefined;
+  const bildvisningUrls = (sc.bildvisning_urls as string[] | undefined) ?? [];
   const highlightTerm = (sc.highlight_term as string) ?? "";
   const goToPage = (sc.go_to_page as number) ?? -1;
   const requestFullscreen = (sc.request_fullscreen as boolean) ?? false;
@@ -51,6 +52,8 @@ function applyViewerState(sc: Record<string, unknown>) {
     app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
 
+  const documentInfo = (sc.document_info as string) ?? "";
+
   if (!urlsChanged(imageUrls)) {
     const changed = (viewerData && viewerData.highlightTerm !== highlightTerm)
       || (viewerData && viewerData.goToPage !== goToPage);
@@ -61,8 +64,13 @@ function applyViewerState(sc: Record<string, unknown>) {
   }
 
   viewerData = {
-    pageUrls: imageUrls.map((image, i) => ({ image, textLayer: textLayerUrls[i] })),
+    pageUrls: imageUrls.map((image, i) => ({
+      image,
+      textLayer: textLayerUrls[i],
+      bildvisning: bildvisningUrls[i] ?? "",
+    })),
     pageMetadata: Array.from({ length: imageUrls.length }, () => ""),
+    documentInfo,
     highlightTerm,
     highlightTermColor: HIGHLIGHT_DEFAULTS.color,
     goToPage,

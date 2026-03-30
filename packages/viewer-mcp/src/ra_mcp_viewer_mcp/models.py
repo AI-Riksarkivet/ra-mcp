@@ -9,6 +9,8 @@ class ResolvedDocument(NamedTuple):
     image_urls: list[str]
     text_layer_urls: list[str]
     page_numbers: list[int]
+    bildvisning_urls: list[str]
+    document_info: str  # markdown-formatted metadata
 
 
 class TextLine(BaseModel):
@@ -39,5 +41,7 @@ class ViewerState(BaseModel):
     page_numbers: list[int] = []
     highlight_term: str = ""
     reference_code: str = ""
+    bildvisning_urls: list[str] = []
+    document_info: str = ""  # markdown-formatted document metadata
     go_to_page: int = -1  # -1 = no navigation request, 0+ = jump to this page index
     request_fullscreen: bool = False

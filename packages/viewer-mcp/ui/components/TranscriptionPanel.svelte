@@ -2,9 +2,13 @@
 import type { TextLine } from "../lib/types";
 import { resizeHandle } from "../lib/resize";
 
+type Tab = "transcription" | "info";
+
 interface Props {
   textLines: TextLine[];
   highlightedLineId: string | null;
+  documentInfo?: string;
+  bildvisningUrl?: string;
   open: boolean;
   width?: number;
   onWidthChange?: (width: number) => void;
@@ -13,7 +17,21 @@ interface Props {
   searchMatchIds?: Set<string>;
 }
 
-let { textLines, highlightedLineId, open, width = 280, onWidthChange, onLineHover, onLineClick, searchMatchIds }: Props = $props();
+let { textLines, highlightedLineId, documentInfo = "", bildvisningUrl = "", open, width = 280, onWidthChange, onLineHover, onLineClick, searchMatchIds }: Props = $props();
+
+let activeTab = $state<Tab>("transcription");
+let hasInfo = $derived(!!documentInfo || !!bildvisningUrl);
+
+/** Minimal markdown → HTML for server-generated metadata (bold, headings, paragraphs). */
+function renderMarkdown(md: string): string {
+  return md
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/^## (.+)$/gm, "<h3>$1</h3>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n{2,}/g, "</p><p>")
+    .replace(/^/, "<p>").replace(/$/, "</p>")
+    .replace(/<p><h3>/g, "<h3>").replace(/<\/h3><\/p>/g, "</h3>");
+}
 
 let lineEls: HTMLButtonElement[] = [];
 let containerEl: HTMLDivElement;
@@ -40,33 +58,55 @@ $effect(() => {
     class="resize-handle"
     use:resizeHandle={{ edge: 'left', min: 200, max: 500, onResize: (w) => onWidthChange?.(w), onResizeStart: () => resizing = true, onResizeEnd: () => resizing = false }}
   ></div>
-  <div class="panel-lines" bind:this={containerEl}>
-    {#each textLines as line, i (line.id)}
-      <button
-        class="line-item"
-        class:highlighted={line.id === highlightedLineId}
-        class:search-match={searchMatchIds?.has(line.id)}
-        bind:this={lineEls[i]}
-        onpointerenter={() => onLineHover(line.id)}
-        onpointerleave={() => onLineHover(null)}
-        onclick={() => onLineClick(line)}
-      >
-        <span class="line-text">{line.transcription}</span>
-        {#if line.confidence != null}
-          <span
-            class="confidence-badge"
-            class:low={line.confidence < 0.7}
-            class:medium={line.confidence >= 0.7 && line.confidence < 0.9}
-            class:high={line.confidence >= 0.9}
-            title={line.confidence.toFixed(2)}
-          >{line.confidence.toFixed(2)}</span>
-        {/if}
-      </button>
-    {/each}
-    {#if textLines.length === 0}
-      <div class="no-lines">No transcribed text on this page</div>
-    {/if}
-  </div>
+
+  {#if hasInfo}
+    <div class="tab-bar">
+      <button class="tab" class:active={activeTab === "transcription"} onclick={() => activeTab = "transcription"}>Text</button>
+      <button class="tab" class:active={activeTab === "info"} onclick={() => activeTab = "info"}>Info</button>
+    </div>
+  {/if}
+
+  {#if activeTab === "transcription"}
+    <div class="panel-lines" bind:this={containerEl}>
+      {#each textLines as line, i (line.id)}
+        <button
+          class="line-item"
+          class:highlighted={line.id === highlightedLineId}
+          class:search-match={searchMatchIds?.has(line.id)}
+          bind:this={lineEls[i]}
+          onpointerenter={() => onLineHover(line.id)}
+          onpointerleave={() => onLineHover(null)}
+          onclick={() => onLineClick(line)}
+        >
+          <span class="line-text">{line.transcription}</span>
+          {#if line.confidence != null}
+            <span
+              class="confidence-badge"
+              class:low={line.confidence < 0.7}
+              class:medium={line.confidence >= 0.7 && line.confidence < 0.9}
+              class:high={line.confidence >= 0.9}
+              title={line.confidence.toFixed(2)}
+            >{line.confidence.toFixed(2)}</span>
+          {/if}
+        </button>
+      {/each}
+      {#if textLines.length === 0}
+        <div class="no-lines">No transcribed text on this page</div>
+      {/if}
+    </div>
+  {:else}
+    <div class="panel-info">
+      {#if documentInfo}
+        <div class="info-content">{@html renderMarkdown(documentInfo)}</div>
+      {/if}
+      {#if bildvisningUrl}
+        <a class="bildvisning-link" href={bildvisningUrl} target="_blank" rel="noopener">Open in Riksarkivet viewer</a>
+      {/if}
+      {#if !documentInfo && !bildvisningUrl}
+        <div class="no-lines">No document information available</div>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -199,5 +239,73 @@ $effect(() => {
   font-size: var(--font-text-sm-size, 0.875rem);
   font-style: italic;
   text-align: center;
+}
+
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  font: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--color-text-primary, light-dark(#2c2c2c, #e8e6e3));
+}
+
+.tab.active {
+  color: var(--color-text-primary, light-dark(#2c2c2c, #e8e6e3));
+  border-bottom-color: var(--color-accent, #c15f3c);
+}
+
+.panel-info {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md, 0.75rem) var(--spacing-md, 0.75rem);
+  font-size: var(--font-text-sm-size, 0.875rem);
+  line-height: 1.6;
+  color: var(--color-text-primary, light-dark(#2c2c2c, #e8e6e3));
+}
+
+.panel-info :global(h3) {
+  margin: 0 0 var(--spacing-sm, 0.5rem) 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.panel-info :global(p) {
+  margin: 0 0 var(--spacing-sm, 0.5rem) 0;
+}
+
+.panel-info :global(strong) {
+  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+  font-weight: 500;
+}
+
+.bildvisning-link {
+  display: inline-block;
+  margin-top: var(--spacing-sm, 0.5rem);
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--color-accent, #c15f3c);
+  text-decoration: none;
+  border: 1px solid var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
+  border-radius: var(--border-radius-md, 6px);
+  transition: background 0.15s;
+}
+
+.bildvisning-link:hover {
+  background: var(--claude-selection, rgba(193, 95, 60, 0.19));
 }
 </style>

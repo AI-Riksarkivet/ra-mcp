@@ -27,6 +27,8 @@ interface Props {
   onNextPage: () => void;
   highlightTerm?: string;
   highlightTermColor?: string;
+  documentInfo?: string;
+  bildvisningUrl?: string;
   pageMatchCounts?: Map<number, number>;
   globalTotalMatches?: number;
   globalSearchLoading?: boolean;
@@ -50,6 +52,8 @@ let {
   onNextPage,
   highlightTerm = "",
   highlightTermColor = HIGHLIGHT_DEFAULTS.color,
+  documentInfo = "",
+  bildvisningUrl = "",
   pageMatchCounts,
   globalTotalMatches = 0,
   globalSearchLoading = false,
@@ -430,6 +434,8 @@ onDestroy(() => {
       <TranscriptionPanel
         {textLines}
         {highlightedLineId}
+        {documentInfo}
+        {bildvisningUrl}
         open={showPanel}
         width={panelWidth}
         onWidthChange={(w) => panelWidth = w}

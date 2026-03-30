@@ -27,6 +27,7 @@ let totalPages = $derived(data.pageUrls.length);
 let hasThumbnails = $derived(data.pageUrls.length > 1);
 let showThumbnails = $state(true);
 let currentPageMetadata = $derived(data.pageMetadata[currentPageIndex] ?? "");
+let currentBildvisningUrl = $derived(data.pageUrls[currentPageIndex]?.bildvisning ?? "");
 let thumbnailStripWidth = $state(120);
 
 // Cross-page search state
@@ -304,6 +305,8 @@ $effect(() => {
       onNextPage={handleNextPage}
       highlightTerm={data.highlightTerm}
       highlightTermColor={data.highlightTermColor}
+      documentInfo={data.documentInfo}
+      bildvisningUrl={currentBildvisningUrl}
       {pageMatchCounts}
       {globalTotalMatches}
       {globalSearchLoading}
