@@ -18,6 +18,7 @@ from ra_mcp_htr_mcp.tools import htr_mcp
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
+from ra_mcp_pdf_mcp import pdf_mcp
 from ra_mcp_viewer_mcp import viewer_mcp
 
 
@@ -46,6 +47,12 @@ AVAILABLE_MODULES = {
     "viewer": {
         "server": viewer_mcp,
         "description": "Interactive document viewer with zoomable images and text layer overlays",
+        "default": True,
+        "no_namespace": True,
+    },
+    "pdf": {
+        "server": pdf_mcp,
+        "description": "Interactive PDF viewer with search, annotations, and PDF.js rendering",
         "default": True,
         "no_namespace": True,
     },

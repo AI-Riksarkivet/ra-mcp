@@ -25,6 +25,7 @@ members = [
     "ra-mcp-iiif-lib",
     "ra-mcp-label-mcp",
     "ra-mcp-oai-pmh-lib",
+    "ra-mcp-pdf-mcp",
     "ra-mcp-search-cli",
     "ra-mcp-search-lib",
     "ra-mcp-search-mcp",
@@ -2055,6 +2056,7 @@ dependencies = [
     { name = "ra-mcp-browse-mcp" },
     { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-htr-mcp" },
+    { name = "ra-mcp-pdf-mcp" },
     { name = "ra-mcp-search-mcp" },
     { name = "ra-mcp-viewer-mcp" },
     { name = "starlette" },
@@ -2100,6 +2102,7 @@ requires-dist = [
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
     { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
+    { name = "ra-mcp-pdf-mcp", editable = "packages/pdf-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
@@ -2268,6 +2271,35 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "ra-mcp-common", editable = "packages/common" }]
+
+[[package]]
+name = "ra-mcp-pdf-mcp"
+version = "0.1.0"
+source = { editable = "packages/pdf-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "httpx", extra = ["http2"] },
+    { name = "py-key-value-aio", extra = ["memory"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=3.1.1" },
+    { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
+    { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", specifier = ">=0.25.0" },
+]
 
 [[package]]
 name = "ra-mcp-search-cli"
