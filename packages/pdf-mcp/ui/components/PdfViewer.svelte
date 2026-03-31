@@ -311,20 +311,24 @@ function zoomOut() {
 
 function fitToWidth() {
   if (!pdfDocument || !viewerBodyEl) return;
+  // Bump render generation to cancel any in-progress render before changing scale
+  ++renderGeneration;
   pdfDocument.getPage(currentPage).then((page) => {
     const viewport = page.getViewport({ scale: 1 });
-    // viewerBodyEl is the canvas area (excludes TOC panel)
-    const availableWidth = viewerBodyEl.clientWidth - 48; // subtract padding
+    const availableWidth = viewerBodyEl.clientWidth - 48;
     if (availableWidth > 0 && viewport.width > 0) {
-      scale = Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / viewport.width));
+      const newScale = Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / viewport.width));
+      if (Math.abs(newScale - scale) > 0.01) {
+        scale = newScale; // this triggers the render $effect with the correct scale
+      }
     }
   });
 }
 
-// Auto-fit on first load
+// Auto-fit on first load (use queueMicrotask to avoid racing with initial render)
 $effect(() => {
   if (pdfDocument && viewerBodyEl) {
-    fitToWidth();
+    queueMicrotask(() => fitToWidth());
   }
 });
 
@@ -548,8 +552,9 @@ onDestroy(() => {
 .viewer-body {
   flex: 1;
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   background: var(--color-background-tertiary);
 }
@@ -792,11 +797,12 @@ onDestroy(() => {
 
 /* Canvas + page rendering */
 .canvas-container {
+  flex: 1;
+  overflow: auto;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: var(--spacing-lg);
-  min-height: 100%;
+  padding: var(--spacing-md);
 }
 
 .page-wrapper {
@@ -805,10 +811,13 @@ onDestroy(() => {
   border-radius: 2px;
   background: white;
   line-height: 0;
+  max-width: 100%;
 }
 
 .page-wrapper canvas {
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Text layer (PDF.js text selection) */
