@@ -22,18 +22,6 @@ GALLERY_ITEMS: list[dict[str, str]] = [
         "description": "Guide till samisk historia i Riksarkivets samlingar (2024). Kallmaterial om samer i svenska arkiv",
         "category": "Riksarkivet",
     },
-    {
-        "url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/223523307-635a25-slaktforskarna_och_krigsarkivet_januari_2026.pdf?download=true",
-        "title": "Slaktforskarna och Krigsarkivet",
-        "description": "Guide for slaktforskare om Krigsarkivets samlingar (januari 2026)",
-        "category": "Riksarkivet",
-    },
-    {
-        "url": "https://arxiv.org/pdf/1706.03762",
-        "title": "Attention Is All You Need",
-        "description": "Vaswani et al. (2017) — The Transformer architecture paper",
-        "category": "Academic",
-    },
 ]
 
 

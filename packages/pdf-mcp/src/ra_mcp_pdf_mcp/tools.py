@@ -1,13 +1,12 @@
-"""PDF Viewer MCP tools — display PDFs, navigate, search, annotate."""
+"""MCP tool definitions for the PDF Viewer."""
 
-import asyncio
 import base64
 import logging
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import unquote, urlparse
 from uuid import uuid4
 
-import httpx
 from fastmcp import Context
 from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
@@ -15,7 +14,14 @@ from mcp import types
 from pydantic import Field
 
 from ra_mcp_pdf_mcp import pdf_mcp as mcp
+from ra_mcp_pdf_mcp.cache import (
+    CHUNK_SIZE,
+    blocks_cache,
+    read_pdf_range,
+    schedule_prefetch,
+)
 from ra_mcp_pdf_mcp.models import PdfViewerState
+from ra_mcp_pdf_mcp.search import search_pages
 from ra_mcp_pdf_mcp.state import (
     get_active_state,
     get_state,
@@ -27,16 +33,6 @@ logger = logging.getLogger("ra_mcp.pdf.tools")
 
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://pdf-viewer/mcp-app.html"
-
-# Chunk size for streaming PDF bytes (4 MB — larger chunks = fewer round-trips)
-CHUNK_SIZE = 8 * 1024 * 1024
-# Max PDF size for caching (200 MB)
-MAX_PDF_SIZE = 200 * 1024 * 1024
-
-# In-memory PDF cache: url → bytes
-_pdf_cache: dict[str, bytes] = {}
-_background_tasks: set[asyncio.Task] = set()  # prevent GC of fire-and-forget tasks
-
 DEFAULT_PDF = "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true"
 
 
@@ -49,7 +45,7 @@ def _error_result(text: str) -> ToolResult:
 
 
 # ---------------------------------------------------------------------------
-# display_pdf — main entry point
+# display_pdf
 # ---------------------------------------------------------------------------
 
 
@@ -83,24 +79,7 @@ async def display_pdf(
     )
     sc = await put_state(state)
 
-    # Pre-fetch full PDF in background for search_pdf cache warmth.
-    # This runs concurrently — display_pdf returns immediately.
-    async def _prefetch() -> None:
-        if url in _pdf_cache:
-            return
-        try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
-                resp = await client.get(url)
-                resp.raise_for_status()
-            if len(resp.content) <= MAX_PDF_SIZE:
-                _pdf_cache[url] = resp.content
-                logger.info("display_pdf: pre-cached %d bytes for %s", len(resp.content), url)
-        except Exception as e:
-            logger.warning("display_pdf: pre-fetch failed for %s: %s", url, e)
-
-    task = asyncio.create_task(_prefetch())
-    _background_tasks.add(task)
-    task.add_done_callback(_background_tasks.discard)
+    schedule_prefetch(url)
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID) if ctx else False
     summary_parts = [
@@ -134,14 +113,9 @@ async def read_pdf_bytes(
     url: Annotated[str, Field(description="URL of the PDF file.")],
     offset: Annotated[int, Field(description="Byte offset to start reading from.", ge=0)] = 0,
 ) -> ToolResult:
-    """Stream PDF data in chunks with pagination metadata.
-
-    Uses HTTP Range requests when the origin supports them — only fetches
-    the requested chunk, not the entire file. For a 63 MB PDF, each tool
-    call transfers only ~4 MB instead of blocking on a full download.
-    """
+    """Stream PDF data in chunks with pagination metadata."""
     try:
-        chunk, total_bytes = await _read_pdf_range(url, offset, CHUNK_SIZE)
+        chunk, total_bytes = await read_pdf_range(url, offset, CHUNK_SIZE)
     except Exception as e:
         logger.error("read_pdf_bytes: failed to fetch %s: %s", url, e)
         return _error_result(f"Failed to fetch PDF: {e}")
@@ -149,7 +123,6 @@ async def read_pdf_bytes(
     byte_count = len(chunk)
     end = offset + byte_count
     has_more = total_bytes > 0 and end < total_bytes
-
     chunk_b64 = base64.b64encode(chunk).decode("ascii")
 
     return ToolResult(
@@ -185,7 +158,7 @@ async def get_pdf_state(
 
 
 # ---------------------------------------------------------------------------
-# State-mutation tools (no AppConfig — reuse existing viewer, don't create new iframe)
+# State-mutation tools (no AppConfig — reuse existing viewer)
 # ---------------------------------------------------------------------------
 
 
@@ -214,7 +187,7 @@ async def pdf_set_search(
 
 @mcp.tool(
     name="pdf_go_to_page",
-    description=("Navigate the already-open PDF viewer to a specific page. Does NOT replace the loaded PDF — just jumps to that page."),
+    description="Navigate the already-open PDF viewer to a specific page. Does NOT replace the loaded PDF — just jumps to that page.",
 )
 async def pdf_go_to_page(
     page: Annotated[int, Field(description="Page number (1-based).")],
@@ -226,12 +199,11 @@ async def pdf_go_to_page(
 
     state.go_to_page = page - 1  # convert to 0-based
     await put_state(state)
-
     return _text_result(f"Navigated to page {page}.")
 
 
 # ---------------------------------------------------------------------------
-# list_pdfs — gallery of available PDFs
+# list_pdfs
 # ---------------------------------------------------------------------------
 
 
@@ -248,22 +220,19 @@ async def list_pdfs() -> ToolResult:
     from ra_mcp_pdf_mcp.gallery import get_gallery_items
 
     items = get_gallery_items()
-
-    # Include full details in content text so the model can read them
     lines = [f"{len(items)} PDF guides available:\n"]
     for item in items:
         lines.append(f"- **{item['title']}**: {item['description']}")
         lines.append(f"  URL: {item['url']}")
-    text = "\n".join(lines)
 
     return ToolResult(
-        content=[types.TextContent(type="text", text=text)],
+        content=[types.TextContent(type="text", text="\n".join(lines))],
         structured_content={"items": items},
     )
 
 
 # ---------------------------------------------------------------------------
-# search_pdf — server-side full-text search (app-visible only)
+# search_pdf — DataLab block-level search
 # ---------------------------------------------------------------------------
 
 
@@ -276,60 +245,23 @@ async def list_pdfs() -> ToolResult:
     ),
 )
 async def search_pdf(
-    url: Annotated[str, Field(description="URL of the PDF file (must be cached from a previous display_pdf call).")],
+    url: Annotated[str, Field(description="URL of the PDF file (must match a previous display_pdf call).")],
     term: Annotated[str, Field(description="The search term to find.")],
 ) -> ToolResult:
-    """Search all pages of a cached PDF using pymupdf (server-side, fast)."""
-    import fitz  # pymupdf
-
+    """Search PDF pages using DataLab blocks (exact bbox, structured text)."""
     if not term or not term.strip():
         return ToolResult(
             content=[types.TextContent(type="text", text="No search term provided.")],
             structured_content={"pageMatches": [], "totalMatches": 0},
         )
 
-    # Get PDF bytes — from cache or fetch fresh
-    if url not in _pdf_cache:
-        try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
-                resp = await client.get(url)
-                resp.raise_for_status()
-            if len(resp.content) <= MAX_PDF_SIZE:
-                _pdf_cache[url] = resp.content
-        except Exception as e:
-            return _error_result(f"Failed to fetch PDF for search: {e}")
+    if url not in blocks_cache:
+        return _error_result("PDF not yet loaded. Use display_pdf first.")
 
-    if url not in _pdf_cache:
-        return _error_result("PDF too large to search server-side.")
-
-    pdf_bytes = _pdf_cache[url]
-    search_term = term.strip()
-
-    def _search() -> tuple[list[dict], int]:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        page_matches: list[dict] = []
-        total = 0
-        for i in range(len(doc)):
-            page = doc[i]
-            # text_instances returns list of Rect for each match
-            instances = page.search_for(search_term)
-            count = len(instances)
-            if count > 0:
-                page_matches.append({"pageIndex": i, "pageNum": i + 1, "matchCount": count})
-                total += count
-        doc.close()
-        return page_matches, total
-
-    # Run in thread to not block the event loop
-    page_matches, total_matches = await asyncio.to_thread(_search)
-
-    pages_with = len(page_matches)
-    summary = f"Found {total_matches} match{'es' if total_matches != 1 else ''} across {pages_with} page{'s' if pages_with != 1 else ''}."
-    logger.info("search_pdf: term=%r, %s", search_term, summary)
-
+    result = search_pages(blocks_cache[url], term.strip())
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
-        structured_content={"pageMatches": page_matches, "totalMatches": total_matches},
+        content=[types.TextContent(type="text", text=result.summary(term.strip()))],
+        structured_content=result.to_structured(),
     )
 
 
@@ -337,8 +269,6 @@ async def search_pdf(
 # UI Resource
 # ---------------------------------------------------------------------------
 
-
-# Whitelist PDF source domains so the iframe can fetch() directly (bypasses MCP transport)
 _PDF_DOMAINS = [
     "https://huggingface.co",
     "https://cas-bridge.xethub-eu.hf.co",
@@ -346,7 +276,6 @@ _PDF_DOMAINS = [
     "https://cdn-lfs.huggingface.co",
     "https://cdn-lfs-us-1.huggingface.co",
     "https://cdn-lfs-eu-1.huggingface.co",
-    "https://arxiv.org",
 ]
 
 _resource_csp = ResourceCSP(connectDomains=_PDF_DOMAINS)
@@ -366,56 +295,8 @@ def get_ui_resource() -> str:
 # ---------------------------------------------------------------------------
 
 
-async def _read_pdf_range(url: str, offset: int, length: int) -> tuple[bytes, int]:
-    """Read a byte range from a PDF. Returns (chunk_bytes, total_size).
-
-    Uses HTTP Range requests when supported by the server — only fetches the
-    requested bytes, not the entire file. Falls back to full GET + cache when
-    the server returns 200 (no range support) or 501.
-    """
-    # Fast path: already have the full file cached
-    if url in _pdf_cache:
-        data = _pdf_cache[url]
-        return data[offset : offset + length], len(data)
-
-    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
-        # Try Range request first
-        end_byte = offset + length - 1
-        resp = await client.get(url, headers={"Range": f"bytes={offset}-{end_byte}"})
-
-        if resp.status_code == 206:
-            # Server supports Range — return just this chunk
-            content_range = resp.headers.get("Content-Range", "")
-            total = 0
-            if "/" in content_range:
-                size_str = content_range.rsplit("/", 1)[-1]
-                if size_str != "*":
-                    total = int(size_str)
-            return resp.content, total
-
-        if resp.status_code == 501:
-            # Server explicitly doesn't support Range — retry as plain GET
-            resp = await client.get(url)
-            resp.raise_for_status()
-
-        if resp.status_code == 200:
-            # Got full body — cache it and slice
-            data = resp.content
-            content_length = int(resp.headers.get("Content-Length", len(data)))
-            if content_length > MAX_PDF_SIZE:
-                msg = f"PDF too large to cache: {content_length} bytes (max {MAX_PDF_SIZE})"
-                raise ValueError(msg)
-            _pdf_cache[url] = data
-            return data[offset : offset + length], len(data)
-
-        resp.raise_for_status()  # raises for any other status
-        return b"", 0  # unreachable, but satisfies type checker
-
-
 def _extract_title(url: str) -> str:
     """Extract a display title from a URL."""
-    from urllib.parse import unquote, urlparse
-
     path = urlparse(url).path
     filename = unquote(path.rsplit("/", 1)[-1])
     if filename.lower().endswith(".pdf"):

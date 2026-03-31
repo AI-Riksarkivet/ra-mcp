@@ -8,7 +8,6 @@ import {
   renderPage,
   buildTextLayer,
   extractPageText,
-  searchPageText,
 } from "../lib/pdf-engine";
 import { scheduleContextUpdate, resetContextState } from "../lib/context";
 import { ZOOM } from "../lib/constants";
@@ -73,9 +72,22 @@ let showAnnotationPanel = $state(false);
 let loading = $state(false);
 
 // Cross-page search
-let globalSearchResults = $state<{ pageNum: number; count: number }[]>([]);
-let globalSearchTotal = $derived(globalSearchResults.reduce((s, r) => s + r.count, 0));
-let globalSearchPages = $derived(globalSearchResults.length);
+interface PageMatch {
+  pageIndex: number;
+  pageNum: number;
+  matchCount: number;
+  pageBbox?: number[];
+  blocks?: Array<{
+    text: string;
+    bbox: number[];
+    blockType: string;
+    matchCount: number;
+  }>;
+}
+
+let globalSearchMatches = $state<PageMatch[]>([]);
+let globalSearchTotal = $derived(globalSearchMatches.reduce((s, m) => s + m.matchCount, 0));
+let globalSearchPages = $derived(globalSearchMatches.length);
 let globalSearchLoading = $state(false);
 
 // Writable derived: tracks currentPage, can be overridden by user input
@@ -191,39 +203,38 @@ $effect(() => {
   const s = scale;
   const pageProxy = currentPageProxy;
 
-  if (!pageProxy) {
+  if (!pageProxy || !query) {
     searchRects = [];
     searchMatchCount = 0;
     searchCurrentMatch = 0;
     return;
   }
 
-  if (!query) {
+  // Use block-level bounding boxes from server search results
+  const pageMatch = globalSearchMatches.find(m => m.pageNum === currentPage);
+  if (!pageMatch?.blocks || !pageMatch.pageBbox) {
     searchRects = [];
     searchMatchCount = 0;
     searchCurrentMatch = 0;
     return;
   }
 
-  const gen = renderGeneration;
+  const viewport = pageProxy.getViewport({ scale: s });
+  const [px1, py1, px2, py2] = pageMatch.pageBbox;
+  const sx = viewport.width / (px2 - px1);
+  const sy = viewport.height / (py2 - py1);
 
-  (async () => {
-    try {
-      const result = await searchPageText(pageProxy, query, s);
-      if (gen !== renderGeneration) return;
-
-      searchRects = result.rects;
-      searchMatchCount = result.count;
-      if (searchCurrentMatch >= result.count) {
-        searchCurrentMatch = 0;
-      }
-    } catch (err) {
-      console.error("[PdfViewer] search error:", err);
-    }
-  })();
+  const rects: DOMRect[] = [];
+  for (const block of pageMatch.blocks) {
+    const [bx1, by1, bx2, by2] = block.bbox;
+    rects.push(new DOMRect(bx1 * sx, by1 * sy, (bx2 - bx1) * sx, (by2 - by1) * sy));
+  }
+  searchRects = rects;
+  searchMatchCount = rects.length;
+  if (searchCurrentMatch >= rects.length) searchCurrentMatch = 0;
 });
 
-// Cross-page search: uses server-side pymupdf via search_pdf tool (fast).
+// Cross-page search via server-side search_pdf tool
 let globalSearchCancelFn: (() => void) | null = null;
 
 function startGlobalSearch() {
@@ -231,7 +242,7 @@ function startGlobalSearch() {
   if (globalSearchCancelFn) globalSearchCancelFn();
 
   globalSearchLoading = true;
-  globalSearchResults = [];
+  globalSearchMatches = [];
   let cancelled = false;
   globalSearchCancelFn = () => { cancelled = true; };
 
@@ -251,10 +262,10 @@ function startGlobalSearch() {
 
       const sc = (result as any).structuredContent as Record<string, unknown>;
       if (sc?.pageMatches && Array.isArray(sc.pageMatches)) {
-        globalSearchResults = sc.pageMatches as { pageNum: number; count: number }[];
+        globalSearchMatches = sc.pageMatches as PageMatch[];
         // Auto-navigate to first page with matches
-        if (globalSearchResults.length > 0) {
-          const firstMatch = globalSearchResults[0];
+        if (globalSearchMatches.length > 0) {
+          const firstMatch = globalSearchMatches[0];
           if (firstMatch.pageNum !== currentPage) {
             currentPage = firstMatch.pageNum;
           }
@@ -272,7 +283,7 @@ function startGlobalSearch() {
 // Clear global results when search term changes
 $effect(() => {
   searchTerm; // track dependency
-  globalSearchResults = [];
+  globalSearchMatches = [];
   globalSearchLoading = false;
   if (globalSearchCancelFn) {
     globalSearchCancelFn();
@@ -282,24 +293,24 @@ $effect(() => {
 
 // Navigate to next/prev page with matches
 function searchNextPage() {
-  if (globalSearchResults.length === 0) return;
-  const next = globalSearchResults.find((r) => r.pageNum > currentPage);
+  if (globalSearchMatches.length === 0) return;
+  const next = globalSearchMatches.find((r) => r.pageNum > currentPage);
   if (next) {
     currentPage = next.pageNum;
   } else {
     // Wrap around to first match
-    currentPage = globalSearchResults[0].pageNum;
+    currentPage = globalSearchMatches[0].pageNum;
   }
 }
 
 function searchPrevPage() {
-  if (globalSearchResults.length === 0) return;
-  const prev = [...globalSearchResults].reverse().find((r) => r.pageNum < currentPage);
+  if (globalSearchMatches.length === 0) return;
+  const prev = [...globalSearchMatches].reverse().find((r) => r.pageNum < currentPage);
   if (prev) {
     currentPage = prev.pageNum;
   } else {
     // Wrap around to last match
-    currentPage = globalSearchResults[globalSearchResults.length - 1].pageNum;
+    currentPage = globalSearchMatches[globalSearchMatches.length - 1].pageNum;
   }
 }
 

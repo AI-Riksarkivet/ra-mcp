@@ -112,61 +112,6 @@ export async function extractPageText(page: PDFPageProxy): Promise<string> {
     .join(" ");
 }
 
-/**
- * Search for text matches on a page. Returns array of match rects
- * in PDF coordinate space (for highlight overlay).
- */
-export async function searchPageText(
-  page: PDFPageProxy,
-  query: string,
-  scale: number,
-): Promise<{ rects: DOMRect[]; count: number }> {
-  if (!query) return { rects: [], count: 0 };
-
-  const textContent = await page.getTextContent();
-  const viewport = page.getViewport({ scale });
-  const queryLower = query.toLowerCase();
-
-  const rects: DOMRect[] = [];
-  let count = 0;
-
-  for (const item of textContent.items) {
-    if (!("str" in item)) continue;
-    const text = (item as any).str as string;
-    const textLower = text.toLowerCase();
-    let idx = 0;
-
-    while ((idx = textLower.indexOf(queryLower, idx)) !== -1) {
-      count++;
-      // Approximate rect from transform
-      const tx = (item as any).transform;
-      if (tx) {
-        const [a, b, c, d, e, f] = tx;
-        const fontSize = Math.sqrt(a * a + b * b);
-        const charWidth = fontSize * 0.6;
-        const x = e + idx * charWidth;
-        const y = f;
-        const w = queryLower.length * charWidth;
-        const h = fontSize;
-
-        // Transform to viewport coordinates
-        const [vx, vy] = viewport.convertToViewportPoint(x, y);
-        const [vx2, vy2] = viewport.convertToViewportPoint(x + w, y + h);
-
-        rects.push(new DOMRect(
-          Math.min(vx, vx2),
-          Math.min(vy, vy2),
-          Math.abs(vx2 - vx),
-          Math.abs(vy2 - vy),
-        ));
-      }
-      idx += queryLower.length;
-    }
-  }
-
-  return { rects, count };
-}
-
 
 // ---------------------------------------------------------------------------
 // Outline (Table of Contents)

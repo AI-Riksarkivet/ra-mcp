@@ -345,6 +345,9 @@ onMount(async () => {
   };
 
   instance.onerror = (err) => {
+    // Svelte 5 TDZ: SDK fires notification before $state runes are initialized.
+    // Non-blocking — skip silently so it doesn't pollute the error UI.
+    if (err?.message?.includes("before initialization")) return;
     console.error("App error:", err);
     error = err.message;
   };
