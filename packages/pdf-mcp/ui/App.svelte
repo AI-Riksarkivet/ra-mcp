@@ -306,55 +306,46 @@ onMount(async () => {
     { autoResize: false },
   );
 
-  // All notification handlers are deferred via queueMicrotask to prevent
-  // $state writes from running synchronously inside the MCP SDK's message
-  // processing chain, which causes TDZ errors (Cannot access 'K' before init).
+  // Match viewer-mcp pattern: direct $state writes in handlers (no queueMicrotask).
+  // The 'Cannot access P' TDZ error happens regardless — it's from SDK internals.
   instance.ontoolinputpartial = () => {
-    queueMicrotask(() => {
-      if (!viewerData) isStreaming = true;
-    });
+    if (!viewerData) isStreaming = true;
   };
 
   instance.ontoolinput = (params) => {
-    queueMicrotask(() => {
-      const args = params.arguments as Record<string, unknown>;
-      isStreaming = true;
-      error = null;
-      const title = (args?.title as string) ?? "";
-      streamingMessage = title ? `Loading "${title}"...` : "Loading PDF...";
-    });
+    const args = params.arguments as Record<string, unknown>;
+    isStreaming = true;
+    error = null;
+    const title = (args?.title as string) ?? "";
+    streamingMessage = title ? `Loading "${title}"...` : "Loading PDF...";
   };
 
   instance.ontoolresult = (result) => {
-    queueMicrotask(() => {
-      isStreaming = false;
-      if (result.isError) {
-        error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
-        return;
-      }
-      const sc = result.structuredContent as Record<string, unknown> | undefined;
-      if (sc) {
-        lastSeenVersion = 0;
-        applyViewerState(sc);
-        startPolling();
-      }
-    });
+    isStreaming = false;
+    if (result.isError) {
+      error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
+      return;
+    }
+    const sc = result.structuredContent as Record<string, unknown> | undefined;
+    if (sc) {
+      lastSeenVersion = 0;
+      applyViewerState(sc);
+      startPolling();
+    }
   };
 
   instance.ontoolcancelled = (params) => {
-    queueMicrotask(() => {
-      isStreaming = false;
-      error = `Cancelled: ${params.reason}`;
-    });
+    isStreaming = false;
+    error = `Cancelled: ${params.reason}`;
   };
 
   instance.onerror = (err) => {
     console.error("App error:", err);
-    queueMicrotask(() => { error = err.message; });
+    error = err.message;
   };
 
   instance.onhostcontextchanged = (params) => {
-    queueMicrotask(() => { hostContext = { ...hostContext, ...params }; });
+    hostContext = { ...hostContext, ...params };
   };
 
   instance.onteardown = async () => {
