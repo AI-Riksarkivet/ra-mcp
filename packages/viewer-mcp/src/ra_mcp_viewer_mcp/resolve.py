@@ -2,6 +2,7 @@
 
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_common.http_client import HTTPClient, default_http_client
+from ra_mcp_iiif_lib import IIIFClient
 from ra_mcp_viewer_mcp.models import ResolvedDocument
 
 
@@ -39,6 +40,36 @@ async def browse_resolve_document(
         page_numbers=[c.page_number for c in result.contexts],
         bildvisning_urls=[c.bildvisning_url for c in result.contexts],
         document_info=_format_oai_metadata(result.oai_metadata, reference_code),
+    )
+
+
+async def manifest_resolve_document(
+    manifest_url: str,
+    max_pages: int,
+    *,
+    http_client: HTTPClient = default_http_client,
+) -> ResolvedDocument:
+    """Resolve a IIIF manifest URL → ResolvedDocument with image URLs.
+
+    Raises ValueError for bad input, LookupError for no results.
+    """
+    if not manifest_url.strip():
+        raise ValueError("manifest_url must not be empty.")
+
+    iiif_client = IIIFClient(http_client=http_client)
+    manifest = await iiif_client.fetch_manifest(manifest_url)
+
+    if not manifest or not manifest.canvases:
+        raise LookupError(f"No pages found in manifest: {manifest_url}")
+
+    canvases = manifest.canvases[:max_pages]
+
+    return ResolvedDocument(
+        image_urls=[c.image_url for c in canvases],
+        text_layer_urls=[""] * len(canvases),  # No ALTO for these documents
+        page_numbers=list(range(1, len(canvases) + 1)),
+        bildvisning_urls=[""] * len(canvases),
+        document_info=f"**Document:** {manifest.label or 'Unknown'}\n\n**Manifest:** {manifest_url}",
     )
 
 

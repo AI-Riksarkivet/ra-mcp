@@ -14,7 +14,7 @@ from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
 from ra_mcp_viewer_mcp.models import ViewerState
-from ra_mcp_viewer_mcp.resolve import browse_resolve_document, validate_url_pairs
+from ra_mcp_viewer_mcp.resolve import browse_resolve_document, manifest_resolve_document, validate_url_pairs
 from ra_mcp_viewer_mcp.state import get_active_state, get_state, put_state
 
 
@@ -127,6 +127,57 @@ async def view_document_urls(
     summary = build_summary(len(image_urls), page_numbers, has_ui, image_urls)
 
     logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
+    return ToolResult(
+        content=[types.TextContent(type="text", text=summary)],
+        structured_content=sc,
+    )
+
+
+@mcp.tool(
+    name="view_manifest",
+    description=(
+        "Display document pages from a IIIF manifest URL. "
+        "Use this to view documents from SDHK or MPO search results, or any Riksarkivet IIIF manifest. "
+        "Fetches the manifest, extracts page images, and opens the interactive viewer."
+    ),
+    app=AppConfig(resource_uri=RESOURCE_URI),
+)
+async def view_manifest(
+    manifest_url: Annotated[str, Field(description="Full IIIF manifest URL (e.g. 'https://lbiiif.riksarkivet.se/sdhk!85/manifest').")],
+    ctx: Context,
+    highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
+    max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
+) -> ToolResult:
+    """View document pages from a IIIF manifest URL."""
+    try:
+        resolved = await manifest_resolve_document(manifest_url, max_pages)
+    except (ValueError, LookupError) as e:
+        return error_result(str(e))
+    except Exception as e:
+        logger.error("view_manifest: failed to resolve manifest: %s", e)
+        return error_result(f"Error resolving manifest: {e}")
+
+    has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
+    summary = build_summary(
+        len(resolved.image_urls),
+        resolved.page_numbers,
+        has_ui,
+        resolved.image_urls,
+    )
+
+    view_id = str(uuid4())
+    state = ViewerState(
+        view_id=view_id,
+        image_urls=resolved.image_urls,
+        text_layer_urls=resolved.text_layer_urls,
+        page_numbers=resolved.page_numbers,
+        document_info=resolved.document_info,
+        highlight_term=highlight_term or "",
+        reference_code="",
+    )
+    sc = await put_state(state)
+
+    logger.info("view_manifest: %s, resolved %d page(s), view_id=%s", manifest_url, len(resolved.image_urls), view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content=sc,
