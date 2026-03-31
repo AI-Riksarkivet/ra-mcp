@@ -11,15 +11,33 @@ GALLERY_ITEMS: list[dict[str, str]] = [
         "category": "Riksarkivet",
     },
     {
+        "url": "https://cdn.abicart.com/shop/25093/art89/216090389-e30a88-medeltidens-samhalle.pdf",
+        "title": "Medeltidens samhalle",
+        "description": "Om det medeltida samhallet i Sverige",
+        "category": "Riksarkivet",
+    },
+    {
+        "url": "https://cdn.abicart.com/shop/25093/art75/164624875-f258a1-Ingang-till-samisk-historia_2024.pdf",
+        "title": "Ingang till samisk historia",
+        "description": "Guide till samisk historia i arkiven (2024)",
+        "category": "Riksarkivet",
+    },
+    {
+        "url": "https://cdn.abicart.com/shop/25093/art7/223523307-635a25-slaktforskarna_och_krigsarkivet_januari_2026.pdf",
+        "title": "Slaktforskarna och Krigsarkivet",
+        "description": "Slaktforskarna och Krigsarkivet (januari 2026)",
+        "category": "Riksarkivet",
+    },
+    {
+        "url": "https://cdn.abicart.com/shop/25093/files/PDF/ingang_till_fastighetsforskning.pdf",
+        "title": "Ingang till fastighetsforskning",
+        "description": "Guide till fastighetsforskning i arkiven",
+        "category": "Riksarkivet",
+    },
+    {
         "url": "https://arxiv.org/pdf/1706.03762",
         "title": "Attention Is All You Need",
         "description": "Vaswani et al. (2017) — The Transformer architecture paper",
-        "category": "Academic",
-    },
-    {
-        "url": "https://arxiv.org/pdf/2005.14165",
-        "title": "GPT-3: Language Models are Few-Shot Learners",
-        "description": "Brown et al. (2020) — 175B parameter language model",
         "category": "Academic",
     },
 ]
