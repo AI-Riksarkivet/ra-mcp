@@ -58,10 +58,9 @@ def _error_result(text: str) -> ToolResult:
     name="display_pdf",
     description=(
         "Display an interactive PDF viewer with search, navigation, and annotation support. "
-        "Accepts a URL to a PDF file. Supported sources: direct PDF URLs, arxiv.org, "
-        "biorxiv.org, riksarkivet.se, and other academic sources. "
-        "The viewer supports zoom, page navigation, text search, text selection, "
-        "and annotation (highlights, notes, stamps, etc.)."
+        "Accepts a URL to a PDF file. After displaying, the current page text is sent via model context. "
+        "Use search_pdf to search text across ALL pages of the PDF. "
+        "The viewer supports zoom, page navigation, text search, text selection, and annotations."
     ),
     app=AppConfig(resource_uri=RESOURCE_URI),
 )
@@ -311,8 +310,11 @@ async def list_pdfs() -> ToolResult:
 
 @mcp.tool(
     name="search_pdf",
-    description="Search for text across all pages of a PDF. Returns per-page match counts. Much faster than client-side search for large PDFs.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    description=(
+        "Search for text across ALL pages of a loaded PDF. Returns per-page match counts and total. "
+        "Use after display_pdf to find where specific terms appear in the document. "
+        "The URL must match the one used in display_pdf."
+    ),
 )
 async def search_pdf(
     url: Annotated[str, Field(description="URL of the PDF file (must be cached from a previous display_pdf call).")],
