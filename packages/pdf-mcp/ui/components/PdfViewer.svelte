@@ -407,131 +407,6 @@ onDestroy(() => {
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="viewer" bind:this={containerEl} onkeydown={handleKeydown} tabindex="-1">
-  <!-- Toolbar -->
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <button class="icon-btn toc-toggle" class:active={tocOpen} onclick={() => tocOpen = !tocOpen} title="Toggle sidebar" aria-label="Toggle sidebar">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <path d="M2 3h12M2 8h8M2 13h10"/>
-        </svg>
-      </button>
-      <span class="pdf-title" title={title}>{title}</span>
-      {#if loading}
-        <div class="loading-indicator">
-          <svg class="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/>
-          </svg>
-        </div>
-      {/if}
-    </div>
-
-    <div class="toolbar-center">
-      <button class="nav-btn" onclick={prevPage} disabled={currentPage <= 1} aria-label="Previous page">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M8 2L4 6L8 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="page-nav">
-        <input
-          type="number"
-          class="page-input"
-          value={pageInputValue}
-          min={1}
-          max={totalPages}
-          onchange={goToPageInput}
-          aria-label="Page number"
-        />
-        <span class="total-pages">of {totalPages}</span>
-      </div>
-      <button class="nav-btn" onclick={nextPage} disabled={currentPage >= totalPages} aria-label="Next page">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="toolbar-right">
-      <button class="zoom-btn" onclick={zoomOut} disabled={scale <= ZOOM.min} aria-label="Zoom out">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <span class="zoom-level">{zoomLabel}%</span>
-      <button class="zoom-btn" onclick={zoomIn} disabled={scale >= ZOOM.max} aria-label="Zoom in">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 3v8M3 7h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-
-      <button class="search-btn" class:active={searchOpen} onclick={toggleSearch} aria-label="Toggle search">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-
-      {#if canFullscreen}
-        <button class="fullscreen-btn" onclick={onToggleFullscreen} aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
-          {#if isFullscreen}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M5 1H1v4M15 1h-4M1 15h4M11 15h4v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M1 1l4.5 4.5M15 1l-4.5 4.5M1 15l4.5-4.5M15 15l-4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          {:else}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M1 1l4.5 4.5M15 1l-4.5 4.5M1 15l4.5-4.5M15 15l-4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          {/if}
-        </button>
-      {/if}
-    </div>
-  </div>
-
-  <!-- Search bar -->
-  {#if searchOpen}
-    <div class="search-bar">
-      <input
-        bind:value={searchTerm}
-        class="search-input"
-        placeholder="Search..."
-        aria-label="Search text in PDF"
-      />
-      <span class="search-match-count">{searchMatchLabel}</span>
-      <button class="search-nav-btn" onclick={searchPrev} disabled={searchMatchCount === 0} title="Previous match on this page" aria-label="Previous match">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M2 7L5 3L8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="search-nav-btn" onclick={searchNext} disabled={searchMatchCount === 0} title="Next match on this page" aria-label="Next match">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      {#if globalSearchPages > 1}
-        <span class="search-divider"></span>
-        <button class="search-nav-btn page-nav" onclick={searchPrevPage} title="Previous page with matches" aria-label="Previous page with matches">
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-            <path d="M4 1L1 5L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M1 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <button class="search-nav-btn page-nav" onclick={searchNextPage} title="Next page with matches" aria-label="Next page with matches">
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-            <path d="M8 1L11 5L8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M11 5H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </button>
-      {/if}
-      <button class="search-close-btn" onclick={toggleSearch} aria-label="Close search">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  {/if}
-
-  <!-- Sidebar + Canvas -->
   <div class="viewer-layout">
     {#if tocOpen}
       <TocPanel
@@ -543,6 +418,93 @@ onDestroy(() => {
     {/if}
 
     <div class="viewer-body">
+      <!-- Floating page nav (top-left) -->
+      <div class="page-overlay top-left">
+        <button class="overlay-btn" onclick={prevPage} disabled={currentPage <= 1} aria-label="Previous page">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6L8 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="page-indicator">
+          <input
+            type="number"
+            class="page-input"
+            value={pageInputValue}
+            min={1}
+            max={totalPages}
+            onchange={goToPageInput}
+            aria-label="Page number"
+          />
+          <span class="page-total">/{totalPages}</span>
+        </div>
+        <button class="overlay-btn" onclick={nextPage} disabled={currentPage >= totalPages} aria-label="Next page">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        {#if loading}
+          <div class="loading-dot"></div>
+        {/if}
+      </div>
+
+      <!-- Floating toolbar (top-right, vertical) -->
+      <div class="floating-toolbar">
+        <button class="toolbar-btn" class:active={searchOpen} onclick={toggleSearch} title="Search (Ctrl+F)" aria-label="Toggle search">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="toolbar-btn" class:active={tocOpen} onclick={() => tocOpen = !tocOpen} title="Toggle sidebar" aria-label="Toggle sidebar">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h12M2 8h8M2 13h10"/></svg>
+        </button>
+        <button class="toolbar-btn" onclick={zoomOut} disabled={scale <= ZOOM.min} title="Zoom out" aria-label="Zoom out">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="toolbar-btn" onclick={zoomIn} disabled={scale >= ZOOM.max} title="Zoom in" aria-label="Zoom in">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v8M3 7h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        {#if canFullscreen}
+          <button class="toolbar-btn" onclick={onToggleFullscreen} title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen"} aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
+            {#if isFullscreen}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 1H1v4M15 1h-4M1 15h4M11 15h4v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 1l4.5 4.5M15 1l-4.5 4.5M1 15l4.5-4.5M15 15l-4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            {:else}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 1l4.5 4.5M15 1l-4.5 4.5M1 15l4.5-4.5M15 15l-4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            {/if}
+          </button>
+        {/if}
+      </div>
+
+      <!-- Floating search bar (below toolbar, top-right) -->
+      {#if searchOpen}
+        <div class="floating-search">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input
+              bind:value={searchTerm}
+              type="text"
+              placeholder="Search..."
+              aria-label="Search text in PDF"
+            />
+          </div>
+          {#if searchTerm}
+            <span class="match-info">{searchMatchLabel}</span>
+            <button class="search-nav-btn" onclick={searchPrev} disabled={searchMatchCount === 0} title="Previous match" aria-label="Previous match">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 7L5 3L8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="search-nav-btn" onclick={searchNext} disabled={searchMatchCount === 0} title="Next match" aria-label="Next match">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            {#if globalSearchPages > 1}
+              <span class="search-divider"></span>
+              <button class="search-nav-btn" onclick={searchPrevPage} title="Previous page with matches" aria-label="Previous page with matches">
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M4 1L1 5L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+              <button class="search-nav-btn" onclick={searchNextPage} title="Next page with matches" aria-label="Next page with matches">
+                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M8 1L11 5L8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 5H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+            {/if}
+          {/if}
+          <button class="search-nav-btn close-btn" onclick={toggleSearch} title="Close (Esc)" aria-label="Close search">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      {/if}
+
+      <!-- Canvas + overlays -->
       <div class="canvas-container">
         <div class="page-wrapper">
           <canvas bind:this={canvasEl}></canvas>
@@ -570,10 +532,7 @@ onDestroy(() => {
 </div>
 
 <style>
-/* ------------------------------------------------------------------ */
-/* Viewer root                                                         */
-/* ------------------------------------------------------------------ */
-
+/* Viewer root */
 .viewer {
   display: flex;
   flex-direction: column;
@@ -584,133 +543,82 @@ onDestroy(() => {
   outline: none;
 }
 
-/* ------------------------------------------------------------------ */
-/* Toolbar                                                             */
-/* ------------------------------------------------------------------ */
-
-.toolbar {
+.viewer-layout {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 var(--spacing-md);
-  background: var(--color-background-secondary);
-  border-bottom: 1px solid var(--color-border-primary);
-  gap: var(--spacing-sm);
-}
-
-.toolbar-left,
-.toolbar-center,
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.toolbar-left {
   flex: 1;
-  min-width: 0;
-}
-
-.toolbar-center {
-  flex: 0 0 auto;
-}
-
-.toolbar-right {
-  flex: 1;
-  min-width: 0;
-  justify-content: flex-end;
-}
-
-.pdf-title {
-  font-size: var(--font-text-sm-size);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  white-space: nowrap;
+  min-height: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
 }
 
-.loading-indicator {
+/* Viewer body (canvas area, positioned for floating overlays) */
+.viewer-body {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  background: var(--color-background-tertiary);
+}
+
+/* Floating page nav (top-left) */
+.page-overlay {
+  position: absolute;
+  z-index: 15;
   display: flex;
   align-items: center;
-  color: var(--color-text-secondary);
+  gap: 4px;
+  padding: 3px 6px;
+  background: var(--color-background-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
+.page-overlay.top-left {
+  top: 8px;
+  left: 8px;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ------------------------------------------------------------------ */
-/* Toolbar buttons                                                     */
-/* ------------------------------------------------------------------ */
-
-.nav-btn,
-.zoom-btn,
-.search-btn,
-.fullscreen-btn {
+.overlay-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   padding: 0;
-  border: 1px solid var(--color-border-primary);
+  border: none;
   border-radius: var(--border-radius-sm);
-  background: var(--color-background-primary);
+  background: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.1s, color 0.1s;
 }
 
-.nav-btn:hover:not(:disabled),
-.zoom-btn:hover:not(:disabled),
-.search-btn:hover:not(:disabled),
-.fullscreen-btn:hover:not(:disabled) {
-  background: var(--color-background-tertiary);
+.overlay-btn:hover:not(:disabled) {
+  background: var(--color-background-secondary);
   color: var(--color-text-primary);
 }
 
-.nav-btn:disabled,
-.zoom-btn:disabled {
+.overlay-btn:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-.search-btn.active {
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
-  border-color: var(--color-accent);
-}
-
-/* ------------------------------------------------------------------ */
-/* Page navigation input                                               */
-/* ------------------------------------------------------------------ */
-
-.page-nav {
+.page-indicator {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 1px;
 }
 
 .page-input {
-  width: 50px;
-  height: 28px;
-  padding: 0 var(--spacing-xs);
-  border: 1px solid var(--color-border-primary);
+  width: 36px;
+  padding: 2px 4px;
+  border: none;
   border-radius: var(--border-radius-sm);
-  background: var(--color-background-primary);
+  background: var(--color-background-secondary);
   color: var(--color-text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--font-text-sm-size);
+  font-size: 0.8rem;
   text-align: center;
+  outline: none;
   -moz-appearance: textfield;
 }
 
@@ -721,87 +629,141 @@ onDestroy(() => {
 }
 
 .page-input:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -1px;
+  outline: 1px solid var(--color-accent);
 }
 
-.total-pages {
-  font-size: var(--font-text-sm-size);
+.page-total {
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
-  white-space: nowrap;
 }
 
-/* ------------------------------------------------------------------ */
-/* Zoom label                                                          */
-/* ------------------------------------------------------------------ */
-
-.zoom-level {
-  min-width: 42px;
-  text-align: center;
-  font-size: var(--font-text-sm-size);
-  font-family: var(--font-mono);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
+.loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: pulse 1s infinite;
 }
 
-/* ------------------------------------------------------------------ */
-/* Search bar                                                          */
-/* ------------------------------------------------------------------ */
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
 
-.search-bar {
+/* Floating toolbar (top-right, vertical column) */
+.floating-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 15;
   display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--color-background-secondary);
-  border-bottom: 1px solid var(--color-border-primary);
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.search-input {
-  width: 200px;
-  height: 28px;
-  padding: 0 var(--spacing-sm);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-background-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  font-size: var(--font-text-sm-size);
-}
-
-.search-input:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -1px;
-}
-
-.search-match-count {
-  font-size: var(--font-text-sm-size);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  min-width: 70px;
-  text-align: center;
-}
-
-.search-nav-btn,
-.search-close-btn {
+.toolbar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1px solid var(--color-border-primary);
+  border: none;
   border-radius: var(--border-radius-sm);
   background: var(--color-background-primary);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.search-nav-btn:hover:not(:disabled),
-.search-close-btn:hover {
-  background: var(--color-background-tertiary);
+.toolbar-btn:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.toolbar-btn.active {
+  opacity: 1;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Floating search bar (top-right, below toolbar) */
+.floating-search {
+  position: absolute;
+  top: 8px;
+  right: 44px;
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--color-background-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 6px;
+}
+
+.search-icon {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.search-input-wrapper input {
+  border: none;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: var(--font-text-sm-size);
+  color: var(--color-text-primary);
+  width: 120px;
+  padding: 2px 0;
+}
+
+.search-input-wrapper input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.match-info {
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  min-width: 30px;
+  text-align: center;
+}
+
+.search-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.search-nav-btn:hover:not(:disabled) {
+  background: var(--color-background-secondary);
   color: var(--color-text-primary);
 }
 
@@ -812,38 +774,12 @@ onDestroy(() => {
 
 .search-divider {
   width: 1px;
-  height: 16px;
+  height: 14px;
   background: var(--color-border-primary);
   flex-shrink: 0;
 }
 
-.search-nav-btn.page-nav {
-  width: 28px;
-}
-
-.toc-toggle.active {
-  background: var(--color-background-tertiary);
-}
-
-.viewer-layout {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* ------------------------------------------------------------------ */
-/* Viewer body (canvas area)                                           */
-/* ------------------------------------------------------------------ */
-
-.viewer-body {
-  flex: 1;
-  overflow: auto;
-  display: flex;
-  justify-content: center;
-  background: var(--color-background-tertiary);
-}
-
+/* Canvas + page rendering */
 .canvas-container {
   display: flex;
   align-items: flex-start;
@@ -864,44 +800,55 @@ onDestroy(() => {
   display: block;
 }
 
-/* ------------------------------------------------------------------ */
-/* Text layer (PDF.js text selection)                                   */
-/* ------------------------------------------------------------------ */
-
+/* Text layer (PDF.js text selection) */
 .text-layer {
   position: absolute;
-  top: 0;
   left: 0;
-  z-index: 2;
+  top: 0;
+  right: 0;
+  bottom: 0;
   overflow: hidden;
-  opacity: 0.25;
+  opacity: 0.2;
   line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 2;
 }
 
-.text-layer :global(span) {
+.text-layer :global(:is(span, br)) {
+  color: transparent;
   position: absolute;
   white-space: pre;
-  color: transparent;
-  pointer-events: all;
+  cursor: text;
+  transform-origin: 0% 0%;
 }
 
-.text-layer :global(span)::selection {
+.text-layer > :global(:not(.markedContent)),
+.text-layer :global(.markedContent span:not(.markedContent)) {
+  z-index: 1;
+  font-size: calc(var(--scale-factor, 1) * var(--font-height, 0));
+  transform: rotate(var(--rotate, 0deg)) scaleX(var(--scale-x, 1));
+}
+
+.text-layer :global(.markedContent) {
+  display: contents;
+}
+
+.text-layer :global(::selection) {
   background: var(--selection-bg);
 }
 
-.text-layer :global(br) {
-  display: none;
+.text-layer > :global(span) {
+  pointer-events: all;
 }
 
-/* ------------------------------------------------------------------ */
-/* Highlight layer (search results)                                    */
-/* ------------------------------------------------------------------ */
-
+/* Highlight layer (search results) */
 .highlight-layer {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 3;
   pointer-events: none;
   overflow: hidden;
 }
@@ -915,5 +862,16 @@ onDestroy(() => {
 
 .search-highlight.current {
   background: rgba(255, 165, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .search-highlight {
+    background: rgba(255, 255, 0, 0.3);
+    mix-blend-mode: screen;
+  }
+  .search-highlight.current {
+    background: rgba(255, 165, 0, 0.5);
+    mix-blend-mode: screen;
+  }
 }
 </style>

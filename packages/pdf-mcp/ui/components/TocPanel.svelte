@@ -21,7 +21,7 @@ let { pdfDocument, currentPage, totalPages, onPageSelect }: Props = $props();
 // State
 // ---------------------------------------------------------------------------
 
-let mode = $state<"outline" | "thumbnails">("outline");
+let mode = $state<"outline" | "thumbnails">("thumbnails");
 let outline = $state<OutlineItem[] | null>(null);
 let outlineLoading = $state(false);
 let thumbnailCache = new SvelteMap<number, string>();
