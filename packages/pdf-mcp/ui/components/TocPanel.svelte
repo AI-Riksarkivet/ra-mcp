@@ -245,7 +245,7 @@ onDestroy(() => {
 
 <style>
 .toc-panel {
-  width: 220px;
+  width: clamp(180px, 25vw, 300px);
   display: flex;
   flex-direction: column;
   background: var(--color-background-primary);
@@ -298,12 +298,12 @@ onDestroy(() => {
   background: none;
   padding: 0.35rem 0.5rem;
   font-size: 0.8rem;
+  line-height: 1.4;
   color: var(--color-text-primary);
   cursor: pointer;
   border-radius: var(--border-radius-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .outline-item:hover {
