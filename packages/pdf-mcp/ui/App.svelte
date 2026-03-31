@@ -97,7 +97,7 @@ $effect(() => {
 // PDF loading — called imperatively from applyViewerState, not from $effect.
 let loadCancelFn: (() => void) | null = null;
 
-const CHUNK_SIZE = 4 * 1024 * 1024; // must match server
+const CHUNK_SIZE = 8 * 1024 * 1024; // must match server
 const PARALLEL_CHUNKS = 4;
 
 async function fetchChunk(url: string, offset: number): Promise<{

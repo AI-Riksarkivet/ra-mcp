@@ -53,11 +53,10 @@
   .gallery {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
+    padding: 1.5rem;
+    width: 100%;
     height: 100%;
+    overflow-y: auto;
   }
 
   .gallery-header {
@@ -80,7 +79,7 @@
 
   .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
     width: 100%;
   }

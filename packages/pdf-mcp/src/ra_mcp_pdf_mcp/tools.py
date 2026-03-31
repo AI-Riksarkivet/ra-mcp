@@ -29,7 +29,7 @@ DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://pdf-viewer/mcp-app.html"
 
 # Chunk size for streaming PDF bytes (4 MB — larger chunks = fewer round-trips)
-CHUNK_SIZE = 4 * 1024 * 1024
+CHUNK_SIZE = 8 * 1024 * 1024
 # Max PDF size for caching (200 MB)
 MAX_PDF_SIZE = 200 * 1024 * 1024
 
