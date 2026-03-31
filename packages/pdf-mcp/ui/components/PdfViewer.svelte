@@ -129,13 +129,15 @@ $effect(() => {
 
       currentPageProxy = pageProxy;
 
-      // Auto-fit: if the page would be wider than the container, reduce scale
+      // Auto-fit: clamp scale so page fits container width
       if (viewerBodyEl) {
         const naturalViewport = pageProxy.getViewport({ scale: 1 });
         const availableWidth = viewerBodyEl.clientWidth - 32;
-        if (availableWidth > 0 && naturalViewport.width * s > availableWidth) {
-          s = availableWidth / naturalViewport.width;
-          scale = s; // update the reactive state too
+        if (availableWidth > 0) {
+          const maxScale = availableWidth / naturalViewport.width;
+          if (s > maxScale) {
+            s = maxScale;
+          }
         }
       }
 
@@ -149,6 +151,9 @@ $effect(() => {
       const viewport = pageProxy.getViewport({ scale: s });
       highlightWidth = viewport.width;
       highlightHeight = viewport.height;
+
+      // Update scale state to match what was actually rendered (for zoom label)
+      if (s !== scale) scale = s;
 
       // Extract text and update context
       const pageText = await extractPageText(pageProxy);
