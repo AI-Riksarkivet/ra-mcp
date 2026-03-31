@@ -1,5 +1,6 @@
 """PDF Viewer MCP tools — display PDFs, navigate, search, annotate."""
 
+import asyncio
 import base64
 import logging
 from pathlib import Path
@@ -35,6 +36,7 @@ MAX_PDF_SIZE = 200 * 1024 * 1024
 
 # In-memory PDF cache: url → bytes
 _pdf_cache: dict[str, bytes] = {}
+_background_tasks: set[asyncio.Task] = set()  # prevent GC of fire-and-forget tasks
 
 DEFAULT_PDF = "https://filer.riksarkivet.se/nedladdningsbara-filer/Hur%20riket%20styrdes_63MB.pdf"
 
@@ -82,6 +84,25 @@ async def display_pdf(
         source_url=url,
     )
     sc = await put_state(state)
+
+    # Pre-fetch full PDF in background for search_pdf cache warmth.
+    # This runs concurrently — display_pdf returns immediately.
+    async def _prefetch() -> None:
+        if url in _pdf_cache:
+            return
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
+                resp = await client.get(url)
+                resp.raise_for_status()
+            if len(resp.content) <= MAX_PDF_SIZE:
+                _pdf_cache[url] = resp.content
+                logger.info("display_pdf: pre-cached %d bytes for %s", len(resp.content), url)
+        except Exception as e:
+            logger.warning("display_pdf: pre-fetch failed for %s: %s", url, e)
+
+    task = asyncio.create_task(_prefetch())
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID) if ctx else False
     summary_parts = [
@@ -298,8 +319,6 @@ async def search_pdf(
     term: Annotated[str, Field(description="The search term to find.")],
 ) -> ToolResult:
     """Search all pages of a cached PDF using pymupdf (server-side, fast)."""
-    import asyncio
-
     import fitz  # pymupdf
 
     if not term or not term.strip():
