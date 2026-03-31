@@ -33,6 +33,8 @@ class SDHKRecord(BaseModel):
     facsimile: str = ""
     translation: str = ""
     additional: str = ""
+    has_manifest: bool = False
+    has_transcription: bool = False
 
     @classmethod
     def from_csv_row(cls, row: dict[str, str]) -> "SDHKRecord":
@@ -69,12 +71,16 @@ class SDHKRecord(BaseModel):
 
     @property
     def manifest_url(self) -> str:
-        """IIIF manifest URL for this SDHK document."""
+        """IIIF manifest URL for this SDHK document (empty if not digitized)."""
+        if not self.has_manifest:
+            return ""
         return SDHK_MANIFEST_TEMPLATE.format(sdhk_id=self.id)
 
     @property
     def bildvisning_url(self) -> str:
-        """Bildvisning viewer URL for this SDHK document."""
+        """Bildvisning viewer URL for this SDHK document (empty if not digitized)."""
+        if not self.has_manifest:
+            return ""
         return SDHK_BILDVISNING_TEMPLATE.format(sdhk_id=self.id)
 
 

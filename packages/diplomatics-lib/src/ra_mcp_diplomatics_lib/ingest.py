@@ -16,12 +16,38 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def ingest_sdhk(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.table.Table":
+def _load_id_set(path: str | Path | None) -> set[int]:
+    """Load a set of integer IDs from a text file (one per line)."""
+    if path is None:
+        return set()
+    path = Path(path)
+    if not path.exists():
+        return set()
+    ids = set()
+    with path.open() as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    ids.add(int(line))
+                except ValueError:
+                    pass
+    return ids
+
+
+def ingest_sdhk(
+    db: "lancedb.DBConnection",
+    csv_path: str | Path,
+    manifest_ids_path: str | Path | None = None,
+    no_transcription_ids_path: str | Path | None = None,
+) -> "lancedb.table.Table":
     """Ingest SDHK CSV into a LanceDB table with FTS index.
 
     Args:
         db: LanceDB database connection.
         csv_path: Path to the SDHK CSV file (semicolon-delimited, latin-1 encoded).
+        manifest_ids_path: Path to file listing SDHK IDs that have IIIF manifests.
+        no_transcription_ids_path: Path to file listing SDHK IDs with manifests but no transcription.
 
     Returns:
         The created LanceDB table.
@@ -30,6 +56,8 @@ def ingest_sdhk(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.ta
         ValueError: If no records could be parsed from the CSV.
     """
     csv_path = Path(csv_path)
+    manifest_ids = _load_id_set(manifest_ids_path)
+    no_transcription_ids = _load_id_set(no_transcription_ids_path)
     records: list[dict] = []
 
     with csv_path.open(encoding="latin-1", newline="") as f:
@@ -40,6 +68,9 @@ def ingest_sdhk(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.ta
             except Exception as exc:
                 logger.warning("Skipping SDHK row %d: %s", lineno, exc)
                 continue
+            if manifest_ids:
+                record.has_manifest = record.id in manifest_ids
+                record.has_transcription = record.has_manifest and record.id not in no_transcription_ids
             flat = record.model_dump()
             flat["searchable_text"] = record.searchable_text
             flat["manifest_url"] = record.manifest_url

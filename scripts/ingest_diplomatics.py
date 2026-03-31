@@ -52,6 +52,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Download and ingest SDHK/MPO into LanceDB")
     parser.add_argument("--sdhk", type=Path, default=None, help="Local SDHK CSV path (skips download)")
     parser.add_argument("--mpo", type=Path, default=None, help="Local MPO CSV path (skips download)")
+    parser.add_argument("--manifest-ids", type=Path, default=None, help="File listing SDHK IDs with IIIF manifests")
+    parser.add_argument("--no-transcription-ids", type=Path, default=None, help="File listing SDHK IDs without transcription")
     parser.add_argument("--output", type=Path, default=None, help="LanceDB output path (default: from config)")
     args = parser.parse_args()
 
@@ -68,7 +70,11 @@ def main() -> None:
             sdhk_path = tmp_path / "sdhk.csv"
             download_sdhk(sdhk_path)
         print(f"Ingesting SDHK from {sdhk_path} ...")
-        sdhk_table = ingest_sdhk(db, sdhk_path)
+        sdhk_table = ingest_sdhk(
+            db, sdhk_path,
+            manifest_ids_path=args.manifest_ids,
+            no_transcription_ids_path=args.no_transcription_ids,
+        )
         print(f"  → {sdhk_table.count_rows()} rows")
 
         # MPO
