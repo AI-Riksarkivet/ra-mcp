@@ -381,6 +381,10 @@ async def search_pdf(
 _PDF_DOMAINS = [
     "https://huggingface.co",
     "https://cas-bridge.xethub-eu.hf.co",
+    "https://cas-bridge.xethub.hf.co",
+    "https://cdn-lfs.huggingface.co",
+    "https://cdn-lfs-us-1.huggingface.co",
+    "https://cdn-lfs-eu-1.huggingface.co",
     "https://arxiv.org",
 ]
 
