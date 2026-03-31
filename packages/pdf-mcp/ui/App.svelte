@@ -76,6 +76,11 @@ function applyViewerState(sc: Record<string, unknown>) {
     totalPages: 0,
     proxyPath,
   };
+
+  // Start loading the PDF (imperative, not reactive)
+  if (app) {
+    startLoadingPdf(url, scCurrentPage);
+  }
 }
 
 // Apply host theme
@@ -91,86 +96,81 @@ $effect(() => {
   app.sendSizeChanged({ height: 600 });
 });
 
-// Load PDF when viewerData URL changes via chunked tool calls.
-$effect(() => {
-  const url = viewerData?.url;
-  if (!url || !app) return;
+// PDF loading — called imperatively from applyViewerState, not from $effect.
+let loadCancelFn: (() => void) | null = null;
 
-  // Reset PDF state for new URL
+function startLoadingPdf(url: string, startPage: number) {
+  // Cancel any previous load
+  if (loadCancelFn) loadCancelFn();
+
   pdfDocument = null;
   totalPages = 0;
-  currentPage = viewerData?.currentPage ?? 1;
+  currentPage = startPage;
+  error = null;
   streamingMessage = "Loading PDF...";
 
   let cancelled = false;
+  loadCancelFn = () => { cancelled = true; };
 
-  async function loadViaToolChunks(): Promise<Uint8Array> {
-    const chunks: Uint8Array[] = [];
-    let offset = 0;
-
-    while (true) {
-      if (cancelled) throw new Error("cancelled");
-
-      const result = await app!.callServerTool({
-        name: "read_pdf_bytes",
-        arguments: { url: url!, offset },
-      });
-
-      if (result.isError) {
-        const msg = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
-        throw new Error(msg);
-      }
-
-      const sc = (result as any).structuredContent as Record<string, unknown>;
-      if (!sc?.bytes) throw new Error("Invalid response from read_pdf_bytes");
-
-      const chunkBytes = base64ToUint8Array(sc.bytes as string);
-      chunks.push(chunkBytes);
-      const totalBytes = (sc.totalBytes as number) ?? 0;
-      offset += (sc.byteCount as number) ?? chunkBytes.length;
-
-      if (totalBytes > 0) {
-        streamingMessage = `Loading PDF... ${Math.round((offset / totalBytes) * 100)}%`;
-      }
-
-      if (!(sc.hasMore as boolean)) break;
-    }
-
-    const fullLength = chunks.reduce((sum, c) => sum + c.length, 0);
-    const full = new Uint8Array(fullLength);
-    let pos = 0;
-    for (const chunk of chunks) {
-      full.set(chunk, pos);
-      pos += chunk.length;
-    }
-    return full;
-  }
-
-  async function loadPdf() {
+  (async () => {
     try {
-      // Load via chunked tool calls (CSP-safe — works in MCP App iframe)
-      const pdfBytes = await loadViaToolChunks();
+      const chunks: Uint8Array[] = [];
+      let offset = 0;
+
+      while (true) {
+        if (cancelled) return;
+
+        const result = await app!.callServerTool({
+          name: "read_pdf_bytes",
+          arguments: { url, offset },
+        });
+
+        if (result.isError) {
+          const msg = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
+          throw new Error(msg);
+        }
+
+        const sc = (result as any).structuredContent as Record<string, unknown>;
+        if (!sc?.bytes) throw new Error("Invalid response from read_pdf_bytes");
+
+        const chunkBytes = base64ToUint8Array(sc.bytes as string);
+        chunks.push(chunkBytes);
+        const chunkTotal = (sc.totalBytes as number) ?? 0;
+        offset += (sc.byteCount as number) ?? chunkBytes.length;
+
+        if (chunkTotal > 0) {
+          streamingMessage = `Loading PDF... ${Math.round((offset / chunkTotal) * 100)}%`;
+        }
+
+        if (!(sc.hasMore as boolean)) break;
+      }
+
       if (cancelled) return;
+
+      // Combine chunks
+      const fullLength = chunks.reduce((sum, c) => sum + c.length, 0);
+      const full = new Uint8Array(fullLength);
+      let pos = 0;
+      for (const chunk of chunks) {
+        full.set(chunk, pos);
+        pos += chunk.length;
+      }
 
       streamingMessage = "Rendering...";
-      const doc = await loadPdfFromBytes(pdfBytes);
+      const doc = await loadPdfFromBytes(full);
       if (cancelled) return;
+
       pdfDocument = doc;
       totalPages = doc.numPages;
       streamingMessage = "";
     } catch (err: any) {
       if (!cancelled) {
         error = `Failed to load PDF: ${err.message ?? err}`;
+        streamingMessage = "";
       }
     }
-  }
-
-  loadPdf();
-
-  return () => {
-    cancelled = true;
-  };
-});
+  })();
+}
 
 async function handleGallerySelect(item: GalleryItem) {
   if (!app) return;
@@ -324,6 +324,7 @@ onMount(async () => {
 
   return () => {
     stopPolling();
+    if (loadCancelFn) loadCancelFn();
   };
 });
 </script>
