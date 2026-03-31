@@ -71,7 +71,7 @@ let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
 
 let tooltip = $state<TooltipState | null>(null);
 let highlightedLineId = $state<string | null>(null);
-let showPanel = $state(isFullscreen && !isNarrow); // svelte-ignore state_referenced_locally
+let showPanel = $state((() => isFullscreen && !isNarrow)());
 let panelWidth = $state(280);
 
 // Polygon style controls
