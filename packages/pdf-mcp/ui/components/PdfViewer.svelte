@@ -202,21 +202,22 @@ $effect(() => {
   })();
 });
 
-// Cross-page search: when searchTerm changes, search all pages
-$effect(() => {
-  const query = searchTerm;
-  if (!query || !pdfDocument) {
-    globalSearchResults = [];
-    globalSearchLoading = false;
-    return;
-  }
+// Cross-page search: triggered manually by button click (not automatic).
+// Searching all 255 pages is too slow to run on every keystroke.
+let globalSearchCancelFn: (() => void) | null = null;
+
+function startGlobalSearch() {
+  if (!searchTerm || !pdfDocument) return;
+  if (globalSearchCancelFn) globalSearchCancelFn();
 
   globalSearchLoading = true;
+  globalSearchResults = [];
   let cancelled = false;
+  globalSearchCancelFn = () => { cancelled = true; };
 
   (async () => {
     try {
-      const results = await searchAllPages(pdfDocument, query);
+      const results = await searchAllPages(pdfDocument, searchTerm);
       if (!cancelled) {
         globalSearchResults = results;
       }
@@ -224,10 +225,20 @@ $effect(() => {
       console.error("[PdfViewer] global search error:", err);
     } finally {
       if (!cancelled) globalSearchLoading = false;
+      globalSearchCancelFn = null;
     }
   })();
+}
 
-  return () => { cancelled = true; };
+// Clear global results when search term changes
+$effect(() => {
+  searchTerm; // track dependency
+  globalSearchResults = [];
+  globalSearchLoading = false;
+  if (globalSearchCancelFn) {
+    globalSearchCancelFn();
+    globalSearchCancelFn = null;
+  }
 });
 
 // Navigate to next/prev page with matches
@@ -488,13 +499,19 @@ onDestroy(() => {
             <button class="search-nav-btn" onclick={searchNext} disabled={searchMatchCount === 0} title="Next match" aria-label="Next match">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            {#if globalSearchPages > 1}
-              <span class="search-divider"></span>
+            <span class="search-divider"></span>
+            {#if globalSearchLoading}
+              <span class="match-info">Searching...</span>
+            {:else if globalSearchPages > 0}
               <button class="search-nav-btn" onclick={searchPrevPage} title="Previous page with matches" aria-label="Previous page with matches">
                 <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M4 1L1 5L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </button>
               <button class="search-nav-btn" onclick={searchNextPage} title="Next page with matches" aria-label="Next page with matches">
                 <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M8 1L11 5L8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 5H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </button>
+            {:else}
+              <button class="search-all-btn" onclick={startGlobalSearch} title="Search all {totalPages} pages" aria-label="Search all pages">
+                All pages
               </button>
             {/if}
           {/if}
@@ -777,6 +794,23 @@ onDestroy(() => {
   height: 14px;
   background: var(--color-border-primary);
   flex-shrink: 0;
+}
+
+.search-all-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 0.65rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+}
+
+.search-all-btn:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
 }
 
 /* Canvas + page rendering */
