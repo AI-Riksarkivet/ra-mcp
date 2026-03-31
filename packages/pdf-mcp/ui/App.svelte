@@ -135,55 +135,94 @@ function startLoadingPdf(url: string, startPage: number) {
 
   (async () => {
     try {
-      // First chunk to get totalBytes
-      const first = await fetchChunk(url, 0);
-      if (cancelled) return;
+      let pdfBytes: Uint8Array | null = null;
 
-      const resultMap = new Map<number, Uint8Array>();
-      resultMap.set(0, first.bytes);
-      let received = first.bytes.length;
-      const total = first.totalBytes;
+      // Strategy 1: Direct fetch (fast — works if CSP connectDomains includes the PDF host)
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
-      if (total > 0) {
-        streamingMessage = `Loading PDF... ${Math.round((received / total) * 100)}%`;
-      }
+        if (resp.body) {
+          // Stream with progress
+          const contentLength = Number(resp.headers.get("content-length") || 0);
+          const reader = resp.body.getReader();
+          const chunks: Uint8Array[] = [];
+          let received = 0;
 
-      if (first.hasMore && total > 0) {
-        // Build list of remaining offsets
-        const offsets: number[] = [];
-        for (let o = first.bytes.length; o < total; o += CHUNK_SIZE) {
-          offsets.push(o);
-        }
-
-        // Fetch in parallel batches
-        for (let i = 0; i < offsets.length; i += PARALLEL_CHUNKS) {
-          if (cancelled) return;
-          const batch = offsets.slice(i, i + PARALLEL_CHUNKS);
-          const results = await Promise.all(batch.map((o) => fetchChunk(url, o)));
-
-          for (const r of results) {
-            resultMap.set(r.offset, r.bytes);
-            received += r.bytes.length;
+          while (true) {
+            if (cancelled) return;
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            if (contentLength > 0) {
+              streamingMessage = `Loading PDF... ${Math.round((received / contentLength) * 100)}%`;
+            } else {
+              streamingMessage = `Loading PDF... ${(received / 1024 / 1024).toFixed(1)} MB`;
+            }
           }
 
+          const full = new Uint8Array(received);
+          let pos = 0;
+          for (const c of chunks) { full.set(c, pos); pos += c.length; }
+          pdfBytes = full;
+        } else {
+          const buf = await resp.arrayBuffer();
+          pdfBytes = new Uint8Array(buf);
+        }
+      } catch {
+        // CSP blocked or network error — fall back to chunked tool calls
+        if (cancelled) return;
+        pdfBytes = null;
+      }
+
+      // Strategy 2: Chunked tool calls (fallback — always works but slower)
+      if (!pdfBytes) {
+        streamingMessage = "Loading PDF via server...";
+        const first = await fetchChunk(url, 0);
+        if (cancelled) return;
+
+        const resultMap = new Map<number, Uint8Array>();
+        resultMap.set(0, first.bytes);
+        let received = first.bytes.length;
+        const total = first.totalBytes;
+
+        if (total > 0) {
           streamingMessage = `Loading PDF... ${Math.round((received / total) * 100)}%`;
+        }
+
+        if (first.hasMore && total > 0) {
+          const offsets: number[] = [];
+          for (let o = first.bytes.length; o < total; o += CHUNK_SIZE) {
+            offsets.push(o);
+          }
+          for (let i = 0; i < offsets.length; i += PARALLEL_CHUNKS) {
+            if (cancelled) return;
+            const batch = offsets.slice(i, i + PARALLEL_CHUNKS);
+            const results = await Promise.all(batch.map((o) => fetchChunk(url, o)));
+            for (const r of results) {
+              resultMap.set(r.offset, r.bytes);
+              received += r.bytes.length;
+            }
+            streamingMessage = `Loading PDF... ${Math.round((received / total) * 100)}%`;
+          }
+        }
+
+        if (cancelled) return;
+        const sortedOffsets = [...resultMap.keys()].sort((a, b) => a - b);
+        const fullLength = sortedOffsets.reduce((sum, o) => sum + resultMap.get(o)!.length, 0);
+        pdfBytes = new Uint8Array(fullLength);
+        let pos = 0;
+        for (const o of sortedOffsets) {
+          pdfBytes.set(resultMap.get(o)!, pos);
+          pos += resultMap.get(o)!.length;
         }
       }
 
       if (cancelled) return;
 
-      // Assemble in order
-      const sortedOffsets = [...resultMap.keys()].sort((a, b) => a - b);
-      const fullLength = sortedOffsets.reduce((sum, o) => sum + resultMap.get(o)!.length, 0);
-      const full = new Uint8Array(fullLength);
-      let pos = 0;
-      for (const o of sortedOffsets) {
-        full.set(resultMap.get(o)!, pos);
-        pos += resultMap.get(o)!.length;
-      }
-
       streamingMessage = "Rendering...";
-      const doc = await loadPdfFromBytes(full);
+      const doc = await loadPdfFromBytes(pdfBytes);
       if (cancelled) return;
 
       pdfDocument = doc;

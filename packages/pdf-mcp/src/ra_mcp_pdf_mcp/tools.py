@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import httpx
 from fastmcp import Context
-from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig
+from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
@@ -377,7 +377,17 @@ async def search_pdf(
 # ---------------------------------------------------------------------------
 
 
-@mcp.resource(uri=RESOURCE_URI)
+# Whitelist PDF source domains so the iframe can fetch() directly (bypasses MCP transport)
+_PDF_DOMAINS = [
+    "https://filer.riksarkivet.se",
+    "https://cdn.abicart.com",
+    "https://arxiv.org",
+]
+
+_resource_csp = ResourceCSP(connectDomains=_PDF_DOMAINS)
+
+
+@mcp.resource(uri=RESOURCE_URI, app=AppConfig(csp=_resource_csp))
 def get_ui_resource() -> str:
     html_path = DIST_DIR / "mcp-app.html"
     if not html_path.exists():
