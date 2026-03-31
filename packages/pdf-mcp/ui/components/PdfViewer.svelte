@@ -9,7 +9,6 @@ import {
   buildTextLayer,
   extractPageText,
   searchPageText,
-  searchAllPages,
 } from "../lib/pdf-engine";
 import { scheduleContextUpdate, resetContextState } from "../lib/context";
 import { ZOOM } from "../lib/constants";
@@ -22,6 +21,7 @@ import TocPanel from "./TocPanel.svelte";
 interface Props {
   app: App;
   pdfDocument: PDFDocumentProxy;
+  pdfUrl: string;
   title: string;
   currentPage: number;
   totalPages: number;
@@ -36,6 +36,7 @@ interface Props {
 let {
   app,
   pdfDocument,
+  pdfUrl,
   title,
   currentPage = $bindable(),
   totalPages,
@@ -202,12 +203,11 @@ $effect(() => {
   })();
 });
 
-// Cross-page search: triggered manually by button click (not automatic).
-// Searching all 255 pages is too slow to run on every keystroke.
+// Cross-page search: uses server-side pymupdf via search_pdf tool (fast).
 let globalSearchCancelFn: (() => void) | null = null;
 
 function startGlobalSearch() {
-  if (!searchTerm || !pdfDocument) return;
+  if (!searchTerm || !app || !pdfUrl) return;
   if (globalSearchCancelFn) globalSearchCancelFn();
 
   globalSearchLoading = true;
@@ -217,9 +217,21 @@ function startGlobalSearch() {
 
   (async () => {
     try {
-      const results = await searchAllPages(pdfDocument, searchTerm);
-      if (!cancelled) {
-        globalSearchResults = results;
+      const result = await app.callServerTool({
+        name: "search_pdf",
+        arguments: { url: pdfUrl, term: searchTerm },
+      });
+
+      if (cancelled) return;
+
+      if (result.isError) {
+        console.error("[PdfViewer] server search error:", result.content);
+        return;
+      }
+
+      const sc = (result as any).structuredContent as Record<string, unknown>;
+      if (sc?.pageMatches && Array.isArray(sc.pageMatches)) {
+        globalSearchResults = sc.pageMatches as { pageNum: number; count: number }[];
       }
     } catch (err) {
       console.error("[PdfViewer] global search error:", err);

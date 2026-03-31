@@ -361,6 +361,7 @@ onMount(async () => {
     <PdfViewer
       {app}
       {pdfDocument}
+      pdfUrl={viewerData?.url ?? ""}
       title={viewerData?.title ?? "Document"}
       bind:currentPage
       {totalPages}

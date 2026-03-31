@@ -289,6 +289,66 @@ async def list_pdfs() -> ToolResult:
 
 
 # ---------------------------------------------------------------------------
+# search_pdf — server-side full-text search (app-visible only)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="search_pdf",
+    description="Search for text across all pages of a PDF. Returns per-page match counts. Much faster than client-side search for large PDFs.",
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+)
+async def search_pdf(
+    url: Annotated[str, Field(description="URL of the PDF file (must be cached from a previous display_pdf call).")],
+    term: Annotated[str, Field(description="The search term to find.")],
+) -> ToolResult:
+    """Search all pages of a cached PDF using pymupdf (server-side, fast)."""
+    import asyncio
+
+    import fitz  # pymupdf
+
+    if not term or not term.strip():
+        return ToolResult(
+            content=[types.TextContent(type="text", text="No search term provided.")],
+            structured_content={"pageMatches": [], "totalMatches": 0},
+        )
+
+    # Get cached PDF bytes
+    if url not in _pdf_cache:
+        return _error_result("PDF not cached. Load it first with display_pdf + read_pdf_bytes.")
+
+    pdf_bytes = _pdf_cache[url]
+    search_term = term.strip()
+
+    def _search() -> tuple[list[dict], int]:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        page_matches: list[dict] = []
+        total = 0
+        for i in range(len(doc)):
+            page = doc[i]
+            # text_instances returns list of Rect for each match
+            instances = page.search_for(search_term)
+            count = len(instances)
+            if count > 0:
+                page_matches.append({"pageIndex": i, "pageNum": i + 1, "matchCount": count})
+                total += count
+        doc.close()
+        return page_matches, total
+
+    # Run in thread to not block the event loop
+    page_matches, total_matches = await asyncio.to_thread(_search)
+
+    pages_with = len(page_matches)
+    summary = f"Found {total_matches} match{'es' if total_matches != 1 else ''} across {pages_with} page{'s' if pages_with != 1 else ''}."
+    logger.info("search_pdf: term=%r, %s", search_term, summary)
+
+    return ToolResult(
+        content=[types.TextContent(type="text", text=summary)],
+        structured_content={"pageMatches": page_matches, "totalMatches": total_matches},
+    )
+
+
+# ---------------------------------------------------------------------------
 # UI Resource
 # ---------------------------------------------------------------------------
 
