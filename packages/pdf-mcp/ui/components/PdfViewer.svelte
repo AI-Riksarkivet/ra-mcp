@@ -115,7 +115,7 @@ let renderGeneration = 0;
 
 $effect(() => {
   const page = currentPage;
-  const s = scale;
+  let s = scale;
 
   if (!pdfDocument || !canvasEl || !textLayerEl) return;
 
@@ -128,6 +128,16 @@ $effect(() => {
       if (gen !== renderGeneration) return;
 
       currentPageProxy = pageProxy;
+
+      // Auto-fit: if the page would be wider than the container, reduce scale
+      if (viewerBodyEl) {
+        const naturalViewport = pageProxy.getViewport({ scale: 1 });
+        const availableWidth = viewerBodyEl.clientWidth - 32;
+        if (availableWidth > 0 && naturalViewport.width * s > availableWidth) {
+          s = availableWidth / naturalViewport.width;
+          scale = s; // update the reactive state too
+        }
+      }
 
       await renderPage(pageProxy, canvasEl, s);
       if (gen !== renderGeneration) return;
@@ -316,27 +326,7 @@ function zoomOut() {
   scale = Math.max(ZOOM.min, scale - ZOOM.step);
 }
 
-// Calculate fit-to-width scale for a given page (synchronous, no side effects)
-function calcFitScale(pageViewport: { width: number }): number {
-  if (!viewerBodyEl || pageViewport.width <= 0) return scale;
-  const availableWidth = viewerBodyEl.clientWidth - 32; // padding
-  return Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / pageViewport.width));
-}
-
-let hasAutoFit = false;
-// Auto-fit scale on first page load
-$effect(() => {
-  if (pdfDocument && viewerBodyEl && !hasAutoFit) {
-    hasAutoFit = true;
-    pdfDocument.getPage(1).then((page) => {
-      const viewport = page.getViewport({ scale: 1 });
-      const fitScale = calcFitScale(viewport);
-      if (Math.abs(fitScale - scale) > 0.01) {
-        scale = fitScale;
-      }
-    });
-  }
-});
+// fitToWidth is now handled inline in the render $effect above
 
 // ---------------------------------------------------------------------------
 // Search bar
