@@ -91,11 +91,9 @@ $effect(() => {
   app.sendSizeChanged({ height: 600 });
 });
 
-// Load PDF when viewerData URL changes.
-// Three-tier fallback: proxy URL (fastest) → direct fetch → chunked tool calls.
+// Load PDF when viewerData URL changes via chunked tool calls.
 $effect(() => {
   const url = viewerData?.url;
-  const proxyPath = viewerData?.proxyPath;
   if (!url || !app) return;
 
   // Reset PDF state for new URL
@@ -150,24 +148,7 @@ $effect(() => {
 
   async function loadPdf() {
     try {
-      // Strategy 1: Direct fetch (works if CSP allows external URL)
-      try {
-        const resp = await fetch(url!);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const buf = await resp.arrayBuffer();
-        if (cancelled) return;
-        const doc = await loadPdfFromBytes(new Uint8Array(buf));
-        if (cancelled) return;
-        pdfDocument = doc;
-        totalPages = doc.numPages;
-        streamingMessage = "";
-        return;
-      } catch {
-        if (cancelled) return;
-      }
-
-      // Strategy 2: Chunked tool calls (always works, slower but CSP-safe)
-      streamingMessage = "Loading PDF via server...";
+      // Load via chunked tool calls (CSP-safe — works in MCP App iframe)
       const pdfBytes = await loadViaToolChunks();
       if (cancelled) return;
 
