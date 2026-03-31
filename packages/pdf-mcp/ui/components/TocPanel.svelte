@@ -56,10 +56,8 @@ $effect(() => {
       outline = result;
       if (result) {
         mode = "outline";
-        console.log("[TocPanel] Outline loaded:", result.length, "top-level items");
       } else {
         mode = "thumbnails";
-        console.log("[TocPanel] No outline found, showing thumbnails");
       }
     } catch (err) {
       console.error("[TocPanel] outline fetch error:", err);

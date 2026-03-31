@@ -30,6 +30,7 @@ interface Props {
   canFullscreen: boolean;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  onBackToGallery: () => void;
   viewId: string;
 }
 
@@ -45,6 +46,7 @@ let {
   canFullscreen,
   isFullscreen,
   onToggleFullscreen,
+  onBackToGallery,
   viewId,
 }: Props = $props();
 
@@ -468,6 +470,9 @@ onDestroy(() => {
 
       <!-- Floating toolbar (top-right, vertical) -->
       <div class="floating-toolbar">
+        <button class="toolbar-btn" onclick={onBackToGallery} title="Back to library" aria-label="Back to library">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 2L2 8L6 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 8H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
         <button class="toolbar-btn" class:active={searchOpen} onclick={toggleSearch} title="Search (Ctrl+F)" aria-label="Toggle search">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>

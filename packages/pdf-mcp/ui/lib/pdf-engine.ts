@@ -163,40 +163,6 @@ export async function searchPageText(
   return { rects, count };
 }
 
-/**
- * Search for text across all pages of a PDF document.
- * Returns per-page match counts (only pages with matches).
- */
-export async function searchAllPages(
-  doc: PDFDocumentProxy,
-  query: string,
-): Promise<{ pageNum: number; count: number }[]> {
-  if (!query) return [];
-  const queryLower = query.toLowerCase();
-  const results: { pageNum: number; count: number }[] = [];
-
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const textContent = await page.getTextContent();
-    let count = 0;
-
-    for (const item of textContent.items) {
-      if (!("str" in item)) continue;
-      const text = ((item as any).str as string).toLowerCase();
-      let idx = 0;
-      while ((idx = text.indexOf(queryLower, idx)) !== -1) {
-        count++;
-        idx += queryLower.length;
-      }
-    }
-
-    if (count > 0) {
-      results.push({ pageNum: i, count });
-    }
-  }
-
-  return results;
-}
 
 // ---------------------------------------------------------------------------
 // Outline (Table of Contents)

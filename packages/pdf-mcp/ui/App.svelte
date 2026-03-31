@@ -197,6 +197,17 @@ async function handleGallerySelect(item: GalleryItem) {
   isStreaming = false;
 }
 
+function backToGallery() {
+  if (loadCancelFn) loadCancelFn();
+  viewerData = null;
+  pdfDocument = null;
+  totalPages = 0;
+  currentPage = 1;
+  error = null;
+  streamingMessage = "";
+  searchTerm = "";
+}
+
 async function toggleFullscreen() {
   if (!app) return;
   try {
@@ -370,6 +381,7 @@ onMount(async () => {
       {canFullscreen}
       {isFullscreen}
       onToggleFullscreen={toggleFullscreen}
+      onBackToGallery={backToGallery}
       viewId={viewId}
     />
   {:else if error}
