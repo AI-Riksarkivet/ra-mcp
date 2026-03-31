@@ -485,6 +485,7 @@ onDestroy(() => {
             {#if globalSearchLoading}
               <span class="match-info">Searching...</span>
             {:else if globalSearchPages > 0}
+              <span class="match-info">{globalSearchTotal} in {globalSearchPages} pages</span>
               <button class="search-nav-btn" onclick={searchPrevPage} title="Previous page with matches" aria-label="Previous page with matches">
                 <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M4 1L1 5L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </button>
