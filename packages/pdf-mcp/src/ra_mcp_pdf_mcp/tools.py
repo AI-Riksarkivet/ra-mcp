@@ -158,6 +158,40 @@ async def get_pdf_state(
 
 
 # ---------------------------------------------------------------------------
+# get_page_blocks — block overlay data (app-visible only)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="get_page_blocks",
+    description="Get all structured blocks for a page with bounding boxes and types. Used by the viewer for block overlay.",
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+)
+async def get_page_blocks(
+    url: Annotated[str, Field(description="URL of the PDF.")],
+    page: Annotated[int, Field(description="Page number (1-based).", ge=1)],
+) -> ToolResult:
+    """Return all blocks for a page with bbox and block_type for overlay rendering."""
+    if url not in blocks_cache:
+        return _error_result("PDF not loaded.")
+
+    pages = blocks_cache[url]
+    page_idx = page - 1
+    if page_idx < 0 or page_idx >= len(pages):
+        return _error_result(f"Page {page} out of range (1-{len(pages)}).")
+
+    page_data = pages[page_idx]
+    page_bbox = page_data.get("bbox", [0, 0, 0, 0])
+
+    blocks = [{"bbox": block.get("bbox", [0, 0, 0, 0]), "blockType": block.get("block_type", "")} for block in page_data.get("children", [])]
+
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"Page {page}: {len(blocks)} blocks")],
+        structured_content={"pageBbox": page_bbox, "blocks": blocks},
+    )
+
+
+# ---------------------------------------------------------------------------
 # read_pdf_page — on-demand page text for model context
 # ---------------------------------------------------------------------------
 

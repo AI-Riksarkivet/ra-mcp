@@ -13,8 +13,14 @@ import PdfGallery from "./components/PdfGallery.svelte";
 import type { PdfViewerData, GalleryItem } from "./lib/types";
 import type { PDFDocumentProxy } from "./lib/pdf-engine";
 import { loadPdfFromBytes } from "./lib/pdf-engine";
-import { base64ToUint8Array } from "./lib/annotations";
 import { ZOOM } from "./lib/constants";
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
 
 let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();

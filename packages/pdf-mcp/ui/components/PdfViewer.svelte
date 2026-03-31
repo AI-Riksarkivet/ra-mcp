@@ -1,8 +1,6 @@
 <script lang="ts">
-import { SvelteMap } from "svelte/reactivity";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { PDFDocumentProxy, PDFPageProxy } from "../lib/pdf-engine";
-import type { TrackedAnnotation } from "../lib/types";
 import {
   renderPage,
   buildTextLayer,
@@ -64,9 +62,37 @@ let tocOpen = $state(true);
 let searchMatchCount = $state(0);
 let searchCurrentMatch = $state(0);
 let searchRects = $state<DOMRect[]>([]);
-let annotationMap = new SvelteMap<string, TrackedAnnotation>();
-let showAnnotationPanel = $state(false);
 let loading = $state(false);
+
+// Block overlay (bbox visualization)
+let blocksVisible = $state(false);
+let blockOverlays = $state<Array<{ rect: DOMRect; type: string }>>([]);
+
+const BLOCK_COLORS: Record<string, string> = {
+  Text: "rgba(59, 130, 246, 0.18)",         // blue
+  SectionHeader: "rgba(34, 197, 94, 0.22)", // green
+  Table: "rgba(249, 115, 22, 0.22)",        // orange
+  Picture: "rgba(168, 85, 247, 0.22)",      // purple
+  ListGroup: "rgba(20, 184, 166, 0.2)",     // teal
+  Caption: "rgba(234, 179, 8, 0.2)",        // yellow
+  PageHeader: "rgba(156, 163, 175, 0.15)",  // gray
+  PageFooter: "rgba(156, 163, 175, 0.15)",  // gray
+  Footnote: "rgba(236, 72, 153, 0.2)",      // pink
+  Figure: "rgba(239, 68, 68, 0.2)",         // red
+};
+
+const BLOCK_BORDERS: Record<string, string> = {
+  Text: "rgba(59, 130, 246, 0.5)",
+  SectionHeader: "rgba(34, 197, 94, 0.6)",
+  Table: "rgba(249, 115, 22, 0.6)",
+  Picture: "rgba(168, 85, 247, 0.6)",
+  ListGroup: "rgba(20, 184, 166, 0.5)",
+  Caption: "rgba(234, 179, 8, 0.5)",
+  PageHeader: "rgba(156, 163, 175, 0.4)",
+  PageFooter: "rgba(156, 163, 175, 0.4)",
+  Footnote: "rgba(236, 72, 153, 0.5)",
+  Figure: "rgba(239, 68, 68, 0.5)",
+};
 
 // Cross-page search
 interface PageMatch {
@@ -98,8 +124,6 @@ let highlightHeight = $state(0);
 // Derived state
 // ---------------------------------------------------------------------------
 
-let zoomLabel = $derived(Math.round(scale * 100));
-let hasAnnotations = $derived(annotationMap.size > 0);
 let searchMatchLabel = $derived.by(() => {
   if (globalSearchLoading) return "Searching...";
   if (searchMatchCount > 0) {
@@ -296,6 +320,52 @@ function searchPrevPage() {
 }
 
 // ---------------------------------------------------------------------------
+// Block overlay — fetch blocks when toggled on or page changes
+// ---------------------------------------------------------------------------
+
+$effect(() => {
+  const page = currentPage;
+  const s = scale;
+  const pageProxy = currentPageProxy;
+  const visible = blocksVisible;
+
+  if (!visible || !pageProxy || !app || !pdfUrl) {
+    blockOverlays = [];
+    return;
+  }
+
+  (async () => {
+    try {
+      const result = await app.callServerTool({
+        name: "get_page_blocks",
+        arguments: { url: pdfUrl, page },
+      });
+      if (result.isError) return;
+
+      const sc = (result as any).structuredContent as Record<string, unknown>;
+      if (!sc?.blocks || !sc?.pageBbox) return;
+
+      const [px1, py1, px2, py2] = sc.pageBbox as number[];
+      const viewport = pageProxy.getViewport({ scale: s });
+      const sx = viewport.width / (px2 - px1);
+      const sy = viewport.height / (py2 - py1);
+
+      const overlays: Array<{ rect: DOMRect; type: string }> = [];
+      for (const block of sc.blocks as Array<{ bbox: number[]; blockType: string }>) {
+        const [bx1, by1, bx2, by2] = block.bbox;
+        overlays.push({
+          rect: new DOMRect(bx1 * sx, by1 * sy, (bx2 - bx1) * sx, (by2 - by1) * sy),
+          type: block.blockType,
+        });
+      }
+      blockOverlays = overlays;
+    } catch (err) {
+      console.error("[PdfViewer] block overlay error:", err);
+    }
+  })();
+});
+
+// ---------------------------------------------------------------------------
 // Navigation
 // ---------------------------------------------------------------------------
 
@@ -375,15 +445,6 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Lifecycle
-// ---------------------------------------------------------------------------
-
-// No command polling — model commands (navigate, search, highlight) go through
-// state updates via get_pdf_state polling in App.svelte (every 2-10s with backoff),
-// same pattern as viewer-mcp. This avoids the hundreds of overlapping long-poll
-// requests that the command queue pattern caused over remote HTTP.
-
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -434,6 +495,9 @@ function handleKeydown(e: KeyboardEvent) {
         </button>
         <button class="toolbar-btn" class:active={tocOpen} onclick={() => tocOpen = !tocOpen} title="Toggle sidebar" aria-label="Toggle sidebar">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h12M2 8h8M2 13h10"/></svg>
+        </button>
+        <button class="toolbar-btn" class:active={blocksVisible} onclick={() => blocksVisible = !blocksVisible} title="Show block layout" aria-label="Toggle block overlay">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="4" rx="0.5"/><rect x="9" y="1" width="6" height="4" rx="0.5"/><rect x="1" y="7" width="14" height="4" rx="0.5"/><rect x="1" y="13" width="6" height="2" rx="0.5"/></svg>
         </button>
         <button class="toolbar-btn" onclick={zoomOut} disabled={scale <= ZOOM.min} title="Zoom out" aria-label="Zoom out">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -515,6 +579,28 @@ function handleKeydown(e: KeyboardEvent) {
               ></div>
             {/each}
           </div>
+          {#if blocksVisible && blockOverlays.length > 0}
+            <div
+              class="block-overlay-layer"
+              style:width="{highlightWidth}px"
+              style:height="{highlightHeight}px"
+            >
+              {#each blockOverlays as overlay, i (i)}
+                <div
+                  class="block-box"
+                  style:left="{overlay.rect.x}px"
+                  style:top="{overlay.rect.y}px"
+                  style:width="{overlay.rect.width}px"
+                  style:height="{overlay.rect.height}px"
+                  style:background={BLOCK_COLORS[overlay.type] ?? "rgba(100,100,100,0.1)"}
+                  style:border-color={BLOCK_BORDERS[overlay.type] ?? "rgba(100,100,100,0.3)"}
+                  title={overlay.type}
+                >
+                  <span class="block-label">{overlay.type}</span>
+                </div>
+              {/each}
+            </div>
+          {/if}
           <div bind:this={textLayerEl} class="text-layer"></div>
         </div>
       </div>
@@ -884,5 +970,38 @@ function handleKeydown(e: KeyboardEvent) {
     background: rgba(255, 165, 0, 0.5);
     mix-blend-mode: screen;
   }
+}
+
+/* Block overlay layer */
+.block-overlay-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.block-box {
+  position: absolute;
+  border: 1px solid;
+  border-radius: 2px;
+  transition: opacity 0.15s;
+}
+
+.block-label {
+  position: absolute;
+  top: -1px;
+  left: 2px;
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 0 0 2px 0;
+  background: inherit;
+  color: var(--color-text-primary);
+  opacity: 0.7;
+  pointer-events: none;
+  white-space: nowrap;
 }
 </style>
