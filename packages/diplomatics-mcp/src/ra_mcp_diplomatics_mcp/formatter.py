@@ -68,12 +68,17 @@ def format_sdhk_results(result: SearchResult) -> str:
         if printed:
             lines.append(f"Printed: {printed}")
 
-        # IIIF manifest URL (computed from id)
-        if sdhk_id:
-            manifest_url = f"https://lbiiif.riksarkivet.se/sdhk!{sdhk_id}/manifest"
-            bildvisning_url = f"https://sok.riksarkivet.se/bildvisning/sdhk!{sdhk_id}"
+        manifest_url = rec.get("manifest_url", "")
+        has_transcription = rec.get("has_transcription", False)
+
+        if manifest_url:
             lines.append(f"IIIF Manifest: {manifest_url}")
-            lines.append(f"Bildvisning: {bildvisning_url}")
+            if has_transcription:
+                lines.append("Status: Digitized + Transcribed")
+            else:
+                lines.append("Status: Digitized (no transcription)")
+        else:
+            lines.append("Status: Not digitized")
 
         lines.append("")
 

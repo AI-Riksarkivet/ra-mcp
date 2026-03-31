@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from .config import SDHK_BILDVISNING_TEMPLATE, SDHK_MANIFEST_TEMPLATE
+from .config import SDHK_MANIFEST_TEMPLATE
 
 
 class SDHKRecord(BaseModel):
@@ -75,13 +75,6 @@ class SDHKRecord(BaseModel):
         if not self.has_manifest:
             return ""
         return SDHK_MANIFEST_TEMPLATE.format(sdhk_id=self.id)
-
-    @property
-    def bildvisning_url(self) -> str:
-        """Bildvisning viewer URL for this SDHK document (empty if not digitized)."""
-        if not self.has_manifest:
-            return ""
-        return SDHK_BILDVISNING_TEMPLATE.format(sdhk_id=self.id)
 
 
 class MPORecord(BaseModel):

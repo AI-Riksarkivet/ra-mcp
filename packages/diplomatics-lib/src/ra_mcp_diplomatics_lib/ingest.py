@@ -74,7 +74,6 @@ def ingest_sdhk(
             flat = record.model_dump()
             flat["searchable_text"] = record.searchable_text
             flat["manifest_url"] = record.manifest_url
-            flat["bildvisning_url"] = record.bildvisning_url
             records.append(flat)
 
     if not records:

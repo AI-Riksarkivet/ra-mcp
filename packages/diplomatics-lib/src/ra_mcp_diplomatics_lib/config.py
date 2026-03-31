@@ -11,7 +11,6 @@ MPO_TABLE = "mpo"
 
 # IIIF manifest URL templates
 SDHK_MANIFEST_TEMPLATE = "https://lbiiif.riksarkivet.se/sdhk!{sdhk_id}/manifest"
-SDHK_BILDVISNING_TEMPLATE = "https://sok.riksarkivet.se/bildvisning/sdhk!{sdhk_id}"
 
 # MPO already has iiif_manifest and bildbetrachter columns in the CSV
 
