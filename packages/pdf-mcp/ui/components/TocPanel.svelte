@@ -245,7 +245,7 @@ onDestroy(() => {
 
 <style>
 .toc-panel {
-  width: 160px;
+  width: 220px;
   display: flex;
   flex-direction: column;
   background: var(--color-background-primary);
