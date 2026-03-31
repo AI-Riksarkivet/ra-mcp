@@ -354,7 +354,7 @@ onMount(async () => {
   };
 
   instance.onhostcontextchanged = (params) => {
-    hostContext = { ...hostContext, ...params };
+    queueMicrotask(() => { hostContext = { ...hostContext, ...params }; });
   };
 
   instance.onteardown = async () => {
