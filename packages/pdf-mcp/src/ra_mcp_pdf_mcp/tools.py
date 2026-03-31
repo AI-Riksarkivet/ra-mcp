@@ -283,14 +283,17 @@ async def get_pdf_state(
 
 
 # ---------------------------------------------------------------------------
-# list_pdfs — gallery of available PDFs (app-visible only)
+# list_pdfs — gallery of available PDFs
 # ---------------------------------------------------------------------------
 
 
 @mcp.tool(
     name="list_pdfs",
-    description="List available PDF documents for the gallery view.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    description=(
+        "List available PDF documents from Riksarkivet's collection. "
+        "Includes guides on medieval history, Sami history, genealogy research, and more. "
+        "Use display_pdf with the URL from the results to open a specific PDF."
+    ),
 )
 async def list_pdfs() -> ToolResult:
     """Return the curated gallery of available PDFs."""
