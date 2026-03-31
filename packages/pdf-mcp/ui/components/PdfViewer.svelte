@@ -235,6 +235,13 @@ function startGlobalSearch() {
       const sc = (result as any).structuredContent as Record<string, unknown>;
       if (sc?.pageMatches && Array.isArray(sc.pageMatches)) {
         globalSearchResults = sc.pageMatches as { pageNum: number; count: number }[];
+        // Auto-navigate to first page with matches
+        if (globalSearchResults.length > 0) {
+          const firstMatch = globalSearchResults[0];
+          if (firstMatch.pageNum !== currentPage) {
+            currentPage = firstMatch.pageNum;
+          }
+        }
       }
     } catch (err) {
       console.error("[PdfViewer] global search error:", err);
