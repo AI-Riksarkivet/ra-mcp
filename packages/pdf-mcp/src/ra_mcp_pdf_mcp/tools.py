@@ -380,6 +380,7 @@ async def search_pdf(
 # Whitelist PDF source domains so the iframe can fetch() directly (bypasses MCP transport)
 _PDF_DOMAINS = [
     "https://huggingface.co",
+    "https://cas-bridge.xethub-eu.hf.co",
     "https://arxiv.org",
 ]
 
