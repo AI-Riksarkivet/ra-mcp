@@ -18,6 +18,7 @@ from ra_mcp_htr_mcp.tools import htr_mcp
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
+from ra_mcp_diplomatics_mcp import diplomatics_mcp
 from ra_mcp_pdf_mcp import pdf_mcp
 from ra_mcp_pdf_mcp.proxy import pdf_proxy_handler
 from ra_mcp_viewer_mcp import viewer_mcp
@@ -56,6 +57,11 @@ AVAILABLE_MODULES = {
         "description": "Interactive PDF viewer with search, annotations, and PDF.js rendering",
         "default": True,
         "no_namespace": True,
+    },
+    "diplomatics": {
+        "server": diplomatics_mcp,
+        "description": "Search SDHK medieval charters and MPO parchment fragments",
+        "default": True,
     },
 }
 
@@ -139,11 +145,16 @@ TOOL SELECTION:
 - Full-text in court records → search_transcribed with Solr syntax
 - Church records, estate inventories, military → search_metadata (these are cataloged but mostly not AI-transcribed)
 - Read document pages → browse_document with reference code from search results
+- Medieval charters (before 1540) → diplomatics:search_sdhk with keyword
+- Medieval parchment fragments → diplomatics:search_mpo with keyword (German terms)
+- View SDHK/MPO documents → view_manifest with IIIF manifest URL from search results
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
 - Digitised images: ~73M pages viewable via bildvisaren links
 - AI-transcribed text: ~1.6M pages searchable via search_transcribed — currently court records (hovrätt, trolldomskommissionen, poliskammare, magistrat) from 17th-18th centuries
+- SDHK catalog: 44,000+ medieval charters (diplomatics:search_sdhk) — summaries, Latin texts, seal descriptions
+- MPO catalog: 23,000+ parchment fragments (diplomatics:search_mpo) — codicological descriptions in German
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants

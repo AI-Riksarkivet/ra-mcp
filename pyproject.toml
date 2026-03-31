@@ -11,6 +11,7 @@ dependencies = [
     "ra-mcp-htr-mcp",
     "ra-mcp-viewer-mcp",
     "ra-mcp-pdf-mcp",
+    "ra-mcp-diplomatics-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
@@ -93,6 +94,8 @@ ra-mcp-viewer-mcp = { workspace = true }
 ra-mcp-pdf-mcp = { workspace = true }
 ra-mcp-label-mcp = { workspace = true }
 ra-mcp-tui = { workspace = true }
+ra-mcp-diplomatics-lib = { workspace = true }
+ra-mcp-diplomatics-mcp = { workspace = true }
 
 [tool.ruff]
 line-length = 160
