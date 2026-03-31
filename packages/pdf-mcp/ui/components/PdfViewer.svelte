@@ -381,26 +381,36 @@ function handleKeydown(e: KeyboardEvent) {
 // Command polling
 // ---------------------------------------------------------------------------
 
-let pollTimer: ReturnType<typeof setInterval> | null = null;
+let pollActive = false;
 
-async function pollCommands() {
-  if (!app || !viewId) return;
+async function startCommandPolling() {
+  if (pollActive) return;
+  pollActive = true;
 
-  try {
-    const result = await app.callServerTool({
-      name: "poll_pdf_commands",
-      arguments: { view_uuid: viewId },
-    });
-    if (result.isError) return;
-
-    const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
-    if (sc?.commands && Array.isArray(sc.commands)) {
-      for (const cmd of sc.commands as PdfCommand[]) {
-        processCommand(cmd);
-      }
+  while (pollActive) {
+    if (!app || !viewId) {
+      await new Promise((r) => setTimeout(r, 2000));
+      continue;
     }
-  } catch {
-    // Poll failure is non-fatal
+
+    try {
+      const result = await app.callServerTool({
+        name: "poll_pdf_commands",
+        arguments: { view_uuid: viewId },
+      });
+      if (!pollActive) break;
+      if (result.isError) continue;
+
+      const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
+      if (sc?.commands && Array.isArray(sc.commands)) {
+        for (const cmd of sc.commands as PdfCommand[]) {
+          processCommand(cmd);
+        }
+      }
+    } catch {
+      // Poll failure — wait before retrying
+      if (pollActive) await new Promise((r) => setTimeout(r, 2000));
+    }
   }
 }
 
@@ -442,11 +452,13 @@ function processCommand(cmd: PdfCommand) {
 // ---------------------------------------------------------------------------
 
 onMount(() => {
-  pollTimer = setInterval(pollCommands, 200);
+  // Only poll for model commands if we have a viewId
+  // (the model sends commands via the `interact` tool)
+  if (viewId) startCommandPolling();
 });
 
 onDestroy(() => {
-  if (pollTimer) clearInterval(pollTimer);
+  pollActive = false;
   resetContextState();
 });
 </script>
