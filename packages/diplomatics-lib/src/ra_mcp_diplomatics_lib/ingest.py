@@ -1,0 +1,103 @@
+"""CSV ingest functions for SDHK and MPO records into LanceDB."""
+
+from __future__ import annotations
+
+import csv
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from .config import MPO_TABLE, SDHK_TABLE
+from .models import MPORecord, SDHKRecord
+
+if TYPE_CHECKING:
+    import lancedb
+
+logger = logging.getLogger(__name__)
+
+
+def ingest_sdhk(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.table.Table":
+    """Ingest SDHK CSV into a LanceDB table with FTS index.
+
+    Args:
+        db: LanceDB database connection.
+        csv_path: Path to the SDHK CSV file (semicolon-delimited, latin-1 encoded).
+
+    Returns:
+        The created LanceDB table.
+
+    Raises:
+        ValueError: If no records could be parsed from the CSV.
+    """
+    csv_path = Path(csv_path)
+    records: list[dict] = []
+
+    with csv_path.open(encoding="latin-1", newline="") as f:
+        reader = csv.DictReader(f, delimiter=";")
+        for lineno, row in enumerate(reader, start=2):
+            try:
+                record = SDHKRecord.from_csv_row(row)
+            except Exception as exc:
+                logger.warning("Skipping SDHK row %d: %s", lineno, exc)
+                continue
+            flat = record.model_dump()
+            flat["searchable_text"] = record.searchable_text
+            flat["manifest_url"] = record.manifest_url
+            flat["bildvisning_url"] = record.bildvisning_url
+            records.append(flat)
+
+    if not records:
+        raise ValueError(f"No valid SDHK records parsed from {csv_path}")
+
+    logger.info("Parsed %d SDHK records", len(records))
+
+    # Drop existing table if present
+    if SDHK_TABLE in db.list_tables():
+        db.drop_table(SDHK_TABLE)
+
+    table = db.create_table(SDHK_TABLE, data=records)
+    table.create_fts_index("searchable_text", replace=True)
+    return table
+
+
+def ingest_mpo(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.table.Table":
+    """Ingest MPO CSV into a LanceDB table with FTS index.
+
+    Args:
+        db: LanceDB database connection.
+        csv_path: Path to the MPO CSV file (comma-delimited, UTF-8 encoded).
+
+    Returns:
+        The created LanceDB table.
+
+    Raises:
+        ValueError: If no records could be parsed from the CSV.
+    """
+    csv_path = Path(csv_path)
+    records: list[dict] = []
+
+    with csv_path.open(encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        for lineno, row in enumerate(reader, start=2):
+            try:
+                record = MPORecord.from_csv_row(row)
+            except Exception as exc:
+                logger.warning("Skipping MPO row %d: %s", lineno, exc)
+                continue
+            flat = record.model_dump()
+            flat["searchable_text"] = record.searchable_text
+            flat["manifest_url"] = record.manifest_url
+            records.append(flat)
+
+    if not records:
+        raise ValueError(f"No valid MPO records parsed from {csv_path}")
+
+    logger.info("Parsed %d MPO records", len(records))
+
+    # Drop existing table if present
+    if MPO_TABLE in db.list_tables():
+        db.drop_table(MPO_TABLE)
+
+    table = db.create_table(MPO_TABLE, data=records)
+    table.create_fts_index("searchable_text", replace=True)
+    return table
