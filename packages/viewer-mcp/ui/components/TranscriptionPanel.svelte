@@ -27,12 +27,8 @@ let isBottom = $derived(position === "bottom");
 
 let hasInfo = $derived(!!documentInfo || !!bildvisningUrl);
 let hasText = $derived(textLines.length > 0);
-let activeTab = $state<Tab>("transcription");
-
-// Default to info tab when there's no text but there is metadata
-$effect.pre(() => {
-  if (!hasText && hasInfo) activeTab = "info";
-});
+let userTabChoice = $state<Tab | null>(null);
+let activeTab = $derived(userTabChoice ?? (hasText ? "transcription" : hasInfo ? "info" : "transcription"));
 
 /** Minimal markdown → HTML for server-generated metadata (bold, headings, paragraphs). */
 function renderMarkdown(md: string): string {
@@ -75,8 +71,8 @@ $effect(() => {
 
   {#if hasInfo}
     <div class="tab-bar">
-      <button class="tab" class:active={activeTab === "transcription"} onclick={() => activeTab = "transcription"}>Text</button>
-      <button class="tab" class:active={activeTab === "info"} onclick={() => activeTab = "info"}>Info</button>
+      <button class="tab" class:active={activeTab === "transcription"} onclick={() => userTabChoice = "transcription"}>Text</button>
+      <button class="tab" class:active={activeTab === "info"} onclick={() => userTabChoice = "info"}>Info</button>
     </div>
   {/if}
 

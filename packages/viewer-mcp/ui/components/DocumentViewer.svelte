@@ -71,12 +71,7 @@ let showNavButtons = $derived(!showThumbnails || !hasThumbnails);
 
 let tooltip = $state<TooltipState | null>(null);
 let highlightedLineId = $state<string | null>(null);
-let showPanel = $state(false);
-
-// Auto-open panel when entering fullscreen on desktop
-$effect.pre(() => {
-  if (isFullscreen && !isNarrow) showPanel = true;
-});
+let showPanel = $state(isFullscreen && !isNarrow); // svelte-ignore state_referenced_locally
 let panelWidth = $state(280);
 
 // Polygon style controls
@@ -92,8 +87,6 @@ let activeMatchIndex = $state(0);
 
 let textLines = $derived(pageData?.textLayer?.textLines ?? []);
 let hasTextLines = $derived(textLines.length > 0);
-let hasPanelContent = $derived(hasTextLines || !!documentInfo || !!bildvisningUrl);
-// Panel is always available — shows empty state when no content
 let currentPolygons = $derived(textLines.length > 0 ? buildPolygonHits(textLines) : []);
 
 // Search-derived values
@@ -296,13 +289,19 @@ function getContextState() {
 }
 
 // ---------------------------------------------------------------------------
-// Redraw when polygon style changes
+// Sync canvas with external state changes
 // ---------------------------------------------------------------------------
 
 $effect(() => {
-  // Track all style values + search state as explicit dependencies
-  const _ = [polygonColor, polygonThickness, polygonOpacity, searchMatchPolygons, showHighlights];
-  void _;
+  // Re-fit canvas after fullscreen/panel layout changes
+  void isFullscreen;
+  void showPanel;
+  requestAnimationFrame(() => controller?.resetView());
+});
+
+$effect(() => {
+  // Redraw when polygon style or search state changes
+  void [polygonColor, polygonThickness, polygonOpacity, searchMatchPolygons, showHighlights];
   controller?.requestDraw();
 });
 
