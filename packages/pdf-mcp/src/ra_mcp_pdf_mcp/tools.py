@@ -158,6 +158,55 @@ async def get_pdf_state(
 
 
 # ---------------------------------------------------------------------------
+# read_pdf_page — on-demand page text for model context
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="read_pdf_page",
+    description=(
+        "Read the text content of a specific page from a loaded PDF. "
+        "Use this to read what's on a page after navigating with pdf_go_to_page, "
+        "or to read pages referenced in search_pdf results."
+    ),
+)
+async def read_pdf_page(
+    url: Annotated[str, Field(description="URL of the PDF (must match a previous display_pdf call).")],
+    page: Annotated[int, Field(description="Page number (1-based).", ge=1)],
+) -> ToolResult:
+    """Return structured text blocks for a specific page from the cached JSON."""
+    if url not in blocks_cache:
+        return _error_result("PDF not loaded. Use display_pdf first.")
+
+    pages = blocks_cache[url]
+    page_idx = page - 1
+    if page_idx < 0 or page_idx >= len(pages):
+        return _error_result(f"Page {page} out of range (1-{len(pages)}).")
+
+    page_data = pages[page_idx]
+    from ra_mcp_pdf_mcp.search import html_to_text
+
+    lines: list[str] = []
+    for block in page_data.get("children", []):
+        html = block.get("html", "")
+        if not html:
+            continue
+        block_type = block.get("block_type", "")
+        text = html_to_text(html)
+        if not text:
+            continue
+        if block_type == "SectionHeader":
+            lines.append(f"\n## {text}")
+        elif block_type in ("PageHeader", "PageFooter"):
+            continue  # skip headers/footers
+        else:
+            lines.append(text)
+
+    page_text = "\n\n".join(lines).strip()
+    return _text_result(f"Page {page}/{len(pages)}:\n\n{page_text}")
+
+
+# ---------------------------------------------------------------------------
 # State-mutation tools (no AppConfig — reuse existing viewer)
 # ---------------------------------------------------------------------------
 

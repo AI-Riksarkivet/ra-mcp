@@ -1,5 +1,4 @@
 <script lang="ts">
-import { onDestroy } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { PDFDocumentProxy, PDFPageProxy } from "../lib/pdf-engine";
@@ -7,9 +6,7 @@ import type { TrackedAnnotation } from "../lib/types";
 import {
   renderPage,
   buildTextLayer,
-  extractPageText,
 } from "../lib/pdf-engine";
-import { scheduleContextUpdate, resetContextState } from "../lib/context";
 import { ZOOM } from "../lib/constants";
 import TocPanel from "./TocPanel.svelte";
 
@@ -166,22 +163,6 @@ $effect(() => {
 
       // Update scale state to match what was actually rendered (for zoom label)
       if (s !== scale) scale = s;
-
-      // Extract text and update context
-      const pageText = await extractPageText(pageProxy);
-      if (gen !== renderGeneration) return;
-
-      scheduleContextUpdate({
-        app,
-        title,
-        currentPage: page,
-        totalPages,
-        pageText,
-        searchTerm: searchTerm || undefined,
-        searchMatchCount: searchMatchCount || undefined,
-        globalSearchTotal: globalSearchTotal || undefined,
-        globalSearchPages: globalSearchPages || undefined,
-      });
     } catch (err) {
       if (gen === renderGeneration) {
         console.error("[PdfViewer] render error:", err);
@@ -403,9 +384,6 @@ function handleKeydown(e: KeyboardEvent) {
 // same pattern as viewer-mcp. This avoids the hundreds of overlapping long-poll
 // requests that the command queue pattern caused over remote HTTP.
 
-onDestroy(() => {
-  resetContextState();
-});
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->

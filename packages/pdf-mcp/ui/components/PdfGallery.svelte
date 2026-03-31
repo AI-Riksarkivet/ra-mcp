@@ -27,12 +27,18 @@
     <div class="gallery-grid">
       {#each items as item (item.url)}
         <button class="gallery-card" onclick={() => onSelect(item)}>
-          <div class="card-icon">
-            <svg width="40" height="48" viewBox="0 0 40 48" fill="none">
-              <rect x="1" y="1" width="38" height="46" rx="3" stroke="currentColor" stroke-width="1.5" fill="var(--color-background-secondary)"/>
-              <path d="M10 14h20M10 20h20M10 26h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
-              <text x="20" y="40" text-anchor="middle" font-size="8" font-weight="600" fill="var(--color-accent)">PDF</text>
-            </svg>
+          <div class="card-thumbnail">
+            {#if item.thumbnail_url}
+              <img src={item.thumbnail_url} alt={item.title} loading="lazy" />
+            {:else}
+              <div class="card-placeholder">
+                <svg width="40" height="48" viewBox="0 0 40 48" fill="none">
+                  <rect x="1" y="1" width="38" height="46" rx="3" stroke="currentColor" stroke-width="1.5" fill="var(--color-background-secondary)"/>
+                  <path d="M10 14h20M10 20h20M10 26h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                  <text x="20" y="40" text-anchor="middle" font-size="8" font-weight="600" fill="var(--color-accent)">PDF</text>
+                </svg>
+              </div>
+            {/if}
           </div>
           <div class="card-body">
             <span class="card-title">{item.title}</span>
@@ -53,6 +59,7 @@
   .gallery {
     display: flex;
     flex-direction: column;
+    align-items: center;
     padding: 1.5rem;
     width: 100%;
     height: 100%;
@@ -78,22 +85,26 @@
   }
 
   .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+    max-width: 900px;
     width: 100%;
   }
 
   .gallery-card {
     display: flex;
     flex-direction: column;
+    width: 240px;
     border: 1px solid var(--color-border-primary);
     border-radius: var(--border-radius-lg);
     background: var(--color-background-primary);
-    padding: 1rem;
+    padding: 0;
     cursor: pointer;
     text-align: left;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
     font-family: inherit;
     font-size: inherit;
     color: inherit;
@@ -101,7 +112,8 @@
 
   .gallery-card:hover {
     border-color: var(--color-accent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
   }
 
   .gallery-card:focus {
@@ -110,17 +122,33 @@
     box-shadow: 0 0 0 2px var(--claude-selection);
   }
 
-  .card-icon {
+  .card-thumbnail {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--color-background-tertiary);
     display: flex;
+    align-items: center;
     justify-content: center;
-    margin-bottom: 0.75rem;
+  }
+
+  .card-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-placeholder {
     color: var(--color-text-secondary);
+    opacity: 0.5;
   }
 
   .card-body {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    padding: 0.75rem;
   }
 
   .card-title {
