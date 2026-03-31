@@ -57,6 +57,7 @@ let {
 let canvasEl = $state<HTMLCanvasElement>(undefined!);
 let textLayerEl = $state<HTMLDivElement>(undefined!);
 let containerEl = $state<HTMLDivElement>(undefined!);
+let viewerBodyEl = $state<HTMLDivElement>(undefined!);
 
 // ---------------------------------------------------------------------------
 // Local state
@@ -309,22 +310,20 @@ function zoomOut() {
 }
 
 function fitToWidth() {
-  if (!pdfDocument || !containerEl) return;
+  if (!pdfDocument || !viewerBodyEl) return;
   pdfDocument.getPage(currentPage).then((page) => {
     const viewport = page.getViewport({ scale: 1 });
-    const containerWidth = containerEl.clientWidth - 48; // padding
-    const tocWidth = tocOpen ? 160 : 0;
-    const availableWidth = containerWidth - tocWidth;
+    // viewerBodyEl is the canvas area (excludes TOC panel)
+    const availableWidth = viewerBodyEl.clientWidth - 48; // subtract padding
     if (availableWidth > 0 && viewport.width > 0) {
       scale = Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / viewport.width));
     }
   });
 }
 
-// Auto-fit on mount
+// Auto-fit on first load
 $effect(() => {
-  if (pdfDocument && containerEl) {
-    // Fit on first load
+  if (pdfDocument && viewerBodyEl) {
     fitToWidth();
   }
 });
@@ -403,7 +402,7 @@ onDestroy(() => {
       />
     {/if}
 
-    <div class="viewer-body">
+    <div class="viewer-body" bind:this={viewerBodyEl}>
       <!-- Floating page nav (top-left) -->
       <div class="page-overlay top-left">
         <button class="overlay-btn" onclick={prevPage} disabled={currentPage <= 1} aria-label="Previous page">

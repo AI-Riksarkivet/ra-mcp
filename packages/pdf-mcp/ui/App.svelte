@@ -139,8 +139,10 @@ function startLoadingPdf(url: string, startPage: number) {
 
       // Strategy 1: Direct fetch (fast — works if CSP connectDomains includes the PDF host)
       try {
+        console.log("[PDF] Trying direct fetch:", url);
         const resp = await fetch(url);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        console.log("[PDF] Direct fetch succeeded, streaming...");
 
         if (resp.body) {
           // Stream with progress
@@ -172,6 +174,7 @@ function startLoadingPdf(url: string, startPage: number) {
         }
       } catch {
         // CSP blocked or network error — fall back to chunked tool calls
+        console.log("[PDF] Direct fetch failed, falling back to chunked tool calls");
         if (cancelled) return;
         pdfBytes = null;
       }
