@@ -815,8 +815,6 @@ onDestroy(() => {
 
 .page-wrapper canvas {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 
 /* Text layer (PDF.js text selection) */
