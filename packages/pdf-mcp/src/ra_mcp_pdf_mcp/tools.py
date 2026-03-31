@@ -38,7 +38,7 @@ MAX_PDF_SIZE = 200 * 1024 * 1024
 _pdf_cache: dict[str, bytes] = {}
 _background_tasks: set[asyncio.Task] = set()  # prevent GC of fire-and-forget tasks
 
-DEFAULT_PDF = "https://filer.riksarkivet.se/nedladdningsbara-filer/Hur%20riket%20styrdes_63MB.pdf"
+DEFAULT_PDF = "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true"
 
 
 def _text_result(text: str) -> ToolResult:
@@ -379,8 +379,7 @@ async def search_pdf(
 
 # Whitelist PDF source domains so the iframe can fetch() directly (bypasses MCP transport)
 _PDF_DOMAINS = [
-    "https://filer.riksarkivet.se",
-    "https://cdn.abicart.com",
+    "https://huggingface.co",
     "https://arxiv.org",
 ]
 
