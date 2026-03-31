@@ -97,8 +97,31 @@ $effect(() => {
 // PDF loading — called imperatively from applyViewerState, not from $effect.
 let loadCancelFn: (() => void) | null = null;
 
+const CHUNK_SIZE = 4 * 1024 * 1024; // must match server
+const PARALLEL_CHUNKS = 4;
+
+async function fetchChunk(url: string, offset: number): Promise<{
+  bytes: Uint8Array; offset: number; totalBytes: number; hasMore: boolean;
+}> {
+  const result = await app!.callServerTool({
+    name: "read_pdf_bytes",
+    arguments: { url, offset },
+  });
+  if (result.isError) {
+    const msg = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
+    throw new Error(msg);
+  }
+  const sc = (result as any).structuredContent as Record<string, unknown>;
+  if (!sc?.bytes) throw new Error("Invalid response from read_pdf_bytes");
+  return {
+    bytes: base64ToUint8Array(sc.bytes as string),
+    offset,
+    totalBytes: (sc.totalBytes as number) ?? 0,
+    hasMore: (sc.hasMore as boolean) ?? false,
+  };
+}
+
 function startLoadingPdf(url: string, startPage: number) {
-  // Cancel any previous load
   if (loadCancelFn) loadCancelFn();
 
   pdfDocument = null;
@@ -112,46 +135,51 @@ function startLoadingPdf(url: string, startPage: number) {
 
   (async () => {
     try {
-      const chunks: Uint8Array[] = [];
-      let offset = 0;
+      // First chunk to get totalBytes
+      const first = await fetchChunk(url, 0);
+      if (cancelled) return;
 
-      while (true) {
-        if (cancelled) return;
+      const resultMap = new Map<number, Uint8Array>();
+      resultMap.set(0, first.bytes);
+      let received = first.bytes.length;
+      const total = first.totalBytes;
 
-        const result = await app!.callServerTool({
-          name: "read_pdf_bytes",
-          arguments: { url, offset },
-        });
+      if (total > 0) {
+        streamingMessage = `Loading PDF... ${Math.round((received / total) * 100)}%`;
+      }
 
-        if (result.isError) {
-          const msg = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
-          throw new Error(msg);
+      if (first.hasMore && total > 0) {
+        // Build list of remaining offsets
+        const offsets: number[] = [];
+        for (let o = first.bytes.length; o < total; o += CHUNK_SIZE) {
+          offsets.push(o);
         }
 
-        const sc = (result as any).structuredContent as Record<string, unknown>;
-        if (!sc?.bytes) throw new Error("Invalid response from read_pdf_bytes");
+        // Fetch in parallel batches
+        for (let i = 0; i < offsets.length; i += PARALLEL_CHUNKS) {
+          if (cancelled) return;
+          const batch = offsets.slice(i, i + PARALLEL_CHUNKS);
+          const results = await Promise.all(batch.map((o) => fetchChunk(url, o)));
 
-        const chunkBytes = base64ToUint8Array(sc.bytes as string);
-        chunks.push(chunkBytes);
-        const chunkTotal = (sc.totalBytes as number) ?? 0;
-        offset += (sc.byteCount as number) ?? chunkBytes.length;
+          for (const r of results) {
+            resultMap.set(r.offset, r.bytes);
+            received += r.bytes.length;
+          }
 
-        if (chunkTotal > 0) {
-          streamingMessage = `Loading PDF... ${Math.round((offset / chunkTotal) * 100)}%`;
+          streamingMessage = `Loading PDF... ${Math.round((received / total) * 100)}%`;
         }
-
-        if (!(sc.hasMore as boolean)) break;
       }
 
       if (cancelled) return;
 
-      // Combine chunks
-      const fullLength = chunks.reduce((sum, c) => sum + c.length, 0);
+      // Assemble in order
+      const sortedOffsets = [...resultMap.keys()].sort((a, b) => a - b);
+      const fullLength = sortedOffsets.reduce((sum, o) => sum + resultMap.get(o)!.length, 0);
       const full = new Uint8Array(fullLength);
       let pos = 0;
-      for (const chunk of chunks) {
-        full.set(chunk, pos);
-        pos += chunk.length;
+      for (const o of sortedOffsets) {
+        full.set(resultMap.get(o)!, pos);
+        pos += resultMap.get(o)!.length;
       }
 
       streamingMessage = "Rendering...";
