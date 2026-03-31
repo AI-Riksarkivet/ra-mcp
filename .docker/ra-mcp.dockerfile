@@ -31,6 +31,10 @@ COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/viewer-
 # Sync workspace packages (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable
 
+# Copy ingest script and build LanceDB tables (downloads CSVs from upstream)
+COPY scripts/ ./scripts/
+RUN uv run python scripts/ingest_diplomatics.py --output /app/data/diplomatics
+
 # --- Stage 3: Production runtime ---
 FROM ${PRODUCTION_IMAGE} AS production
 
@@ -66,12 +70,14 @@ COPY --from=builder --chown=ra-mcp:ra-mcp /app/.venv /app/.venv
 COPY --chown=ra-mcp:ra-mcp docs/assets/ ./docs/assets/
 COPY --chown=ra-mcp:ra-mcp packages/guide-mcp/resources/ ./resources/
 COPY --chown=ra-mcp:ra-mcp plugins/ ./plugins/
+COPY --from=builder --chown=ra-mcp:ra-mcp /app/data/diplomatics/ ./data/diplomatics/
 
 RUN mkdir -p /app/data && chown ra-mcp:ra-mcp /app /app/data
 
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
+ENV DIPLOMATICS_LANCEDB_PATH="/app/data/diplomatics"
 
 # Health check via /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
