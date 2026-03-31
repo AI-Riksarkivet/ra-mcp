@@ -74,9 +74,10 @@ function applyViewerState(sc: Record<string, unknown>) {
     totalPages: 0,
   };
 
-  // Start loading the PDF (imperative, not reactive)
+  // Defer loading to next microtask — avoids TDZ errors when
+  // $state writes happen synchronously inside MCP notification handlers.
   if (app) {
-    startLoadingPdf(url, scCurrentPage);
+    queueMicrotask(() => startLoadingPdf(url, scCurrentPage));
   }
 }
 
