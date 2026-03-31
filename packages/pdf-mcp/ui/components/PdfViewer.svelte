@@ -1,9 +1,9 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
+import { onDestroy } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { PDFDocumentProxy, PDFPageProxy } from "../lib/pdf-engine";
-import type { PdfCommand, TrackedAnnotation } from "../lib/types";
+import type { TrackedAnnotation } from "../lib/types";
 import {
   renderPage,
   buildTextLayer,
@@ -378,87 +378,15 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 // ---------------------------------------------------------------------------
-// Command polling
-// ---------------------------------------------------------------------------
-
-let pollActive = false;
-
-async function startCommandPolling() {
-  if (pollActive) return;
-  pollActive = true;
-
-  while (pollActive) {
-    if (!app || !viewId) {
-      await new Promise((r) => setTimeout(r, 2000));
-      continue;
-    }
-
-    try {
-      const result = await app.callServerTool({
-        name: "poll_pdf_commands",
-        arguments: { view_uuid: viewId },
-      });
-      if (!pollActive) break;
-      if (result.isError) continue;
-
-      const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
-      if (sc?.commands && Array.isArray(sc.commands)) {
-        for (const cmd of sc.commands as PdfCommand[]) {
-          processCommand(cmd);
-        }
-      }
-    } catch {
-      // Poll failure — wait before retrying
-      if (pollActive) await new Promise((r) => setTimeout(r, 2000));
-    }
-  }
-}
-
-function processCommand(cmd: PdfCommand) {
-  switch (cmd.type) {
-    case "navigate":
-      currentPage = Math.max(1, Math.min(totalPages, cmd.page));
-      break;
-    case "search":
-      searchTerm = cmd.query;
-      searchOpen = !!cmd.query;
-      break;
-    case "zoom":
-      scale = Math.max(ZOOM.min, Math.min(ZOOM.max, cmd.scale));
-      break;
-    case "add_annotations":
-      for (const ann of cmd.annotations) {
-        annotationMap.set(ann.id, { def: ann, elements: [] });
-      }
-      break;
-    case "remove_annotations":
-      for (const id of cmd.ids) {
-        annotationMap.delete(id);
-      }
-      break;
-    case "highlight_text":
-      if (cmd.query) {
-        searchTerm = cmd.query;
-        searchOpen = true;
-      }
-      break;
-    default:
-      break;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------
 
-onMount(() => {
-  // Only poll for model commands if we have a viewId
-  // (the model sends commands via the `interact` tool)
-  if (viewId) startCommandPolling();
-});
+// No command polling — model commands (navigate, search, highlight) go through
+// state updates via get_pdf_state polling in App.svelte (every 2-10s with backoff),
+// same pattern as viewer-mcp. This avoids the hundreds of overlapping long-poll
+// requests that the command queue pattern caused over remote HTTP.
 
 onDestroy(() => {
-  pollActive = false;
   resetContextState();
 });
 </script>
