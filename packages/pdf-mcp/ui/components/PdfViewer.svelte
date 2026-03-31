@@ -309,26 +309,25 @@ function zoomOut() {
   scale = Math.max(ZOOM.min, scale - ZOOM.step);
 }
 
-function fitToWidth() {
-  if (!pdfDocument || !viewerBodyEl) return;
-  // Bump render generation to cancel any in-progress render before changing scale
-  ++renderGeneration;
-  pdfDocument.getPage(currentPage).then((page) => {
-    const viewport = page.getViewport({ scale: 1 });
-    const availableWidth = viewerBodyEl.clientWidth - 48;
-    if (availableWidth > 0 && viewport.width > 0) {
-      const newScale = Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / viewport.width));
-      if (Math.abs(newScale - scale) > 0.01) {
-        scale = newScale; // this triggers the render $effect with the correct scale
-      }
-    }
-  });
+// Calculate fit-to-width scale for a given page (synchronous, no side effects)
+function calcFitScale(pageViewport: { width: number }): number {
+  if (!viewerBodyEl || pageViewport.width <= 0) return scale;
+  const availableWidth = viewerBodyEl.clientWidth - 32; // padding
+  return Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / pageViewport.width));
 }
 
-// Auto-fit on first load (use queueMicrotask to avoid racing with initial render)
+let hasAutoFit = false;
+// Auto-fit scale on first page load
 $effect(() => {
-  if (pdfDocument && viewerBodyEl) {
-    queueMicrotask(() => fitToWidth());
+  if (pdfDocument && viewerBodyEl && !hasAutoFit) {
+    hasAutoFit = true;
+    pdfDocument.getPage(1).then((page) => {
+      const viewport = page.getViewport({ scale: 1 });
+      const fitScale = calcFitScale(viewport);
+      if (Math.abs(fitScale - scale) > 0.01) {
+        scale = fitScale;
+      }
+    });
   }
 });
 

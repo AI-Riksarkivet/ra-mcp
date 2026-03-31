@@ -51,11 +51,28 @@ export async function renderPage(
   const ctx = canvas.getContext("2d")!;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  await page.render({
+  // Cancel any previous render on this canvas
+  if ((canvas as any).__renderTask) {
+    (canvas as any).__renderTask.cancel();
+  }
+
+  const renderTask = page.render({
     canvasContext: ctx,
     viewport,
     canvas,
-  }).promise;
+  });
+  (canvas as any).__renderTask = renderTask;
+
+  try {
+    await renderTask.promise;
+  } catch (e: any) {
+    if (e?.name === "RenderingCancelledException") return { width: 0, height: 0 };
+    throw e;
+  } finally {
+    if ((canvas as any).__renderTask === renderTask) {
+      (canvas as any).__renderTask = null;
+    }
+  }
 
   return { width: displayViewport.width, height: displayViewport.height };
 }
