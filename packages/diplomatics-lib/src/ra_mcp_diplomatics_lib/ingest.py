@@ -51,11 +51,7 @@ def ingest_sdhk(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.ta
 
     logger.info("Parsed %d SDHK records", len(records))
 
-    # Drop existing table if present
-    if SDHK_TABLE in db.list_tables():
-        db.drop_table(SDHK_TABLE)
-
-    table = db.create_table(SDHK_TABLE, data=records)
+    table = db.create_table(SDHK_TABLE, data=records, mode="overwrite")
     table.create_fts_index("searchable_text", replace=True)
     return table
 
@@ -94,10 +90,6 @@ def ingest_mpo(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.tab
 
     logger.info("Parsed %d MPO records", len(records))
 
-    # Drop existing table if present
-    if MPO_TABLE in db.list_tables():
-        db.drop_table(MPO_TABLE)
-
-    table = db.create_table(MPO_TABLE, data=records)
+    table = db.create_table(MPO_TABLE, data=records, mode="overwrite")
     table.create_fts_index("searchable_text", replace=True)
     return table

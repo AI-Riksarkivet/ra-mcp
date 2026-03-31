@@ -64,7 +64,7 @@ class SDHKRecord(BaseModel):
     @property
     def searchable_text(self) -> str:
         """Combined text for full-text search indexing."""
-        parts = [self.author, self.summary, self.edition, self.comments, self.seals, self.additional]
+        parts = [self.author, self.summary, self.edition, self.comments, self.seals, self.additional, self.place, self.language, self.date, self.printed, self.title]
         return " ".join(p for p in parts if p)
 
     @property
@@ -172,5 +172,5 @@ class MPORecord(BaseModel):
     @property
     def searchable_text(self) -> str:
         """Combined text for full-text search indexing."""
-        parts = [self.manuscript_type, self.title, self.author, self.content, self.notes, self.decoration, self.literature, self.damage]
+        parts = [self.manuscript_type, self.title, self.author, self.content, self.notes, self.decoration, self.literature, self.damage, self.script, self.category, self.collection, self.dating, self.origin_place, self.use_place, self.material, self.notation, self.ccm_signum, self.codex]
         return " ".join(p for p in parts if p)

@@ -80,12 +80,11 @@ def test_sdhk_searchable_text_contains_expected_fields() -> None:
     assert "Extra note here" in text
 
 
-def test_sdhk_searchable_text_excludes_non_searchable_fields() -> None:
+def test_sdhk_searchable_text_includes_place_and_language() -> None:
     record = SDHKRecord.from_csv_row(SDHK_CSV_ROW)
     text = record.searchable_text
-    # title, date, place, language are not part of searchable_text
-    assert "Stockholm" not in text
-    assert "1250" not in text
+    assert "Stockholm" in text
+    assert "Latin" in text
 
 
 def test_sdhk_searchable_text_skips_empty_parts() -> None:

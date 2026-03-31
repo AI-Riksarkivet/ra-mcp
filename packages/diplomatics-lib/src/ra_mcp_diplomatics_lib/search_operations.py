@@ -58,10 +58,13 @@ class DiplomaticsSearch:
         if not keyword or not keyword.strip():
             raise ValueError("keyword must be non-empty")
 
+        has_filters = any([author, place, language])
+        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
+
         table = self._db.open_table(SDHK_TABLE)
         rows = (
             table.search(keyword, query_type="fts")
-            .limit(limit + offset)
+            .limit(fetch_limit)
             .to_list()
         )
 
@@ -117,10 +120,13 @@ class DiplomaticsSearch:
         if not keyword or not keyword.strip():
             raise ValueError("keyword must be non-empty")
 
+        has_filters = any([category, institution, script])
+        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
+
         table = self._db.open_table(MPO_TABLE)
         rows = (
             table.search(keyword, query_type="fts")
-            .limit(limit + offset)
+            .limit(fetch_limit)
             .to_list()
         )
 
