@@ -7,25 +7,25 @@ GALLERY_ITEMS: list[dict[str, str]] = [
     {
         "url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true",
         "title": "Hur riket styrdes",
-        "description": "Forvaltning, politik och arkiv 1520-1920 av Bjorn Asker (255 sidor)",
+        "description": "Forvaltning, politik och arkiv 1520-1920. Statsapparatens strukturer, grundlagar, kungen, riksdagen. Av Bjorn Asker (255 sidor)",
         "category": "Riksarkivet",
     },
     {
         "url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true",
         "title": "Medeltidens samhalle",
-        "description": "Om det medeltida samhallet i Sverige",
+        "description": "Arkivguide om medeltida Sverige: diplom, kungamakt, bonder, kyrkan, staderna. Baserad pa Riksarkivets medeltidssamlingar",
         "category": "Riksarkivet",
     },
     {
         "url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/164624875-f258a1-Ingang-till-samisk-historia_2024.pdf?download=true",
         "title": "Ingang till samisk historia",
-        "description": "Guide till samisk historia i arkiven (2024)",
+        "description": "Guide till samisk historia i Riksarkivets samlingar (2024). Kallmaterial om samer i svenska arkiv",
         "category": "Riksarkivet",
     },
     {
         "url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/223523307-635a25-slaktforskarna_och_krigsarkivet_januari_2026.pdf?download=true",
         "title": "Slaktforskarna och Krigsarkivet",
-        "description": "Slaktforskarna och Krigsarkivet (januari 2026)",
+        "description": "Guide for slaktforskare om Krigsarkivets samlingar (januari 2026)",
         "category": "Riksarkivet",
     },
     {
