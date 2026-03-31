@@ -29,20 +29,7 @@ export async function loadPdfFromBytes(data: Uint8Array): Promise<PDFDocumentPro
   return loadingTask.promise;
 }
 
-/**
- * Load a PDF directly from a URL.
- * PDF.js uses HTTP Range requests internally — only fetches what's needed.
- * This is the fastest path when the URL is accessible from the iframe.
- */
-export async function loadPdfFromUrl(url: string): Promise<PDFDocumentProxy> {
-  const loadingTask = pdfjsLib.getDocument({
-    url,
-    cMapUrl: CMAP_URL,
-    cMapPacked: true,
-    enableXfa: true,
-  });
-  return loadingTask.promise;
-}
+
 
 /**
  * Render a PDF page to a canvas.

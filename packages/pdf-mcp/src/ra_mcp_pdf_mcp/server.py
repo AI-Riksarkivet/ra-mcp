@@ -11,10 +11,7 @@ import argparse
 import logging
 import os
 
-from starlette.responses import Response
-
 from ra_mcp_pdf_mcp import pdf_mcp
-from ra_mcp_pdf_mcp.proxy import pdf_proxy_handler
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -22,14 +19,6 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
-
-
-def _register_proxy_route() -> None:
-    """Register the PDF proxy route for speed optimization."""
-
-    @pdf_mcp.custom_route("/pdf-proxy/{view_id}", methods=["GET"])
-    async def _pdf_proxy(request) -> Response:  # type: ignore[type-arg]
-        return await pdf_proxy_handler(request)
 
 
 def main() -> None:
@@ -41,7 +30,6 @@ def main() -> None:
     if args.stdio:
         pdf_mcp.run(transport="stdio")
     else:
-        _register_proxy_route()
         logger.info("MCP Server listening on http://localhost:%d/mcp", args.port)
         pdf_mcp.run(transport="streamable-http", host="0.0.0.0", port=args.port, path="/mcp")
 

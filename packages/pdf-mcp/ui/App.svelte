@@ -65,8 +65,6 @@ function applyViewerState(sc: Record<string, unknown>) {
     return;
   }
 
-  const proxyPath = (sc.proxy_path as string) ?? "";
-
   viewerData = {
     viewId: scViewId,
     url,
@@ -74,7 +72,6 @@ function applyViewerState(sc: Record<string, unknown>) {
     sourceUrl,
     currentPage: scCurrentPage,
     totalPages: 0,
-    proxyPath,
   };
 
   // Start loading the PDF (imperative, not reactive)

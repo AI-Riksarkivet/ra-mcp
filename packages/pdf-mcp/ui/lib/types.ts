@@ -152,7 +152,6 @@ export interface PdfViewerData {
   sourceUrl: string;
   currentPage: number;
   totalPages: number;
-  proxyPath?: string;
 }
 
 // ---------------------------------------------------------------------------

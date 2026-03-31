@@ -20,7 +20,6 @@ from ra_mcp_pdf_mcp.state import (
     enqueue_command,
     get_state,
     put_state,
-    register_proxy_url,
 )
 
 
@@ -83,10 +82,6 @@ async def display_pdf(
         source_url=url,
     )
     sc = await put_state(state)
-
-    # Register URL for the proxy route (speed optimization)
-    register_proxy_url(view_id, url)
-    sc["proxy_path"] = f"/pdf-proxy/{view_id}"
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID) if ctx else False
     summary_parts = [

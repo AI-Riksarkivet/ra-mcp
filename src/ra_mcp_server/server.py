@@ -1,4 +1,3 @@
-
 import argparse
 import atexit
 import logging
@@ -9,17 +8,16 @@ from pathlib import Path
 from fastmcp import FastMCP
 from fastmcp.server.providers import FastMCPProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
-from starlette.responses import FileResponse, JSONResponse, Response
+from starlette.responses import FileResponse, JSONResponse
 
 from ra_mcp_browse_mcp.tools import browse_mcp
 from ra_mcp_guide_mcp.tools import guide_mcp
 from ra_mcp_htr_mcp.tools import htr_mcp
+from ra_mcp_pdf_mcp import pdf_mcp
 
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
-from ra_mcp_pdf_mcp import pdf_mcp
-from ra_mcp_pdf_mcp.proxy import pdf_proxy_handler
 from ra_mcp_viewer_mcp import viewer_mcp
 
 
@@ -265,10 +263,6 @@ def setup_custom_routes(server: FastMCP) -> None:
     @server.custom_route("/health", methods=["GET"])
     async def health(_) -> JSONResponse:
         return JSONResponse({"status": "ok"})
-
-    @server.custom_route("/pdf-proxy/{view_id}", methods=["GET"])
-    async def pdf_proxy(request) -> Response:  # noqa: ANN001
-        return await pdf_proxy_handler(request)
 
     @server.custom_route("/ready", methods=["GET"])
     async def ready(_) -> JSONResponse:
