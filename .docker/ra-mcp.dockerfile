@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=python:3.13-alpine
+ARG BASE_IMAGE=python:3.13-slim
 ARG BUILDER_IMAGE=${BASE_IMAGE}
 ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
@@ -14,7 +14,7 @@ RUN npm run build
 # --- Stage 2: Build Python workspace with uv ---
 FROM ${BUILDER_IMAGE} AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:0.10.4-alpine /usr/local/bin/uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.10.4 /usr/local/bin/uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1
 WORKDIR /app
 
@@ -28,10 +28,10 @@ COPY README.md LICENSE ./
 # vite outputs to src/ra_mcp_viewer_mcp/dist/, so --no-editable will include it in the wheel
 COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
 
-# Sync workspace packages (--no-editable makes .venv self-contained)
-RUN uv sync --frozen --no-cache --no-dev --no-editable
+# Sync workspace packages with diplomatics extra (--no-editable makes .venv self-contained)
+RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
 
-# Copy ingest script and build LanceDB tables (downloads CSVs from upstream)
+# Build LanceDB tables (downloads CSVs from upstream)
 COPY scripts/ ./scripts/
 RUN uv run python scripts/ingest_diplomatics.py --output /app/data/diplomatics
 
@@ -58,9 +58,14 @@ RUN rm -rf /usr/local/lib/python3.13/site-packages/pip* \
            /usr/local/lib/python3.13/site-packages/wheel* \
            /usr/local/bin/pip* 2>/dev/null || true
 
-# Create non-root user for security
-RUN addgroup -g 1000 ra-mcp && \
-    adduser -u 1000 -G ra-mcp -s /bin/sh -D ra-mcp
+# Create non-root user for security (works on both Alpine and Debian)
+RUN if command -v addgroup >/dev/null 2>&1 && command -v adduser >/dev/null 2>&1; then \
+        addgroup --gid 1000 ra-mcp && \
+        adduser --uid 1000 --ingroup ra-mcp --disabled-password --gecos "" ra-mcp; \
+    else \
+        groupadd -g 1000 ra-mcp && \
+        useradd -u 1000 -g ra-mcp -s /bin/sh -m ra-mcp; \
+    fi
 
 WORKDIR /app
 
