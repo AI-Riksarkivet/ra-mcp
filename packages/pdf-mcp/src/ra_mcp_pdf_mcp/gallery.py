@@ -11,12 +11,6 @@ GALLERY_ITEMS: list[dict[str, str]] = [
         "category": "Riksarkivet",
     },
     {
-        "url": "https://filer.riksarkivet.se/nedladdningsbara-filer/att_forska_om_slakten.pdf",
-        "title": "Att forska om slakten",
-        "description": "Guide till slaktforskning i Riksarkivets samlingar",
-        "category": "Riksarkivet",
-    },
-    {
         "url": "https://arxiv.org/pdf/1706.03762",
         "title": "Attention Is All You Need",
         "description": "Vaswani et al. (2017) — The Transformer architecture paper",

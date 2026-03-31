@@ -44,7 +44,7 @@ def _text_result(text: str) -> ToolResult:
 
 
 def _error_result(text: str) -> ToolResult:
-    return ToolResult(content=[types.TextContent(type="text", text=text)], is_error=True)
+    return ToolResult(content=[types.TextContent(type="text", text=f"Error: {text}")])
 
 
 # ---------------------------------------------------------------------------
