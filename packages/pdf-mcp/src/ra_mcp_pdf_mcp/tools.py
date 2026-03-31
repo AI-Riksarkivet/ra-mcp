@@ -19,6 +19,7 @@ from ra_mcp_pdf_mcp.models import PdfCommand, PdfViewerState
 from ra_mcp_pdf_mcp.state import (
     dequeue_commands,
     enqueue_command,
+    get_active_state,
     get_state,
     put_state,
 )
@@ -280,6 +281,52 @@ async def get_pdf_state(
         content=[types.TextContent(type="text", text=f"PDF state v{state.version}")],
         structured_content=state.model_dump(),
     )
+
+
+# ---------------------------------------------------------------------------
+# State-mutation tools (no AppConfig — reuse existing viewer, don't create new iframe)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="pdf_set_search",
+    description=(
+        "Set the search/highlight term in the already-open PDF viewer. "
+        "The viewer will highlight all occurrences on the current page. "
+        "Use after display_pdf when the user wants to find or highlight text."
+    ),
+)
+async def pdf_set_search(
+    search_term: Annotated[str, Field(description="Search term to highlight. Use empty string to clear.")],
+) -> ToolResult:
+    try:
+        state = await get_active_state()
+    except LookupError as e:
+        return _error_result(str(e))
+
+    state.search_term = search_term
+    await put_state(state)
+
+    action = f"Highlighting '{search_term}'" if search_term else "Cleared search"
+    return _text_result(f"{action} in the PDF viewer.")
+
+
+@mcp.tool(
+    name="pdf_go_to_page",
+    description=("Navigate the already-open PDF viewer to a specific page. Does NOT replace the loaded PDF — just jumps to that page."),
+)
+async def pdf_go_to_page(
+    page: Annotated[int, Field(description="Page number (1-based).")],
+) -> ToolResult:
+    try:
+        state = await get_active_state()
+    except LookupError as e:
+        return _error_result(str(e))
+
+    state.go_to_page = page - 1  # convert to 0-based
+    await put_state(state)
+
+    return _text_result(f"Navigated to page {page}.")
 
 
 # ---------------------------------------------------------------------------

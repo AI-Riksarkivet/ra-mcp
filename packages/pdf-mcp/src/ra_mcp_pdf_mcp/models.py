@@ -23,6 +23,10 @@ class PdfViewerState(BaseModel):
     # Navigation
     current_page: int = 1
     total_pages: int = 0
+    go_to_page: int = -1  # -1 = no nav request, 0+ = jump to this page (0-based)
+
+    # Search
+    search_term: str = ""
 
     # Display
     request_fullscreen: bool = False

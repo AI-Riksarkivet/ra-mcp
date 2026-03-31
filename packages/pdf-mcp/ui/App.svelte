@@ -56,11 +56,16 @@ function applyViewerState(sc: Record<string, unknown>) {
     app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
 
-  // If same URL, just update navigation state
+  const scSearchTerm = (sc.search_term as string) ?? "";
+  const scGoToPage = (sc.go_to_page as number) ?? -1;
+
+  // If same URL, just update navigation/search state
   if (viewerData && viewerData.url === url) {
-    if (scCurrentPage !== viewerData.currentPage) {
-      currentPage = scCurrentPage;
-      viewerData = { ...viewerData, currentPage: scCurrentPage };
+    if (scGoToPage >= 0) {
+      currentPage = scGoToPage + 1; // 0-based → 1-based
+    }
+    if (scSearchTerm && scSearchTerm !== searchTerm) {
+      searchTerm = scSearchTerm;
     }
     return;
   }
