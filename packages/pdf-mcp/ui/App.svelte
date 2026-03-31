@@ -12,7 +12,7 @@ import PdfViewer from "./components/PdfViewer.svelte";
 import PdfGallery from "./components/PdfGallery.svelte";
 import type { PdfViewerData, GalleryItem } from "./lib/types";
 import type { PDFDocumentProxy } from "./lib/pdf-engine";
-import { loadPdfFromBytes, loadPdfFromUrl } from "./lib/pdf-engine";
+import { loadPdfFromBytes } from "./lib/pdf-engine";
 import { base64ToUint8Array } from "./lib/annotations";
 import { ZOOM } from "./lib/constants";
 
@@ -150,22 +150,7 @@ $effect(() => {
 
   async function loadPdf() {
     try {
-      // Strategy 1: Proxy URL — PDF.js with Range requests (fastest, on-demand pages)
-      if (proxyPath) {
-        try {
-          const doc = await loadPdfFromUrl(proxyPath);
-          if (cancelled) return;
-          pdfDocument = doc;
-          totalPages = doc.numPages;
-          streamingMessage = "";
-          return;
-        } catch {
-          if (cancelled) return;
-          // Proxy not accessible — try next strategy
-        }
-      }
-
-      // Strategy 2: Direct fetch (works if CSP allows external URL)
+      // Strategy 1: Direct fetch (works if CSP allows external URL)
       try {
         const resp = await fetch(url!);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -181,7 +166,7 @@ $effect(() => {
         if (cancelled) return;
       }
 
-      // Strategy 3: Chunked tool calls (always works, slowest)
+      // Strategy 2: Chunked tool calls (always works, slower but CSP-safe)
       streamingMessage = "Loading PDF via server...";
       const pdfBytes = await loadViaToolChunks();
       if (cancelled) return;
