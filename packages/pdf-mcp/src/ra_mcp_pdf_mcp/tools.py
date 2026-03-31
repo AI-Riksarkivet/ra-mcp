@@ -38,7 +38,7 @@ MAX_PDF_SIZE = 200 * 1024 * 1024
 _pdf_cache: dict[str, bytes] = {}
 _background_tasks: set[asyncio.Task] = set()  # prevent GC of fire-and-forget tasks
 
-DEFAULT_PDF = "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true"
+DEFAULT_PDF = "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true"
 
 
 def _text_result(text: str) -> ToolResult:
