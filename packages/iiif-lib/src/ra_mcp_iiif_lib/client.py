@@ -7,7 +7,7 @@ import logging
 from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_common.telemetry import get_tracer
 from ra_mcp_iiif_lib.config import COLLECTION_API_BASE_URL
-from ra_mcp_iiif_lib.models import IIIFCollection, IIIFManifest
+from ra_mcp_iiif_lib.models import IIIFCanvas, IIIFCollection, IIIFManifest, IIIFManifestDetail
 
 
 logger = logging.getLogger("ra_mcp.iiif_client")
@@ -61,6 +61,55 @@ class IIIFClient:
                 )
             )
         return manifests
+
+    async def fetch_manifest(self, manifest_url: str, timeout: int = 30) -> IIIFManifestDetail | None:
+        """Fetch and parse a IIIF manifest, extracting canvas image URLs.
+
+        Args:
+            manifest_url: Full URL to the IIIF manifest JSON.
+            timeout: Request timeout in seconds.
+
+        Returns:
+            Parsed manifest with canvases, or None on fetch failure.
+        """
+        with _tracer.start_as_current_span("IIIFClient.fetch_manifest", attributes={"iiif.manifest_url": manifest_url}) as span:
+            data = await self._fetch_json(manifest_url, timeout)
+            if not data:
+                span.set_attribute("iiif.result", "not_found")
+                return None
+
+            canvases = self._parse_canvases(data.get("items", []))
+            span.set_attribute("iiif.canvases_found", len(canvases))
+
+            return IIIFManifestDetail(
+                id=data.get("id", manifest_url),
+                label=self._extract_iiif_label(data.get("label")),
+                canvases=canvases,
+            )
+
+    def _parse_canvases(self, items: list[dict]) -> list[IIIFCanvas]:
+        """Parse Canvas items from a IIIF manifest items list."""
+        canvases: list[IIIFCanvas] = []
+        for item in items:
+            if item.get("type") != "Canvas":
+                continue
+            canvases.append(
+                IIIFCanvas(
+                    id=item.get("id", ""),
+                    label=self._extract_iiif_label(item.get("label")),
+                    image_url=self._extract_painting_image(item),
+                )
+            )
+        return canvases
+
+    def _extract_painting_image(self, canvas: dict) -> str:
+        """Extract image URL from a Canvas's painting annotation."""
+        for annotation_page in canvas.get("items", []):
+            for annotation in annotation_page.get("items", []):
+                if annotation.get("motivation") == "painting":
+                    body = annotation.get("body", {})
+                    return body.get("id", "")
+        return ""
 
     def _extract_manifest_identifier(self, manifest_url: str) -> str:
         """Extract manifest identifier from URL.

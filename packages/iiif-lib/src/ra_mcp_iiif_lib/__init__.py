@@ -3,7 +3,7 @@
 __version__ = "0.3.0"
 
 from .client import IIIFClient
-from .models import IIIFCollection, IIIFManifest
+from .models import IIIFCanvas, IIIFCollection, IIIFManifest, IIIFManifestDetail
 
 
-__all__ = ["IIIFClient", "IIIFCollection", "IIIFManifest"]
+__all__ = ["IIIFClient", "IIIFCanvas", "IIIFCollection", "IIIFManifest", "IIIFManifestDetail"]
