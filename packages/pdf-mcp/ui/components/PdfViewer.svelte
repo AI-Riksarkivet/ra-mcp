@@ -308,6 +308,27 @@ function zoomOut() {
   scale = Math.max(ZOOM.min, scale - ZOOM.step);
 }
 
+function fitToWidth() {
+  if (!pdfDocument || !containerEl) return;
+  pdfDocument.getPage(currentPage).then((page) => {
+    const viewport = page.getViewport({ scale: 1 });
+    const containerWidth = containerEl.clientWidth - 48; // padding
+    const tocWidth = tocOpen ? 160 : 0;
+    const availableWidth = containerWidth - tocWidth;
+    if (availableWidth > 0 && viewport.width > 0) {
+      scale = Math.max(ZOOM.min, Math.min(ZOOM.max, availableWidth / viewport.width));
+    }
+  });
+}
+
+// Auto-fit on mount
+$effect(() => {
+  if (pdfDocument && containerEl) {
+    // Fit on first load
+    fitToWidth();
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Search bar
 // ---------------------------------------------------------------------------

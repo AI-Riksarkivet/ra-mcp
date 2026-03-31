@@ -172,6 +172,14 @@ function startLoadingPdf(url: string, startPage: number) {
 
 async function handleGallerySelect(item: GalleryItem) {
   if (!app) return;
+
+  // Clean up any previous PDF state first
+  if (loadCancelFn) loadCancelFn();
+  pdfDocument = null;
+  totalPages = 0;
+  currentPage = 1;
+  searchTerm = "";
+
   isStreaming = true;
   error = null;
   streamingMessage = `Loading "${item.title}"...`;
@@ -182,17 +190,19 @@ async function handleGallerySelect(item: GalleryItem) {
     });
     if (result.isError) {
       error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
+      isStreaming = false;
     } else {
       const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
       if (sc) {
         lastSeenVersion = 0;
         applyViewerState(sc);
       }
+      isStreaming = false;
     }
   } catch (err: any) {
     error = `Failed to load PDF: ${err.message ?? err}`;
+    isStreaming = false;
   }
-  isStreaming = false;
 }
 
 function backToGallery() {
