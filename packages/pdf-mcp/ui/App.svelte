@@ -9,9 +9,10 @@ import {
 } from "@modelcontextprotocol/ext-apps";
 
 import PdfViewer from "./components/PdfViewer.svelte";
-import type { PdfViewerData } from "./lib/types";
+import PdfGallery from "./components/PdfGallery.svelte";
+import type { PdfViewerData, GalleryItem } from "./lib/types";
 import type { PDFDocumentProxy } from "./lib/pdf-engine";
-import { loadPdfFromBytes } from "./lib/pdf-engine";
+import { loadPdfFromBytes, loadPdfFromUrl } from "./lib/pdf-engine";
 import { base64ToUint8Array } from "./lib/annotations";
 import { ZOOM } from "./lib/constants";
 
@@ -21,6 +22,8 @@ let viewerData = $state.raw<PdfViewerData | null>(null);
 let error = $state<string | null>(null);
 let isStreaming = $state(false);
 let streamingMessage = $state("");
+let galleryItems = $state<GalleryItem[]>([]);
+let galleryLoading = $state(false);
 let pdfDocument = $state.raw<PDFDocumentProxy | null>(null);
 let currentPage = $state(1);
 let totalPages = $state(0);
@@ -62,6 +65,8 @@ function applyViewerState(sc: Record<string, unknown>) {
     return;
   }
 
+  const proxyPath = (sc.proxy_path as string) ?? "";
+
   viewerData = {
     viewId: scViewId,
     url,
@@ -69,6 +74,7 @@ function applyViewerState(sc: Record<string, unknown>) {
     sourceUrl,
     currentPage: scCurrentPage,
     totalPages: 0,
+    proxyPath,
   };
 }
 
@@ -85,70 +91,104 @@ $effect(() => {
   app.sendSizeChanged({ height: 600 });
 });
 
-// Load PDF bytes when viewerData URL changes
+// Load PDF when viewerData URL changes.
+// Three-tier fallback: proxy URL (fastest) → direct fetch → chunked tool calls.
 $effect(() => {
   const url = viewerData?.url;
+  const proxyPath = viewerData?.proxyPath;
   if (!url || !app) return;
 
   // Reset PDF state for new URL
   pdfDocument = null;
   totalPages = 0;
   currentPage = viewerData?.currentPage ?? 1;
-  streamingMessage = `Loading PDF...`;
+  streamingMessage = "Loading PDF...";
 
   let cancelled = false;
 
-  async function loadPdf() {
+  async function loadViaToolChunks(): Promise<Uint8Array> {
     const chunks: Uint8Array[] = [];
     let offset = 0;
-    let totalBytes = 0;
 
+    while (true) {
+      if (cancelled) throw new Error("cancelled");
+
+      const result = await app!.callServerTool({
+        name: "read_pdf_bytes",
+        arguments: { url: url!, offset },
+      });
+
+      if (result.isError) {
+        const msg = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
+        throw new Error(msg);
+      }
+
+      const sc = (result as any).structuredContent as Record<string, unknown>;
+      if (!sc?.bytes) throw new Error("Invalid response from read_pdf_bytes");
+
+      const chunkBytes = base64ToUint8Array(sc.bytes as string);
+      chunks.push(chunkBytes);
+      const totalBytes = (sc.totalBytes as number) ?? 0;
+      offset += (sc.byteCount as number) ?? chunkBytes.length;
+
+      if (totalBytes > 0) {
+        streamingMessage = `Loading PDF... ${Math.round((offset / totalBytes) * 100)}%`;
+      }
+
+      if (!(sc.hasMore as boolean)) break;
+    }
+
+    const fullLength = chunks.reduce((sum, c) => sum + c.length, 0);
+    const full = new Uint8Array(fullLength);
+    let pos = 0;
+    for (const chunk of chunks) {
+      full.set(chunk, pos);
+      pos += chunk.length;
+    }
+    return full;
+  }
+
+  async function loadPdf() {
     try {
-      while (true) {
+      // Strategy 1: Proxy URL — PDF.js with Range requests (fastest, on-demand pages)
+      if (proxyPath) {
+        try {
+          const doc = await loadPdfFromUrl(proxyPath);
+          if (cancelled) return;
+          pdfDocument = doc;
+          totalPages = doc.numPages;
+          streamingMessage = "";
+          return;
+        } catch {
+          if (cancelled) return;
+          // Proxy not accessible — try next strategy
+        }
+      }
+
+      // Strategy 2: Direct fetch (works if CSP allows external URL)
+      try {
+        const resp = await fetch(url!);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const buf = await resp.arrayBuffer();
         if (cancelled) return;
-
-        const result = await app!.callServerTool({
-          name: "read_pdf_bytes",
-          arguments: { url: url!, offset },
-        });
-
-        if (result.isError) {
-          error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed to load PDF";
-          return;
-        }
-
-        const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
-        if (!sc || !sc.bytes) {
-          error = "Invalid response from read_pdf_bytes";
-          return;
-        }
-
-        const chunkBytes = base64ToUint8Array(sc.bytes as string);
-        chunks.push(chunkBytes);
-        totalBytes = (sc.totalBytes as number) ?? 0;
-        offset += (sc.byteCount as number) ?? chunkBytes.length;
-
-        const progress = totalBytes > 0 ? Math.round((offset / totalBytes) * 100) : 0;
-        streamingMessage = `Loading PDF... ${progress}%`;
-
-        if (!(sc.hasMore as boolean)) break;
+        const doc = await loadPdfFromBytes(new Uint8Array(buf));
+        if (cancelled) return;
+        pdfDocument = doc;
+        totalPages = doc.numPages;
+        streamingMessage = "";
+        return;
+      } catch {
+        if (cancelled) return;
       }
 
+      // Strategy 3: Chunked tool calls (always works, slowest)
+      streamingMessage = "Loading PDF via server...";
+      const pdfBytes = await loadViaToolChunks();
       if (cancelled) return;
 
-      // Combine chunks
-      const fullLength = chunks.reduce((sum, c) => sum + c.length, 0);
-      const fullBytes = new Uint8Array(fullLength);
-      let pos = 0;
-      for (const chunk of chunks) {
-        fullBytes.set(chunk, pos);
-        pos += chunk.length;
-      }
-
-      // Load with pdf.js
-      const doc = await loadPdfFromBytes(fullBytes);
+      streamingMessage = "Rendering...";
+      const doc = await loadPdfFromBytes(pdfBytes);
       if (cancelled) return;
-
       pdfDocument = doc;
       totalPages = doc.numPages;
       streamingMessage = "";
@@ -165,6 +205,31 @@ $effect(() => {
     cancelled = true;
   };
 });
+
+async function handleGallerySelect(item: GalleryItem) {
+  if (!app) return;
+  isStreaming = true;
+  error = null;
+  streamingMessage = `Loading "${item.title}"...`;
+  try {
+    const result = await app.callServerTool({
+      name: "display_pdf",
+      arguments: { url: item.url, title: item.title },
+    });
+    if (result.isError) {
+      error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Failed";
+    } else {
+      const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
+      if (sc) {
+        lastSeenVersion = 0;
+        applyViewerState(sc);
+      }
+    }
+  } catch (err: any) {
+    error = `Failed to load PDF: ${err.message ?? err}`;
+  }
+  isStreaming = false;
+}
 
 async function toggleFullscreen() {
   if (!app) return;
@@ -238,6 +303,18 @@ onMount(async () => {
     instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
 
+  // Fetch gallery items for the initial view
+  galleryLoading = true;
+  try {
+    const galleryResult = await instance.callServerTool({
+      name: "list_pdfs",
+      arguments: {},
+    });
+    const gsc = (galleryResult as any).structuredContent;
+    if (gsc?.items) galleryItems = gsc.items;
+  } catch { /* gallery fetch failure is non-fatal */ }
+  galleryLoading = false;
+
   // Polling for server-initiated state changes
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let pollInterval = 2000;
@@ -295,33 +372,22 @@ onMount(async () => {
   style:padding-left={hostContext?.safeAreaInsets?.left ? `${hostContext.safeAreaInsets.left}px` : undefined}
 >
   {#if !app}
-    <div class="loading">Connecting...</div>
-  {:else if isStreaming && !hasData}
-    <div class="skeleton">
-      <div class="skeleton-sidebar">
-        {#each Array(6) as _, i (i)}
-          <div class="skeleton-page-thumb"></div>
-        {/each}
-      </div>
-      <div class="skeleton-viewer">
-        <div class="skeleton-shimmer"></div>
-        {#if streamingMessage}
-          <span class="skeleton-message">{streamingMessage}</span>
-        {/if}
-      </div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <span>Connecting...</span>
     </div>
-  {:else if hasData && !pdfDocument}
-    <div class="skeleton">
-      <div class="skeleton-sidebar">
-        {#each Array(6) as _, i (i)}
-          <div class="skeleton-page-thumb"></div>
-        {/each}
+  {:else if (isStreaming || (hasData && !pdfDocument)) && !error}
+    <div class="pdf-loading">
+      <div class="pdf-loading-icon">
+        <svg width="48" height="56" viewBox="0 0 48 56" fill="none">
+          <rect x="2" y="2" width="44" height="52" rx="4" stroke="var(--color-border-primary)" stroke-width="2" fill="var(--color-background-secondary)"/>
+          <path d="M12 18h24M12 26h24M12 34h16" stroke="var(--color-border-primary)" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+          <text x="24" y="48" text-anchor="middle" font-size="10" font-weight="700" fill="var(--color-accent)">PDF</text>
+        </svg>
       </div>
-      <div class="skeleton-viewer">
-        <div class="skeleton-shimmer"></div>
-        {#if streamingMessage}
-          <span class="skeleton-message">{streamingMessage}</span>
-        {/if}
+      <div class="pdf-loading-progress">
+        <div class="spinner"></div>
+        <span class="pdf-loading-message">{streamingMessage || "Loading PDF..."}</span>
       </div>
     </div>
   {:else if hasData && pdfDocument && !error}
@@ -342,7 +408,14 @@ onMount(async () => {
     <div class="error-state">
       <h2>Error</h2>
       <p>{error}</p>
+      <button class="back-btn" onclick={() => { error = null; viewerData = null; pdfDocument = null; }}>Back to library</button>
     </div>
+  {:else}
+    <PdfGallery
+      items={galleryItems}
+      loading={galleryLoading}
+      onSelect={handleGallerySelect}
+    />
   {/if}
 </main>
 
@@ -357,70 +430,50 @@ onMount(async () => {
 
 .loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   flex: 1;
-  font-size: 1rem;
-  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+  gap: 0.5rem;
+  font-size: var(--font-text-sm-size);
+  color: var(--color-text-secondary);
 }
 
-.skeleton {
-  display: flex;
-  flex: 1;
-  gap: 0;
-  min-height: 400px;
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-primary);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
-.skeleton-sidebar {
-  width: 100px;
-  min-width: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs, 0.25rem);
-  padding: var(--spacing-xs, 0.25rem);
-  background: var(--color-background-secondary, #f5f5f5);
-  border-right: 1px solid var(--color-border-primary, light-dark(#d4d2cb, #3a3632));
-  border-radius: var(--border-radius-lg, 10px) 0 0 var(--border-radius-lg, 10px);
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.skeleton-page-thumb {
-  width: 80px;
-  height: 100px;
-  border-radius: var(--border-radius-md, 6px);
-  background: linear-gradient(90deg, var(--color-background-tertiary, #eee) 25%, var(--color-background-secondary, #f5f5f5) 50%, var(--color-background-tertiary, #eee) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  margin: 0 auto;
-}
-
-.skeleton-viewer {
-  flex: 1;
+.pdf-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-md, 0.75rem);
-  background: var(--color-background-secondary, #f5f5f5);
-  border-radius: 0 var(--border-radius-lg, 10px) var(--border-radius-lg, 10px) 0;
+  flex: 1;
+  gap: 1.5rem;
 }
 
-.skeleton-message {
-  font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+.pdf-loading-icon {
+  opacity: 0.6;
 }
 
-.skeleton-shimmer {
-  width: 60%;
-  height: 80%;
-  border-radius: var(--border-radius-md, 6px);
-  background: linear-gradient(90deg, var(--color-background-tertiary, #eee) 25%, var(--color-background-secondary, #f5f5f5) 50%, var(--color-background-tertiary, #eee) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+.pdf-loading-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.pdf-loading-message {
+  font-size: var(--font-text-sm-size);
+  color: var(--color-text-secondary);
 }
 
 .error-state {
@@ -440,5 +493,20 @@ onMount(async () => {
 .error-state p {
   margin: var(--spacing-sm, 0.5rem) 0;
   color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+}
+
+.back-btn {
+  margin-top: var(--spacing-md);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: var(--font-text-sm-size);
+}
+
+.back-btn:hover {
+  background: var(--color-background-secondary);
 }
 </style>

@@ -6,7 +6,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 import { TextLayer } from "pdfjs-dist";
 
-// Configure worker
+// Configure worker — use inline fallback for CSP-restricted environments
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
@@ -14,13 +14,30 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 export { type PDFDocumentProxy, type PDFPageProxy };
 
+const CMAP_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.0.0/cmaps/";
+
 /**
  * Load a PDF from a Uint8Array.
  */
 export async function loadPdfFromBytes(data: Uint8Array): Promise<PDFDocumentProxy> {
   const loadingTask = pdfjsLib.getDocument({
     data,
-    cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.0.0/cmaps/",
+    cMapUrl: CMAP_URL,
+    cMapPacked: true,
+    enableXfa: true,
+  });
+  return loadingTask.promise;
+}
+
+/**
+ * Load a PDF directly from a URL.
+ * PDF.js uses HTTP Range requests internally — only fetches what's needed.
+ * This is the fastest path when the URL is accessible from the iframe.
+ */
+export async function loadPdfFromUrl(url: string): Promise<PDFDocumentProxy> {
+  const loadingTask = pdfjsLib.getDocument({
+    url,
+    cMapUrl: CMAP_URL,
     cMapPacked: true,
     enableXfa: true,
   });
@@ -144,4 +161,119 @@ export async function searchPageText(
   }
 
   return { rects, count };
+}
+
+/**
+ * Search for text across all pages of a PDF document.
+ * Returns per-page match counts (only pages with matches).
+ */
+export async function searchAllPages(
+  doc: PDFDocumentProxy,
+  query: string,
+): Promise<{ pageNum: number; count: number }[]> {
+  if (!query) return [];
+  const queryLower = query.toLowerCase();
+  const results: { pageNum: number; count: number }[] = [];
+
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const textContent = await page.getTextContent();
+    let count = 0;
+
+    for (const item of textContent.items) {
+      if (!("str" in item)) continue;
+      const text = ((item as any).str as string).toLowerCase();
+      let idx = 0;
+      while ((idx = text.indexOf(queryLower, idx)) !== -1) {
+        count++;
+        idx += queryLower.length;
+      }
+    }
+
+    if (count > 0) {
+      results.push({ pageNum: i, count });
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Outline (Table of Contents)
+// ---------------------------------------------------------------------------
+
+export interface OutlineItem {
+  title: string;
+  pageNum: number | null;
+  items: OutlineItem[];
+}
+
+/**
+ * Extract the PDF outline (bookmarks/TOC) as a tree of items with page numbers.
+ * Returns null if the PDF has no outline.
+ */
+export async function getOutline(doc: PDFDocumentProxy): Promise<OutlineItem[] | null> {
+  const outline = await doc.getOutline();
+  if (!outline || outline.length === 0) return null;
+
+  async function resolveItem(item: any): Promise<OutlineItem> {
+    let pageNum: number | null = null;
+    try {
+      let dest = item.dest;
+      if (typeof dest === "string") {
+        dest = await doc.getDestination(dest);
+      }
+      if (Array.isArray(dest) && dest.length > 0) {
+        const pageIndex = await doc.getPageIndex(dest[0]);
+        pageNum = pageIndex + 1;
+      }
+    } catch { /* dest resolution can fail for malformed PDFs */ }
+
+    const children: OutlineItem[] = [];
+    if (item.items?.length > 0) {
+      for (const child of item.items) {
+        children.push(await resolveItem(child));
+      }
+    }
+
+    return { title: item.title || "Untitled", pageNum, items: children };
+  }
+
+  const result: OutlineItem[] = [];
+  for (const item of outline) {
+    result.push(await resolveItem(item));
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Thumbnails
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a page thumbnail as a data URL.
+ * Uses an offscreen canvas at reduced scale.
+ */
+export async function renderThumbnail(
+  doc: PDFDocumentProxy,
+  pageNum: number,
+  maxWidth: number = 120,
+): Promise<string> {
+  const page = await doc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1 });
+  const thumbScale = maxWidth / viewport.width;
+  const thumbViewport = page.getViewport({ scale: thumbScale });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = thumbViewport.width;
+  canvas.height = thumbViewport.height;
+  const ctx = canvas.getContext("2d")!;
+
+  await page.render({
+    canvasContext: ctx,
+    viewport: thumbViewport,
+    canvas,
+  }).promise;
+
+  return canvas.toDataURL("image/jpeg", 0.6);
 }

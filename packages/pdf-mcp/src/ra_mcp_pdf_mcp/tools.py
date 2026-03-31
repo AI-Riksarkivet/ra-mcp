@@ -20,6 +20,7 @@ from ra_mcp_pdf_mcp.state import (
     enqueue_command,
     get_state,
     put_state,
+    register_proxy_url,
 )
 
 
@@ -28,10 +29,10 @@ logger = logging.getLogger("ra_mcp.pdf.tools")
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://pdf-viewer/mcp-app.html"
 
-# Chunk size for streaming PDF bytes (512 KB)
-CHUNK_SIZE = 512 * 1024
-# Max PDF size for caching (50 MB)
-MAX_PDF_SIZE = 50 * 1024 * 1024
+# Chunk size for streaming PDF bytes (4 MB — larger chunks = fewer round-trips)
+CHUNK_SIZE = 4 * 1024 * 1024
+# Max PDF size for caching (200 MB)
+MAX_PDF_SIZE = 200 * 1024 * 1024
 
 # In-memory PDF cache: url → bytes
 _pdf_cache: dict[str, bytes] = {}
@@ -83,10 +84,21 @@ async def display_pdf(
     )
     sc = await put_state(state)
 
+    # Register URL for the proxy route (speed optimization)
+    register_proxy_url(view_id, url)
+    sc["proxy_path"] = f"/pdf-proxy/{view_id}"
+
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID) if ctx else False
-    summary = f"Displaying PDF: {display_title}"
+    summary_parts = [
+        f"Displaying PDF: {display_title}",
+        f"view_uuid: {view_id}",
+        "",
+        "Use the `interact` tool with this view_uuid to navigate, search, annotate, or extract text.",
+        "Actions: navigate (page), search (query), highlight_text (query), add_annotations, get_text, fill_form.",
+    ]
     if not has_ui:
-        summary += f"\nURL: {url}"
+        summary_parts.insert(1, f"URL: {url}")
+    summary = "\n".join(summary_parts)
 
     logger.info("display_pdf: url=%s, view_id=%s", url, view_id)
     return ToolResult(
@@ -102,33 +114,37 @@ async def display_pdf(
 
 @mcp.tool(
     name="read_pdf_bytes",
-    description="Read a range of bytes from a PDF file (max 512KB per request). Used by the viewer to stream PDF data.",
+    description="Read a range of bytes from a PDF file (max 4MB per request). Used by the viewer to stream PDF data.",
     app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
 )
 async def read_pdf_bytes(
     url: Annotated[str, Field(description="URL of the PDF file.")],
     offset: Annotated[int, Field(description="Byte offset to start reading from.", ge=0)] = 0,
 ) -> ToolResult:
-    """Stream PDF data in chunks with pagination metadata."""
+    """Stream PDF data in chunks with pagination metadata.
+
+    Uses HTTP Range requests when the origin supports them — only fetches
+    the requested chunk, not the entire file. For a 63 MB PDF, each tool
+    call transfers only ~4 MB instead of blocking on a full download.
+    """
     try:
-        pdf_bytes = await _fetch_pdf(url)
+        chunk, total_bytes = await _read_pdf_range(url, offset, CHUNK_SIZE)
     except Exception as e:
         logger.error("read_pdf_bytes: failed to fetch %s: %s", url, e)
         return _error_result(f"Failed to fetch PDF: {e}")
 
-    total_bytes = len(pdf_bytes)
-    end = min(offset + CHUNK_SIZE, total_bytes)
-    chunk = pdf_bytes[offset:end]
-    has_more = end < total_bytes
+    byte_count = len(chunk)
+    end = offset + byte_count
+    has_more = total_bytes > 0 and end < total_bytes
 
     chunk_b64 = base64.b64encode(chunk).decode("ascii")
 
     return ToolResult(
-        content=[types.TextContent(type="text", text=f"Read {len(chunk)} bytes ({offset}-{end}/{total_bytes})")],
+        content=[types.TextContent(type="text", text=f"Read {byte_count} bytes ({offset}-{end}/{total_bytes})")],
         structured_content={
             "bytes": chunk_b64,
             "offset": offset,
-            "byteCount": len(chunk),
+            "byteCount": byte_count,
             "totalBytes": total_bytes,
             "hasMore": has_more,
         },
@@ -252,6 +268,27 @@ async def get_pdf_state(
 
 
 # ---------------------------------------------------------------------------
+# list_pdfs — gallery of available PDFs (app-visible only)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="list_pdfs",
+    description="List available PDF documents for the gallery view.",
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+)
+async def list_pdfs() -> ToolResult:
+    """Return the curated gallery of available PDFs."""
+    from ra_mcp_pdf_mcp.gallery import get_gallery_items
+
+    items = get_gallery_items()
+    return ToolResult(
+        content=[types.TextContent(type="text", text=f"{len(items)} PDFs available")],
+        structured_content={"items": items},
+    )
+
+
+# ---------------------------------------------------------------------------
 # UI Resource
 # ---------------------------------------------------------------------------
 
@@ -270,22 +307,50 @@ def get_ui_resource() -> str:
 # ---------------------------------------------------------------------------
 
 
-async def _fetch_pdf(url: str) -> bytes:
-    """Fetch a PDF and cache it in memory."""
+async def _read_pdf_range(url: str, offset: int, length: int) -> tuple[bytes, int]:
+    """Read a byte range from a PDF. Returns (chunk_bytes, total_size).
+
+    Uses HTTP Range requests when supported by the server — only fetches the
+    requested bytes, not the entire file. Falls back to full GET + cache when
+    the server returns 200 (no range support) or 501.
+    """
+    # Fast path: already have the full file cached
     if url in _pdf_cache:
-        return _pdf_cache[url]
+        data = _pdf_cache[url]
+        return data[offset : offset + length], len(data)
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
-        resp = await client.get(url)
-        resp.raise_for_status()
+        # Try Range request first
+        end_byte = offset + length - 1
+        resp = await client.get(url, headers={"Range": f"bytes={offset}-{end_byte}"})
 
-    data = resp.content
-    if len(data) > MAX_PDF_SIZE:
-        msg = f"PDF too large to cache: {len(data)} bytes (max {MAX_PDF_SIZE})"
-        raise ValueError(msg)
+        if resp.status_code == 206:
+            # Server supports Range — return just this chunk
+            content_range = resp.headers.get("Content-Range", "")
+            total = 0
+            if "/" in content_range:
+                size_str = content_range.rsplit("/", 1)[-1]
+                if size_str != "*":
+                    total = int(size_str)
+            return resp.content, total
 
-    _pdf_cache[url] = data
-    return data
+        if resp.status_code == 501:
+            # Server explicitly doesn't support Range — retry as plain GET
+            resp = await client.get(url)
+            resp.raise_for_status()
+
+        if resp.status_code == 200:
+            # Got full body — cache it and slice
+            data = resp.content
+            content_length = int(resp.headers.get("Content-Length", len(data)))
+            if content_length > MAX_PDF_SIZE:
+                msg = f"PDF too large to cache: {content_length} bytes (max {MAX_PDF_SIZE})"
+                raise ValueError(msg)
+            _pdf_cache[url] = data
+            return data[offset : offset + length], len(data)
+
+        resp.raise_for_status()  # raises for any other status
+        return b"", 0  # unreachable, but satisfies type checker
 
 
 def _extract_title(url: str) -> str:

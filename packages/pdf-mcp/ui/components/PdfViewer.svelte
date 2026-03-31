@@ -9,9 +9,11 @@ import {
   buildTextLayer,
   extractPageText,
   searchPageText,
+  searchAllPages,
 } from "../lib/pdf-engine";
 import { scheduleContextUpdate, resetContextState } from "../lib/context";
 import { ZOOM } from "../lib/constants";
+import TocPanel from "./TocPanel.svelte";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -58,12 +60,19 @@ let containerEl = $state<HTMLDivElement>(undefined!);
 // ---------------------------------------------------------------------------
 
 let searchOpen = $state(false);
+let tocOpen = $state(true);
 let searchMatchCount = $state(0);
 let searchCurrentMatch = $state(0);
 let searchRects = $state<DOMRect[]>([]);
 let annotationMap = new SvelteMap<string, TrackedAnnotation>();
 let showAnnotationPanel = $state(false);
 let loading = $state(false);
+
+// Cross-page search
+let globalSearchResults = $state<{ pageNum: number; count: number }[]>([]);
+let globalSearchTotal = $derived(globalSearchResults.reduce((s, r) => s + r.count, 0));
+let globalSearchPages = $derived(globalSearchResults.length);
+let globalSearchLoading = $state(false);
 
 // Writable derived: tracks currentPage, can be overridden by user input
 let pageInputValue = $derived(currentPage);
@@ -78,11 +87,20 @@ let highlightHeight = $state(0);
 
 let zoomLabel = $derived(Math.round(scale * 100));
 let hasAnnotations = $derived(annotationMap.size > 0);
-let searchMatchLabel = $derived(
-  searchMatchCount > 0
-    ? `${searchCurrentMatch + 1}/${searchMatchCount}`
-    : "No matches",
-);
+let searchMatchLabel = $derived.by(() => {
+  if (globalSearchLoading) return "Searching...";
+  if (searchMatchCount > 0) {
+    const pageLabel = `${searchCurrentMatch + 1}/${searchMatchCount} on this page`;
+    if (globalSearchTotal > 0) {
+      return `${pageLabel} | ${globalSearchTotal} on ${globalSearchPages} page${globalSearchPages > 1 ? "s" : ""}`;
+    }
+    return pageLabel;
+  }
+  if (globalSearchTotal > 0) {
+    return `${globalSearchTotal} on ${globalSearchPages} page${globalSearchPages > 1 ? "s" : ""} (not on this page)`;
+  }
+  return searchTerm ? "No matches" : "";
+});
 
 // ---------------------------------------------------------------------------
 // Page rendering
@@ -184,6 +202,57 @@ $effect(() => {
   })();
 });
 
+// Cross-page search: when searchTerm changes, search all pages
+$effect(() => {
+  const query = searchTerm;
+  if (!query || !pdfDocument) {
+    globalSearchResults = [];
+    globalSearchLoading = false;
+    return;
+  }
+
+  globalSearchLoading = true;
+  let cancelled = false;
+
+  (async () => {
+    try {
+      const results = await searchAllPages(pdfDocument, query);
+      if (!cancelled) {
+        globalSearchResults = results;
+      }
+    } catch (err) {
+      console.error("[PdfViewer] global search error:", err);
+    } finally {
+      if (!cancelled) globalSearchLoading = false;
+    }
+  })();
+
+  return () => { cancelled = true; };
+});
+
+// Navigate to next/prev page with matches
+function searchNextPage() {
+  if (globalSearchResults.length === 0) return;
+  const next = globalSearchResults.find((r) => r.pageNum > currentPage);
+  if (next) {
+    currentPage = next.pageNum;
+  } else {
+    // Wrap around to first match
+    currentPage = globalSearchResults[0].pageNum;
+  }
+}
+
+function searchPrevPage() {
+  if (globalSearchResults.length === 0) return;
+  const prev = [...globalSearchResults].reverse().find((r) => r.pageNum < currentPage);
+  if (prev) {
+    currentPage = prev.pageNum;
+  } else {
+    // Wrap around to last match
+    currentPage = globalSearchResults[globalSearchResults.length - 1].pageNum;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Navigation
 // ---------------------------------------------------------------------------
@@ -269,23 +338,23 @@ function handleKeydown(e: KeyboardEvent) {
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 async function pollCommands() {
-  if (!app) return;
+  if (!app || !viewId) return;
 
   try {
-    const result = await app.callServerTool("poll_pdf_commands", {
-      view_id: viewId,
+    const result = await app.callServerTool({
+      name: "poll_pdf_commands",
+      arguments: { view_uuid: viewId },
     });
-    if (!result?.content?.length) return;
+    if (result.isError) return;
 
-    const text = result.content[0];
-    if (typeof text === "object" && "text" in text) {
-      const commands: PdfCommand[] = JSON.parse(text.text);
-      for (const cmd of commands) {
+    const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
+    if (sc?.commands && Array.isArray(sc.commands)) {
+      for (const cmd of sc.commands as PdfCommand[]) {
         processCommand(cmd);
       }
     }
   } catch {
-    // Server may not support this tool yet -- silently skip
+    // Poll failure is non-fatal
   }
 }
 
@@ -341,6 +410,11 @@ onDestroy(() => {
   <!-- Toolbar -->
   <div class="toolbar">
     <div class="toolbar-left">
+      <button class="icon-btn toc-toggle" class:active={tocOpen} onclick={() => tocOpen = !tocOpen} title="Toggle sidebar" aria-label="Toggle sidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M2 3h12M2 8h8M2 13h10"/>
+        </svg>
+      </button>
       <span class="pdf-title" title={title}>{title}</span>
       {#if loading}
         <div class="loading-indicator">
@@ -424,16 +498,31 @@ onDestroy(() => {
         aria-label="Search text in PDF"
       />
       <span class="search-match-count">{searchMatchLabel}</span>
-      <button class="search-nav-btn" onclick={searchPrev} disabled={searchMatchCount === 0} aria-label="Previous match">
+      <button class="search-nav-btn" onclick={searchPrev} disabled={searchMatchCount === 0} title="Previous match on this page" aria-label="Previous match">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M2 7L5 3L8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <button class="search-nav-btn" onclick={searchNext} disabled={searchMatchCount === 0} aria-label="Next match">
+      <button class="search-nav-btn" onclick={searchNext} disabled={searchMatchCount === 0} title="Next match on this page" aria-label="Next match">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
+      {#if globalSearchPages > 1}
+        <span class="search-divider"></span>
+        <button class="search-nav-btn page-nav" onclick={searchPrevPage} title="Previous page with matches" aria-label="Previous page with matches">
+          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+            <path d="M4 1L1 5L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="search-nav-btn page-nav" onclick={searchNextPage} title="Next page with matches" aria-label="Next page with matches">
+          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+            <path d="M8 1L11 5L8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 5H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      {/if}
       <button class="search-close-btn" onclick={toggleSearch} aria-label="Close search">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -442,28 +531,39 @@ onDestroy(() => {
     </div>
   {/if}
 
-  <!-- Canvas + overlays -->
-  <div class="viewer-body">
-    <div class="canvas-container">
-      <div class="page-wrapper">
-        <canvas bind:this={canvasEl}></canvas>
-        <div
-          class="highlight-layer"
-          style:width="{highlightWidth}px"
-          style:height="{highlightHeight}px"
-        >
-          {#each searchRects as rect, i (i)}
-            <div
-              class="search-highlight"
-              class:current={i === searchCurrentMatch}
-              style:left="{rect.x}px"
-              style:top="{rect.y}px"
-              style:width="{rect.width}px"
-              style:height="{rect.height}px"
-            ></div>
-          {/each}
+  <!-- Sidebar + Canvas -->
+  <div class="viewer-layout">
+    {#if tocOpen}
+      <TocPanel
+        {pdfDocument}
+        {currentPage}
+        {totalPages}
+        onPageSelect={(p) => currentPage = p}
+      />
+    {/if}
+
+    <div class="viewer-body">
+      <div class="canvas-container">
+        <div class="page-wrapper">
+          <canvas bind:this={canvasEl}></canvas>
+          <div
+            class="highlight-layer"
+            style:width="{highlightWidth}px"
+            style:height="{highlightHeight}px"
+          >
+            {#each searchRects as rect, i (i)}
+              <div
+                class="search-highlight"
+                class:current={i === searchCurrentMatch}
+                style:left="{rect.x}px"
+                style:top="{rect.y}px"
+                style:width="{rect.width}px"
+                style:height="{rect.height}px"
+              ></div>
+            {/each}
+          </div>
+          <div bind:this={textLayerEl} class="text-layer"></div>
         </div>
-        <div bind:this={textLayerEl} class="text-layer"></div>
       </div>
     </div>
   </div>
@@ -708,6 +808,28 @@ onDestroy(() => {
 .search-nav-btn:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+.search-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--color-border-primary);
+  flex-shrink: 0;
+}
+
+.search-nav-btn.page-nav {
+  width: 28px;
+}
+
+.toc-toggle.active {
+  background: var(--color-background-tertiary);
+}
+
+.viewer-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ------------------------------------------------------------------ */

@@ -152,6 +152,7 @@ export interface PdfViewerData {
   sourceUrl: string;
   currentPage: number;
   totalPages: number;
+  proxyPath?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -170,4 +171,16 @@ export interface SearchMatch {
 export interface TrackedAnnotation {
   def: PdfAnnotationDef;
   elements: HTMLElement[];
+}
+
+// ---------------------------------------------------------------------------
+// Gallery
+// ---------------------------------------------------------------------------
+
+export interface GalleryItem {
+  url: string;
+  title: string;
+  description: string;
+  thumbnail_url?: string;
+  category?: string;
 }

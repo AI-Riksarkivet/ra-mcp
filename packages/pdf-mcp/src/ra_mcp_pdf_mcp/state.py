@@ -22,6 +22,20 @@ _store = MemoryStore(max_entries_per_collection=64)
 
 latest_view_id: str = ""
 
+# Proxy URL registry: view_id → upstream PDF URL
+_proxy_urls: dict[str, str] = {}
+
+
+def register_proxy_url(view_id: str, url: str) -> None:
+    """Register a PDF URL for the proxy route."""
+    _proxy_urls[view_id] = url
+
+
+def get_proxy_url(view_id: str) -> str | None:
+    """Get the registered PDF URL for a view_id."""
+    return _proxy_urls.get(view_id)
+
+
 # Command queues: view_id → list of pending commands
 _command_queues: dict[str, list[dict]] = defaultdict(list)
 _command_events: dict[str, asyncio.Event] = {}
