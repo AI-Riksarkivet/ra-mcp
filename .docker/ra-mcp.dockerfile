@@ -31,8 +31,6 @@ COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/viewer-
 # Sync workspace packages with diplomatics extra (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
 
-# LanceDB tables are mounted at runtime from HF bucket (Riksarkivet/lance)
-# Set DIPLOMATICS_LANCEDB_PATH to the mount point
 
 # --- Stage 3: Production runtime ---
 FROM ${PRODUCTION_IMAGE} AS production
@@ -82,7 +80,7 @@ RUN mkdir -p /app/data && chown ra-mcp:ra-mcp /app /app/data
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
-ENV DIPLOMATICS_LANCEDB_PATH="/app/data/diplomatics"
+ENV DIPLOMATICS_LANCEDB_URI="hf://datasets/carpelan/diplomatics-lance"
 
 # Health check via /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

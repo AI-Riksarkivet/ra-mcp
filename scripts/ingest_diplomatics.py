@@ -17,7 +17,7 @@ from urllib.request import urlopen
 
 import lancedb
 
-from ra_mcp_diplomatics_lib.config import LANCEDB_PATH
+DEFAULT_OUTPUT = Path("data/diplomatics")
 from ra_mcp_diplomatics_lib.ingest import ingest_mpo, ingest_sdhk
 
 SDHK_CSV_URL = "https://filer.riksarkivet.se/registerdata/SDHK/csv/sdhk_2411.csv"
@@ -57,7 +57,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None, help="LanceDB output path (default: from config)")
     args = parser.parse_args()
 
-    output_path = args.output or LANCEDB_PATH
+    output_path = args.output or DEFAULT_OUTPUT
     output_path.mkdir(parents=True, exist_ok=True)
     db = lancedb.connect(output_path)
 

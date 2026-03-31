@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_diplomatics_lib import DiplomaticsSearch
-from ra_mcp_diplomatics_lib.config import LANCEDB_PATH
+from ra_mcp_diplomatics_lib.config import LANCEDB_URI
 
 from .formatter import format_mpo_results
 
@@ -25,8 +25,8 @@ def _get_db():
     if _db is None:
         import lancedb
 
-        logger.info("Opening LanceDB at %s", LANCEDB_PATH)
-        _db = lancedb.connect(str(LANCEDB_PATH))
+        logger.info("Opening LanceDB at %s", LANCEDB_URI)
+        _db = lancedb.connect(LANCEDB_URI)
     return _db
 
 

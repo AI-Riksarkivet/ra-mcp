@@ -1,10 +1,9 @@
 """Configuration for diplomatics search."""
 
 import os
-from pathlib import Path
 
 
-LANCEDB_PATH = Path(os.getenv("DIPLOMATICS_LANCEDB_PATH", "data/diplomatics"))
+LANCEDB_URI = os.getenv("DIPLOMATICS_LANCEDB_URI", "hf://datasets/carpelan/diplomatics-lance")
 
 SDHK_TABLE = "sdhk"
 MPO_TABLE = "mpo"
