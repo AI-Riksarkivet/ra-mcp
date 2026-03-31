@@ -118,30 +118,6 @@ export type PdfAnnotationDef =
   | ImageAnnotation;
 
 // ---------------------------------------------------------------------------
-// Command Types (server → viewer)
-// ---------------------------------------------------------------------------
-
-export interface FormFieldFill {
-  name: string;
-  value: string | boolean;
-}
-
-export interface PageInterval {
-  start?: number;
-  end?: number;
-}
-
-export type PdfCommand =
-  | { type: "navigate"; page: number }
-  | { type: "search"; query: string }
-  | { type: "zoom"; scale: number }
-  | { type: "add_annotations"; annotations: PdfAnnotationDef[] }
-  | { type: "remove_annotations"; ids: string[] }
-  | { type: "highlight_text"; id: string; query: string; page?: number; color?: string; content?: string }
-  | { type: "fill_form"; fields: FormFieldFill[] }
-  | { type: "get_text"; request_id: string; intervals: PageInterval[]; get_text: boolean; get_screenshots: boolean };
-
-// ---------------------------------------------------------------------------
 // Viewer State
 // ---------------------------------------------------------------------------
 
