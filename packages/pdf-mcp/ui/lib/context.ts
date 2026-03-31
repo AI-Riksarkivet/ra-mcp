@@ -11,6 +11,8 @@ export interface PdfContextState {
   pageText?: string;
   searchTerm?: string;
   searchMatchCount?: number;
+  globalSearchTotal?: number;
+  globalSearchPages?: number;
   selectedText?: string;
 }
 
@@ -34,7 +36,11 @@ async function sendContextUpdate(state: PdfContextState) {
     parts.push(`Selected text: "${state.selectedText}"`);
   }
   if (state.searchTerm) {
-    parts.push(`Search: "${state.searchTerm}" (${state.searchMatchCount ?? 0} matches)`);
+    let searchInfo = `Search: "${state.searchTerm}" (${state.searchMatchCount ?? 0} matches on this page)`;
+    if (state.globalSearchTotal) {
+      searchInfo += ` | ${state.globalSearchTotal} total matches across ${state.globalSearchPages} pages`;
+    }
+    parts.push(searchInfo);
   }
   if (state.pageText) {
     parts.push(`\nPage content:\n${state.pageText}`);

@@ -167,6 +167,8 @@ $effect(() => {
         pageText,
         searchTerm: searchTerm || undefined,
         searchMatchCount: searchMatchCount || undefined,
+        globalSearchTotal: globalSearchTotal || undefined,
+        globalSearchPages: globalSearchPages || undefined,
       });
     } catch (err) {
       if (gen === renderGeneration) {
