@@ -308,9 +308,19 @@ async def search_pdf(
             structured_content={"pageMatches": [], "totalMatches": 0},
         )
 
-    # Get cached PDF bytes
+    # Get PDF bytes — from cache or fetch fresh
     if url not in _pdf_cache:
-        return _error_result("PDF not cached. Load it first with display_pdf + read_pdf_bytes.")
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
+                resp = await client.get(url)
+                resp.raise_for_status()
+            if len(resp.content) <= MAX_PDF_SIZE:
+                _pdf_cache[url] = resp.content
+        except Exception as e:
+            return _error_result(f"Failed to fetch PDF for search: {e}")
+
+    if url not in _pdf_cache:
+        return _error_result("PDF too large to search server-side.")
 
     pdf_bytes = _pdf_cache[url]
     search_term = term.strip()
