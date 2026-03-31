@@ -11,7 +11,6 @@ dependencies = [
     "ra-mcp-htr-mcp",
     "ra-mcp-viewer-mcp",
     "ra-mcp-pdf-mcp",
-    "ra-mcp-diplomatics-mcp",
     "starlette>=0.52.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
@@ -43,6 +42,7 @@ cli = [
     "ra-mcp-browse-cli",
 ]
 label = ["ra-mcp-label-mcp"]
+diplomatics = ["ra-mcp-diplomatics-mcp"]
 tui = ["ra-mcp-tui"]
 
 

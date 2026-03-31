@@ -18,7 +18,6 @@ from ra_mcp_htr_mcp.tools import htr_mcp
 # Import available modules (lazy imports handled in setup)
 from ra_mcp_search_mcp.tools import search_mcp
 from ra_mcp_server.telemetry import init_telemetry, shutdown_telemetry
-from ra_mcp_diplomatics_mcp import diplomatics_mcp
 from ra_mcp_pdf_mcp import pdf_mcp
 from ra_mcp_pdf_mcp.proxy import pdf_proxy_handler
 from ra_mcp_viewer_mcp import viewer_mcp
@@ -58,11 +57,6 @@ AVAILABLE_MODULES = {
         "default": True,
         "no_namespace": True,
     },
-    "diplomatics": {
-        "server": diplomatics_mcp,
-        "description": "Search SDHK medieval charters and MPO parchment fragments",
-        "default": True,
-    },
 }
 
 # label-mcp is optional (requires glibc for opencv-python-headless via label-studio-sdk)
@@ -72,6 +66,18 @@ try:
     AVAILABLE_MODULES["label"] = {
         "server": label_mcp,
         "description": "Import pages to Label Studio for human annotation and feedback",
+        "default": True,
+    }
+except ImportError:
+    pass
+
+# diplomatics-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_diplomatics_mcp import diplomatics_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["diplomatics"] = {
+        "server": diplomatics_mcp,
+        "description": "Search SDHK medieval charters and MPO parchment fragments",
         "default": True,
     }
 except ImportError:

@@ -2152,7 +2152,6 @@ dependencies = [
     { name = "opentelemetry-exporter-otlp" },
     { name = "opentelemetry-sdk" },
     { name = "ra-mcp-browse-mcp" },
-    { name = "ra-mcp-diplomatics-mcp" },
     { name = "ra-mcp-guide-mcp" },
     { name = "ra-mcp-htr-mcp" },
     { name = "ra-mcp-pdf-mcp" },
@@ -2165,6 +2164,9 @@ dependencies = [
 cli = [
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-search-cli" },
+]
+diplomatics = [
+    { name = "ra-mcp-diplomatics-mcp" },
 ]
 label = [
     { name = "ra-mcp-label-mcp" },
@@ -2198,7 +2200,7 @@ requires-dist = [
     { name = "opentelemetry-sdk", specifier = ">=1.28.0" },
     { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
-    { name = "ra-mcp-diplomatics-mcp", editable = "packages/diplomatics-mcp" },
+    { name = "ra-mcp-diplomatics-mcp", marker = "extra == 'diplomatics'", editable = "packages/diplomatics-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
     { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
@@ -2209,7 +2211,7 @@ requires-dist = [
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
