@@ -978,7 +978,7 @@ function handleKeydown(e: KeyboardEvent) {
   top: 0;
   left: 0;
   z-index: 4;
-  pointer-events: none;
+  pointer-events: auto;
   overflow: hidden;
 }
 
@@ -986,7 +986,21 @@ function handleKeydown(e: KeyboardEvent) {
   position: absolute;
   border: 1px solid;
   border-radius: 2px;
-  transition: opacity 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.block-box:hover {
+  border-width: 2px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.15);
+  z-index: 1;
+}
+
+.block-box:hover .block-label {
+  opacity: 1;
+  font-size: 8px;
+  padding: 2px 4px;
 }
 
 .block-label {
@@ -1000,8 +1014,9 @@ function handleKeydown(e: KeyboardEvent) {
   border-radius: 0 0 2px 0;
   background: inherit;
   color: var(--color-text-primary);
-  opacity: 0.7;
+  opacity: 0.5;
   pointer-events: none;
   white-space: nowrap;
+  transition: opacity 0.15s, font-size 0.15s;
 }
 </style>
