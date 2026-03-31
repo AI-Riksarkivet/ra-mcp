@@ -300,8 +300,16 @@ async def list_pdfs() -> ToolResult:
     from ra_mcp_pdf_mcp.gallery import get_gallery_items
 
     items = get_gallery_items()
+
+    # Include full details in content text so the model can read them
+    lines = [f"{len(items)} PDF guides available:\n"]
+    for item in items:
+        lines.append(f"- **{item['title']}**: {item['description']}")
+        lines.append(f"  URL: {item['url']}")
+    text = "\n".join(lines)
+
     return ToolResult(
-        content=[types.TextContent(type="text", text=f"{len(items)} PDFs available")],
+        content=[types.TextContent(type="text", text=text)],
         structured_content={"items": items},
     )
 
