@@ -81,6 +81,18 @@ try:
 except ImportError:
     pass
 
+# sbl-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_sbl_mcp import sbl_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["sbl"] = {
+        "server": sbl_mcp,
+        "description": "Search Svenskt biografiskt lexikon (Swedish Biographical Lexicon)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -152,6 +164,8 @@ TOOL SELECTION:
 - Medieval charters (before 1540) → diplomatics:search_sdhk with keyword
 - Medieval parchment fragments → diplomatics:search_mpo with keyword (German terms)
 - View SDHK/MPO documents → view_manifest with IIIF manifest URL from search results
+- Biographical lookup (notable Swedes) → sbl:search_sbl with name or keyword
+- View SBL article → sbl:view_sbl_article with article_id from search results
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
@@ -159,6 +173,7 @@ COVERAGE: The archive has three access tiers:
 - AI-transcribed text: ~1.6M pages searchable via search_transcribed — currently court records (hovrätt, trolldomskommissionen, poliskammare, magistrat) from 17th-18th centuries
 - SDHK catalog: 44,000+ medieval charters (diplomatics:search_sdhk) — summaries, Latin texts, seal descriptions
 - MPO catalog: 23,000+ parchment fragments (diplomatics:search_mpo) — codicological descriptions in German
+- SBL: 9,400+ biographical articles (sbl:search_sbl) — notable Swedish individuals and families, medieval to 20th century
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants

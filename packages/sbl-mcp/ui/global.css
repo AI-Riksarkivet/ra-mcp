@@ -1,0 +1,13 @@
+:root {
+  font-family: var(--host-font-sans, system-ui, -apple-system, sans-serif);
+  line-height: 1.6;
+  color: var(--host-color-text, #1a1a1a);
+  background: var(--host-color-bg, #ffffff);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  padding: 0;
+  margin: 0;
+}
