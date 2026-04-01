@@ -2,6 +2,12 @@ from typing import NamedTuple
 
 from pydantic import BaseModel
 
+from ra_mcp_xml.models import TextLayer, TextLine  # Single source of truth
+
+
+# Re-export for convenience
+__all__ = ["ResolvedDocument", "TextLayer", "TextLine", "ViewerState"]
+
 
 class ResolvedDocument(NamedTuple):
     """Result of resolving a reference code to page URLs."""
@@ -11,24 +17,6 @@ class ResolvedDocument(NamedTuple):
     page_numbers: list[int]
     bildvisning_urls: list[str]
     document_info: str  # markdown-formatted metadata
-
-
-class TextLine(BaseModel):
-    id: str
-    polygon: str
-    transcription: str
-    hpos: int
-    vpos: int
-    width: int
-    height: int
-    confidence: float | None = None
-
-
-class TextLayer(BaseModel):
-    text_lines: list[TextLine]
-    page_width: int
-    page_height: int
-    full_text: str
 
 
 class ViewerState(BaseModel):

@@ -6,4 +6,4 @@ from .client import IIIFClient
 from .models import IIIFCanvas, IIIFCollection, IIIFManifest, IIIFManifestDetail
 
 
-__all__ = ["IIIFClient", "IIIFCanvas", "IIIFCollection", "IIIFManifest", "IIIFManifestDetail"]
+__all__ = ["IIIFCanvas", "IIIFClient", "IIIFCollection", "IIIFManifest", "IIIFManifestDetail"]

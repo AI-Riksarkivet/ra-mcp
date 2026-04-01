@@ -24,6 +24,7 @@ class IIIFCanvas(BaseModel):
     id: str
     label: str | None = None
     image_url: str = ""
+    alto_url: str = ""
 
 
 class IIIFManifestDetail(BaseModel):

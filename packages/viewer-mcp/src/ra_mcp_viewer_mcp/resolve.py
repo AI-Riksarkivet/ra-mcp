@@ -66,7 +66,7 @@ async def manifest_resolve_document(
 
     return ResolvedDocument(
         image_urls=[c.image_url for c in canvases],
-        text_layer_urls=[""] * len(canvases),  # No ALTO for these documents
+        text_layer_urls=[c.alto_url for c in canvases],
         page_numbers=list(range(1, len(canvases) + 1)),
         bildvisning_urls=[""] * len(canvases),
         document_info=f"**Document:** {manifest.label or 'Unknown'}\n\n**Manifest:** {manifest_url}",

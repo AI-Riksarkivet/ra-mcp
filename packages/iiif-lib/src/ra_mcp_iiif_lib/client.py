@@ -98,9 +98,23 @@ class IIIFClient:
                     id=item.get("id", ""),
                     label=self._extract_iiif_label(item.get("label")),
                     image_url=self._extract_painting_image(item),
+                    alto_url=self._extract_alto_url(item),
                 )
             )
         return canvases
+
+    @staticmethod
+    def _extract_alto_url(canvas: dict) -> str:
+        """Extract ALTO XML URL from a Canvas's seeAlso references.
+
+        Checks type, format, and profile fields — different providers use
+        different conventions (Riksarkivet: type="ALTO", Wellcome: profile contains "alto").
+        """
+        for ref in canvas.get("seeAlso", []):
+            searchable = f"{ref.get('type', '')} {ref.get('format', '')} {ref.get('profile', '')}".lower()
+            if "alto" in searchable:
+                return ref.get("id", "")
+        return ""
 
     def _extract_painting_image(self, canvas: dict) -> str:
         """Extract image URL from a Canvas's painting annotation."""

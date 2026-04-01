@@ -17,7 +17,7 @@ from fastmcp.telemetry import get_tracer
 from key_value.aio.stores.memory import MemoryStore
 from PIL import Image
 
-from ra_mcp_viewer_mcp.parser import detect_and_parse
+from ra_mcp_xml.parser import detect_and_parse
 
 
 logger = logging.getLogger("ra_mcp.viewer.fetchers")

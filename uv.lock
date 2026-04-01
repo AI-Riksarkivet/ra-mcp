@@ -2500,6 +2500,7 @@ dependencies = [
     { name = "py-key-value-aio", extra = ["memory"] },
     { name = "ra-mcp-browse-lib" },
     { name = "ra-mcp-iiif-lib" },
+    { name = "ra-mcp-xml" },
 ]
 
 [package.dev-dependencies]
@@ -2517,6 +2518,7 @@ requires-dist = [
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
     { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
     { name = "ra-mcp-iiif-lib", editable = "packages/iiif-lib" },
+    { name = "ra-mcp-xml", editable = "packages/xml-lib" },
 ]
 
 [package.metadata.requires-dev]
