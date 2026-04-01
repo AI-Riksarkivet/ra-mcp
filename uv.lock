@@ -33,6 +33,8 @@ members = [
     "ra-mcp-search-cli",
     "ra-mcp-search-lib",
     "ra-mcp-search-mcp",
+    "ra-mcp-sjomanshus-lib",
+    "ra-mcp-sjomanshus-mcp",
     "ra-mcp-tui",
     "ra-mcp-viewer-mcp",
     "ra-mcp-xml",
@@ -2162,6 +2164,9 @@ label = [
 sbl = [
     { name = "ra-mcp-sbl-mcp" },
 ]
+sjomanshus = [
+    { name = "ra-mcp-sjomanshus-mcp" },
+]
 tui = [
     { name = "ra-mcp-tui" },
 ]
@@ -2201,12 +2206,13 @@ requires-dist = [
     { name = "ra-mcp-sbl-mcp", marker = "extra == 'sbl'", editable = "packages/sbl-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
+    { name = "ra-mcp-sjomanshus-mcp", marker = "extra == 'sjomanshus'", editable = "packages/sjomanshus-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2508,6 +2514,40 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
+]
+
+[[package]]
+name = "ra-mcp-sjomanshus-lib"
+version = "0.11.3"
+source = { editable = "packages/sjomanshus-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-sjomanshus-mcp"
+version = "0.11.3"
+source = { editable = "packages/sjomanshus-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-sjomanshus-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-sjomanshus-lib", editable = "packages/sjomanshus-lib" },
 ]
 
 [[package]]
