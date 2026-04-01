@@ -1,0 +1,193 @@
+[project]
+name = "ra-mcp"
+version = "0.11.1"
+description = "Riksarkivet MCP server composition and CLI"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ra-mcp-search-mcp",
+    "ra-mcp-browse-mcp",
+    "ra-mcp-guide-mcp",
+    "ra-mcp-htr-mcp",
+    "ra-mcp-viewer-mcp",
+    "ra-mcp-pdf-mcp",
+    "starlette>=0.52.1",
+    "opentelemetry-sdk>=1.28.0",
+    "opentelemetry-exporter-otlp>=1.28.0",
+    "cryptography>=46.0.5",
+    "fastmcp>=3.1.1"
+]
+
+license = "Apache-2.0"
+keywords = [
+    "mcp",
+    "mcp server",
+    "model context protocol",
+    "ra-mcp",
+    "search",
+    "browse",
+    "iiif",
+    "llm",
+    "agent",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+cli = [
+    "ra-mcp-search-cli",
+    "ra-mcp-browse-cli",
+]
+label = ["ra-mcp-label-mcp"]
+diplomatics = ["ra-mcp-diplomatics-mcp"]
+tui = ["ra-mcp-tui"]
+
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio>=0.25.0",
+    "respx>=0.22.0",
+    "ruff",
+    "ty",
+    "pytest-cov>=7.0.0",
+    "ra-mcp-search-cli",
+    "ra-mcp-browse-cli",
+    "ra-mcp-tui",
+]
+docs = [
+    "zensical>=0.0.23",
+    "mkdocstrings-python>=1.16.0",
+]
+
+[project.scripts]
+ra = "ra_mcp_server.cli:app"
+ra-serve = "ra_mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ra_mcp_server"]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+ra-mcp-common = { workspace = true }
+ra-mcp-xml = { workspace = true }
+ra-mcp-iiif-lib = { workspace = true }
+ra-mcp-oai-pmh-lib = { workspace = true }
+ra-mcp-search-lib = { workspace = true }
+ra-mcp-search-cli = { workspace = true }
+ra-mcp-search-mcp = { workspace = true }
+ra-mcp-browse-lib = { workspace = true }
+ra-mcp-browse-cli = { workspace = true }
+ra-mcp-browse-mcp = { workspace = true }
+ra-mcp-guide-mcp = { workspace = true }
+ra-mcp-htr-mcp = { workspace = true }
+ra-mcp-viewer-mcp = { workspace = true }
+ra-mcp-pdf-mcp = { workspace = true }
+ra-mcp-label-mcp = { workspace = true }
+ra-mcp-tui = { workspace = true }
+ra-mcp-diplomatics-lib = { workspace = true }
+ra-mcp-diplomatics-mcp = { workspace = true }
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes (unused imports, undefined names)
+    "W",      # pycodestyle warnings
+    "I",      # isort (import sorting)
+    "UP",     # pyupgrade (modern Python syntax)
+    "B",      # bugbear (common pitfalls)
+    "S",      # bandit (security)
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "RUF",    # ruff-specific
+    "C901",   # mccabe complexity
+    "RET",    # flake8-return
+    "PERF",   # perflint
+    "FURB",   # refurb
+    "ERA",    # eradicate (commented-out code)
+    "T20",    # flake8-print
+    "A",      # flake8-builtins
+    "PTH",    # flake8-use-pathlib
+    "EM",     # flake8-errmsg
+    "ANN",    # flake8-annotations
+    "G",      # flake8-logging-format
+]
+ignore = [
+    "E501",   # line-too-long — MCP tool docstrings are intentionally long for LLM context
+    "S104",   # bind-all-interfaces — intentional for server
+    "S310",   # url-open — http_client's purpose is to open URLs
+    "S110",   # try-except-pass — acceptable in shutdown/cleanup code
+    "S314",   # xml-parse — XML from Riksarkivet APIs is trusted; defusedxml is a separate decision
+    "SIM108", # ternary — if/else blocks are often more readable
+    "RET504", # unnecessary-assign — useful for readability/debugging
+    "EM101",  # raw-string-in-exception — too noisy, low value
+    "EM102",  # f-string-in-exception — too noisy, low value
+    "ANN001", # missing-type-function-argument — too noisy, fix incrementally
+    "ANN003", # missing-type-kwargs — standard to ignore
+    "ANN204", # missing-return-type-special-method — pedantic for __init__
+    "G201",   # logging-exc-info — .error(exc_info=True) is idiomatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/ra_mcp_server/server.py" = ["T201"]
+"packages/common/src/ra_mcp_common/utils/http_client.py" = ["T201"]
+"packages/*/tests/**" = ["S101", "ANN201", "ANN202"]
+"packages/viewer-mcp/src/**" = ["G004"]
+"packages/pdf-mcp/src/**" = ["G004"]
+"packages/label-mcp/src/**" = ["G004"]
+"tests/**" = ["S101", "ANN201"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif_lib", "ra_mcp_oai_pmh_lib", "ra_mcp_search_lib", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse_lib", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_pdf_mcp", "ra_mcp_label_mcp", "ra_mcp_tui", "ra_mcp_server"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.ty.src]
+# label-mcp depends on label-studio-sdk (opencv) which has no Alpine/musl wheel;
+# exclude from type checking when the extra is not installed.
+exclude = ["packages/label-mcp"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = []
+testpaths = ["packages/*/tests", "tests"]
+addopts = "--cov --cov-report=term-missing:skip-covered"
+
+[tool.coverage.run]
+branch = true
+source = ["packages/", "src/"]
+omit = ["**/tests/*", "**/__init__.py", "**/server.py", "**/cli/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]
