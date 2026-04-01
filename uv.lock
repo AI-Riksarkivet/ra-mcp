@@ -16,6 +16,8 @@ resolution-markers = [
 [manifest]
 members = [
     "ra-mcp",
+    "ra-mcp-aktiebolag-lib",
+    "ra-mcp-aktiebolag-mcp",
     "ra-mcp-browse-cli",
     "ra-mcp-browse-lib",
     "ra-mcp-browse-mcp",
@@ -2157,6 +2159,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+aktiebolag = [
+    { name = "ra-mcp-aktiebolag-mcp" },
+]
 cli = [
     { name = "ra-mcp-browse-cli" },
     { name = "ra-mcp-search-cli" },
@@ -2211,6 +2216,7 @@ requires-dist = [
     { name = "nltk", specifier = ">=3.9.4" },
     { name = "opentelemetry-exporter-otlp", specifier = ">=1.28.0" },
     { name = "opentelemetry-sdk", specifier = ">=1.28.0" },
+    { name = "ra-mcp-aktiebolag-mcp", marker = "extra == 'aktiebolag'", editable = "packages/aktiebolag-mcp" },
     { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-court-mcp", marker = "extra == 'court'", editable = "packages/court-mcp" },
@@ -2230,7 +2236,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2248,6 +2254,40 @@ dev = [
 docs = [
     { name = "mkdocstrings-python", specifier = ">=1.16.0" },
     { name = "zensical", specifier = ">=0.0.23" },
+]
+
+[[package]]
+name = "ra-mcp-aktiebolag-lib"
+version = "0.11.3"
+source = { editable = "packages/aktiebolag-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-aktiebolag-mcp"
+version = "0.11.3"
+source = { editable = "packages/aktiebolag-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-aktiebolag-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-aktiebolag-lib", editable = "packages/aktiebolag-lib" },
 ]
 
 [[package]]

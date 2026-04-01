@@ -1,0 +1,6 @@
+Id;PostID;Styrelsemed;Fornamn;titel;Kon
+1;1;Bernström;John;Direktör;M
+2;1;De Laval;Gustaf;Ingenjör;M
+3;2;Wallenberg;Knut Agathon;Bankir;M
+4;2;Wallenberg;Marcus;Bankir;M
+5;3;Nobel;Emanuel;Industriman;M

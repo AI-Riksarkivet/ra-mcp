@@ -1,0 +1,6 @@
+PostID;Bolagets_namn;Aldre_namn;Argang;Postadress;Bolagets_andamal;Styrelsesate;Verkstall_dir;Aktiekapital_stam_A
+1;AB Separator;De Lavals Separator;1901;Stockholm;Tillverkning och försäljning av separatorer;Stockholm;John Bernström;5000000
+2;Stockholms Enskilda Bank;-;1905;Stockholm;Bankrörelse;Stockholm;K.A. Wallenberg;10000000
+3;AB Bofors;-;1910;Bofors;Tillverkning av stål och vapen;Karlskoga;-;3000000
+4;Götaverken AB;-;1915;Göteborg;Skeppsbyggeri och mekanisk verkstad;Göteborg;Hugo Hammar;2000000
+5;AB Förenade Yllefabrikerna;Norrköpings Yllefabrik;1920;Norrköping;Tillverkning av yllevaror och textilier;Norrköping;Carl Ekman;1500000

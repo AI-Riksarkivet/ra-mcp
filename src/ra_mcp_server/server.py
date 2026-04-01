@@ -141,6 +141,18 @@ try:
 except ImportError:
     pass
 
+# aktiebolag-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_aktiebolag_mcp import aktiebolag_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["aktiebolag"] = {
+        "server": aktiebolag_mcp,
+        "description": "Search Swedish joint-stock companies 1901-1935 (12.5K companies, 49K board members)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
