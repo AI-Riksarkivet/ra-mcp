@@ -26,6 +26,26 @@ def json_url_for(pdf_url: str) -> str | None:
     return pdf_url.replace(".pdf", ".json", 1)
 
 
+async def preload_all_guides() -> None:
+    """Pre-load structured JSONs for all gallery PDFs at server startup."""
+    from ra_mcp_pdf_mcp.gallery import GALLERY_ITEMS
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, read=60.0), follow_redirects=True) as client:
+        for item in GALLERY_ITEMS:
+            url = item["url"]
+            j_url = json_url_for(url)
+            if not j_url or url in blocks_cache:
+                continue
+            try:
+                resp = await client.get(j_url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    blocks_cache[url] = data.get("children", [])
+                    logger.info("preloaded JSON (%d pages) for %s", len(blocks_cache[url]), item["title"])
+            except Exception as e:
+                logger.warning("failed to preload JSON for %s: %s", item["title"], e)
+
+
 def schedule_prefetch(url: str) -> None:
     """Background prefetch of PDF bytes + structured JSON."""
     task = asyncio.create_task(_prefetch(url))

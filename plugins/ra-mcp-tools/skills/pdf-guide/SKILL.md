@@ -3,110 +3,80 @@ name: pdf-guide
 description: Guide for the PDF viewer tools. Use when the user asks to "show PDF", "open PDF", "search in PDF", "list PDFs", "visa PDF", "medeltid guide", "slaktforskning guide", or wants to read/search Riksarkivet's PDF publications. Also use when deciding between view_document (archival pages) vs display_pdf (full PDF documents).
 ---
 
-# PDF Viewer Tools
+# PDF Viewer — Riksarkivet's Archival Guides
 
-| Tool | When to use |
-|------|-------------|
-| `display_pdf` | Open a PDF in the interactive viewer (creates the viewer) |
-| `list_pdfs` | See what PDFs/guides are available |
-| `search_pdf` | Search text across ALL pages of a loaded PDF |
-| `read_pdf_page` | Read the text content of a specific page |
-| `pdf_go_to_page` | Navigate the viewer to a specific page |
-| `pdf_set_search` | Highlight a search term in the viewer |
+## Available Guides
+
+### Medeltidens samhalle (258 sidor)
+Peter Stahl. Riksarkivets medeltidssamlingar, kallor 1100-1520.
+
+- p.7: Inledning
+- p.9: **Territoriella och judiciella forhallanden** (1100-1520)
+  - p.9: Rikets granser | p.10: Lagsaga, harad, socken | p.12: Landskapen | p.15: Landskapslagar
+- p.21: **Kung, riksforestandare och rad**
+  - p.21: Kungaval, eriksgata, ledung | p.23: Kungen som domare | p.25: Jarlsambetet | p.26: Drots, marsk, kansler | p.29: Rikets rad | p.31: Herredagar | p.33: Riksforestandare | p.35: Borgar, lan, forvaltning | p.44: Skattevasen | p.47: Statshandlingar
+- p.60: **Bonder och vardsligt fralse**
+  - p.60: Bonden i byn | p.63: Storgardar, agrarkris | p.65: Vardsliga fralset | p.67: Jordnaturer | p.68: Jordtransaktioner | p.72: Testamenten
+- p.82: **Stader och borgerskap**
+  - p.82: Staderna vaxer fram | p.84: Stadslagar | p.86: Hansan | p.87: Stadens invanare | p.91: Topografi | p.96: Stadernas kallor
+- p.101: **Kyrkan**
+  - p.101: Organisation | p.104: Kanonisk ratt | p.110: Biskop, prost | p.112: Domkyrkorna | p.116: Sockenkyrkorna | p.119: Kloster | p.122: Korstagen | p.123: Birgittinorden, Vadstena
+- p.141: **Pavedovet och pavliga brev**
+  - p.141: Pavedovet | p.145: Romerska kurian | p.149: Brevtyper | p.152: Bullor till Sverige | p.155: Legater | p.158: Vatikanarkivet
+- p.166: **Medeltidsbreven — arkivhistorisk oversikt**
+  - p.166: Tradering | p.169: Forvaring 1530-1690 | p.173: Slottsbranden 1697 | p.177: Kallutgivning | p.180: SDHK
+- p.182: **Diplomatik, skrift och formelsprak**
+  - p.182: Terminologi | p.186: Datering | p.187: Notarier | p.189: Skriftens utveckling | p.193: Sigill | p.195: Forfalskningar
+- p.202: **Riksarkivets medeltidskallor** — huvudbestand
+- p.217: Ordforklaringar | p.239: Register
+
+### Hur riket styrdes (255 sidor)
+Bjorn Asker. Forvaltning, politik och arkiv 1520-1920.
+
+### Ingang till samisk historia (2024)
+Guide till samisk historia i Riksarkivets samlingar.
 
 ---
 
-## When to Use PDF Tools vs Document Viewer
+## Tools
 
-| User intent | Tool |
-|-------------|------|
-| "Show me the medieval guide" / "visa medeltidsguiden" | `display_pdf` with medeltid URL |
-| "What PDFs do you have?" | `list_pdfs` |
-| "Search for Gustav Vasa in the PDF" | `search_pdf` (after display_pdf) |
-| "What does page 42 say?" | `read_pdf_page` |
-| "Go to page 42" | `pdf_go_to_page` |
-| "Show me archival document SE/RA/420422/01" | `view_document` (NOT display_pdf) |
-
-**Key distinction:**
-- `display_pdf` = full PDF files (books, guides, papers)
-- `view_document` = individual archival pages (IIIF images + ALTO XML text)
+| Tool | Purpose |
+|------|---------|
+| `display_pdf` | **CALL FIRST** — opens PDF in viewer |
+| `search_pdf` | Search ALL pages, returns matches + text snippets |
+| `read_pdf_page` | Read full text of a specific page |
+| `pdf_go_to_page` | Navigate viewer to a page |
+| `pdf_set_search` | Highlight a term in the viewer |
+| `list_pdfs` | List available guides with URLs |
 
 ---
 
-## `display_pdf` — Open a PDF
+## Workflow
 
-**IMPORTANT: Always call this first.** All other PDF tools require a PDF to be loaded.
+### Research with citations:
+1. User asks about a topic → check TOC above for relevant section
+2. Call `display_pdf` with the guide URL
+3. Call `read_pdf_page` for the relevant pages
+4. Answer with citations: *"Enligt Medeltidens samhalle (s. 44)..."*
+5. Call `pdf_go_to_page` + `pdf_set_search` → viewer shows the source
+6. For deeper search: `search_pdf` to find all mentions across pages
 
-| Argument | Type | Required | Description |
-|----------|------|----------|-------------|
-| `url` | string | No | URL to PDF file (defaults to Medeltidens samhalle) |
-| `title` | string | No | Display title |
+### Key principle:
+**Always cite page numbers. Always navigate the viewer to show the source. The user must be able to verify every claim.**
 
-```json
-{"url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true", "title": "Medeltidens samhalle"}
+---
+
+## URLs
+
+```
+Medeltidens samhalle: https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true
+Hur riket styrdes:    https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true
+Samisk historia:      https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/164624875-f258a1-Ingang-till-samisk-historia_2024.pdf?download=true
 ```
 
 ---
 
-## `search_pdf` — Search All Pages
+## When to use PDF tools vs Document Viewer
 
-Searches ALL pages server-side. Returns per-page match counts and text snippets.
-
-| Argument | Type | Required | Description |
-|----------|------|----------|-------------|
-| `url` | string | Yes | Same URL used in `display_pdf` |
-| `term` | string | Yes | Text to search for |
-
----
-
-## `read_pdf_page` — Read Page Text
-
-Returns the full text content of a page. Use this to read what's on a page — model context is NOT sent automatically.
-
-| Argument | Type | Required | Description |
-|----------|------|----------|-------------|
-| `url` | string | Yes | Same URL used in `display_pdf` |
-| `page` | int | Yes | Page number (1-based) |
-
----
-
-## `pdf_go_to_page` / `pdf_set_search` — Navigate & Highlight
-
-Navigate the viewer or highlight text. No AppConfig — reuses existing viewer.
-
-```json
-// Navigate
-{"page": 42}
-
-// Highlight
-{"search_term": "kungamakt"}
-```
-
----
-
-## Available PDFs
-
-- **Hur riket styrdes** — Swedish governance 1520-1920 (255 pages, 63MB)
-- **Medeltidens samhalle** — Medieval Sweden guide (258 pages, 5MB) — DEFAULT
-- **Ingang till samisk historia** — Sami history guide (2024)
-
----
-
-## Typical Workflow
-
-1. Call `display_pdf` with the URL (or default)
-2. Call `search_pdf` to find where a topic appears
-3. Call `read_pdf_page` to read specific pages
-4. Call `pdf_go_to_page` + `pdf_set_search` to navigate/highlight viewer
-5. Quote the text from `read_pdf_page` results
-
----
-
-## Common Mistakes
-
-| Mistake | Fix |
-|---------|-----|
-| Not calling `display_pdf` first | Always call it before search/read/navigate |
-| Searching the archive when user asks about a PDF guide | Use PDF tools, not search_transcribed |
-| Not using `read_pdf_page` to get page text | Model context is NOT sent automatically — you must call read_pdf_page |
-| Calling `display_pdf` twice | Call once, then use navigation/search tools |
+- `display_pdf` = full PDF books/guides (these 3 publications)
+- `view_document` = individual archival pages (IIIF images + ALTO XML)

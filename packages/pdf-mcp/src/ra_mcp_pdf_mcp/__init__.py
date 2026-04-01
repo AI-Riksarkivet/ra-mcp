@@ -5,8 +5,10 @@ pdf_mcp = FastMCP(
     name="ra-pdf-mcp",
     instructions=(
         "PDF viewer for Riksarkivet's archival guides. "
-        "WORKFLOW: display_pdf (opens viewer) → search_pdf (find text) → read_pdf_page (read pages) → pdf_go_to_page/pdf_set_search (navigate/highlight). "
-        "Always call display_pdf FIRST — all other tools require it."
+        "Use search_guides to search ALL guides at once (no display_pdf needed). "
+        "Use display_pdf to open a guide in the viewer, then read_pdf_page to read pages, "
+        "pdf_go_to_page/pdf_set_search to navigate/highlight. "
+        "Always cite page numbers and navigate the viewer to show the source."
     ),
 )
 

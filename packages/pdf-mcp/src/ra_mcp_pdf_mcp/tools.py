@@ -284,6 +284,55 @@ async def pdf_go_to_page(
 
 
 # ---------------------------------------------------------------------------
+# search_guides — cross-guide search (no display_pdf needed)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    name="search_guides",
+    description=(
+        "Search across ALL Riksarkivet PDF guides at once. No display_pdf needed. "
+        "Returns matches with guide title, page number, and text snippets. "
+        "Use this to find information across all guides, then display_pdf to show the source."
+    ),
+)
+async def search_guides(
+    term: Annotated[str, Field(description="The search term to find across all guides.")],
+) -> ToolResult:
+    """Search all pre-loaded guide JSONs for a term."""
+    from ra_mcp_pdf_mcp.gallery import GALLERY_ITEMS
+
+    if not term or not term.strip():
+        return _text_result("No search term provided.")
+
+    # Ensure guides are loaded
+    if not blocks_cache:
+        from ra_mcp_pdf_mcp.cache import preload_all_guides
+
+        await preload_all_guides()
+
+    search_term = term.strip()
+    all_results: list[str] = []
+    total = 0
+
+    for item in GALLERY_ITEMS:
+        url = item["url"]
+        if url not in blocks_cache:
+            continue
+        result = search_pages(blocks_cache[url], search_term)
+        if result.total_matches > 0:
+            all_results.append(f"\n**{item['title']}** — {result.total_matches} matches on {len(result.page_matches)} pages:")
+            all_results.extend(f"  p.{pm.page_num}: {block.text[:300]}" for pm in result.page_matches[:5] for block in pm.blocks[:2])
+            total += result.total_matches
+
+    if total == 0:
+        return _text_result(f"No matches for '{search_term}' in any guide.")
+
+    summary = f"Found {total} matches for '{search_term}' across guides:\n" + "\n".join(all_results)
+    return _text_result(summary)
+
+
+# ---------------------------------------------------------------------------
 # list_pdfs
 # ---------------------------------------------------------------------------
 
