@@ -165,6 +165,18 @@ try:
 except ImportError:
     pass
 
+# suffrage-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_suffrage_mcp import suffrage_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["suffrage"] = {
+        "server": suffrage_mcp,
+        "description": "Search women's suffrage records (Rösträtt petition 1913-1914, FKPR association 1911-1920)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""

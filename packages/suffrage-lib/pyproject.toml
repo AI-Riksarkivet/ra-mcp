@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ra_mcp_suffrage_lib"]
+
+[project]
+name = "ra-mcp-suffrage-lib"
+version = "0.11.3"
+description = "Women's suffrage records (Rösträtt & FKPR) search via LanceDB"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+dependencies = [
+    "ra-mcp-common",
+    "lancedb>=0.20,<1",
+    "pyarrow>=18,<20",
+    "pydantic>=2,<3",
+]
+
+[tool.uv.sources]
+ra-mcp-common = { workspace = true }
