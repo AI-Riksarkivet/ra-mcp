@@ -327,11 +327,11 @@ let blockGeneration = 0;
 
 $effect(() => {
   const page = currentPage;
-  const s = scale;
-  const pageProxy = currentPageProxy;
+  const w = highlightWidth;
+  const h = highlightHeight;
   const visible = blocksVisible;
 
-  if (!visible || !pageProxy || !app || !pdfUrl) {
+  if (!visible || !w || !h || !app || !pdfUrl) {
     blockOverlays = [];
     return;
   }
@@ -351,9 +351,8 @@ $effect(() => {
       if (!sc?.blocks || !sc?.pageBbox) return;
 
       const [px1, py1, px2, py2] = sc.pageBbox as number[];
-      const viewport = pageProxy.getViewport({ scale: s });
-      const sx = viewport.width / (px2 - px1);
-      const sy = viewport.height / (py2 - py1);
+      const sx = w / (px2 - px1);
+      const sy = h / (py2 - py1);
 
       const overlays: Array<{ rect: DOMRect; type: string }> = [];
       for (const block of sc.blocks as Array<{ bbox: number[]; blockType: string }>) {
