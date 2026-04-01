@@ -1,0 +1,6 @@
+NUMMER;INSKRIVNINGSDATUM;FÖRNAMN;EFTERNAMN;ÅLDER;TITEL;FAMILJ;HEMORT;BY;HEMORT;SOCKEN;SJUKDOM;SJUKDOMSBESKRIVNING;SJUKDOMSBEHANDLING;UTSKRIVNINGSDATUM;UTSKRIVNINGSSTATUS;VÅRDTID;ANMÄRKNING;ARKIV;VOLYM
+1;1820-03-15;Maria;Andersdotter;25;Piga;Ogift;Lund;Nöbbelöv;Lund;Barsebäck;Syfilis;Primära symptom;Kvicksilverbehandling;1820-06-10;Botad;87;;SE/LLA;Vol 1
+2;1825-07-22;Per;Svensson;32;Dräng;Gift;Malmö;Husie;Malmö;Husie;Gonorré;Kronisk;Kauterisering;1825-09-15;Förbättrad;55;;SE/LLA;Vol 2
+3;1830-11-01;Anna;Persdotter;20;Piga;Ogift;Ystad;Köpinge;Ystad;Köpinge;Syfilis;Sekundära symptom;Kvicksilverbehandling;1831-02-28;Botad;119;Återkom 1832;SE/LLA;Vol 3
+4;1840-05-10;Lars;Nilsson;45;Torpare;Gift;Kristianstad;Åhus;Kristianstad;Åhus;Gonorré;Akut;Blyacetat;1840-06-20;Botad;41;;SE/LLA;Vol 4
+5;1850-01-20;Johanna;Larsdotter;18;Piga;Ogift;Helsingborg;Välluv;Helsingborg;Välluv;Syfilis;Tertiära symptom;Jodbehandling;1850-07-15;Obotad;176;Avled 1851;SE/LLA;Vol 5

@@ -177,6 +177,18 @@ try:
 except ImportError:
     pass
 
+# specialsok-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_specialsok_mcp import specialsok_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["specialsok"] = {
+        "server": specialsok_mcp,
+        "description": "Search Specialsök datasets (flygvapen, fångrullor, kurhuset, press, video)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""

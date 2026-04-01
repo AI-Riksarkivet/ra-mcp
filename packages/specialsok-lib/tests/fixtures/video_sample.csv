@@ -1,0 +1,6 @@
+Reg_nr;Reg_dat;Laen;Laensbokstav;Landsdel;Kommun;Invaanare;Butiksnamn;Firmanamn;Aktiv;Ansvarig_person;Besoeksadress;Ort
+V001;1991-05-15;Stockholms län;AB;Svealand;Stockholm;700000;Video King;Video King AB;Ja;Anders Persson;Kungsgatan 10;Stockholm
+V002;1992-03-22;Skåne län;M;Götaland;Malmö;250000;Filmhörnan;Borttaget;Ja;NULL;Storgatan 5;Malmö
+V003;1991-11-08;Västra Götalands län;O;Götaland;Göteborg;450000;Videohuset;Videohuset HB;Nej;Borttaget;Avenyn 15;Göteborg
+V004;1993-01-20;Uppsala län;C;Svealand;Uppsala;180000;Video Express;Video Express AB;Ja;Per Nilsson;Dragarbrunnsgatan 8;Uppsala
+V005;1994-06-30;Norrbottens län;BD;Norrland;Luleå;70000;Nordvideo;Nordvideo AB;Ja;Erik Johansson;Storgatan 22;Luleå

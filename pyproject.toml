@@ -53,6 +53,7 @@ court = ["ra-mcp-court-mcp"]
 aktiebolag = ["ra-mcp-aktiebolag-mcp"]
 faltjagare = ["ra-mcp-faltjagare-mcp"]
 suffrage = ["ra-mcp-suffrage-mcp"]
+specialsok = ["ra-mcp-specialsok-mcp"]
 tui = ["ra-mcp-tui"]
 
 
@@ -123,6 +124,8 @@ ra-mcp-faltjagare-lib = { workspace = true }
 ra-mcp-faltjagare-mcp = { workspace = true }
 ra-mcp-suffrage-lib = { workspace = true }
 ra-mcp-suffrage-mcp = { workspace = true }
+ra-mcp-specialsok-lib = { workspace = true }
+ra-mcp-specialsok-mcp = { workspace = true }
 
 [tool.ruff]
 line-length = 160
@@ -186,7 +189,7 @@ indent-style = "space"
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif_lib", "ra_mcp_oai_pmh_lib", "ra_mcp_search_lib", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse_lib", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_pdf_mcp", "ra_mcp_label_mcp", "ra_mcp_diplomatics_lib", "ra_mcp_diplomatics_mcp", "ra_mcp_sbl_lib", "ra_mcp_sbl_mcp", "ra_mcp_sjomanshus_lib", "ra_mcp_sjomanshus_mcp", "ra_mcp_filmcensur_lib", "ra_mcp_filmcensur_mcp", "ra_mcp_rosenberg_lib", "ra_mcp_rosenberg_mcp", "ra_mcp_court_lib", "ra_mcp_court_mcp", "ra_mcp_aktiebolag_lib", "ra_mcp_aktiebolag_mcp", "ra_mcp_faltjagare_lib", "ra_mcp_faltjagare_mcp", "ra_mcp_suffrage_lib", "ra_mcp_suffrage_mcp", "ra_mcp_tui", "ra_mcp_server"]
+known-first-party = ["ra_mcp_common", "ra_mcp_xml", "ra_mcp_iiif_lib", "ra_mcp_oai_pmh_lib", "ra_mcp_search_lib", "ra_mcp_search_cli", "ra_mcp_search_mcp", "ra_mcp_browse_lib", "ra_mcp_browse_cli", "ra_mcp_browse_mcp", "ra_mcp_guide_mcp", "ra_mcp_htr_mcp", "ra_mcp_viewer_mcp", "ra_mcp_pdf_mcp", "ra_mcp_label_mcp", "ra_mcp_diplomatics_lib", "ra_mcp_diplomatics_mcp", "ra_mcp_sbl_lib", "ra_mcp_sbl_mcp", "ra_mcp_sjomanshus_lib", "ra_mcp_sjomanshus_mcp", "ra_mcp_filmcensur_lib", "ra_mcp_filmcensur_mcp", "ra_mcp_rosenberg_lib", "ra_mcp_rosenberg_mcp", "ra_mcp_court_lib", "ra_mcp_court_mcp", "ra_mcp_aktiebolag_lib", "ra_mcp_aktiebolag_mcp", "ra_mcp_faltjagare_lib", "ra_mcp_faltjagare_mcp", "ra_mcp_suffrage_lib", "ra_mcp_suffrage_mcp", "ra_mcp_specialsok_lib", "ra_mcp_specialsok_mcp", "ra_mcp_tui", "ra_mcp_server"]
 
 [tool.ty.terminal]
 error-on-warning = true

@@ -1,0 +1,6 @@
+Datum;Förband;Förband klartext;FplTyp;FplKod;FplNr;MotorTyp;MotorNr;Haveri;OFYL;BesAnt;AntOmk;Grad1;Fask1;Omk1;Grad2;Fask2;Omk2;Sammanfattning;Havplats;Klassning
+1945-10-12;F7;Skaraborgs flygflottilj;J 22;22;22105;SFA R-1;1234;Totalhavererat;;1;0;Fänrik;Jaktpilot;;;;;;Motorn stannade under landning;Såtenäs;A
+1952-03-15;F13;Bråvalla flygflottilj;J 28B;28;28201;Ghost 48;;Totalhavererat;;1;1;Löjtnant;Jaktpilot;Omkom;;;;;Brand vid start;Norrköping;A
+1960-07-22;F10;Ängelholms flygflottilj;J 35A;35;35102;RM6A;;Totalhavererat;;1;0;Kapten;Jaktpilot;;;;;;Draken kraschade vid provflygning;Ängelholm;B
+1973-11-08;F21;Luleå flygflottilj;AJ 37;37;37405;RM8A;;Skadat;;1;0;Fänrik;Attackpilot;;;;;;Viggen nödlandade i skogen;Kallax;C
+1985-06-30;F4;Frösöns flygflottilj;SK 60;60;60112;Williams FJ44;;Skadat;;2;0;Kapten;Utbildning;;Fänrik;Elev;;Birdstrike under övningsflygning;Frösön;C
