@@ -184,3 +184,95 @@ def format_mpo_results(result: SearchResult) -> str:
         )
 
     return "\n".join(lines)
+
+
+def format_sdhk_info(row: dict) -> str:
+    """Format an SDHK record as markdown for the viewer info panel."""
+    sdhk_id = row.get("id", "?")
+    lines: list[str] = [f"## SDHK {sdhk_id}"]
+
+    title = row.get("title", "")
+    if title:
+        lines.append(f"*{title}*")
+    lines.append("")
+
+    for label, key in [
+        ("Author", "author"),
+        ("Date", "date"),
+        ("Place", "place"),
+        ("Language", "language"),
+        ("Printed", "printed"),
+    ]:
+        val = row.get(key, "")
+        if val:
+            lines.append(f"**{label}:** {val}")
+
+    summary = row.get("summary", "")
+    if summary:
+        lines.append("")
+        lines.append("### Summary")
+        lines.append(summary)
+
+    edition = row.get("edition", "")
+    if edition:
+        truncated = edition[:1000] + "..." if len(edition) > 1000 else edition
+        lines.append("")
+        lines.append("### Edition")
+        lines.append(truncated)
+
+    seals = row.get("seals", "")
+    if seals:
+        lines.append("")
+        lines.append("### Seals")
+        lines.append(seals)
+
+    return "\n".join(lines)
+
+
+def format_mpo_info(row: dict) -> str:
+    """Format an MPO record as markdown for the viewer info panel."""
+    mpo_id = row.get("id", "?")
+    lines: list[str] = [f"## MPO {mpo_id}"]
+
+    manuscript_type = row.get("manuscript_type", "")
+    if manuscript_type:
+        lines.append(f"*{manuscript_type}*")
+    lines.append("")
+
+    for label, key in [
+        ("Type", "manuscript_type"),
+        ("Category", "category"),
+        ("Title", "title"),
+        ("Author", "author"),
+        ("Dating", "dating"),
+        ("Origin", "origin_place"),
+        ("Institution", "institution"),
+        ("Collection", "collection"),
+        ("Script", "script"),
+        ("Material", "material"),
+        ("Notation", "notation"),
+        ("Size", "format_size"),
+    ]:
+        val = row.get(key, "")
+        if val:
+            lines.append(f"**{label}:** {val}")
+
+    decoration = row.get("decoration", "")
+    if decoration:
+        lines.append("")
+        lines.append("### Decoration")
+        lines.append(decoration)
+
+    content = row.get("content", "")
+    if content:
+        lines.append("")
+        lines.append("### Content")
+        lines.append(content)
+
+    damage = row.get("damage", "")
+    if damage:
+        lines.append("")
+        lines.append("### Damage")
+        lines.append(damage)
+
+    return "\n".join(lines)
