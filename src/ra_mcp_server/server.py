@@ -129,6 +129,18 @@ try:
 except ImportError:
     pass
 
+# court-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_court_mcp import court_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["court"] = {
+        "server": court_mcp,
+        "description": "Search Swedish court records (Domboksregister 1611-1730, Medelstad 1668-1750)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -206,6 +218,8 @@ TOOL SELECTION:
 - Seamen's registrations → sjomanshus:search_matrikel with keyword
 - Film censorship records (1911-2011) → filmcensur:search_filmreg with keyword, filter by category/country/age rating
 - Historical Swedish places/geography → rosenberg:search_rosenberg with keyword, filter by county/parish
+- Västra härad court cases (1611-1730) → court:search_domboksregister with keyword, filter by role/parish
+- Medelstad härad court cases (1668-1750) → court:search_medelstad with keyword, filter by case type/parish
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
@@ -217,6 +231,8 @@ COVERAGE: The archive has three access tiers:
 - Sjömanshus: 688,000+ seamen's records (sjomanshus:search_liggare, sjomanshus:search_matrikel) — voyages, registrations, 1700s-1900s
 - Filmcensur: 60,000 film censorship records (filmcensur:search_filmreg) — titles, age ratings, cuts, producers, 1911-2011
 - Rosenberg: 66,000 historical places (rosenberg:search_rosenberg) — place names, parishes, hundreds, counties, descriptions, industry flags
+- Domboksregister: 88,000 persons in Västra härad court cases 1611-1730 (court:search_domboksregister) — names, roles, parishes, case types, dates
+- Medelstad: 91,000 persons in Medelstad härad court cases 1668-1750 (court:search_medelstad) — names, titles, parishes, case summaries
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants
