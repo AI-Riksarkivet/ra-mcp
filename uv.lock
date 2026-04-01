@@ -45,6 +45,8 @@ members = [
     "ra-mcp-search-cli",
     "ra-mcp-search-lib",
     "ra-mcp-search-mcp",
+    "ra-mcp-sj-lib",
+    "ra-mcp-sj-mcp",
     "ra-mcp-sjomanshus-lib",
     "ra-mcp-sjomanshus-mcp",
     "ra-mcp-specialsok-lib",
@@ -2200,6 +2202,9 @@ rosenberg = [
 sbl = [
     { name = "ra-mcp-sbl-mcp" },
 ]
+sj = [
+    { name = "ra-mcp-sj-mcp" },
+]
 sjomanshus = [
     { name = "ra-mcp-sjomanshus-mcp" },
 ]
@@ -2257,6 +2262,7 @@ requires-dist = [
     { name = "ra-mcp-sbl-mcp", marker = "extra == 'sbl'", editable = "packages/sbl-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
+    { name = "ra-mcp-sj-mcp", marker = "extra == 'sj'", editable = "packages/sj-mcp" },
     { name = "ra-mcp-sjomanshus-mcp", marker = "extra == 'sjomanshus'", editable = "packages/sjomanshus-mcp" },
     { name = "ra-mcp-specialsok-mcp", marker = "extra == 'specialsok'", editable = "packages/specialsok-mcp" },
     { name = "ra-mcp-suffrage-mcp", marker = "extra == 'suffrage'", editable = "packages/suffrage-mcp" },
@@ -2266,7 +2272,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "wincars", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "wincars", "sj", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2772,6 +2778,40 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
+]
+
+[[package]]
+name = "ra-mcp-sj-lib"
+version = "0.11.3"
+source = { editable = "packages/sj-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-sj-mcp"
+version = "0.11.3"
+source = { editable = "packages/sj-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-sj-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-sj-lib", editable = "packages/sj-lib" },
 ]
 
 [[package]]

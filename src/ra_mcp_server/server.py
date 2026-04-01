@@ -213,6 +213,18 @@ try:
 except ImportError:
     pass
 
+# sj-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_sj_mcp import sj_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["sj"] = {
+        "server": sj_mcp,
+        "description": "Search SJ railway records — properties (198K JUDA) and technical drawings (118K FIRA/SIRA)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
