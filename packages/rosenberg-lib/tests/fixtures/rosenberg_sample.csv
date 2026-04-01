@@ -1,0 +1,6 @@
+PostID;URL;Plats;Forsamling;Harad;Tingslag;Lan;Beskrivning;kalkbr�nning;t�ndstikor;fyr;f�rjst�lle;fisk;br�nneri;stambana;jernverk;tegelbruk;mj�lsfabrik;gjuteri;g�stgifveri;s�teri;jernv�g;grufva;s�g;qvarn;Upprattad av;Databas
+1;http://example.com/1;Stockholm;Klara;Stockholms stad;;Stockholms l�n;Rikets hufvudstad vid M�larens utlopp i Salt-sj�n;;;;;;;;;;;;1;;;1;;Rosenberg;GeoLex
+2;http://example.com/2;G�teborg;Domkyrko;S�vedals;S�vedals;G�teborgs och Bohus l�n;Stor handelsstad vid G�ta elfs utlopp;;;;;1;;;;;1;;;1;;;;;Rosenberg;GeoLex
+3;http://example.com/3;Kiruna;Jukkasj�rvi;;Jukkasj�rvi;Norrbottens l�n;Grufvesamh�lle i Lappland med rik jernmalm;;;;;;;;;;;;;;1;;;Rosenberg;GeoLex
+4;http://example.com/4;Lund;Lunds domkyrko;Torna;Torna och Bara;Malm�hus l�n;Gammal universitetstad med domkyrka;1;;;;;;;;;;;;;;;1;1;Rosenberg;GeoLex
+5;http://example.com/5;Visby;Visby domkyrko;;Gotlands norra;Gotlands l�n;Medeltida handelsstad p� Gotland;;;1;1;1;;;;;;;;;;;1;;Rosenberg;GeoLex

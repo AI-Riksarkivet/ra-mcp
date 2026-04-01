@@ -30,6 +30,8 @@ members = [
     "ra-mcp-label-mcp",
     "ra-mcp-oai-pmh-lib",
     "ra-mcp-pdf-mcp",
+    "ra-mcp-rosenberg-lib",
+    "ra-mcp-rosenberg-mcp",
     "ra-mcp-sbl-lib",
     "ra-mcp-sbl-mcp",
     "ra-mcp-search-cli",
@@ -2166,6 +2168,9 @@ filmcensur = [
 label = [
     { name = "ra-mcp-label-mcp" },
 ]
+rosenberg = [
+    { name = "ra-mcp-rosenberg-mcp" },
+]
 sbl = [
     { name = "ra-mcp-sbl-mcp" },
 ]
@@ -2209,6 +2214,7 @@ requires-dist = [
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
     { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
     { name = "ra-mcp-pdf-mcp", editable = "packages/pdf-mcp" },
+    { name = "ra-mcp-rosenberg-mcp", marker = "extra == 'rosenberg'", editable = "packages/rosenberg-mcp" },
     { name = "ra-mcp-sbl-mcp", marker = "extra == 'sbl'", editable = "packages/sbl-mcp" },
     { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/search-mcp" },
@@ -2218,7 +2224,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2477,6 +2483,40 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
+]
+
+[[package]]
+name = "ra-mcp-rosenberg-lib"
+version = "0.11.3"
+source = { editable = "packages/rosenberg-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-rosenberg-mcp"
+version = "0.11.3"
+source = { editable = "packages/rosenberg-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-rosenberg-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-rosenberg-lib", editable = "packages/rosenberg-lib" },
 ]
 
 [[package]]

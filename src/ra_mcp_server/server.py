@@ -117,6 +117,18 @@ try:
 except ImportError:
     pass
 
+# rosenberg-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_rosenberg_mcp import rosenberg_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["rosenberg"] = {
+        "server": rosenberg_mcp,
+        "description": "Search Rosenberg's geographical lexicon of Sweden (66K historical places)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -193,6 +205,7 @@ TOOL SELECTION:
 - Seamen's voyages (1700s-1900s) → sjomanshus:search_liggare with keyword, filter by ship/rank/port
 - Seamen's registrations → sjomanshus:search_matrikel with keyword
 - Film censorship records (1911-2011) → filmcensur:search_filmreg with keyword, filter by category/country/age rating
+- Historical Swedish places/geography → rosenberg:search_rosenberg with keyword, filter by county/parish
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
@@ -203,6 +216,7 @@ COVERAGE: The archive has three access tiers:
 - SBL: 9,400+ biographical articles (sbl:search_sbl) — notable Swedish individuals and families, medieval to 20th century
 - Sjömanshus: 688,000+ seamen's records (sjomanshus:search_liggare, sjomanshus:search_matrikel) — voyages, registrations, 1700s-1900s
 - Filmcensur: 60,000 film censorship records (filmcensur:search_filmreg) — titles, age ratings, cuts, producers, 1911-2011
+- Rosenberg: 66,000 historical places (rosenberg:search_rosenberg) — place names, parishes, hundreds, counties, descriptions, industry flags
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants
