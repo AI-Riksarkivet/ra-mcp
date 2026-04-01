@@ -361,7 +361,7 @@ _PDF_DOMAINS = [
     "https://cdn-lfs-eu-1.huggingface.co",
 ]
 
-_resource_csp = ResourceCSP(connectDomains=_PDF_DOMAINS)
+_resource_csp = ResourceCSP(connectDomains=_PDF_DOMAINS, resourceDomains=_PDF_DOMAINS)
 
 
 @mcp.resource(uri=RESOURCE_URI, app=AppConfig(csp=_resource_csp))

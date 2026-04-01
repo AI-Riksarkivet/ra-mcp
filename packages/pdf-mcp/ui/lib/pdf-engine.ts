@@ -157,31 +157,39 @@ export async function getOutline(doc: PDFDocumentProxy): Promise<OutlineItem[] |
 
 /**
  * Render a page thumbnail as a data URL.
- * Reuses a single offscreen canvas to avoid GC pressure from creating
- * hundreds of canvases (one per page) that hold GPU memory.
+ * Reuses a single offscreen canvas with a mutex to serialize concurrent
+ * renders (PDF.js can't render to the same canvas simultaneously).
  */
 let _thumbCanvas: HTMLCanvasElement | null = null;
+let _thumbQueue: Promise<void> = Promise.resolve();
 
 export async function renderThumbnail(
   doc: PDFDocumentProxy,
   pageNum: number,
   maxWidth: number = 120,
 ): Promise<string> {
-  const page = await doc.getPage(pageNum);
-  const viewport = page.getViewport({ scale: 1 });
-  const thumbScale = maxWidth / viewport.width;
-  const thumbViewport = page.getViewport({ scale: thumbScale });
+  // Queue this render after any in-flight one finishes
+  let dataUrl: string;
+  const work = _thumbQueue.then(async () => {
+    const page = await doc.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 1 });
+    const thumbScale = maxWidth / viewport.width;
+    const thumbViewport = page.getViewport({ scale: thumbScale });
 
-  if (!_thumbCanvas) _thumbCanvas = document.createElement("canvas");
-  _thumbCanvas.width = thumbViewport.width;
-  _thumbCanvas.height = thumbViewport.height;
-  const ctx = _thumbCanvas.getContext("2d")!;
+    if (!_thumbCanvas) _thumbCanvas = document.createElement("canvas");
+    _thumbCanvas.width = thumbViewport.width;
+    _thumbCanvas.height = thumbViewport.height;
+    const ctx = _thumbCanvas.getContext("2d")!;
 
-  await page.render({
-    canvasContext: ctx,
-    viewport: thumbViewport,
-    canvas: _thumbCanvas,
-  }).promise;
+    await page.render({
+      canvasContext: ctx,
+      viewport: thumbViewport,
+      canvas: _thumbCanvas,
+    }).promise;
 
-  return _thumbCanvas.toDataURL("image/jpeg", 0.6);
+    dataUrl = _thumbCanvas.toDataURL("image/jpeg", 0.6);
+  });
+  _thumbQueue = work.catch(() => {}); // don't block queue on errors
+  await work;
+  return dataUrl!;
 }
