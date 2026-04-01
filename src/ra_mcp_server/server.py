@@ -105,6 +105,18 @@ try:
 except ImportError:
     pass
 
+# filmcensur-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_filmcensur_mcp import filmcensur_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["filmcensur"] = {
+        "server": filmcensur_mcp,
+        "description": "Search Swedish film censorship records 1911-2011 (60K films)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -180,6 +192,7 @@ TOOL SELECTION:
 - View SBL article → sbl:view_sbl_article with article_id from search results
 - Seamen's voyages (1700s-1900s) → sjomanshus:search_liggare with keyword, filter by ship/rank/port
 - Seamen's registrations → sjomanshus:search_matrikel with keyword
+- Film censorship records (1911-2011) → filmcensur:search_filmreg with keyword, filter by category/country/age rating
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
@@ -189,6 +202,7 @@ COVERAGE: The archive has three access tiers:
 - MPO catalog: 23,000+ parchment fragments (diplomatics:search_mpo) — codicological descriptions in German
 - SBL: 9,400+ biographical articles (sbl:search_sbl) — notable Swedish individuals and families, medieval to 20th century
 - Sjömanshus: 688,000+ seamen's records (sjomanshus:search_liggare, sjomanshus:search_matrikel) — voyages, registrations, 1700s-1900s
+- Filmcensur: 60,000 film censorship records (filmcensur:search_filmreg) — titles, age ratings, cuts, producers, 1911-2011
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants

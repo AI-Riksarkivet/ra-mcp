@@ -22,6 +22,8 @@ members = [
     "ra-mcp-common",
     "ra-mcp-diplomatics-lib",
     "ra-mcp-diplomatics-mcp",
+    "ra-mcp-filmcensur-lib",
+    "ra-mcp-filmcensur-mcp",
     "ra-mcp-guide-mcp",
     "ra-mcp-htr-mcp",
     "ra-mcp-iiif-lib",
@@ -2158,6 +2160,9 @@ cli = [
 diplomatics = [
     { name = "ra-mcp-diplomatics-mcp" },
 ]
+filmcensur = [
+    { name = "ra-mcp-filmcensur-mcp" },
+]
 label = [
     { name = "ra-mcp-label-mcp" },
 ]
@@ -2199,6 +2204,7 @@ requires-dist = [
     { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-diplomatics-mcp", marker = "extra == 'diplomatics'", editable = "packages/diplomatics-mcp" },
+    { name = "ra-mcp-filmcensur-mcp", marker = "extra == 'filmcensur'", editable = "packages/filmcensur-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
     { name = "ra-mcp-label-mcp", marker = "extra == 'label'", editable = "packages/label-mcp" },
@@ -2212,7 +2218,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2337,6 +2343,40 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-diplomatics-lib", editable = "packages/diplomatics-lib" },
+]
+
+[[package]]
+name = "ra-mcp-filmcensur-lib"
+version = "0.11.3"
+source = { editable = "packages/filmcensur-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-filmcensur-mcp"
+version = "0.11.3"
+source = { editable = "packages/filmcensur-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-filmcensur-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-filmcensur-lib", editable = "packages/filmcensur-lib" },
 ]
 
 [[package]]
