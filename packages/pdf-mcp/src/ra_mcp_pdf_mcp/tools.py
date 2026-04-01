@@ -198,44 +198,57 @@ async def get_page_blocks(
 @mcp.tool(
     name="read_pdf_page",
     description=(
-        "Read the text of a specific page (requires display_pdf first). "
-        "Returns structured text with section headers. Use after search_pdf to read matched pages."
+        "Read text from one or more pages of a loaded PDF. "
+        "Supports single page (page=42) or range (page=42, count=3 reads pages 42-44). "
+        "Use after search_guides or search_pdf to read matched pages with surrounding context."
     ),
 )
 async def read_pdf_page(
-    url: Annotated[str, Field(description="URL of the PDF (must match a previous display_pdf call).")],
-    page: Annotated[int, Field(description="Page number (1-based).", ge=1)],
+    url: Annotated[str, Field(description="URL of the PDF (must match a previous display_pdf or be a gallery PDF).")],
+    page: Annotated[int, Field(description="Start page number (1-based).", ge=1)],
+    count: Annotated[int, Field(description="Number of pages to read (default 1, max 5).")] = 1,
 ) -> ToolResult:
-    """Return structured text blocks for a specific page from the cached JSON."""
+    """Return structured text blocks for one or more pages from the cached JSON."""
     if url not in blocks_cache:
-        return _error_result("PDF not loaded. Use display_pdf first.")
+        # Try loading on demand for gallery PDFs
+        from ra_mcp_pdf_mcp.cache import preload_all_guides
 
-    pages = blocks_cache[url]
-    page_idx = page - 1
-    if page_idx < 0 or page_idx >= len(pages):
-        return _error_result(f"Page {page} out of range (1-{len(pages)}).")
+        await preload_all_guides()
+        if url not in blocks_cache:
+            return _error_result("PDF not loaded. Use display_pdf first.")
 
-    page_data = pages[page_idx]
+    all_pages = blocks_cache[url]
+    count = min(max(count, 1), 5)  # clamp 1-5
     from ra_mcp_pdf_mcp.search import html_to_text
 
-    lines: list[str] = []
-    for block in page_data.get("children", []):
-        html = block.get("html", "")
-        if not html:
-            continue
-        block_type = block.get("block_type", "")
-        text = html_to_text(html)
-        if not text:
-            continue
-        if block_type == "SectionHeader":
-            lines.append(f"\n## {text}")
-        elif block_type in ("PageHeader", "PageFooter"):
-            continue  # skip headers/footers
-        else:
-            lines.append(text)
+    output_parts: list[str] = []
+    for i in range(count):
+        page_idx = page - 1 + i
+        if page_idx < 0 or page_idx >= len(all_pages):
+            break
 
-    page_text = "\n\n".join(lines).strip()
-    return _text_result(f"Page {page}/{len(pages)}:\n\n{page_text}")
+        page_data = all_pages[page_idx]
+        lines: list[str] = []
+        for block in page_data.get("children", []):
+            html = block.get("html", "")
+            if not html:
+                continue
+            block_type = block.get("block_type", "")
+            text = html_to_text(html)
+            if not text:
+                continue
+            if block_type == "SectionHeader":
+                lines.append(f"\n## {text}")
+            elif block_type in ("PageHeader", "PageFooter"):
+                continue
+            else:
+                lines.append(text)
+
+        page_text = "\n\n".join(lines).strip()
+        if page_text:
+            output_parts.append(f"--- Page {page_idx + 1}/{len(all_pages)} ---\n\n{page_text}")
+
+    return _text_result("\n\n".join(output_parts))
 
 
 # ---------------------------------------------------------------------------
