@@ -281,7 +281,7 @@ fi
 ATT_MANIFEST=$(crane manifest %s@$ATTESTATION_DIGEST)
 
 # Find provenance layer
-PROV_DIGEST=$(echo "$ATT_MANIFEST" | jq -r '.layers[] | select(.annotations."in-toto.io/predicate-type" == "https://slsa.dev/provenance/v0.2") | .digest')
+PROV_DIGEST=$(echo "$ATT_MANIFEST" | jq -r '.layers[] | select(.annotations."in-toto.io/predicate-type" | test("slsa.dev/provenance")) | .digest')
 
 if [ -z "$PROV_DIGEST" ]; then
   echo "Error: No provenance layer found"
