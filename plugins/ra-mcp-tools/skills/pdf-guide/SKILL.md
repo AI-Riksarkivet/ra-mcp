@@ -5,13 +5,14 @@ description: Guide for the PDF viewer tools. Use when the user asks to "show PDF
 
 # PDF Viewer Tools
 
-Three tools for working with PDF documents:
-
 | Tool | When to use |
 |------|-------------|
-| `list_pdfs` | User asks what PDFs/guides are available, or you need to find the right PDF |
-| `display_pdf` | Open a PDF in the interactive viewer (from URL) |
+| `display_pdf` | Open a PDF in the interactive viewer (creates the viewer) |
+| `list_pdfs` | See what PDFs/guides are available |
 | `search_pdf` | Search text across ALL pages of a loaded PDF |
+| `read_pdf_page` | Read the text content of a specific page |
+| `pdf_go_to_page` | Navigate the viewer to a specific page |
+| `pdf_set_search` | Highlight a search term in the viewer |
 
 ---
 
@@ -19,12 +20,12 @@ Three tools for working with PDF documents:
 
 | User intent | Tool |
 |-------------|------|
-| "Show me the medieval guide" / "visa medeltidsguiden" | `list_pdfs` → `display_pdf` |
+| "Show me the medieval guide" / "visa medeltidsguiden" | `display_pdf` with medeltid URL |
+| "What PDFs do you have?" | `list_pdfs` |
 | "Search for Gustav Vasa in the PDF" | `search_pdf` (after display_pdf) |
-| "What does page 5 say?" | Read model context (page text is sent automatically) |
+| "What does page 42 say?" | `read_pdf_page` |
+| "Go to page 42" | `pdf_go_to_page` |
 | "Show me archival document SE/RA/420422/01" | `view_document` (NOT display_pdf) |
-| "Show me this IIIF image" | `view_document_urls` (NOT display_pdf) |
-| "Open this PDF: https://..." | `display_pdf` |
 
 **Key distinction:**
 - `display_pdf` = full PDF files (books, guides, papers)
@@ -32,43 +33,14 @@ Three tools for working with PDF documents:
 
 ---
 
-## `list_pdfs` — Discover Available PDFs
-
-Returns Riksarkivet's curated PDF collection. Always call this first when the user asks about guides or publications.
-
-Available PDFs include:
-- **Hur riket styrdes** — Swedish governance 1520-1920 (255 pages)
-- **Medeltidens samhalle** — Medieval Sweden: charters, royal power, church, cities
-- **Ingang till samisk historia** — Sami history in the archives (2024)
-- **Slaktforskarna och Krigsarkivet** — Genealogy & military archives (2026)
-- **Attention Is All You Need** — Transformer architecture paper
-
-### Example
-
-```json
-// No arguments needed
-{}
-```
-
-Returns list of `{url, title, description, category}`. Use the `url` with `display_pdf`.
-
----
-
 ## `display_pdf` — Open a PDF
 
-Opens the interactive PDF viewer with page navigation, zoom, search, and text extraction.
+**IMPORTANT: Always call this first.** All other PDF tools require a PDF to be loaded.
 
 | Argument | Type | Required | Description |
 |----------|------|----------|-------------|
-| `url` | string | Yes | URL to PDF file |
+| `url` | string | No | URL to PDF file (defaults to Medeltidens samhalle) |
 | `title` | string | No | Display title |
-
-After calling `display_pdf`:
-- The viewer sends **current page text** to model context automatically
-- Use `search_pdf` to search across all pages
-- Use `interact` to navigate, highlight, or annotate
-
-### Example
 
 ```json
 {"url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true", "title": "Medeltidens samhalle"}
@@ -78,63 +50,55 @@ After calling `display_pdf`:
 
 ## `search_pdf` — Search All Pages
 
-Searches text across ALL pages using server-side pymupdf. Fast (~2-5 seconds for 255 pages).
+Searches ALL pages server-side. Returns per-page match counts and text snippets.
 
 | Argument | Type | Required | Description |
 |----------|------|----------|-------------|
 | `url` | string | Yes | Same URL used in `display_pdf` |
 | `term` | string | Yes | Text to search for |
 
-Returns `{pageMatches: [{pageNum, matchCount}], totalMatches}`.
+---
 
-### Example
+## `read_pdf_page` — Read Page Text
+
+Returns the full text content of a page. Use this to read what's on a page — model context is NOT sent automatically.
+
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `url` | string | Yes | Same URL used in `display_pdf` |
+| `page` | int | Yes | Page number (1-based) |
+
+---
+
+## `pdf_go_to_page` / `pdf_set_search` — Navigate & Highlight
+
+Navigate the viewer or highlight text. No AppConfig — reuses existing viewer.
 
 ```json
-{"url": "https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true", "term": "Gustav Vasa"}
+// Navigate
+{"page": 42}
+
+// Highlight
+{"search_term": "kungamakt"}
 ```
 
 ---
 
-## `interact` — Navigate & Annotate
+## Available PDFs
 
-Send commands to the active PDF viewer.
-
-| Action | Required params | Description |
-|--------|----------------|-------------|
-| `navigate` | `page` (1-based) | Go to a specific page |
-| `search` | `query` | Set search term |
-| `highlight_text` | `query` | Find and highlight text |
-| `add_annotations` | `annotations` array | Add highlights, notes, stamps |
-| `zoom` | `scale` (e.g. 1.5) | Set zoom level |
-
-### Example
-
-```json
-{"view_uuid": "...", "action": "navigate", "page": 42}
-```
-
-The `view_uuid` is returned by `display_pdf` in the text response.
+- **Hur riket styrdes** — Swedish governance 1520-1920 (255 pages, 63MB)
+- **Medeltidens samhalle** — Medieval Sweden guide (258 pages, 5MB) — DEFAULT
+- **Ingang till samisk historia** — Sami history guide (2024)
 
 ---
 
 ## Typical Workflow
 
-1. User asks about a topic → call `list_pdfs` to find relevant PDF
-2. Found a match → call `display_pdf` with the URL
-3. User asks "what does it say about X?" → call `search_pdf` to find pages
-4. Navigate to the page with matches → call `interact` with `navigate`
-5. Read the page text from model context → quote the relevant section
-
-### Example Conversation
-
-**User:** "Visa mig guiden om medeltiden"
-1. Call `list_pdfs` → find "Medeltidens samhalle"
-2. Call `display_pdf(url=..., title="Medeltidens samhalle")`
-
-**User:** "Vad star det om kungamakten?"
-1. Call `search_pdf(url=..., term="kungamakt")` → found on pages 15, 22, 45
-2. Call `interact(view_uuid=..., action="navigate", page=15)`
-3. Read page 15 text from model context → answer the question
+1. Call `display_pdf` with the URL (or default)
+2. Call `search_pdf` to find where a topic appears
+3. Call `read_pdf_page` to read specific pages
+4. Call `pdf_go_to_page` + `pdf_set_search` to navigate/highlight viewer
+5. Quote the text from `read_pdf_page` results
 
 ---
 
@@ -142,8 +106,7 @@ The `view_uuid` is returned by `display_pdf` in the text response.
 
 | Mistake | Fix |
 |---------|-----|
-| Searching the archive when user asks about a PDF guide | Use `list_pdfs` + `display_pdf` + `search_pdf` |
-| Calling `display_pdf` twice (creates duplicate viewer) | Call it once, then use `interact` to navigate |
-| Not knowing what PDFs are available | Always call `list_pdfs` first |
-| Using `view_document` to open a PDF file | `view_document` is for archival IIIF pages, not PDF files |
-| Forgetting to use `search_pdf` when user asks about PDF content | `search_pdf` searches ALL pages server-side in ~2-5 seconds |
+| Not calling `display_pdf` first | Always call it before search/read/navigate |
+| Searching the archive when user asks about a PDF guide | Use PDF tools, not search_transcribed |
+| Not using `read_pdf_page` to get page text | Model context is NOT sent automatically — you must call read_pdf_page |
+| Calling `display_pdf` twice | Call once, then use navigation/search tools |
