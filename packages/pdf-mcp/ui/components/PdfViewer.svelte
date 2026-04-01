@@ -323,6 +323,8 @@ function searchPrevPage() {
 // Block overlay — fetch blocks when toggled on or page changes
 // ---------------------------------------------------------------------------
 
+let blockGeneration = 0;
+
 $effect(() => {
   const page = currentPage;
   const s = scale;
@@ -334,8 +336,8 @@ $effect(() => {
     return;
   }
 
-  // Clear stale overlays immediately before async fetch
   blockOverlays = [];
+  const gen = ++blockGeneration;
 
   (async () => {
     try {
@@ -343,7 +345,7 @@ $effect(() => {
         name: "get_page_blocks",
         arguments: { url: pdfUrl, page },
       });
-      if (result.isError) return;
+      if (gen !== blockGeneration || result.isError) return;
 
       const sc = (result as any).structuredContent as Record<string, unknown>;
       if (!sc?.blocks || !sc?.pageBbox) return;
@@ -361,9 +363,11 @@ $effect(() => {
           type: block.blockType,
         });
       }
-      blockOverlays = overlays;
+      if (gen === blockGeneration) blockOverlays = overlays;
     } catch (err) {
       console.error("[PdfViewer] block overlay error:", err);
+      // Disable overlay on session errors to stop retrying
+      if (gen === blockGeneration) blocksVisible = false;
     }
   })();
 });

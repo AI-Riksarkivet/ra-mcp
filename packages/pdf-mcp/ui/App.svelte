@@ -256,6 +256,7 @@ async function handleGallerySelect(item: GalleryItem) {
 
   // Clean up any previous PDF state first
   if (loadCancelFn) loadCancelFn();
+  if (pdfDocument) { pdfDocument.destroy(); }
   pdfDocument = null;
   totalPages = 0;
   currentPage = 1;
@@ -289,6 +290,7 @@ async function handleGallerySelect(item: GalleryItem) {
 function backToGallery() {
   if (loadCancelFn) loadCancelFn();
   viewerData = null;
+  if (pdfDocument) { pdfDocument.destroy(); }
   pdfDocument = null;
   totalPages = 0;
   currentPage = 1;
@@ -430,6 +432,7 @@ onMount(async () => {
   return () => {
     stopPolling();
     if (loadCancelFn) loadCancelFn();
+    if (pdfDocument) { pdfDocument.destroy(); }
   };
 });
 </script>

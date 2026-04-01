@@ -157,8 +157,11 @@ export async function getOutline(doc: PDFDocumentProxy): Promise<OutlineItem[] |
 
 /**
  * Render a page thumbnail as a data URL.
- * Uses an offscreen canvas at reduced scale.
+ * Reuses a single offscreen canvas to avoid GC pressure from creating
+ * hundreds of canvases (one per page) that hold GPU memory.
  */
+let _thumbCanvas: HTMLCanvasElement | null = null;
+
 export async function renderThumbnail(
   doc: PDFDocumentProxy,
   pageNum: number,
@@ -169,16 +172,16 @@ export async function renderThumbnail(
   const thumbScale = maxWidth / viewport.width;
   const thumbViewport = page.getViewport({ scale: thumbScale });
 
-  const canvas = document.createElement("canvas");
-  canvas.width = thumbViewport.width;
-  canvas.height = thumbViewport.height;
-  const ctx = canvas.getContext("2d")!;
+  if (!_thumbCanvas) _thumbCanvas = document.createElement("canvas");
+  _thumbCanvas.width = thumbViewport.width;
+  _thumbCanvas.height = thumbViewport.height;
+  const ctx = _thumbCanvas.getContext("2d")!;
 
   await page.render({
     canvasContext: ctx,
     viewport: thumbViewport,
-    canvas,
+    canvas: _thumbCanvas,
   }).promise;
 
-  return canvas.toDataURL("image/jpeg", 0.6);
+  return _thumbCanvas.toDataURL("image/jpeg", 0.6);
 }
