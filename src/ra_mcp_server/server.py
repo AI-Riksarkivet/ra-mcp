@@ -201,6 +201,18 @@ try:
 except ImportError:
     pass
 
+# wincars-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_wincars_mcp import wincars_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["wincars"] = {
+        "server": wincars_mcp,
+        "description": "Search Norrland vehicle registration records 1916-1972 (1.5M vehicles across 5 counties)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""

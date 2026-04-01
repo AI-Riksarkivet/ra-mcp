@@ -53,6 +53,8 @@ members = [
     "ra-mcp-suffrage-mcp",
     "ra-mcp-tui",
     "ra-mcp-viewer-mcp",
+    "ra-mcp-wincars-lib",
+    "ra-mcp-wincars-mcp",
     "ra-mcp-xml",
 ]
 
@@ -2210,6 +2212,9 @@ suffrage = [
 tui = [
     { name = "ra-mcp-tui" },
 ]
+wincars = [
+    { name = "ra-mcp-wincars-mcp" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -2257,10 +2262,11 @@ requires-dist = [
     { name = "ra-mcp-suffrage-mcp", marker = "extra == 'suffrage'", editable = "packages/suffrage-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
+    { name = "ra-mcp-wincars-mcp", marker = "extra == 'wincars'", editable = "packages/wincars-mcp" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "wincars", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2926,6 +2932,40 @@ dev = [
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "respx", specifier = ">=0.22.0" },
+]
+
+[[package]]
+name = "ra-mcp-wincars-lib"
+version = "0.11.3"
+source = { editable = "packages/wincars-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-wincars-mcp"
+version = "0.11.3"
+source = { editable = "packages/wincars-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-wincars-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-wincars-lib", editable = "packages/wincars-lib" },
 ]
 
 [[package]]
