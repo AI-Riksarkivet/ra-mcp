@@ -70,19 +70,27 @@ Fetches a IIIF manifest, extracts page images and ALTO text layers (from `seeAls
 
 ### Examples
 
+Riksarkivet police records (with ALTO transcription):
 ```json
 {"manifest_url": "https://lbiiif.riksarkivet.se/arkis!30002056/manifest"}
 ```
 
+SDHK medieval charter (image only, no transcription):
 ```json
 {"manifest_url": "https://lbiiif.riksarkivet.se/sdhk!85/manifest"}
 ```
 
+SDHK with Transkribus transcription (from Hugging Face):
+```json
+{"manifest_url": "https://huggingface.co/buckets/Riksarkivet/sdhk_hack/resolve/transkribus/manifests/sdhk_R0001691.json"}
+```
+
+Wellcome Collection (external provider, with ALTO):
 ```json
 {"manifest_url": "https://iiif.wellcomecollection.org/presentation/b18035723", "max_pages": 10}
 ```
 
-Note: Documents with ALTO XML in the manifest's `seeAlso` will have text overlays and transcription. Documents without (e.g. SDHK medieval charters) show images only.
+Note: Documents with ALTO XML in the manifest's `seeAlso` will have text overlays and transcription. Documents without show images only.
 
 ---
 
