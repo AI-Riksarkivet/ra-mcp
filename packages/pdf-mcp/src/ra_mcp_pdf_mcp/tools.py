@@ -258,19 +258,15 @@ async def read_pdf_page(
 
 @mcp.tool(
     name="pdf_set_search",
-    description=(
-        "Set the search/highlight term in the already-open PDF viewer. "
-        "The viewer will highlight all occurrences on the current page. "
-        "Use after display_pdf when the user wants to find or highlight text."
-    ),
+    description="Highlight a term in the PDF viewer. REQUIRES display_pdf first.",
 )
 async def pdf_set_search(
     search_term: Annotated[str, Field(description="Search term to highlight. Use empty string to clear.")],
 ) -> ToolResult:
     try:
         state = await get_active_state()
-    except LookupError as e:
-        return _error_result(str(e))
+    except LookupError:
+        return _error_result("No viewer open. Call display_pdf first.")
 
     state.search_term = search_term
     await put_state(state)
@@ -281,15 +277,15 @@ async def pdf_set_search(
 
 @mcp.tool(
     name="pdf_go_to_page",
-    description="Navigate the already-open PDF viewer to a specific page. Does NOT replace the loaded PDF — just jumps to that page.",
+    description="Navigate the PDF viewer to a page. REQUIRES display_pdf first.",
 )
 async def pdf_go_to_page(
     page: Annotated[int, Field(description="Page number (1-based).")],
 ) -> ToolResult:
     try:
         state = await get_active_state()
-    except LookupError as e:
-        return _error_result(str(e))
+    except LookupError:
+        return _error_result("No viewer open. Call display_pdf first.")
 
     state.go_to_page = page - 1  # convert to 0-based
     await put_state(state)
