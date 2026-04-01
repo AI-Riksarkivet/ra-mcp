@@ -189,6 +189,18 @@ try:
 except ImportError:
     pass
 
+# dds-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_dds_mcp import dds_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["dds"] = {
+        "server": dds_mcp,
+        "description": "Search Swedish church records (DDS) — births, deaths, marriages from 1600s-1900s (2.5M records)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -268,6 +280,9 @@ TOOL SELECTION:
 - Historical Swedish places/geography → rosenberg:search_rosenberg with keyword, filter by county/parish
 - Västra härad court cases (1611-1730) → court:search_domboksregister with keyword, filter by role/parish
 - Medelstad härad court cases (1668-1750) → court:search_medelstad with keyword, filter by case type/parish
+- Genealogy: birth/baptism records (1600s-1914) → dds:search_fodelse with keyword, filter by parish/county/gender
+- Genealogy: death records (1600s-1951) → dds:search_doda with keyword, filter by parish/county/cause of death
+- Genealogy: marriage records (1600s-1929) → dds:search_vigsel with keyword, filter by parish/county
 
 COVERAGE: The archive has three access tiers:
 - Metadata catalog: 2M+ records (search_metadata) — titles, names, places, dates
@@ -281,6 +296,9 @@ COVERAGE: The archive has three access tiers:
 - Rosenberg: 66,000 historical places (rosenberg:search_rosenberg) — place names, parishes, hundreds, counties, descriptions, industry flags
 - Domboksregister: 88,000 persons in Västra härad court cases 1611-1730 (court:search_domboksregister) — names, roles, parishes, case types, dates
 - Medelstad: 91,000 persons in Medelstad härad court cases 1668-1750 (court:search_medelstad) — names, titles, parishes, case summaries
+- DDS Födelse: 1.3 million birth/baptism records 1600s-1914 (dds:search_fodelse) — child names, parents, parishes, counties
+- DDS Döda: 950,000 death records 1600s-1951 (dds:search_doda) — names, occupations, causes of death, parishes
+- DDS Vigsel: 447,000 marriage records 1600s-1929 (dds:search_vigsel) — bride/groom names, occupations, ages, parishes
 
 COMPANION SKILLS (invoke /archive-search or /archive-research for detailed guidance):
 - archive-search: Solr query syntax, fuzzy matching, old Swedish spelling variants

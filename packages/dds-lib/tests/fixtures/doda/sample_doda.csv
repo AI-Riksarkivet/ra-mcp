@@ -1,0 +1,6 @@
+PostID;Forsamling;Lan;Datum;Fornamn;Efternamn;Yrke;Hemort;Kon;Civilstand;Alder;Dodsorsak;Dodsorsak_klassificerat;Anhorig_fornamn;Anhorig_efternamn;Anhorig_yrke;Anhorig_relation;Anm;Referenskod;Volym;BildID
+2001;Klara;Stockholm;1855-02-14;Anna;Lindberg;NULL;Klara;K;Gift;45;Lungsot;Tuberkulos;Johan;Lindberg;Skomakare;Man;NULL;SE/SSA/0012;F:3;B0023456
+2002;Katarina;Stockholm;1856-08-30;Carl;Pettersson;Snickare;Katarina;M;Ogift;32;Kolera;Kolera;NULL;NULL;NULL;NULL;Död på lasarettet;SE/SSA/0015;F:5;B0023457
+2003;Hedvig Eleonora;Stockholm;1854-12-01;Eva;Eriksson;Piga;Hedvig Eleonora;K;Ogift;22;Barnsäng;Barnsängsfeber;NULL;NULL;NULL;NULL;NULL;SE/SSA/0020;F:2;B0023458
+2004;Storkyrko;Stockholm;1857-04-17;Fredrik;Johansson;Bagare;Storkyrko;M;Gift;68;Ålderdom;Ålderdomssvaghet;Maja Lisa;Johansson;NULL;Hustru;Begravd 20 april;SE/SSA/0008;F:1;B0023459
+2005;Maria Magdalena;Stockholm;1855-09-25;Johanna;Andersson;NULL;Maria Magdalena;K;Änka;71;Slag;Slaganfall;Nils;Andersson;Torpare;Avliden son;NULL;SE/SSA/0025;F:4;B0023460
