@@ -5,91 +5,109 @@ description: Guide for the PDF viewer tools. Use when the user asks to "show PDF
 
 # Riksarkivet PDF Guides — Research Index
 
-Three archival guides with structured text, searchable across 548 pages.
+Three archival guides, 548 pages total. All searchable, all with structured text.
 
 ## Tools
 
-| Tool | Purpose |
-|------|---------|
-| `search_guides` | Search ALL 3 guides at once — no display_pdf needed |
-| `display_pdf` | Open a guide in the viewer |
-| `read_pdf_page` | Read full text of a page |
-| `search_pdf` | Search within one open guide (with bbox highlights) |
-| `pdf_go_to_page` | Navigate viewer to a page |
-| `pdf_set_search` | Highlight a term in the viewer |
+| Tool | Purpose | Needs display_pdf? |
+|------|---------|-------------------|
+| `search_guides(term)` | Search ALL 3 guides at once | No |
+| `read_pdf_page(url, page, count)` | Read 1-5 pages of text (count=3 reads page and 2 adjacent) | No |
+| `display_pdf(url, title)` | Open guide in interactive viewer | — |
+| `search_pdf(url, term)` | Search one guide with bbox highlights in viewer | Yes |
+| `pdf_go_to_page(page)` | Navigate viewer to page | Yes |
+| `pdf_set_search(search_term)` | Highlight term in viewer | Yes |
 
-## Workflow
+## Research Workflow
 
-**For topical questions** ("tell me about medieval taxation"):
-1. Check the index below → find relevant section + page
-2. `display_pdf(url)` → open the guide
-3. `read_pdf_page(url, page)` → read the content
-4. Answer with citation → `pdf_go_to_page` + `pdf_set_search` → show source
+**Topical question** ("tell me about medieval taxation"):
+1. Check index below → Medeltidens samhälle, Skatteväsen p.44
+2. `read_pdf_page(url, page=44, count=3)` → read pages 44-46
+3. Answer with citations: *"Enligt Medeltidens samhälle (s. 44)..."*
+4. `display_pdf(url)` → `pdf_go_to_page(44)` → `pdf_set_search("skatt")` → user sees source
 
-**For entity/keyword questions** ("what about Gustav Vasa?"):
-1. `search_guides(term="Gustav Vasa")` → finds matches across all guides
-2. Pick best matches → `display_pdf` → `read_pdf_page` → answer with citations
+**Entity search** ("what about Gustav Vasa?"):
+1. `search_guides(term="Gustav Vasa")` → matches across all guides with snippets
+2. `read_pdf_page(url, page=46, count=2)` → read full context
+3. Answer with citations → navigate viewer to source
 
-**Always:** cite page numbers, navigate viewer to source, let user verify.
+**Open-ended** ("tell me about this guide"):
+1. Check index below → read Inledning pages
+2. Summarize the guide's scope and structure from the index
+
+**Rules:**
+- Always cite page numbers
+- Always navigate the viewer to show the source after answering
+- Use `count` parameter to read adjacent pages for full context
+- `read_pdf_page` and `search_guides` work WITHOUT `display_pdf` — use them for research first, open viewer for showing sources
 
 ---
 
-## Guide 1: Medeltidens samhalle (258 sidor)
+## Guide 1: Medeltidens samhälle (258 pages)
 
-Peter Stahl. Medieval Sweden 1100-1520. Riksarkivet's medieval collections.
-`url: ...216090389-e30a88-medeltidens-samhalle.pdf?download=true`
+Peter Ståhl. Medieval Sweden 1100–1520. Riksarkivet's medieval collections.
 
-| Pages | Section | Covers |
+```
+URL: https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/216090389-e30a88-medeltidens-samhalle.pdf?download=true
+```
+
+| Pages | Section | Topics |
 |-------|---------|--------|
-| 7-8 | Inledning | Overview of Riksarkivet's medieval collections |
-| 9-20 | **Territoriella forhallanden** | Rikets granser, lagsagor, harad, socken, landskapen, landskapslagar, landslag, stadslag |
-| 21-59 | **Kung, riksforestandare och rad** | Kungaval, Mora sten, eriksgata, ledung, kungen som domare, jarlsambetet, drots/marsk/kansler, riksradet, herredagar, riksmoten, riksforestandare (Sten Sture), borgar, lan, forvaltning, skattevasen, statshandlingar |
-| 60-81 | **Bonder och vardsligt fralse** | Bonden i byn, storgardar, agrarkris, vardsliga fralset, jordnaturer, jordvardering, jordtransaktioner (omfard, skotning, skaftfard), testamenten |
-| 82-100 | **Stader och borgerskap** | Stadernas framvaxt, stadslagar, stadsprivilegier, Hansan, immigration, handel, stadens ambetsman, topografi, dominikaner, franciskaner |
-| 101-140 | **Kyrkan** | Organisation, kanonisk ratt, provinsialkoncilier, stiftssynoder, biskop, prost, domkyrkorna, sockenkyrkorna, kloster, korstagen, Birgittinorden, Vadstena kloster |
-| 141-165 | **Pavedomet och pavliga brev** | Pavedomet, romerska kurian, kansliet, kammaren, rota, penitentiarian, brevtyper (bulla, breve, supplik), bullor till Sverige, legater, nuntier, Vatikanarkivet |
-| 166-181 | **Medeltidsbreven** | Tradering, forvaring, slottsbranden 1697, kallutgivning 1800-talet, Svenskt Diplomatarium, SDHK |
-| 182-201 | **Diplomatik, skrift, formelsprak** | Diplomatikens terminologi, brevets delar (protokoll, text, eskatokoll), datering (romersk, kyrklig), notarier, skrivmaterial, skriftens utveckling, sigill, forfalskningar |
-| 202-216 | **Riksarkivets medeltidskallor** | Pergamentsbrevsamlingen, Pappersbrevsamlingen, Sturearkivet, kopiebocker, kammararkivet, alla samlingar |
-| 217-238 | Ordforklaringar + Register | Glossary of medieval terms, name/subject index |
+| 7–8 | Inledning | Riksarkivets medeltidssamlingar, guidens upplägg |
+| 9–20 | **Territoriella förhållanden** | Rikets gränser, lagsagor, härad, socken, landskapen, landskapslagar, landslag, stadslag |
+| 21–59 | **Kung, riksföreståndare och råd** | Kungaval (Mora sten), eriksgata, ledung, kungen som domare, jarlämbetet, drots/marsk/kansler, riksrådet, herredagar, riksmöten, riksföreståndare (Sten Sture), borgar, län, förvaltning (Folkgungatiden, Mecklenburgska perioden, senmedeltiden), skatteväsen, statshandlingar |
+| 60–81 | **Bönder och världsligt frälse** | Bonden i byn, storgårdar, agrarkris, världsliga frälset, jordnaturer, jordvärdering, jordtransaktioner (omfärd, skötning, skaftfärd), testamenten |
+| 82–100 | **Städer och borgerskap** | Stadernas framväxt, stadslagar, stadsprivilegier, Hansan, immigration, handel, stadens ämbetsmän, topografi, bränder, dominikaner, franciskaner |
+| 101–140 | **Kyrkan** | Organisation, kanonisk rätt, provinsialkoncilier, stiftssynoder, biskop/prost, domkyrkorna, sockenkyrkorna, kloster, korstågen, Birgittinorden, Vadstena kloster |
+| 141–165 | **Påvedömet och påvliga brev** | Påvedömet, romerska kurian (kansliet, kammaren, rota, penitentiarian), brevtyper (bulla, breve, supplik), bullor till Sverige, legater, nuntier, Vatikanarkivet |
+| 166–181 | **Medeltidsbreven** | Tradering, förvaring, slottsbranden 1697, källutgivning 1800-talet, Svenskt Diplomatarium, SDHK |
+| 182–201 | **Diplomatik, skrift, formelspråk** | Terminologi, brevets delar, datering (romersk, kyrklig), notarier, skrivmaterial, skriftens utveckling 1100–1520, sigill, förfalskningar |
+| 202–216 | **Riksarkivets medeltidskällor** | Pergamentsbrevsamlingen, Pappersbrevsamlingen, Sturearkivet, kopieböcker, kammararkivet |
+| 217–238 | Ordförklaringar + Register | Medeltida termer (avlat, birkarlar, biltog...), person/sakregister |
 
-## Guide 2: Hur riket styrdes (255 sidor)
+## Guide 2: Hur riket styrdes (255 pages)
 
-Bjorn Asker. Swedish governance, politics and archives 1520-1920.
-`url: ...Hur%20riket%20styrdes_63MB.pdf?download=true`
+Björn Asker. Swedish governance, politics and archives 1520–1920.
 
-| Pages | Section | Covers |
+```
+URL: https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/Hur%20riket%20styrdes_63MB.pdf?download=true
+```
+
+| Pages | Section | Topics |
 |-------|---------|--------|
-| 13-25 | **Forvaltning, politik och arkiv** | Nyckelbegrepp (politik, stat, rike), historisk forskning |
-| 26-40 | **Riket och provinserna** | Medeltidens stat, hertigdomen, stormaktsvaldet, konglomeratstaten, krympande rike |
-| 41-78 | **Kungen, regeringen, riksdagen** | Grundlagar, kungaeder, regerings former, tronfolj, riksdagsordningar, tryckfrihet, formyndarregeringar, riksradet, partier, riksdagens verk |
-| 79-100 | **Kansliet, ambetsverken, kommitteerna** | Kungl. Maj:ts kansli, justitiekanslern, utrikesrepresentationen, centrala ambetsverk, byrakraterna, kommitteer |
-| 101-120 | **Lanen, fogderierna, staderna** | Fogdar, stathallare, lansstyrelser, landshövdingar, fogderier, fögderireformen 1918, stader |
-| 121-142 | **Bergsstaten och tullen** | Bergsstat, tullforvaltning, sjotull, granstull, landtull |
-| 143-159 | **Domstolarna och fangvarden** | Underratter, overratter, hovratter, hogsta domstolen, regeringsratten, fangvard |
-| 160-187 | **Kyrkan, skolan, sjukvarden** | Kyrkan som statlig institution, skolvasende, sjukvard |
-| 188-209 | **Krigsmakten** | Armen, flottan, militar forvaltning |
-| 210-222 | **Naringarna, kommunikationer, socialpolitik** | Naringsstatsorgan, kommunikationer, pensioner, arbetarskydd |
-| 223-233 | **Kommuner och landsting** | Primärkommuner, landsting, polis |
-| 234-255 | **Hur riket styrdes** (sammanfattning) | Statsforvaltning och samhalle, byrakraternas varld, rangordningar, Sverige i Europa |
+| 13–25 | **Förvaltning, politik och arkiv** | Nyckelbegrepp, historisk forskning |
+| 26–40 | **Riket och provinserna** | Medeltidens stat, hertigdömen, stormaktsväldet, konglomeratstaten |
+| 41–78 | **Kungen, regeringen, riksdagen** | Grundlagar, kungaeder, regeringsformer, tronföljd, riksdagsordningar, tryckfrihet, förmyndarregeringar, riksrådet, partier |
+| 79–100 | **Kansliet, ämbetsverken, kommittéerna** | Kungl. Maj:ts kansli, justitiekanslern, utrikesrepresentationen, centrala ämbetsverk, byråkraterna |
+| 101–120 | **Länen, fögderierna, städerna** | Fogdar, ståthållare, länsstyrelser, landshövdingar, fögderireformen 1918 |
+| 121–142 | **Bergsstaten och tullen** | Bergsstat, tullförvaltning, sjötull, gränstull, landtull |
+| 143–159 | **Domstolarna och fångvården** | Underrätter, överrätter, hovrätter, Högsta domstolen, regeringsrätten |
+| 160–187 | **Kyrkan, skolan, sjukvården** | Kyrkan som statlig institution, skolväsende, sjukvård |
+| 188–209 | **Krigsmakten** | Armén, flottan, militär förvaltning |
+| 210–222 | **Näringar, kommunikationer, socialpolitik** | Näringsstatsorgan, kommunikationer, pensioner, arbetarskydd |
+| 223–233 | **Kommuner och landsting** | Primärkommuner, landsting, polis |
+| 234–255 | **Hur riket styrdes** (sammanfattning) | Statsförvaltning och samhälle, rangordningar, Sverige i Europa |
 
-## Guide 3: Ingang till samisk historia (35 sidor)
+## Guide 3: Ingång till samisk historia (35 pages)
 
 Guide to Sami history in Riksarkivet's collections (2024).
-`url: ...164624875-f258a1-Ingang-till-samisk-historia_2024.pdf?download=true`
 
-| Section | Covers |
+```
+URL: https://huggingface.co/buckets/Riksarkivet/pdfs/resolve/164624875-f258a1-Ingang-till-samisk-historia_2024.pdf?download=true
+```
+
+| Section | Topics |
 |---------|--------|
-| Begrepp | Terminology (same, lapp, nomad) |
-| Digitala kallor | Riksarkivets forskarsal, Ajtte, Nuohtti.com |
-| Samerna och nationsgranserna | Granser, kallor om granser |
-| Central forvaltning | Statlig forvaltning, kallor |
-| Kommitteer och utredningar | 1882 ars lappkommitte |
-| Lokal och regional forvaltning | Lanshistoria, lappfogdar, lappvasendet, domstolar, Vasterbotten, Norrbotten, Jamtland, avvittringsratten |
-| Kyrkan | Lappforsamlingarna |
+| Begrepp | Terminologi (same, lapp, nomad) |
+| Digitala källor | Riksarkivets forskarsal, Ájtte, Nuohtti.com |
+| Samerna och nationsgränserna | Gränser, källmaterial |
+| Central förvaltning | Statlig förvaltning, källor |
+| Kommittéer och utredningar | 1882 års lappkommitté |
+| Lokal och regional förvaltning | Länshistoria, lappfogdar, lappväsendet, domstolar, Västerbotten, Norrbotten, Jämtland, avvittringsrätten |
+| Kyrkan | Lappförsamlingarna |
 | Utbildning | Samisk utbildningshistoria |
-| Enskilda arkiv skapade av samer | Soktips i NAD |
-| Institutioner | Arkiv, museer, kulturcentra i Norden |
+| Enskilda arkiv skapade av samer | Söktips i NAD |
+| Institutioner | Arkiv, muséer, kulturcentra i Norden |
 
 ---
 
@@ -97,14 +115,14 @@ Guide to Sami history in Riksarkivet's collections (2024).
 
 | User asks | Model does |
 |-----------|------------|
-| "Beratta om medeltida Sverige" | Read skill TOC → Medeltidens samhalle, Inledning p.7 → display_pdf + read_pdf_page |
-| "Hur fungerade kungamakten?" | TOC → Kung, riksforestandare p.21 → display_pdf + read_pdf_page(21-33) |
-| "Vad sager guiderna om Gustav Vasa?" | search_guides("Gustav Vasa") → read best matches → cite |
-| "Hur styrdes Sverige pa 1700-talet?" | TOC → Hur riket styrdes, kap 3-4 → display_pdf + read_pdf_page |
-| "Finns det kallor om samer?" | TOC → Samisk historia → display_pdf + read sections |
-| "Vad ar en bulla?" | TOC → Pavedomet p.141, brevtyper p.149 → read_pdf_page(149) |
-| "Tell me about Vadstena kloster" | search_guides("Vadstena") + TOC → Kyrkan p.123 → read + cite |
-| "Vad ar SDHK?" | TOC → Medeltidsbreven p.180 → read_pdf_page(180) |
+| "Berätta om medeltida Sverige" | TOC → Medeltidens samhälle p.7 → `read_pdf_page(url, 7, 2)` → summarize |
+| "Hur fungerade kungamakten?" | TOC → p.21-59 → `read_pdf_page(url, 21, 5)` then `read_pdf_page(url, 26, 5)` |
+| "Vad säger guiderna om Gustav Vasa?" | `search_guides("Gustav Vasa")` → read best pages → cite |
+| "Hur styrdes Sverige på 1700-talet?" | TOC → Hur riket styrdes p.41-78 → `read_pdf_page(url, 41, 5)` |
+| "Finns det källor om samer?" | TOC → Samisk historia → `display_pdf(url)` → read sections |
+| "Vad är en bulla?" | TOC → Påvedömet p.149 → `read_pdf_page(url, 149, 2)` |
+| "Tell me about Vadstena kloster" | `search_guides("Vadstena")` + TOC → p.123 → `read_pdf_page(url, 123, 3)` |
+| "Vad är SDHK?" | TOC → Medeltidsbreven p.180 → `read_pdf_page(url, 180, 2)` |
 
 ---
 
