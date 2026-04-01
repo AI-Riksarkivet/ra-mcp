@@ -52,10 +52,9 @@ def _error_result(text: str) -> ToolResult:
 @mcp.tool(
     name="display_pdf",
     description=(
-        "Display an interactive PDF viewer with search, navigation, and annotation support. "
-        "Accepts a URL to a PDF file. After displaying, the current page text is sent via model context. "
-        "Use search_pdf to search text across ALL pages of the PDF. "
-        "The viewer supports zoom, page navigation, text search, text selection, and annotations."
+        "REQUIRED FIRST STEP: Open a PDF in the interactive viewer. "
+        "Must be called before search_pdf, read_pdf_page, pdf_go_to_page, or pdf_set_search. "
+        "Defaults to Medeltidens samhalle if no URL given. Use list_pdfs to see available PDFs."
     ),
     app=AppConfig(resource_uri=RESOURCE_URI),
 )
@@ -199,9 +198,8 @@ async def get_page_blocks(
 @mcp.tool(
     name="read_pdf_page",
     description=(
-        "Read the text content of a specific page from a loaded PDF. "
-        "Use this to read what's on a page after navigating with pdf_go_to_page, "
-        "or to read pages referenced in search_pdf results."
+        "Read the text of a specific page (requires display_pdf first). "
+        "Returns structured text with section headers. Use after search_pdf to read matched pages."
     ),
 )
 async def read_pdf_page(
@@ -321,11 +319,7 @@ async def list_pdfs() -> ToolResult:
 
 @mcp.tool(
     name="search_pdf",
-    description=(
-        "Search for text across ALL pages of a loaded PDF. Returns per-page match counts and total. "
-        "Use after display_pdf to find where specific terms appear in the document. "
-        "The URL must match the one used in display_pdf."
-    ),
+    description=("Search ALL pages of a loaded PDF (requires display_pdf first). Returns match counts per page and text snippets. Fast server-side search."),
 )
 async def search_pdf(
     url: Annotated[str, Field(description="URL of the PDF file (must match a previous display_pdf call).")],
