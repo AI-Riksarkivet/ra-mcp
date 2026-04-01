@@ -366,8 +366,6 @@ $effect(() => {
       if (gen === blockGeneration) blockOverlays = overlays;
     } catch (err) {
       console.error("[PdfViewer] block overlay error:", err);
-      // Disable overlay on session errors to stop retrying
-      if (gen === blockGeneration) blocksVisible = false;
     }
   })();
 });
