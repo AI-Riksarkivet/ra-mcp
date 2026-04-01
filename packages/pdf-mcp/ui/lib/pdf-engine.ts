@@ -102,16 +102,6 @@ export async function buildTextLayer(
   await textLayer.render();
 }
 
-/**
- * Extract plain text from a page.
- */
-export async function extractPageText(page: PDFPageProxy): Promise<string> {
-  const textContent = await page.getTextContent();
-  return textContent.items
-    .map((item: any) => ("str" in item ? item.str : ""))
-    .join(" ");
-}
-
 
 // ---------------------------------------------------------------------------
 // Outline (Table of Contents)

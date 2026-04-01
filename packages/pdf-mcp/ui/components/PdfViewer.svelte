@@ -334,6 +334,9 @@ $effect(() => {
     return;
   }
 
+  // Clear stale overlays immediately before async fetch
+  blockOverlays = [];
+
   (async () => {
     try {
       const result = await app.callServerTool({
