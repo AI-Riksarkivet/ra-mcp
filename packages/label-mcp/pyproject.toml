@@ -5,7 +5,7 @@ description = "MCP tool for converting ALTO XML to Label Studio tasks"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastmcp>=3.2.0",
+    "fastmcp==3.1.1",
     "httpx>=0.28.0",
     "label-studio-sdk>=2.0.17",
     "ra-mcp-common",
