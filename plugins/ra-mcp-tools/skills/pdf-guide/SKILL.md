@@ -23,23 +23,27 @@ Three archival guides, 548 pages total. All searchable, all with structured text
 **Topical question** ("tell me about medieval taxation"):
 1. Check index below → Medeltidens samhälle, Skatteväsen p.44
 2. `read_pdf_page(url, page=44, count=3)` → read pages 44-46
-3. Answer with citations: *"Enligt Medeltidens samhälle (s. 44)..."*
-4. `display_pdf(url)` → `pdf_go_to_page(44)` → `pdf_set_search("skatt")` → user sees source
+3. `display_pdf(url)` → opens viewer (MUST come before go_to_page/set_search)
+4. Answer with citations: *"Enligt Medeltidens samhälle (s. 44)..."*
+5. `pdf_go_to_page(44)` → `pdf_set_search("skatt")` → user sees source
 
 **Entity search** ("what about Gustav Vasa?"):
 1. `search_guides(term="Gustav Vasa")` → matches across all guides with snippets
 2. `read_pdf_page(url, page=46, count=2)` → read full context
-3. Answer with citations → navigate viewer to source
+3. `display_pdf(url)` → opens viewer
+4. Answer with citations
+5. `pdf_go_to_page(46)` → `pdf_set_search("Gustav Vasa")` → user sees source
 
 **Open-ended** ("tell me about this guide"):
 1. Check index below → read Inledning pages
-2. Summarize the guide's scope and structure from the index
+2. `display_pdf(url)` → opens viewer
+3. Summarize the guide's scope and structure from the index
 
-**Rules:**
-- Always cite page numbers
-- Always navigate the viewer to show the source after answering
-- Use `count` parameter to read adjacent pages for full context
-- `read_pdf_page` and `search_guides` work WITHOUT `display_pdf` — use them for research first, open viewer for showing sources
+**IMPORTANT ORDER:**
+- `read_pdf_page` and `search_guides` work WITHOUT `display_pdf`
+- `pdf_go_to_page` and `pdf_set_search` REQUIRE `display_pdf` first
+- Always call `display_pdf` BEFORE `pdf_go_to_page` / `pdf_set_search`
+- Always cite page numbers and show the source in the viewer
 
 ---
 
