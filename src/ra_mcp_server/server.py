@@ -153,6 +153,18 @@ try:
 except ImportError:
     pass
 
+# faltjagare-mcp is optional (requires lancedb which has limited platform wheels)
+try:
+    from ra_mcp_faltjagare_mcp import faltjagare_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["faltjagare"] = {
+        "server": faltjagare_mcp,
+        "description": "Search Jämtland field regiment soldier records 1645-1901 (43K soldiers)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""

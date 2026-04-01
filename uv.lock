@@ -26,6 +26,8 @@ members = [
     "ra-mcp-court-mcp",
     "ra-mcp-diplomatics-lib",
     "ra-mcp-diplomatics-mcp",
+    "ra-mcp-faltjagare-lib",
+    "ra-mcp-faltjagare-mcp",
     "ra-mcp-filmcensur-lib",
     "ra-mcp-filmcensur-mcp",
     "ra-mcp-guide-mcp",
@@ -2172,6 +2174,9 @@ court = [
 diplomatics = [
     { name = "ra-mcp-diplomatics-mcp" },
 ]
+faltjagare = [
+    { name = "ra-mcp-faltjagare-mcp" },
+]
 filmcensur = [
     { name = "ra-mcp-filmcensur-mcp" },
 ]
@@ -2221,6 +2226,7 @@ requires-dist = [
     { name = "ra-mcp-browse-mcp", editable = "packages/browse-mcp" },
     { name = "ra-mcp-court-mcp", marker = "extra == 'court'", editable = "packages/court-mcp" },
     { name = "ra-mcp-diplomatics-mcp", marker = "extra == 'diplomatics'", editable = "packages/diplomatics-mcp" },
+    { name = "ra-mcp-faltjagare-mcp", marker = "extra == 'faltjagare'", editable = "packages/faltjagare-mcp" },
     { name = "ra-mcp-filmcensur-mcp", marker = "extra == 'filmcensur'", editable = "packages/filmcensur-mcp" },
     { name = "ra-mcp-guide-mcp", editable = "packages/guide-mcp" },
     { name = "ra-mcp-htr-mcp", editable = "packages/htr-mcp" },
@@ -2236,7 +2242,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2429,6 +2435,40 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-diplomatics-lib", editable = "packages/diplomatics-lib" },
+]
+
+[[package]]
+name = "ra-mcp-faltjagare-lib"
+version = "0.11.3"
+source = { editable = "packages/faltjagare-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "pyarrow", specifier = ">=18,<20" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-faltjagare-mcp"
+version = "0.11.3"
+source = { editable = "packages/faltjagare-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-faltjagare-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-faltjagare-lib", editable = "packages/faltjagare-lib" },
 ]
 
 [[package]]
