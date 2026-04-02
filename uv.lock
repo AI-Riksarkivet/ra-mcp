@@ -2128,7 +2128,7 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.11.3"
+version = "0.12.0"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
@@ -2319,12 +2319,14 @@ source = { editable = "packages/diplomatics-mcp" }
 dependencies = [
     { name = "fastmcp" },
     { name = "ra-mcp-diplomatics-lib" },
+    { name = "ra-mcp-viewer-mcp" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-diplomatics-lib", editable = "packages/diplomatics-lib" },
+    { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
 ]
 
 [[package]]

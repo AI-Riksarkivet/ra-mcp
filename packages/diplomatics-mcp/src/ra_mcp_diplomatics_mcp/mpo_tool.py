@@ -39,8 +39,8 @@ def register_mpo_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search MPO (Medeltida Pergamentomslag) — 23,000+ medieval parchment fragments used as bookbinding covers. "
-            "Returns fragment metadata including manuscript type, category, title, author, dating, origin, collection, "
-            "institution, script, material, and content descriptions. "
+            "Returns results as a markdown table with key columns (ID, category, dating, origin, script, content). "
+            "ALWAYS present search results to the user as a table — do not convert to prose. "
             "Each result includes a IIIF manifest URL for viewing fragment images — pass this to view_manifest. "
             "Paginate with offset (0, 25, 50, ...)."
         ),
