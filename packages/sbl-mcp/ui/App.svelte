@@ -42,6 +42,8 @@ let hostContext = $state<McpUiHostContext | undefined>();
 let article = $state<SBLArticle | null>(null);
 let error = $state<string | null>(null);
 let isLoading = $state(false);
+let history = $state<number[]>([]);
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 function formatDate(year: number | null, month: number | null, day: number | null): string {
   if (!year) return "";
@@ -65,6 +67,101 @@ function formatLifespan(a: SBLArticle): string {
   if (birth && !death) return `f. ${birth}`;
   if (!birth && death) return `d. ${death}`;
   return `${birth}\u2013${death}`;
+}
+
+function formatSBLText(text: string): string {
+  if (!text) return "";
+  let html = text;
+
+  // 1. Strip empty <span> soup (junk from SBL data)
+  html = html.replace(/<span[^>]*>\s*<\/span>/g, "");
+  // Repeat for nested empties
+  for (let i = 0; i < 5; i++) {
+    html = html.replace(/<span[^>]*>\s*<\/span>/g, "");
+  }
+
+  // 2. Convert old SBL HTML links: <a href="Presentation.aspx?id=XXXX">text</a>
+  //    Also handles encoded variants: Presentation&#x2E;aspx&#x3F;id&#x3D;XXXX
+  html = html.replace(
+    /<a\s+href="[^"]*(?:Presentation[^"]*id[=&#xD;]*(\d+))[^"]*"[^>]*>(.*?)<\/a>/gi,
+    '<a href="#" data-article-id="$1" class="sbl-ref">$2</a>'
+  );
+
+  // 3. Convert [a:ID:text] cross-references
+  html = html.replace(
+    /\[a:(\d+):([^\]]+)\]/g,
+    '<a href="#" data-article-id="$1" class="sbl-ref">$2</a>'
+  );
+
+  // 4. Decode HTML entities
+  html = html.replace(/&minus;/g, "\u2013");
+
+  // 5. Strip any remaining HTML tags we don't want (keep only <a> with data-article-id)
+  html = html.replace(/<(?!\/?a[\s>])[^>]+>/g, "");
+
+  return html;
+}
+
+function handleArticleClick(e: MouseEvent) {
+  const target = e.target as HTMLElement;
+  const link = target.closest('a[data-article-id]') as HTMLAnchorElement | null;
+  if (!link) return;
+  e.preventDefault();
+  const id = parseInt(link.dataset.articleId!, 10);
+  if (id && app) {
+    loadArticle(id);
+  }
+}
+
+async function loadArticle(articleId: number) {
+  isLoading = true;
+  error = null;
+  try {
+    const result = await app!.callServerTool({
+      name: "load_sbl_article",
+      arguments: { article_id: articleId },
+    });
+    if (result.structuredContent) {
+      article = result.structuredContent as SBLArticle;
+      history.push(articleId);
+    }
+    isLoading = false;
+  } catch (err: any) {
+    error = err.message;
+    isLoading = false;
+  }
+}
+
+function goBack() {
+  if (history.length < 2) return;
+  history.pop(); // remove current
+  const prevId = history[history.length - 1];
+  loadArticle(prevId);
+}
+
+function startPolling() {
+  pollTimer = setInterval(async () => {
+    if (!app) return;
+    try {
+      const result = await app.callServerTool({
+        name: "get_sbl_state",
+        arguments: {},
+      });
+      const sc = result.structuredContent as SBLArticle | undefined;
+      if (sc && sc.article_id !== article?.article_id) {
+        article = sc;
+        isLoading = false;
+        history.push(sc.article_id);
+      }
+    } catch {}
+  }, 3000);
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
 }
 
 $effect(() => {
@@ -93,7 +190,6 @@ onMount(async () => {
   instance.ontoolinput = () => {
     isLoading = true;
     error = null;
-    article = null;
   };
 
   instance.ontoolresult = (result) => {
@@ -106,6 +202,7 @@ onMount(async () => {
     if (sc) {
       article = sc;
       error = null;
+      history.push(sc.article_id);
     }
   };
 
@@ -123,6 +220,7 @@ onMount(async () => {
   };
 
   instance.onteardown = async () => {
+    stopPolling();
     return {};
   };
 
@@ -130,6 +228,8 @@ onMount(async () => {
   app = instance;
   hostContext = instance.getHostContext();
   instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+
+  startPolling();
 });
 </script>
 
@@ -144,16 +244,22 @@ onMount(async () => {
     </div>
   {:else if !article}
     <div class="loading">
-      <p>Väntar på artikeldata...</p>
+      <p>V&auml;ntar p&aring; artikeldata...</p>
     </div>
   {:else}
-    <article>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+    <article onclick={handleArticleClick}>
       <header>
+        {#if history.length >= 2}
+          <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr; Tillbaka</button>
+        {/if}
         {#if Array.isArray(article.image_files) && article.image_files.length > 0}
           <img
             class="portrait"
             src={article.image_files[0]}
-            alt={article.image_descriptions?.[0] ?? `Porträtt av ${article.given_name} ${article.surname}`}
+            alt={article.image_descriptions?.[0] ?? `Portr\u00e4tt av ${article.given_name} ${article.surname}`}
           />
           {#if article.image_descriptions?.[0]}
             <span class="portrait-caption">{article.image_descriptions[0]}</span>
@@ -188,47 +294,47 @@ onMount(async () => {
         <nav class="section-nav">
           {#if article.cv}<a href="#meriter">Meriter</a>{/if}
           {#if article.printed_works}<a href="#tryckta">Tryckta arbeten</a>{/if}
-          {#if article.sources}<a href="#kallor">Källor</a>{/if}
-          {#if article.archive}<a href="#arkiv">Arkivuppgifter</a>{/if}
+          {#if article.sources}<a href="#kallor">K&auml;llor</a>{/if}
+          {#if article.archive}<a href="#arkiv">Arkiv</a>{/if}
         </nav>
       {/if}
 
       {#if article.cv}
         <section id="meriter">
           <h2>Meriter</h2>
-          <div class="content pre-wrap">{article.cv}</div>
+          <div class="content pre-wrap">{@html formatSBLText(article.cv)}</div>
         </section>
       {/if}
 
       {#if article.printed_works}
         <section id="tryckta">
           <h2>Tryckta arbeten</h2>
-          <div class="content pre-wrap">{article.printed_works}</div>
+          <div class="content pre-wrap">{@html formatSBLText(article.printed_works)}</div>
         </section>
       {/if}
 
       {#if article.sources}
         <section id="kallor">
-          <h2>Källor och litteratur</h2>
-          <div class="content pre-wrap">{article.sources}</div>
+          <h2>K&auml;llor och litteratur</h2>
+          <div class="content pre-wrap">{@html formatSBLText(article.sources)}</div>
         </section>
       {/if}
 
       {#if article.archive}
         <section id="arkiv">
           <h2>Arkivuppgifter</h2>
-          <div class="content pre-wrap">{article.archive}</div>
+          <div class="content pre-wrap">{@html formatSBLText(article.archive)}</div>
         </section>
       {/if}
 
       <footer>
         {#if article.article_author}
-          <p class="author">Artikelförfattare: {article.article_author}</p>
+          <p class="author">Artikelf&ouml;rfattare: {article.article_author}</p>
         {/if}
         {#if article.sbl_uri}
-          <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs hela artikeln på SBL &rarr;</a></p>
+          <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">L&auml;s hela artikeln p&aring; SBL &rarr;</a></p>
         {/if}
-        <p class="source">Källa: Svenskt biografiskt lexikon (CC0)</p>
+        <p class="source">K&auml;lla: Svenskt biografiskt lexikon (CC0)</p>
       </footer>
     </article>
   {/if}
@@ -257,6 +363,25 @@ onMount(async () => {
     display: flex;
     flex-direction: column;
     gap: 0;
+  }
+
+  /* Back button */
+  .back-btn {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--sbl-accent, #1e40af);
+    background: var(--sbl-bg-card, #f4f3ef);
+    border: 1px solid var(--sbl-border-light, #e7e5e4);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .back-btn:hover {
+    background: var(--sbl-accent, #1e40af);
+    color: #fff;
   }
 
   /* Header */
@@ -378,6 +503,17 @@ onMount(async () => {
   .pre-wrap {
     white-space: pre-wrap;
     word-break: break-word;
+  }
+
+  /* Cross-reference links */
+  :global(.sbl-ref) {
+    color: var(--sbl-accent, #1e40af);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sbl-accent, #1e40af);
+    cursor: pointer;
+  }
+  :global(.sbl-ref:hover) {
+    text-decoration: underline;
   }
 
   /* Footer */
