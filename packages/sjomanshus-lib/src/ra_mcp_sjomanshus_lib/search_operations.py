@@ -39,6 +39,9 @@ class SjomanshusSearch:
         fartyg: str | None = None,
         sjoemanshus: str | None = None,
         hemmahamn: str | None = None,
+        kapten: str | None = None,
+        redare: str | None = None,
+        destination: str | None = None,
     ) -> SearchResult:
         """Search the Liggare table using full-text search.
 
@@ -50,6 +53,9 @@ class SjomanshusSearch:
             fartyg: Optional case-insensitive substring filter on fartyg.
             sjoemanshus: Optional case-insensitive substring filter on sjoemanshus.
             hemmahamn: Optional case-insensitive substring filter on hemmahamn.
+            kapten: Optional case-insensitive substring filter on kapten.
+            redare: Optional case-insensitive substring filter on redare.
+            destination: Optional case-insensitive substring filter on destination.
 
         Returns:
             SearchResult with matching records.
@@ -60,7 +66,7 @@ class SjomanshusSearch:
         if not keyword or not keyword.strip():
             raise ValueError("keyword must be non-empty")
 
-        has_filters = any([befattning, fartyg, sjoemanshus, hemmahamn])
+        has_filters = any([befattning, fartyg, sjoemanshus, hemmahamn, kapten, redare, destination])
         fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
 
         table = self._db.open_table(LIGGARE_TABLE)
@@ -79,6 +85,15 @@ class SjomanshusSearch:
         if hemmahamn:
             hemmahamn_lower = hemmahamn.lower()
             rows = [r for r in rows if hemmahamn_lower in r.get("hemmahamn", "").lower()]
+        if kapten:
+            kapten_lower = kapten.lower()
+            rows = [r for r in rows if kapten_lower in r.get("kapten", "").lower()]
+        if redare:
+            redare_lower = redare.lower()
+            rows = [r for r in rows if redare_lower in r.get("redare", "").lower()]
+        if destination:
+            destination_lower = destination.lower()
+            rows = [r for r in rows if destination_lower in r.get("destination", "").lower()]
 
         total_hits = len(rows)
         page = rows[offset : offset + limit]

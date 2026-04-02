@@ -37,6 +37,9 @@ class CourtSearch:
         offset: int = 0,
         roll: str | None = None,
         socken: str | None = None,
+        datum_from: str | None = None,
+        datum_till: str | None = None,
+        arende: str | None = None,
     ) -> SearchResult:
         """Search the Domboksregister table using full-text search.
 
@@ -46,6 +49,9 @@ class CourtSearch:
             offset: Number of results to skip (for pagination).
             roll: Optional case-insensitive substring filter on roll (e.g. Kärande, Svarande).
             socken: Optional case-insensitive substring filter on socken (parish).
+            datum_from: Optional date range start (inclusive, string comparison on datum field, e.g. '1650-01-01').
+            datum_till: Optional date range end (inclusive, string comparison on datum field, e.g. '1700-12-31').
+            arende: Optional case-insensitive substring filter on case type (arende field).
 
         Returns:
             SearchResult with matching records.
@@ -56,7 +62,7 @@ class CourtSearch:
         if not keyword or not keyword.strip():
             raise ValueError("keyword must be non-empty")
 
-        has_filters = any([roll, socken])
+        has_filters = any([roll, socken, datum_from, datum_till, arende])
         fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
 
         table = self._db.open_table(DOMBOKSREGISTER_TABLE)
@@ -68,6 +74,13 @@ class CourtSearch:
         if socken:
             socken_lower = socken.lower()
             rows = [r for r in rows if socken_lower in r.get("socken", "").lower()]
+        if datum_from:
+            rows = [r for r in rows if r.get("datum", "") >= datum_from]
+        if datum_till:
+            rows = [r for r in rows if r.get("datum", "") <= datum_till]
+        if arende:
+            arende_lower = arende.lower()
+            rows = [r for r in rows if arende_lower in r.get("arende", "").lower()]
 
         total_hits = len(rows)
         page = rows[offset : offset + limit]
@@ -88,6 +101,8 @@ class CourtSearch:
         offset: int = 0,
         mal_typ: str | None = None,
         norm_forsamling: str | None = None,
+        datum_from: str | None = None,
+        datum_till: str | None = None,
     ) -> SearchResult:
         """Search the Medelstad table using full-text search.
 
@@ -97,6 +112,8 @@ class CourtSearch:
             offset: Number of results to skip (for pagination).
             mal_typ: Optional case-insensitive substring filter on case type.
             norm_forsamling: Optional case-insensitive substring filter on parish.
+            datum_from: Optional date range start (inclusive, string comparison on ting_dag field, e.g. '1690-01-01').
+            datum_till: Optional date range end (inclusive, string comparison on ting_dag field, e.g. '1750-12-31').
 
         Returns:
             SearchResult with matching records.
@@ -107,7 +124,7 @@ class CourtSearch:
         if not keyword or not keyword.strip():
             raise ValueError("keyword must be non-empty")
 
-        has_filters = any([mal_typ, norm_forsamling])
+        has_filters = any([mal_typ, norm_forsamling, datum_from, datum_till])
         fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
 
         table = self._db.open_table(MEDELSTAD_TABLE)
@@ -119,6 +136,10 @@ class CourtSearch:
         if norm_forsamling:
             norm_forsamling_lower = norm_forsamling.lower()
             rows = [r for r in rows if norm_forsamling_lower in r.get("norm_forsamling", "").lower()]
+        if datum_from:
+            rows = [r for r in rows if r.get("ting_dag", "") >= datum_from]
+        if datum_till:
+            rows = [r for r in rows if r.get("ting_dag", "") <= datum_till]
 
         total_hits = len(rows)
         page = rows[offset : offset + limit]

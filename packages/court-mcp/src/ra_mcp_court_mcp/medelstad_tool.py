@@ -67,6 +67,14 @@ def register_medelstad_tool(mcp) -> None:
             str | None,
             Field(description="Optional filter: parish name (case-insensitive substring match)."),
         ] = None,
+        datum_from: Annotated[
+            str | None,
+            Field(description="Optional filter: date range start inclusive (e.g. '1690-01-01'). String comparison on ting_dag field."),
+        ] = None,
+        datum_till: Annotated[
+            str | None,
+            Field(description="Optional filter: date range end inclusive (e.g. '1750-12-31'). String comparison on ting_dag field."),
+        ] = None,
         research_context: Annotated[
             str | None,
             Field(description="Brief summary of the user's research goal. Used for logging only."),
@@ -89,6 +97,8 @@ def register_medelstad_tool(mcp) -> None:
                 offset=offset,
                 mal_typ=mal_typ,
                 norm_forsamling=norm_forsamling,
+                datum_from=datum_from,
+                datum_till=datum_till,
             )
             return format_medelstad_results(result)
 

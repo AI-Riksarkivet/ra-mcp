@@ -44,7 +44,7 @@ def register_liggare_tool(mcp) -> None:
         description=(
             "Search Swedish seamen's voyage records (Liggare) — 637,000 individual voyages from 1700s-1900s. "
             "Returns seaman name, rank, ship, home port, destination, captain, shipowner. "
-            "Filter by occupation, ship, seamen's house, or home port."
+            "Filter by occupation, ship, seamen's house, home port, captain, shipowner, or destination."
         ),
     )
     async def search_liggare(
@@ -76,6 +76,18 @@ def register_liggare_tool(mcp) -> None:
             str | None,
             Field(description="Optional filter: home port (case-insensitive substring match)."),
         ] = None,
+        kapten: Annotated[
+            str | None,
+            Field(description="Optional filter: captain name (case-insensitive substring match)."),
+        ] = None,
+        redare: Annotated[
+            str | None,
+            Field(description="Optional filter: shipowner name (case-insensitive substring match)."),
+        ] = None,
+        destination: Annotated[
+            str | None,
+            Field(description="Optional filter: voyage destination (case-insensitive substring match, e.g. 'Medelhavet', 'Nordamerika')."),
+        ] = None,
         research_context: Annotated[
             str | None,
             Field(description="Brief summary of the user's research goal. Used for logging only."),
@@ -100,6 +112,9 @@ def register_liggare_tool(mcp) -> None:
                 fartyg=fartyg,
                 sjoemanshus=sjoemanshus,
                 hemmahamn=hemmahamn,
+                kapten=kapten,
+                redare=redare,
+                destination=destination,
             )
             return format_liggare_results(result)
 

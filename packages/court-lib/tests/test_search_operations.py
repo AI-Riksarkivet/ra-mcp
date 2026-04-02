@@ -79,6 +79,36 @@ def test_search_domboksregister_filter_socken(search):
         assert "kinnevald" in rec.get("socken", "").lower()
 
 
+def test_search_domboksregister_filter_datum_from(search):
+    result = search.search_domboksregister("Persson", datum_from="1650-01-01")
+    for rec in result.records:
+        assert rec.get("datum", "") >= "1650-01-01"
+
+
+def test_search_domboksregister_filter_datum_till(search):
+    result = search.search_domboksregister("Persson", datum_till="1650-12-31")
+    for rec in result.records:
+        assert rec.get("datum", "") <= "1650-12-31"
+
+
+def test_search_domboksregister_filter_datum_range(search):
+    result = search.search_domboksregister("Persson", datum_from="1650-01-01", datum_till="1650-12-31")
+    for rec in result.records:
+        assert "1650-01-01" <= rec.get("datum", "") <= "1650-12-31"
+
+
+def test_search_domboksregister_filter_arende(search):
+    result = search.search_domboksregister("Persson", arende="Skuld")
+    assert result.total_hits >= 1
+    for rec in result.records:
+        assert "skuld" in rec.get("arende", "").lower()
+
+
+def test_search_domboksregister_filter_datum_excludes_out_of_range(search):
+    result = search.search_domboksregister("Persson", datum_from="1900-01-01")
+    assert result.total_hits == 0
+
+
 # ---------------------------------------------------------------------------
 # search_medelstad
 # ---------------------------------------------------------------------------
@@ -129,3 +159,20 @@ def test_search_medelstad_filter_norm_forsamling(search):
     result = search.search_medelstad("Persson", norm_forsamling="Listerby")
     for rec in result.records:
         assert "listerby" in rec.get("norm_forsamling", "").lower()
+
+
+def test_search_medelstad_filter_datum_from(search):
+    result = search.search_medelstad("Persson", datum_from="1690-01-01")
+    for rec in result.records:
+        assert rec.get("ting_dag", "") >= "1690-01-01"
+
+
+def test_search_medelstad_filter_datum_till(search):
+    result = search.search_medelstad("Persson", datum_till="1690-12-31")
+    for rec in result.records:
+        assert rec.get("ting_dag", "") <= "1690-12-31"
+
+
+def test_search_medelstad_filter_datum_excludes_out_of_range(search):
+    result = search.search_medelstad("Persson", datum_from="1900-01-01")
+    assert result.total_hits == 0

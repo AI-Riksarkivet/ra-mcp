@@ -68,6 +68,18 @@ def register_domboksregister_tool(mcp) -> None:
             str | None,
             Field(description="Optional filter: parish name (case-insensitive substring match)."),
         ] = None,
+        datum_from: Annotated[
+            str | None,
+            Field(description="Optional filter: date range start inclusive (e.g. '1650-01-01'). String comparison on datum field."),
+        ] = None,
+        datum_till: Annotated[
+            str | None,
+            Field(description="Optional filter: date range end inclusive (e.g. '1700-12-31'). String comparison on datum field."),
+        ] = None,
+        arende: Annotated[
+            str | None,
+            Field(description="Optional filter: case type (case-insensitive substring match on arende field, e.g. 'Skuld', 'Våld')."),
+        ] = None,
         research_context: Annotated[
             str | None,
             Field(description="Brief summary of the user's research goal. Used for logging only."),
@@ -90,6 +102,9 @@ def register_domboksregister_tool(mcp) -> None:
                 offset=offset,
                 roll=roll,
                 socken=socken,
+                datum_from=datum_from,
+                datum_till=datum_till,
+                arende=arende,
             )
             return format_domboksregister_results(result)
 

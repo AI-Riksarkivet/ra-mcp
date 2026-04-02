@@ -72,6 +72,14 @@ def register_fodelse_tool(mcp) -> None:
             str | None,
             Field(description="Optional filter: gender (case-insensitive substring match, e.g. 'Man' or 'Kvinna')."),
         ] = None,
+        datum_from: Annotated[
+            str | None,
+            Field(description="Optional filter: earliest date (YYYY-MM-DD format, inclusive)."),
+        ] = None,
+        datum_till: Annotated[
+            str | None,
+            Field(description="Optional filter: latest date (YYYY-MM-DD format, inclusive)."),
+        ] = None,
         research_context: Annotated[
             str | None,
             Field(description="Brief summary of the user's research goal. Used for logging only."),
@@ -95,6 +103,8 @@ def register_fodelse_tool(mcp) -> None:
                 forsamling=forsamling,
                 lan=lan,
                 kon=kon,
+                datum_from=datum_from,
+                datum_till=datum_till,
             )
             return format_fodelse_results(result)
 

@@ -68,6 +68,14 @@ def register_vigsel_tool(mcp) -> None:
             str | None,
             Field(description="Optional filter: county name (case-insensitive substring match)."),
         ] = None,
+        datum_from: Annotated[
+            str | None,
+            Field(description="Optional filter: earliest date (YYYY-MM-DD format, inclusive)."),
+        ] = None,
+        datum_till: Annotated[
+            str | None,
+            Field(description="Optional filter: latest date (YYYY-MM-DD format, inclusive)."),
+        ] = None,
         research_context: Annotated[
             str | None,
             Field(description="Brief summary of the user's research goal. Used for logging only."),
@@ -90,6 +98,8 @@ def register_vigsel_tool(mcp) -> None:
                 offset=offset,
                 forsamling=forsamling,
                 lan=lan,
+                datum_from=datum_from,
+                datum_till=datum_till,
             )
             return format_vigsel_results(result)
 

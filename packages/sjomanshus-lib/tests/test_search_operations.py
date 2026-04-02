@@ -77,6 +77,32 @@ def test_search_liggare_filter_sjoemanshus(search):
         assert "karlskrona" in rec.get("sjoemanshus", "").lower()
 
 
+def test_search_liggare_filter_kapten(search):
+    result = search.search_liggare("Pettersson", kapten="Lindberg")
+    assert result.total_hits >= 1
+    for rec in result.records:
+        assert "lindberg" in rec.get("kapten", "").lower()
+
+
+def test_search_liggare_filter_redare(search):
+    result = search.search_liggare("Pettersson", redare="Andersson")
+    assert result.total_hits >= 1
+    for rec in result.records:
+        assert "andersson" in rec.get("redare", "").lower()
+
+
+def test_search_liggare_filter_destination(search):
+    result = search.search_liggare("Pettersson", destination="Medelhavet")
+    assert result.total_hits >= 1
+    for rec in result.records:
+        assert "medelhavet" in rec.get("destination", "").lower()
+
+
+def test_search_liggare_filter_destination_no_match(search):
+    result = search.search_liggare("Pettersson", destination="Antarktis")
+    assert result.total_hits == 0
+
+
 # ---------------------------------------------------------------------------
 # search_matrikel
 # ---------------------------------------------------------------------------
