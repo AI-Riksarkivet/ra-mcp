@@ -42,16 +42,14 @@ def test_ingest_styrelse_columns(db):
 
 def test_ingest_bolag_join(db):
     bolag_table, _ = ingest_aktiebolag(db, BOLAG_FIXTURE, STYRELSE_FIXTURE)
-    rows = bolag_table.to_pandas()
-    # PostID=1 (AB Separator) should have board members from styrelse
-    row_1 = rows[rows["post_id"] == 1].iloc[0]
+    rows = bolag_table.to_arrow().to_pylist()
+    row_1 = next(r for r in rows if r["post_id"] == 1)
     assert "Bernstr" in row_1["styrelsemedlemmar"]
     assert "De Laval" in row_1["styrelsemedlemmar"]
 
 
 def test_ingest_styrelse_join(db):
     _, styrelse_table = ingest_aktiebolag(db, BOLAG_FIXTURE, STYRELSE_FIXTURE)
-    rows = styrelse_table.to_pandas()
-    # Id=1 (Bernström) should have company name from bolag
-    row_1 = rows[rows["id"] == 1].iloc[0]
+    rows = styrelse_table.to_arrow().to_pylist()
+    row_1 = next(r for r in rows if r["id"] == 1)
     assert row_1["bolagets_namn"] == "AB Separator"

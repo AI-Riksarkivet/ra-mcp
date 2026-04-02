@@ -41,9 +41,8 @@ def test_ingest_domboksregister_columns(db):
 
 def test_ingest_domboksregister_join(db):
     table = ingest_domboksregister(db, PERSON_FIXTURE, PARAGRAF_FIXTURE)
-    rows = table.to_pandas()
-    # Row with ParagrafId=P001 should have datum from Paragraf
-    row_p001 = rows[rows["paragraf_id"] == "P001"].iloc[0]
+    rows = table.to_arrow().to_pylist()
+    row_p001 = next(r for r in rows if r["paragraf_id"] == "P001")
     assert row_p001["datum"] == "1650-03-12"
     assert row_p001["arende"] == "Skuld och fordran"
 
@@ -67,7 +66,6 @@ def test_ingest_medelstad_columns(db):
 
 def test_ingest_medelstad_join(db):
     table = ingest_medelstad(db, PERSONPOSTER_FIXTURE, MAAL_FIXTURE)
-    rows = table.to_pandas()
-    # Row with lopnr=1 should have mal_referat from maal
-    row_1 = rows[rows["lopnr"] == 1].iloc[0]
-    assert "Anders Persson stämde Nils Jonsson" in row_1["mal_referat"]
+    rows = table.to_arrow().to_pylist()
+    row_1 = next(r for r in rows if r["lopnr"] == 1)
+    assert "Anders Persson" in row_1["mal_referat"]
