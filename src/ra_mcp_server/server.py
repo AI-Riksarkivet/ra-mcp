@@ -89,6 +89,7 @@ try:
         "server": sbl_mcp,
         "description": "Search Svenskt biografiskt lexikon (Swedish Biographical Lexicon)",
         "default": True,
+        "no_namespace": True,
     }
 except ImportError:
     pass
