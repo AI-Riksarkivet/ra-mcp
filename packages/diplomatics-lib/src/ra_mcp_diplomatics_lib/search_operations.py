@@ -152,3 +152,21 @@ class DiplomaticsSearch:
             limit=limit,
             table_name=MPO_TABLE,
         )
+
+    def get_sdhk_by_id(self, sdhk_id: int) -> dict | None:
+        """Look up a single SDHK record by ID.
+
+        Returns the record dict or None if not found.
+        """
+        table = self._db.open_table(SDHK_TABLE)
+        rows = table.filter(f"id = {sdhk_id}").limit(1).to_list()
+        return rows[0] if rows else None
+
+    def get_mpo_by_id(self, mpo_id: int) -> dict | None:
+        """Look up a single MPO record by ID.
+
+        Returns the record dict or None if not found.
+        """
+        table = self._db.open_table(MPO_TABLE)
+        rows = table.filter(f"id = {mpo_id}").limit(1).to_list()
+        return rows[0] if rows else None
