@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("SBL_LANCEDB_URI", "hf://datasets/carpelan/sbl-lance")
+LANCEDB_URI = os.getenv("SBL_LANCEDB_URI", "data/sbl")
 
 SBL_TABLE = "sbl"
 

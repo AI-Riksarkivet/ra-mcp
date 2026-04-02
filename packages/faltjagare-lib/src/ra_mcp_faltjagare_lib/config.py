@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("FALTJAGARE_LANCEDB_URI", "hf://datasets/carpelan/faltjagare-lance")
+LANCEDB_URI = os.getenv("FALTJAGARE_LANCEDB_URI", "data/faltjagare")
 
 FALTJAGARE_TABLE = "faltjagare"
 

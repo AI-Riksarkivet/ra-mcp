@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("DDS_LANCEDB_URI", "hf://datasets/carpelan/dds-lance")
+LANCEDB_URI = os.getenv("DDS_LANCEDB_URI", "data/dds")
 
 FODELSE_TABLE = "fodelse"
 DODA_TABLE = "doda"

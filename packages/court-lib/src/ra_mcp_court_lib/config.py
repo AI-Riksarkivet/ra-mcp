@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("COURT_LANCEDB_URI", "hf://datasets/carpelan/court-lance")
+LANCEDB_URI = os.getenv("COURT_LANCEDB_URI", "data/court")
 
 DOMBOKSREGISTER_TABLE = "domboksregister"
 MEDELSTAD_TABLE = "medelstad"

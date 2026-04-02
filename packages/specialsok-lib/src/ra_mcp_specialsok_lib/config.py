@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("SPECIALSOK_LANCEDB_URI", "hf://datasets/carpelan/specialsok-lance")
+LANCEDB_URI = os.getenv("SPECIALSOK_LANCEDB_URI", "data/specialsok")
 
 FLYGVAPEN_TABLE = "flygvapenhaverier"
 FANGRULLOR_TABLE = "fangrullor"

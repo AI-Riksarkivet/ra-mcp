@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("SJOMANSHUS_LANCEDB_URI", "hf://datasets/carpelan/sjomanshus-lance")
+LANCEDB_URI = os.getenv("SJOMANSHUS_LANCEDB_URI", "data/sjomanshus")
 
 LIGGARE_TABLE = "liggare"
 MATRIKEL_TABLE = "matrikel"

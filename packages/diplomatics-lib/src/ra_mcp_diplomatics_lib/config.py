@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("DIPLOMATICS_LANCEDB_URI", "hf://datasets/carpelan/diplomatics-lance")
+LANCEDB_URI = os.getenv("DIPLOMATICS_LANCEDB_URI", "data/diplomatics")
 
 SDHK_TABLE = "sdhk"
 MPO_TABLE = "mpo"

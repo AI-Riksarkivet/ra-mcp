@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("SUFFRAGE_LANCEDB_URI", "hf://datasets/carpelan/suffrage-lance")
+LANCEDB_URI = os.getenv("SUFFRAGE_LANCEDB_URI", "data/suffrage")
 
 ROSTRATT_TABLE = "rostratt"
 FKPR_TABLE = "fkpr"

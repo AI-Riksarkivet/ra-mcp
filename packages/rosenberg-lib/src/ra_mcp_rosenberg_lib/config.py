@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("ROSENBERG_LANCEDB_URI", "hf://datasets/carpelan/rosenberg-lance")
+LANCEDB_URI = os.getenv("ROSENBERG_LANCEDB_URI", "data/rosenberg")
 
 ROSENBERG_TABLE = "rosenberg"
 

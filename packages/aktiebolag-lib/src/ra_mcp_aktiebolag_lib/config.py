@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("AKTIEBOLAG_LANCEDB_URI", "hf://datasets/carpelan/aktiebolag-lance")
+LANCEDB_URI = os.getenv("AKTIEBOLAG_LANCEDB_URI", "data/aktiebolag")
 
 BOLAG_TABLE = "bolag"
 STYRELSE_TABLE = "styrelse"

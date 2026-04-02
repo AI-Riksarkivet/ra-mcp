@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("SJ_LANCEDB_URI", "hf://datasets/carpelan/sj-lance")
+LANCEDB_URI = os.getenv("SJ_LANCEDB_URI", "data/sj")
 
 JUDA_TABLE = "juda"
 FIRA_TABLE = "fira"

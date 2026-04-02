@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("WINCARS_LANCEDB_URI", "hf://datasets/carpelan/wincars-lance")
+LANCEDB_URI = os.getenv("WINCARS_LANCEDB_URI", "data/wincars")
 
 WINCARS_TABLE = "wincars"
 

@@ -3,7 +3,7 @@
 import os
 
 
-LANCEDB_URI = os.getenv("FILMCENSUR_LANCEDB_URI", "hf://datasets/carpelan/filmcensur-lance")
+LANCEDB_URI = os.getenv("FILMCENSUR_LANCEDB_URI", "data/filmcensur")
 
 FILMREG_TABLE = "filmreg"
 
