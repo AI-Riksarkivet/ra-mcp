@@ -103,13 +103,22 @@ onMount(async () => {
     isLoading = false;
   };
 
-  instance.onhostcontextchange = (ctx) => {
-    hostContext = ctx;
+  instance.onerror = (err) => {
+    console.error("App error:", err);
+    error = err.message;
   };
 
+  instance.onhostcontextchanged = (params) => {
+    hostContext = { ...hostContext, ...params };
+  };
+
+  instance.onteardown = async () => {
+    return {};
+  };
+
+  await instance.connect();
   app = instance;
-  hostContext = await instance.initialize();
-  instance.ready();
+  hostContext = instance.getHostContext();
 });
 </script>
 
