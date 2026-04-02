@@ -80,10 +80,10 @@ function formatSBLText(text: string): string {
     html = html.replace(/<span[^>]*>\s*<\/span>/g, "");
   }
 
-  // 2. Convert old SBL HTML links: <a href="Presentation.aspx?id=XXXX">text</a>
-  //    Also handles encoded variants: Presentation&#x2E;aspx&#x3F;id&#x3D;XXXX
+  // 2. Convert old SBL HTML links: <a href="Presentation&#x2E;aspx&#x3F;id&#x3D;XXXX">text</a>
+  //    The href contains HTML-encoded chars: &#x2E; (.) &#x3F; (?) &#x3D; (=)
   html = html.replace(
-    /<a\s+href="[^"]*(?:Presentation[^"]*id[=&#xD;]*(\d+))[^"]*"[^>]*>(.*?)<\/a>/gi,
+    /<a\s+href="[^"]*?id(?:&#x3D;|=)(\d+)[^"]*"[^>]*>(.*?)<\/a>/gi,
     '<a href="#" data-article-id="$1" class="sbl-ref">$2</a>'
   );
 
