@@ -47,7 +47,10 @@ def register_sbl_tool(mcp) -> None:
             "birth/death dates and places, sources, and portrait image URLs. "
             "The full biographical narrative is only available on the SBL website (linked via SBL URI in results). "
             "Covers medieval to 20th century. Articles go up to letter S (T to O not yet published). "
-            "Filter by gender, occupation, place, or year range. Paginate with offset (0, 25, 50, ...)."
+            "Filter by gender, occupation, place, or year range. Paginate with offset (0, 25, 50, ...). "
+            "NOTE: SBL text uses printed-encyclopedia abbreviations: f=fodd, d=dod, G=Gift, o=och, m=med, "
+            "Sthlm=Stockholm, univ=universitet, doc=docent, prof=professor, sn=socken, hd=harad, "
+            "s a=samma ar, bl a=bland annat. Expand these naturally when presenting to users."
         ),
     )
     async def search_sbl(

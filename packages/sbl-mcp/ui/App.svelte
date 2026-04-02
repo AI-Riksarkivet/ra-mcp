@@ -96,8 +96,54 @@ function formatSBLText(text: string): string {
   // 4. Decode HTML entities
   html = html.replace(/&minus;/g, "\u2013");
 
-  // 5. Strip any remaining HTML tags we don't want (keep only <a> with data-article-id)
-  html = html.replace(/<(?!\/?a[\s>])[^>]+>/g, "");
+  // 5. Strip any remaining HTML tags we don't want (keep only <a> with data-article-id and <abbr>)
+  html = html.replace(/<(?!\/?a[\s>]|\/?abbr[\s>])[^>]+>/g, "");
+
+  // 6. Add tooltip abbreviations for common SBL shorthand
+  //    Only match whole words (word boundary) to avoid false positives
+  const abbrevs: [RegExp, string][] = [
+    [/\bf\b(?=\s+\d)/g, "född"],
+    [/\bd\b(?=\s+\d)/g, "död"],
+    [/\bG\b(?=\s+\d)/g, "Gift"],
+    [/\btrol\b/g, "troligen"],
+    [/\bdvs\b/g, "det vill säga"],
+    [/\bbl\s*a\b/g, "bland annat"],
+    [/\bs\s*å\b/g, "samma år"],
+    [/\bs\s*d\b/g, "samma dag"],
+    [/\bSthlm\b/g, "Stockholm"],
+    [/\bSth\b/g, "Stockholm"],
+    [/\bGbg\b/g, "Göteborg"],
+    [/\bsn\b/g, "socken"],
+    [/\bhd\b/g, "härad"],
+    [/\bfors\b/g, "församling"],
+    [/\bförs\b/g, "församling"],
+    [/\buniv\b/g, "universitet"],
+    [/\bprof\b/g, "professor"],
+    [/\bdoc\b/g, "docent"],
+    [/\btf\b/g, "tillförordnad"],
+    [/\bbitr\b/g, "biträdande"],
+    [/\be\s*o\b/g, "extra ordinarie"],
+    [/\bkh\b/g, "kyrkoherde"],
+    [/\bkpl\b/g, "kapellan"],
+    [/\bk\b(?=\s+maj)/gi, "kunglig"],
+    [/\bRA\b/g, "Riksarkivet"],
+    [/\bKB\b/g, "Kungliga biblioteket"],
+    [/\bUU\b/g, "Uppsala universitet"],
+    [/\bLU\b/g, "Lunds universitet"],
+    [/\bLVA\b/g, "Ledamot av Vetenskapsakademien"],
+    [/\bRSO\b/g, "Riddare av Svärdsorden"],
+    [/\bKSO\b/g, "Kommendör av Svärdsorden"],
+    [/\bKmstkSO\b/g, "Kommendör med stora korset av Svärdsorden"],
+    [/\bRNO\b/g, "Riddare av Nordstjärneorden"],
+    [/\bKNO\b/g, "Kommendör av Nordstjärneorden"],
+    [/\bLKrVA\b/g, "Ledamot av Krigsvetenskapsakademien"],
+  ];
+
+  for (const [pattern, expansion] of abbrevs) {
+    html = html.replace(pattern, (match) =>
+      `<abbr title="${expansion}">${match}</abbr>`
+    );
+  }
 
   return html;
 }
@@ -334,7 +380,7 @@ onMount(async () => {
         {#if article.sbl_uri}
           <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">L&auml;s hela artikeln p&aring; SBL &rarr;</a></p>
         {/if}
-        <p class="source">K&auml;lla: Svenskt biografiskt lexikon (CC0)</p>
+        <p class="source">K&auml;lla: Svenskt biografiskt lexikon (CC0) &middot; <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">F&ouml;rkortningar</a></p>
       </footer>
     </article>
   {/if}
@@ -554,5 +600,26 @@ onMount(async () => {
       display: block;
       text-align: center;
     }
+  }
+
+  /* Cross-reference links (injected via {@html}) */
+  :global(.sbl-ref) {
+    color: var(--sbl-accent, #1e40af);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sbl-accent, #1e40af);
+    cursor: pointer;
+  }
+  :global(.sbl-ref:hover) {
+    border-bottom-style: solid;
+  }
+
+  /* Abbreviation tooltips */
+  :global(abbr[title]) {
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sbl-text-muted, #a8a29e);
+    cursor: help;
+  }
+  :global(abbr[title]:hover) {
+    border-bottom-color: var(--sbl-text-secondary, #57534e);
   }
 </style>
