@@ -41,7 +41,7 @@ let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();
 let article = $state<SBLArticle | null>(null);
 let error = $state<string | null>(null);
-let isLoading = $state(true);
+let isLoading = $state(false);
 
 function formatDate(year: number | null, month: number | null, day: number | null): string {
   if (!year) return "";
@@ -73,12 +73,28 @@ $effect(() => {
   if (hostContext?.styles?.css?.fonts) applyHostFonts(hostContext.styles.css.fonts);
 });
 
+$effect(() => {
+  const isFullscreen = hostContext?.displayMode === "fullscreen";
+  if (!app || isFullscreen) return;
+  app.sendSizeChanged({ height: 600 });
+});
+
 onMount(async () => {
   const instance = new App(
     { name: "SBL Article Viewer", version: "1.0.0" },
-    { availableDisplayModes: ["inline"] },
+    { availableDisplayModes: ["inline", "fullscreen"] },
     { autoResize: false },
   );
+
+  instance.ontoolinputpartial = () => {
+    if (!article) isLoading = true;
+  };
+
+  instance.ontoolinput = () => {
+    isLoading = true;
+    error = null;
+    article = null;
+  };
 
   instance.ontoolresult = (result) => {
     isLoading = false;
@@ -91,12 +107,6 @@ onMount(async () => {
       article = sc;
       error = null;
     }
-  };
-
-  instance.ontoolinput = () => {
-    isLoading = true;
-    error = null;
-    article = null;
   };
 
   instance.ontoolcancelled = () => {
@@ -119,6 +129,7 @@ onMount(async () => {
   await instance.connect();
   app = instance;
   hostContext = instance.getHostContext();
+  instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
 });
 </script>
 
@@ -127,19 +138,26 @@ onMount(async () => {
     <div class="error">
       <p>{error}</p>
     </div>
-  {:else if isLoading || !article}
+  {:else if isLoading}
     <div class="loading">
       <p>Laddar artikel...</p>
+    </div>
+  {:else if !article}
+    <div class="loading">
+      <p>Väntar på artikeldata...</p>
     </div>
   {:else}
     <article>
       <header>
-        {#if article.image_files.length > 0}
+        {#if Array.isArray(article.image_files) && article.image_files.length > 0}
           <img
             class="portrait"
             src={article.image_files[0]}
-            alt={article.image_descriptions[0] ?? `Portr\u00e4tt av ${article.given_name} ${article.surname}`}
+            alt={article.image_descriptions?.[0] ?? `Porträtt av ${article.given_name} ${article.surname}`}
           />
+          {#if article.image_descriptions?.[0]}
+            <span class="portrait-caption">{article.image_descriptions[0]}</span>
+          {/if}
         {/if}
         <h1>{article.given_name} {article.surname}</h1>
         {#if article.occupation}
@@ -151,44 +169,53 @@ onMount(async () => {
         {#if article.birth_place || article.death_place}
           <p class="places">
             {#if article.birth_place}
-              <span>F\u00f6dd: {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
+              <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
             {/if}
             {#if article.birth_place && article.death_place}
               <span class="separator"> &middot; </span>
             {/if}
             {#if article.death_place}
-              <span>D\u00f6d: {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
+              <span>d. {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
             {/if}
           </p>
         {/if}
         {#if article.volume_number || article.page_number}
-          <p class="reference">Band {article.volume_number}, s. {article.page_number}</p>
+          <span class="reference">SBL band {article.volume_number}, s. {article.page_number}</span>
         {/if}
       </header>
 
+      {#if article.cv || article.printed_works || article.sources || article.archive}
+        <nav class="section-nav">
+          {#if article.cv}<a href="#meriter">Meriter</a>{/if}
+          {#if article.printed_works}<a href="#tryckta">Tryckta arbeten</a>{/if}
+          {#if article.sources}<a href="#kallor">Källor</a>{/if}
+          {#if article.archive}<a href="#arkiv">Arkivuppgifter</a>{/if}
+        </nav>
+      {/if}
+
       {#if article.cv}
-        <section>
+        <section id="meriter">
           <h2>Meriter</h2>
           <div class="content pre-wrap">{article.cv}</div>
         </section>
       {/if}
 
       {#if article.printed_works}
-        <section>
+        <section id="tryckta">
           <h2>Tryckta arbeten</h2>
           <div class="content pre-wrap">{article.printed_works}</div>
         </section>
       {/if}
 
       {#if article.sources}
-        <section>
-          <h2>K\u00e4llor och litteratur</h2>
+        <section id="kallor">
+          <h2>Källor och litteratur</h2>
           <div class="content pre-wrap">{article.sources}</div>
         </section>
       {/if}
 
       {#if article.archive}
-        <section>
+        <section id="arkiv">
           <h2>Arkivuppgifter</h2>
           <div class="content pre-wrap">{article.archive}</div>
         </section>
@@ -196,12 +223,12 @@ onMount(async () => {
 
       <footer>
         {#if article.article_author}
-          <p class="author">Artikelf\u00f6rfattare: {article.article_author}</p>
+          <p class="author">Artikelförfattare: {article.article_author}</p>
         {/if}
         {#if article.sbl_uri}
-          <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">L\u00e4s hela artikeln p\u00e5 SBL</a></p>
+          <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs hela artikeln på SBL &rarr;</a></p>
         {/if}
-        <p class="source">K\u00e4lla: Svenskt biografiskt lexikon (CC0)</p>
+        <p class="source">Källa: Svenskt biografiskt lexikon (CC0)</p>
       </footer>
     </article>
   {/if}
@@ -209,124 +236,187 @@ onMount(async () => {
 
 <style>
   main {
-    max-width: 700px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 1.5rem;
-    font-family: inherit;
-    line-height: 1.6;
+    padding: 2rem 1.5rem;
+    min-height: 100%;
+    overflow-y: auto;
   }
 
   .loading, .error {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 120px;
-    color: var(--host-color-text-secondary, #666);
+    min-height: 200px;
+    color: var(--sbl-text-secondary, #666);
+    font-size: 0.95rem;
   }
-
-  .error {
-    color: var(--host-color-text-danger, #b91c1c);
-  }
+  .error { color: #dc2626; }
 
   article {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0;
   }
 
+  /* Header */
   header {
     position: relative;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--host-color-border, #ddd);
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 2px solid var(--sbl-border, #d6d3d1);
   }
 
   .portrait {
     float: right;
-    max-width: 200px;
-    margin: 0 0 0.75rem 1.25rem;
-    border-radius: 4px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    width: 180px;
+    max-width: 40%;
+    margin: 0 0 0.75rem 1.5rem;
+    border-radius: 3px;
+    box-shadow: var(--sbl-portrait-shadow, 0 2px 8px rgba(0,0,0,0.12));
+    filter: saturate(0.9);
+  }
+  .portrait:hover { filter: saturate(1); }
+
+  .portrait-caption {
+    float: right;
+    clear: right;
+    width: 180px;
+    max-width: 40%;
+    margin: -0.5rem 0 0.75rem 1.5rem;
+    font-size: 0.75rem;
+    color: var(--sbl-text-muted, #a8a29e);
+    line-height: 1.3;
+    text-align: center;
   }
 
   h1 {
-    font-size: 1.75rem;
+    font-family: var(--sbl-font-serif, Georgia, serif);
+    font-size: 1.85rem;
     font-weight: 700;
-    margin: 0 0 0.25rem 0;
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.3rem;
   }
 
   .occupation {
-    font-size: 1.1rem;
-    color: var(--host-color-text-secondary, #555);
-    margin-bottom: 0.25rem;
+    font-size: 1.05rem;
+    color: var(--sbl-text-secondary, #57534e);
+    margin-bottom: 0.35rem;
+    font-style: italic;
   }
 
   .lifespan {
-    font-size: 1rem;
-    color: var(--host-color-text-secondary, #555);
-    margin-bottom: 0.15rem;
+    font-size: 0.95rem;
+    color: var(--sbl-text-secondary, #57534e);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.2rem;
   }
 
   .places {
-    font-size: 0.9rem;
-    color: var(--host-color-text-secondary, #666);
-    margin-bottom: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--sbl-text-muted, #a8a29e);
   }
-
-  .separator {
-    color: var(--host-color-text-secondary, #999);
-  }
+  .separator { color: var(--sbl-text-muted, #a8a29e); }
 
   .reference {
-    font-size: 0.85rem;
-    color: var(--host-color-text-secondary, #888);
-    margin-top: 0.5rem;
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    color: var(--sbl-text-muted, #a8a29e);
+    background: var(--sbl-bg-card, #f4f3ef);
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
   }
 
-  section {
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--host-color-border, #eee);
+  /* Section nav */
+  .section-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--sbl-border-light, #e7e5e4);
+    margin-bottom: 0;
+    overflow-x: auto;
   }
+  .section-nav a {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--sbl-text-secondary, #57534e);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .section-nav a:hover {
+    color: var(--sbl-text, #1c1917);
+    border-bottom-color: var(--sbl-accent, #1e40af);
+  }
+
+  /* Sections */
+  section {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--sbl-border-light, #e7e5e4);
+  }
+  section:last-of-type { border-bottom: none; }
 
   h2 {
-    font-size: 1.15rem;
+    font-family: var(--sbl-font-serif, Georgia, serif);
+    font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    color: var(--sbl-text, #1c1917);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.01em;
   }
 
   .content {
-    font-size: 0.95rem;
-    color: var(--host-color-text, #333);
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--sbl-text, #1c1917);
   }
 
   .pre-wrap {
     white-space: pre-wrap;
+    word-break: break-word;
   }
 
+  /* Footer */
   footer {
-    font-size: 0.85rem;
-    color: var(--host-color-text-secondary, #666);
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sbl-border-light, #e7e5e4);
+    font-size: 0.82rem;
+    color: var(--sbl-text-muted, #a8a29e);
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.3rem;
   }
 
   footer a {
-    color: var(--host-color-accent, #0066cc);
+    color: var(--sbl-accent, #1e40af);
     text-decoration: none;
+    font-weight: 500;
   }
+  footer a:hover { text-decoration: underline; }
 
-  footer a:hover {
-    text-decoration: underline;
-  }
-
-  .author {
-    font-style: italic;
-  }
+  .author { font-style: italic; }
 
   .source {
-    font-size: 0.8rem;
-    color: var(--host-color-text-secondary, #999);
-    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--sbl-text-muted, #a8a29e);
+    margin-top: 0.15rem;
+  }
+
+  @media (max-width: 500px) {
+    main { padding: 1rem; }
+    h1 { font-size: 1.5rem; }
+    .portrait, .portrait-caption {
+      float: none;
+      width: 100%;
+      max-width: 240px;
+      margin: 0 auto 1rem auto;
+      display: block;
+      text-align: center;
+    }
   }
 </style>
