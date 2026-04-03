@@ -49,6 +49,15 @@ let activeTab = $state<Tab>("meriter");
 let viewId = $state("");
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
+function isFamily(a: SBLArticle): boolean {
+  return a.article_type === "Family article" || a.given_name === "släkt";
+}
+
+function displayName(a: SBLArticle): string {
+  if (isFamily(a)) return `Släkten ${a.surname}`;
+  return `${a.given_name} ${a.surname}`.trim();
+}
+
 function availableTabs(a: SBLArticle): { id: Tab; label: string }[] {
   const tabs: { id: Tab; label: string }[] = [{ id: "om", label: "Om" }];
   if (a.cv) tabs.push({ id: "meriter", label: "Meriter" });
@@ -277,8 +286,10 @@ onMount(async () => {
         {#if history.length >= 2}
           <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr;</button>
         {/if}
-        <span class="title-name">{article.given_name} {article.surname}</span>
-        {#if article.occupation}
+        <span class="title-name">{displayName(article)}</span>
+        {#if isFamily(article)}
+          <span class="title-occ">Släktartikel</span>
+        {:else if article.occupation}
           <span class="title-occ">{article.occupation}</span>
         {/if}
       </div>
@@ -300,17 +311,19 @@ onMount(async () => {
           <div class="about-panel">
             {#if Array.isArray(article.image_files) && article.image_files.length > 0}
               <img class="portrait" src={article.image_files[0]}
-                alt={article.image_descriptions?.[0] ?? `${article.given_name} ${article.surname}`} />
+                alt={article.image_descriptions?.[0] ?? displayName(article)} />
             {/if}
             <div class="about-info">
-              <h1>{article.given_name} {article.surname}</h1>
-              {#if article.occupation}
+              <h1>{displayName(article)}</h1>
+              {#if isFamily(article)}
+                <p class="occupation">Släktartikel</p>
+              {:else if article.occupation}
                 <p class="occupation">{article.occupation}</p>
               {/if}
-              {#if formatLifespan(article)}
+              {#if !isFamily(article) && formatLifespan(article)}
                 <p class="lifespan">{formatLifespan(article)}</p>
               {/if}
-              {#if article.birth_place || article.death_place}
+              {#if !isFamily(article) && (article.birth_place || article.death_place)}
                 <p class="places">
                   {#if article.birth_place}
                     <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
