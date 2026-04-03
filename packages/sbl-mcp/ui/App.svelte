@@ -37,7 +37,7 @@ interface SBLArticle {
   image_descriptions: string[];
 }
 
-type Tab = "meriter" | "tryckta" | "kallor" | "arkiv";
+type Tab = "om" | "meriter" | "tryckta" | "kallor" | "arkiv";
 
 let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();
@@ -50,7 +50,7 @@ let viewId = $state("");
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 function availableTabs(a: SBLArticle): { id: Tab; label: string }[] {
-  const tabs: { id: Tab; label: string }[] = [];
+  const tabs: { id: Tab; label: string }[] = [{ id: "om", label: "Om" }];
   if (a.cv) tabs.push({ id: "meriter", label: "Meriter" });
   if (a.printed_works) tabs.push({ id: "tryckta", label: "Tryckta arbeten" });
   if (a.sources) tabs.push({ id: "kallor", label: "Källor" });
@@ -176,7 +176,7 @@ async function loadArticle(articleId: number) {
     if (result.structuredContent) {
       article = result.structuredContent as SBLArticle;
       history.push(articleId);
-      activeTab = "meriter";
+      activeTab = "om";
     }
     isLoading = false;
   } catch (err: any) {
@@ -206,7 +206,7 @@ function startPolling() {
         article = sc;
         isLoading = false;
         history.push(sc.article_id);
-        activeTab = "meriter";
+        activeTab = "om";
       }
     } catch {}
   }, 3000);
@@ -245,7 +245,7 @@ onMount(async () => {
     const sc = result.structuredContent as (SBLArticle & { view_id?: string }) | undefined;
     if (sc) {
       if (sc.view_id) viewId = sc.view_id;
-      article = sc; error = null; history.push(sc.article_id); activeTab = "meriter";
+      article = sc; error = null; history.push(sc.article_id); activeTab = "om";
     }
   };
   instance.ontoolcancelled = () => { isLoading = false; };
@@ -272,70 +272,75 @@ onMount(async () => {
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <div class="card" onclick={handleArticleClick}>
-      {#if history.length >= 2}
-        <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr; Tillbaka</button>
-      {/if}
-
-      <!-- Hero header -->
-      <header>
-        {#if Array.isArray(article.image_files) && article.image_files.length > 0}
-          <img class="portrait" src={article.image_files[0]}
-            alt={article.image_descriptions?.[0] ?? `${article.given_name} ${article.surname}`} />
+      <!-- Title bar: compact name + back button -->
+      <div class="title-bar">
+        {#if history.length >= 2}
+          <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr;</button>
         {/if}
-        <div class="header-text">
-          <h1>{article.given_name} {article.surname}</h1>
-          {#if article.occupation}
-            <p class="occupation">{article.occupation}</p>
-          {/if}
-          {#if formatLifespan(article)}
-            <p class="lifespan">{formatLifespan(article)}</p>
-          {/if}
-          {#if article.birth_place || article.death_place}
-            <p class="places">
-              {#if article.birth_place}
-                <span>f. {article.birth_place}{#if article.birth_place_comment}({article.birth_place_comment}){/if}</span>
-              {/if}
-              {#if article.birth_place && article.death_place}
-                <span class="sep"> · </span>
-              {/if}
-              {#if article.death_place}
-                <span>d. {article.death_place}{#if article.death_place_comment}({article.death_place_comment}){/if}</span>
-              {/if}
-            </p>
-          {/if}
-          {#if article.volume_number || article.page_number}
-            <p class="ref">SBL band {article.volume_number}, s. {article.page_number}</p>
-          {/if}
-        </div>
-      </header>
+        <span class="title-name">{article.given_name} {article.surname}</span>
+        {#if article.occupation}
+          <span class="title-occ">{article.occupation}</span>
+        {/if}
+      </div>
 
       <!-- Tabs -->
-      {#if availableTabs(article).length > 0}
-        <nav class="tabs">
-          {#each availableTabs(article) as tab}
-            <button
-              class="tab"
-              class:active={activeTab === tab.id}
-              onclick={() => { activeTab = tab.id; }}
-            >{tab.label}</button>
-          {/each}
-        </nav>
+      <nav class="tabs">
+        {#each availableTabs(article) as tab}
+          <button
+            class="tab"
+            class:active={activeTab === tab.id}
+            onclick={() => { activeTab = tab.id; }}
+          >{tab.label}</button>
+        {/each}
+      </nav>
 
-        <div class="tab-content">
+      <!-- Tab content -->
+      <div class="tab-content">
+        {#if activeTab === "om"}
+          <div class="about-panel">
+            {#if Array.isArray(article.image_files) && article.image_files.length > 0}
+              <img class="portrait" src={article.image_files[0]}
+                alt={article.image_descriptions?.[0] ?? `${article.given_name} ${article.surname}`} />
+            {/if}
+            <div class="about-info">
+              <h1>{article.given_name} {article.surname}</h1>
+              {#if article.occupation}
+                <p class="occupation">{article.occupation}</p>
+              {/if}
+              {#if formatLifespan(article)}
+                <p class="lifespan">{formatLifespan(article)}</p>
+              {/if}
+              {#if article.birth_place || article.death_place}
+                <p class="places">
+                  {#if article.birth_place}
+                    <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
+                  {/if}
+                  {#if article.birth_place && article.death_place}
+                    <span class="sep"> · </span>
+                  {/if}
+                  {#if article.death_place}
+                    <span>d. {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
+                  {/if}
+                </p>
+              {/if}
+              {#if article.volume_number || article.page_number}
+                <p class="ref">SBL band {article.volume_number}, s. {article.page_number}</p>
+              {/if}
+              <div class="about-links">
+                {#if article.article_author}
+                  <span class="author">{article.article_author}</span>
+                {/if}
+                {#if article.sbl_uri}
+                  <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs på SBL →</a>
+                {/if}
+                <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">Förkortningar</a>
+              </div>
+            </div>
+          </div>
+        {:else}
           <div class="content pre-wrap">{@html formatSBLText(tabContent(article, activeTab))}</div>
-        </div>
-      {/if}
-
-      <!-- Footer -->
-      <footer>
-        {#if article.article_author}
-          <span class="author">{article.article_author}</span>
         {/if}
-        {#if article.sbl_uri}
-          <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">SBL →</a>
-        {/if}
-        <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">Förkortningar</a>
-      </footer>
+      </div>
     </div>
   {/if}
 </main>
@@ -359,24 +364,68 @@ onMount(async () => {
     overflow: hidden;
   }
 
+  /* Title bar */
+  .title-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  .title-name { font-weight: 600; }
+  .title-occ { opacity: 0.6; font-style: italic; }
+
   .back-btn {
-    display: inline-block;
-    margin: 0.5rem 0.75rem 0;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.8rem;
     color: LinkText;
     background: none;
     border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
     border-radius: 4px;
     cursor: pointer;
+    line-height: 1;
   }
   .back-btn:hover { background: color-mix(in srgb, currentColor 5%, transparent); }
 
-  /* Hero header */
-  header {
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    overflow-x: auto;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.6;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab:hover { opacity: 0.9; }
+  .tab.active {
+    opacity: 1;
+    color: LinkText;
+    border-bottom-color: LinkText;
+  }
+
+  /* Tab content */
+  .tab-content {
+    padding: 0.75rem 1rem;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  /* About panel (Om tab) */
+  .about-panel {
     display: flex;
     gap: 1rem;
-    padding: 1rem;
     align-items: flex-start;
   }
 
@@ -388,78 +437,60 @@ onMount(async () => {
     object-fit: cover;
   }
 
-  .header-text {
+  .about-info {
     flex: 1;
     min-width: 0;
   }
 
   h1 {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     line-height: 1.2;
     margin: 0 0 0.15rem;
   }
 
   .occupation {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0.7;
     font-style: italic;
     margin: 0 0 0.15rem;
   }
 
   .lifespan {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     opacity: 0.7;
     margin: 0 0 0.1rem;
   }
 
   .places {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     opacity: 0.5;
     margin: 0 0 0.1rem;
   }
   .sep { opacity: 0.5; }
 
   .ref {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     opacity: 0.5;
-    margin: 0.25rem 0 0;
+    margin: 0.3rem 0 0;
   }
 
-  /* Tabs */
-  .tabs {
+  .about-links {
     display: flex;
-    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-    overflow-x: auto;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    opacity: 0.6;
   }
-
-  .tab {
-    flex: 1;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    opacity: 0.7;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .tab:hover { color: inherit; }
-  .tab.active {
+  .about-links a {
     color: LinkText;
-    border-bottom-color: LinkText;
+    text-decoration: none;
   }
+  .about-links a:hover { text-decoration: underline; }
+  .author { font-style: italic; }
 
-  /* Tab content */
-  .tab-content {
-    padding: 0.75rem 1rem;
-    max-height: 250px;
-    overflow-y: auto;
-  }
-
+  /* Text content */
   .content {
     font-size: 0.85rem;
     line-height: 1.65;
@@ -469,23 +500,6 @@ onMount(async () => {
     white-space: pre-wrap;
     word-break: break-word;
   }
-
-  /* Footer */
-  footer {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-    font-size: 0.72rem;
-    opacity: 0.5;
-  }
-  footer a {
-    color: LinkText;
-    text-decoration: none;
-  }
-  footer a:hover { text-decoration: underline; }
-  .author { font-style: italic; }
 
   /* Cross-reference links */
   :global(.sbl-ref) {
@@ -503,10 +517,5 @@ onMount(async () => {
     opacity: 0.6;
     cursor: help;
   }
-  :global(abbr[title]:hover) {
-    opacity: 1;
-  }
-
-  /* Tab needs color inherit for font color */
-  .tab { color: inherit; }
+  :global(abbr[title]:hover) { opacity: 1; }
 </style>
