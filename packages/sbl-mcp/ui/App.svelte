@@ -294,66 +294,86 @@ onMount(async () => {
         {/if}
       </div>
 
-      <!-- Tabs -->
-      <nav class="tabs">
-        {#each availableTabs(article) as tab}
-          <button
-            class="tab"
-            class:active={activeTab === tab.id}
-            onclick={() => { activeTab = tab.id; }}
-          >{tab.label}</button>
-        {/each}
-      </nav>
-
-      <!-- Tab content -->
-      <div class="tab-content">
-        {#if activeTab === "om"}
-          <div class="about-panel">
-            {#if Array.isArray(article.image_files) && article.image_files.length > 0}
-              <img class="portrait" src={article.image_files[0]}
-                alt={article.image_descriptions?.[0] ?? displayName(article)} />
+      {#if isFamily(article) && !article.cv && !article.printed_works && !article.archive}
+        <!-- Family article: compact inline view, no tabs -->
+        <div class="tab-content">
+          <div class="about-info">
+            <p class="ref" style="margin-bottom: 0.5rem">SBL band {article.volume_number}, s. {article.page_number}</p>
+            {#if article.sources}
+              <p class="section-label">Källor och litteratur</p>
+              <div class="content pre-wrap">{@html formatSBLText(article.sources)}</div>
             {/if}
-            <div class="about-info">
-              <h1>{displayName(article)}</h1>
-              {#if isFamily(article)}
-                <p class="occupation">Släktartikel</p>
-              {:else if article.occupation}
-                <p class="occupation">{article.occupation}</p>
+            <div class="about-links" style="margin-top: 0.5rem">
+              {#if article.article_author}
+                <span class="author">{article.article_author}</span>
               {/if}
-              {#if !isFamily(article) && formatLifespan(article)}
-                <p class="lifespan">{formatLifespan(article)}</p>
+              {#if article.sbl_uri}
+                <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs på SBL →</a>
               {/if}
-              {#if !isFamily(article) && (article.birth_place || article.death_place)}
-                <p class="places">
-                  {#if article.birth_place}
-                    <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
-                  {/if}
-                  {#if article.birth_place && article.death_place}
-                    <span class="sep"> · </span>
-                  {/if}
-                  {#if article.death_place}
-                    <span>d. {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
-                  {/if}
-                </p>
-              {/if}
-              {#if article.volume_number || article.page_number}
-                <p class="ref">SBL band {article.volume_number}, s. {article.page_number}</p>
-              {/if}
-              <div class="about-links">
-                {#if article.article_author}
-                  <span class="author">{article.article_author}</span>
-                {/if}
-                {#if article.sbl_uri}
-                  <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs på SBL →</a>
-                {/if}
-                <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">Förkortningar</a>
-              </div>
             </div>
           </div>
-        {:else}
-          <div class="content pre-wrap">{@html formatSBLText(tabContent(article, activeTab))}</div>
-        {/if}
-      </div>
+        </div>
+      {:else}
+        <!-- Person article (or family with content): tabbed view -->
+        <nav class="tabs">
+          {#each availableTabs(article) as tab}
+            <button
+              class="tab"
+              class:active={activeTab === tab.id}
+              onclick={() => { activeTab = tab.id; }}
+            >{tab.label}</button>
+          {/each}
+        </nav>
+
+        <div class="tab-content">
+          {#if activeTab === "om"}
+            <div class="about-panel">
+              {#if Array.isArray(article.image_files) && article.image_files.length > 0}
+                <img class="portrait" src={article.image_files[0]}
+                  alt={article.image_descriptions?.[0] ?? displayName(article)} />
+              {/if}
+              <div class="about-info">
+                <h1>{displayName(article)}</h1>
+                {#if isFamily(article)}
+                  <p class="occupation">Släktartikel</p>
+                {:else if article.occupation}
+                  <p class="occupation">{article.occupation}</p>
+                {/if}
+                {#if !isFamily(article) && formatLifespan(article)}
+                  <p class="lifespan">{formatLifespan(article)}</p>
+                {/if}
+                {#if !isFamily(article) && (article.birth_place || article.death_place)}
+                  <p class="places">
+                    {#if article.birth_place}
+                      <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
+                    {/if}
+                    {#if article.birth_place && article.death_place}
+                      <span class="sep"> · </span>
+                    {/if}
+                    {#if article.death_place}
+                      <span>d. {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
+                    {/if}
+                  </p>
+                {/if}
+                {#if article.volume_number || article.page_number}
+                  <p class="ref">SBL band {article.volume_number}, s. {article.page_number}</p>
+                {/if}
+                <div class="about-links">
+                  {#if article.article_author}
+                    <span class="author">{article.article_author}</span>
+                  {/if}
+                  {#if article.sbl_uri}
+                    <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">Läs på SBL →</a>
+                  {/if}
+                  <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">Förkortningar</a>
+                </div>
+              </div>
+            </div>
+          {:else}
+            <div class="content pre-wrap">{@html formatSBLText(tabContent(article, activeTab))}</div>
+          {/if}
+        </div>
+      {/if}
     </div>
   {/if}
 </main>
@@ -460,6 +480,13 @@ onMount(async () => {
     font-weight: 700;
     line-height: 1.2;
     margin: 0 0 0.15rem;
+  }
+
+  .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-bottom: 0.3rem;
   }
 
   .occupation {
