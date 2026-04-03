@@ -37,13 +37,33 @@ interface SBLArticle {
   image_descriptions: string[];
 }
 
+type Tab = "meriter" | "tryckta" | "kallor" | "arkiv";
+
 let app = $state<App | null>(null);
 let hostContext = $state<McpUiHostContext | undefined>();
 let article = $state<SBLArticle | null>(null);
 let error = $state<string | null>(null);
 let isLoading = $state(false);
 let history = $state<number[]>([]);
+let activeTab = $state<Tab>("meriter");
 let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+function availableTabs(a: SBLArticle): { id: Tab; label: string }[] {
+  const tabs: { id: Tab; label: string }[] = [];
+  if (a.cv) tabs.push({ id: "meriter", label: "Meriter" });
+  if (a.printed_works) tabs.push({ id: "tryckta", label: "Tryckta arbeten" });
+  if (a.sources) tabs.push({ id: "kallor", label: "Källor" });
+  if (a.archive) tabs.push({ id: "arkiv", label: "Arkiv" });
+  return tabs;
+}
+
+function tabContent(a: SBLArticle, tab: Tab): string {
+  if (tab === "meriter") return a.cv || "";
+  if (tab === "tryckta") return a.printed_works || "";
+  if (tab === "kallor") return a.sources || "";
+  if (tab === "arkiv") return a.archive || "";
+  return "";
+}
 
 function formatDate(year: number | null, month: number | null, day: number | null): string {
   if (!year) return "";
@@ -73,34 +93,24 @@ function formatSBLText(text: string): string {
   if (!text) return "";
   let html = text;
 
-  // 1. Strip empty <span> soup (junk from SBL data)
   html = html.replace(/<span[^>]*>\s*<\/span>/g, "");
-  // Repeat for nested empties
   for (let i = 0; i < 5; i++) {
     html = html.replace(/<span[^>]*>\s*<\/span>/g, "");
   }
 
-  // 2. Convert old SBL HTML links: <a href="Presentation&#x2E;aspx&#x3F;id&#x3D;XXXX">text</a>
-  //    The href contains HTML-encoded chars: &#x2E; (.) &#x3F; (?) &#x3D; (=)
   html = html.replace(
     /<a\s+href="[^"]*?id(?:&#x3D;|=)(\d+)[^"]*"[^>]*>(.*?)<\/a>/gi,
     '<a href="#" data-article-id="$1" class="sbl-ref">$2</a>'
   );
 
-  // 3. Convert [a:ID:text] cross-references
   html = html.replace(
     /\[a:(\d+):([^\]]+)\]/g,
     '<a href="#" data-article-id="$1" class="sbl-ref">$2</a>'
   );
 
-  // 4. Decode HTML entities
   html = html.replace(/&minus;/g, "\u2013");
-
-  // 5. Strip any remaining HTML tags we don't want (keep only <a> with data-article-id and <abbr>)
   html = html.replace(/<(?!\/?a[\s>]|\/?abbr[\s>])[^>]+>/g, "");
 
-  // 6. Add tooltip abbreviations for common SBL shorthand
-  //    Only match whole words (word boundary) to avoid false positives
   const abbrevs: [RegExp, string][] = [
     [/\bf\b(?=\s+\d)/g, "född"],
     [/\bd\b(?=\s+\d)/g, "död"],
@@ -125,7 +135,6 @@ function formatSBLText(text: string): string {
     [/\be\s*o\b/g, "extra ordinarie"],
     [/\bkh\b/g, "kyrkoherde"],
     [/\bkpl\b/g, "kapellan"],
-    [/\bk\b(?=\s+maj)/gi, "kunglig"],
     [/\bRA\b/g, "Riksarkivet"],
     [/\bKB\b/g, "Kungliga biblioteket"],
     [/\bUU\b/g, "Uppsala universitet"],
@@ -133,10 +142,8 @@ function formatSBLText(text: string): string {
     [/\bLVA\b/g, "Ledamot av Vetenskapsakademien"],
     [/\bRSO\b/g, "Riddare av Svärdsorden"],
     [/\bKSO\b/g, "Kommendör av Svärdsorden"],
-    [/\bKmstkSO\b/g, "Kommendör med stora korset av Svärdsorden"],
     [/\bRNO\b/g, "Riddare av Nordstjärneorden"],
     [/\bKNO\b/g, "Kommendör av Nordstjärneorden"],
-    [/\bLKrVA\b/g, "Ledamot av Krigsvetenskapsakademien"],
   ];
 
   for (const [pattern, expansion] of abbrevs) {
@@ -154,9 +161,7 @@ function handleArticleClick(e: MouseEvent) {
   if (!link) return;
   e.preventDefault();
   const id = parseInt(link.dataset.articleId!, 10);
-  if (id && app) {
-    loadArticle(id);
-  }
+  if (id && app) loadArticle(id);
 }
 
 async function loadArticle(articleId: number) {
@@ -170,6 +175,7 @@ async function loadArticle(articleId: number) {
     if (result.structuredContent) {
       article = result.structuredContent as SBLArticle;
       history.push(articleId);
+      activeTab = "meriter";
     }
     isLoading = false;
   } catch (err: any) {
@@ -180,7 +186,7 @@ async function loadArticle(articleId: number) {
 
 function goBack() {
   if (history.length < 2) return;
-  history.pop(); // remove current
+  history.pop();
   const prevId = history[history.length - 1];
   loadArticle(prevId);
 }
@@ -198,16 +204,14 @@ function startPolling() {
         article = sc;
         isLoading = false;
         history.push(sc.article_id);
+        activeTab = "meriter";
       }
     } catch {}
   }, 3000);
 }
 
 function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
 $effect(() => {
@@ -217,27 +221,19 @@ $effect(() => {
 });
 
 $effect(() => {
-  const isFullscreen = hostContext?.displayMode === "fullscreen";
-  if (!app || isFullscreen) return;
-  app.sendSizeChanged({ height: 600 });
+  if (!app) return;
+  app.sendSizeChanged({ height: 480 });
 });
 
 onMount(async () => {
   const instance = new App(
     { name: "SBL Article Viewer", version: "1.0.0" },
-    { availableDisplayModes: ["inline", "fullscreen"] },
+    { availableDisplayModes: ["inline"] },
     { autoResize: false },
   );
 
-  instance.ontoolinputpartial = () => {
-    if (!article) isLoading = true;
-  };
-
-  instance.ontoolinput = () => {
-    isLoading = true;
-    error = null;
-  };
-
+  instance.ontoolinputpartial = () => { if (!article) isLoading = true; };
+  instance.ontoolinput = () => { isLoading = true; error = null; };
   instance.ontoolresult = (result) => {
     isLoading = false;
     if (result.isError) {
@@ -245,311 +241,246 @@ onMount(async () => {
       return;
     }
     const sc = result.structuredContent as SBLArticle | undefined;
-    if (sc) {
-      article = sc;
-      error = null;
-      history.push(sc.article_id);
-    }
+    if (sc) { article = sc; error = null; history.push(sc.article_id); activeTab = "meriter"; }
   };
-
-  instance.ontoolcancelled = () => {
-    isLoading = false;
-  };
-
-  instance.onerror = (err) => {
-    console.error("App error:", err);
-    error = err.message;
-  };
-
-  instance.onhostcontextchanged = (params) => {
-    hostContext = { ...hostContext, ...params };
-  };
-
-  instance.onteardown = async () => {
-    stopPolling();
-    return {};
-  };
+  instance.ontoolcancelled = () => { isLoading = false; };
+  instance.onerror = (err) => { console.error("App error:", err); error = err.message; };
+  instance.onhostcontextchanged = (params) => { hostContext = { ...hostContext, ...params }; };
+  instance.onteardown = async () => { stopPolling(); return {}; };
 
   await instance.connect();
   app = instance;
   hostContext = instance.getHostContext();
-  instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
-
   startPolling();
 });
 </script>
 
 <main>
   {#if error}
-    <div class="error">
-      <p>{error}</p>
-    </div>
+    <div class="state-msg error"><p>{error}</p></div>
   {:else if isLoading}
-    <div class="loading">
-      <p>Laddar artikel...</p>
-    </div>
+    <div class="state-msg"><p>Laddar artikel...</p></div>
   {:else if !article}
-    <div class="loading">
-      <p>V&auml;ntar p&aring; artikeldata...</p>
-    </div>
+    <div class="state-msg"><p>Väntar på artikeldata...</p></div>
   {:else}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-    <article onclick={handleArticleClick}>
+    <div class="card" onclick={handleArticleClick}>
+      {#if history.length >= 2}
+        <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr; Tillbaka</button>
+      {/if}
+
+      <!-- Hero header -->
       <header>
-        {#if history.length >= 2}
-          <button class="back-btn" onclick={(e) => { e.stopPropagation(); goBack(); }}>&larr; Tillbaka</button>
-        {/if}
         {#if Array.isArray(article.image_files) && article.image_files.length > 0}
-          <img
-            class="portrait"
-            src={article.image_files[0]}
-            alt={article.image_descriptions?.[0] ?? `Portr\u00e4tt av ${article.given_name} ${article.surname}`}
-          />
-          {#if article.image_descriptions?.[0]}
-            <span class="portrait-caption">{article.image_descriptions[0]}</span>
+          <img class="portrait" src={article.image_files[0]}
+            alt={article.image_descriptions?.[0] ?? `${article.given_name} ${article.surname}`} />
+        {/if}
+        <div class="header-text">
+          <h1>{article.given_name} {article.surname}</h1>
+          {#if article.occupation}
+            <p class="occupation">{article.occupation}</p>
           {/if}
-        {/if}
-        <h1>{article.given_name} {article.surname}</h1>
-        {#if article.occupation}
-          <p class="occupation">{article.occupation}</p>
-        {/if}
-        {#if formatLifespan(article)}
-          <p class="lifespan">{formatLifespan(article)}</p>
-        {/if}
-        {#if article.birth_place || article.death_place}
-          <p class="places">
-            {#if article.birth_place}
-              <span>f. {article.birth_place}{#if article.birth_place_comment} ({article.birth_place_comment}){/if}</span>
-            {/if}
-            {#if article.birth_place && article.death_place}
-              <span class="separator"> &middot; </span>
-            {/if}
-            {#if article.death_place}
-              <span>d. {article.death_place}{#if article.death_place_comment} ({article.death_place_comment}){/if}</span>
-            {/if}
-          </p>
-        {/if}
-        {#if article.volume_number || article.page_number}
-          <span class="reference">SBL band {article.volume_number}, s. {article.page_number}</span>
-        {/if}
+          {#if formatLifespan(article)}
+            <p class="lifespan">{formatLifespan(article)}</p>
+          {/if}
+          {#if article.birth_place || article.death_place}
+            <p class="places">
+              {#if article.birth_place}
+                <span>f. {article.birth_place}{#if article.birth_place_comment}({article.birth_place_comment}){/if}</span>
+              {/if}
+              {#if article.birth_place && article.death_place}
+                <span class="sep"> · </span>
+              {/if}
+              {#if article.death_place}
+                <span>d. {article.death_place}{#if article.death_place_comment}({article.death_place_comment}){/if}</span>
+              {/if}
+            </p>
+          {/if}
+          {#if article.volume_number || article.page_number}
+            <p class="ref">SBL band {article.volume_number}, s. {article.page_number}</p>
+          {/if}
+        </div>
       </header>
 
-      {#if article.cv || article.printed_works || article.sources || article.archive}
-        <nav class="section-nav">
-          {#if article.cv}<a href="#meriter">Meriter</a>{/if}
-          {#if article.printed_works}<a href="#tryckta">Tryckta arbeten</a>{/if}
-          {#if article.sources}<a href="#kallor">K&auml;llor</a>{/if}
-          {#if article.archive}<a href="#arkiv">Arkiv</a>{/if}
+      <!-- Tabs -->
+      {#if availableTabs(article).length > 0}
+        <nav class="tabs">
+          {#each availableTabs(article) as tab}
+            <button
+              class="tab"
+              class:active={activeTab === tab.id}
+              onclick={() => { activeTab = tab.id; }}
+            >{tab.label}</button>
+          {/each}
         </nav>
+
+        <div class="tab-content">
+          <div class="content pre-wrap">{@html formatSBLText(tabContent(article, activeTab))}</div>
+        </div>
       {/if}
 
-      {#if article.cv}
-        <section id="meriter">
-          <h2>Meriter</h2>
-          <div class="content pre-wrap">{@html formatSBLText(article.cv)}</div>
-        </section>
-      {/if}
-
-      {#if article.printed_works}
-        <section id="tryckta">
-          <h2>Tryckta arbeten</h2>
-          <div class="content pre-wrap">{@html formatSBLText(article.printed_works)}</div>
-        </section>
-      {/if}
-
-      {#if article.sources}
-        <section id="kallor">
-          <h2>K&auml;llor och litteratur</h2>
-          <div class="content pre-wrap">{@html formatSBLText(article.sources)}</div>
-        </section>
-      {/if}
-
-      {#if article.archive}
-        <section id="arkiv">
-          <h2>Arkivuppgifter</h2>
-          <div class="content pre-wrap">{@html formatSBLText(article.archive)}</div>
-        </section>
-      {/if}
-
+      <!-- Footer -->
       <footer>
         {#if article.article_author}
-          <p class="author">Artikelf&ouml;rfattare: {article.article_author}</p>
+          <span class="author">{article.article_author}</span>
         {/if}
         {#if article.sbl_uri}
-          <p><a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">L&auml;s hela artikeln p&aring; SBL &rarr;</a></p>
+          <a href={article.sbl_uri} target="_blank" rel="noopener noreferrer">SBL →</a>
         {/if}
-        <p class="source">K&auml;lla: Svenskt biografiskt lexikon (CC0) &middot; <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">F&ouml;rkortningar</a></p>
+        <a href="https://sok.riksarkivet.se/sbl/Hjalp.aspx" target="_blank" rel="noopener noreferrer">Förkortningar</a>
       </footer>
-    </article>
+    </div>
   {/if}
 </main>
 
 <style>
   main {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-    min-height: 100%;
-    overflow-y: auto;
+    font-family: inherit;
+    line-height: 1.5;
+    padding: 0.5rem;
   }
 
-  .loading, .error {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    color: var(--sbl-text-secondary, #666);
-    font-size: 0.95rem;
+  .state-msg {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100px; color: var(--sbl-text-secondary, #888); font-size: 0.9rem;
   }
   .error { color: #dc2626; }
 
-  article {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+  .card {
+    border: 1px solid var(--sbl-border, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
   }
 
-  /* Back button */
   .back-btn {
     display: inline-block;
-    margin-bottom: 0.75rem;
-    padding: 0.3rem 0.7rem;
-    font-size: 0.82rem;
-    font-weight: 500;
+    margin: 0.5rem 0.75rem 0;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
     color: var(--sbl-accent, #1e40af);
-    background: var(--sbl-bg-card, #f4f3ef);
-    border: 1px solid var(--sbl-border-light, #e7e5e4);
+    background: none;
+    border: 1px solid var(--sbl-border, #e0e0e0);
     border-radius: 4px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
   }
-  .back-btn:hover {
-    background: var(--sbl-accent, #1e40af);
-    color: #fff;
-  }
+  .back-btn:hover { background: var(--sbl-bg-card, #f5f5f5); }
 
-  /* Header */
+  /* Hero header */
   header {
-    position: relative;
-    padding-bottom: 1.25rem;
-    margin-bottom: 0.25rem;
-    border-bottom: 2px solid var(--sbl-border, #d6d3d1);
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: flex-start;
   }
 
   .portrait {
-    float: right;
-    width: 180px;
-    max-width: 40%;
-    margin: 0 0 0.75rem 1.5rem;
-    border-radius: 3px;
-    box-shadow: var(--sbl-portrait-shadow, 0 2px 8px rgba(0,0,0,0.12));
-    filter: saturate(0.9);
+    width: 100px;
+    height: auto;
+    border-radius: 6px;
+    flex-shrink: 0;
+    object-fit: cover;
   }
-  .portrait:hover { filter: saturate(1); }
 
-  .portrait-caption {
-    float: right;
-    clear: right;
-    width: 180px;
-    max-width: 40%;
-    margin: -0.5rem 0 0.75rem 1.5rem;
-    font-size: 0.75rem;
-    color: var(--sbl-text-muted, #a8a29e);
-    line-height: 1.3;
-    text-align: center;
+  .header-text {
+    flex: 1;
+    min-width: 0;
   }
 
   h1 {
-    font-family: var(--sbl-font-serif, Georgia, serif);
-    font-size: 1.85rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.3rem;
+    line-height: 1.2;
+    margin: 0 0 0.15rem;
   }
 
   .occupation {
-    font-size: 1.05rem;
-    color: var(--sbl-text-secondary, #57534e);
-    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--sbl-text-secondary, #666);
     font-style: italic;
+    margin: 0 0 0.15rem;
   }
 
   .lifespan {
-    font-size: 0.95rem;
-    color: var(--sbl-text-secondary, #57534e);
-    letter-spacing: 0.02em;
-    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--sbl-text-secondary, #666);
+    margin: 0 0 0.1rem;
   }
 
   .places {
-    font-size: 0.85rem;
-    color: var(--sbl-text-muted, #a8a29e);
-  }
-  .separator { color: var(--sbl-text-muted, #a8a29e); }
-
-  .reference {
-    display: inline-block;
-    margin-top: 0.6rem;
     font-size: 0.8rem;
-    color: var(--sbl-text-muted, #a8a29e);
-    background: var(--sbl-bg-card, #f4f3ef);
-    padding: 0.2rem 0.6rem;
-    border-radius: 3px;
-    letter-spacing: 0.03em;
+    color: var(--sbl-text-muted, #999);
+    margin: 0 0 0.1rem;
+  }
+  .sep { color: var(--sbl-text-muted, #bbb); }
+
+  .ref {
+    font-size: 0.75rem;
+    color: var(--sbl-text-muted, #aaa);
+    margin: 0.25rem 0 0;
   }
 
-  /* Section nav */
-  .section-nav {
+  /* Tabs */
+  .tabs {
     display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--sbl-border-light, #e7e5e4);
-    margin-bottom: 0;
+    border-top: 1px solid var(--sbl-border, #e0e0e0);
+    border-bottom: 1px solid var(--sbl-border, #e0e0e0);
     overflow-x: auto;
   }
-  .section-nav a {
-    padding: 0.5rem 0.85rem;
+
+  .tab {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--sbl-text-secondary, #57534e);
-    text-decoration: none;
+    color: var(--sbl-text-secondary, #666);
+    background: none;
+    border: none;
     border-bottom: 2px solid transparent;
+    cursor: pointer;
     white-space: nowrap;
     transition: color 0.15s, border-color 0.15s;
   }
-  .section-nav a:hover {
-    color: var(--sbl-text, #1c1917);
+  .tab:hover { color: var(--sbl-text, #222); }
+  .tab.active {
+    color: var(--sbl-accent, #1e40af);
     border-bottom-color: var(--sbl-accent, #1e40af);
   }
 
-  /* Sections */
-  section {
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--sbl-border-light, #e7e5e4);
-  }
-  section:last-of-type { border-bottom: none; }
-
-  h2 {
-    font-family: var(--sbl-font-serif, Georgia, serif);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--sbl-text, #1c1917);
-    margin-bottom: 0.6rem;
-    letter-spacing: 0.01em;
+  /* Tab content */
+  .tab-content {
+    padding: 0.75rem 1rem;
+    max-height: 250px;
+    overflow-y: auto;
   }
 
   .content {
-    font-size: 0.92rem;
-    line-height: 1.75;
-    color: var(--sbl-text, #1c1917);
+    font-size: 0.85rem;
+    line-height: 1.65;
   }
 
   .pre-wrap {
     white-space: pre-wrap;
     word-break: break-word;
   }
+
+  /* Footer */
+  footer {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--sbl-border, #e0e0e0);
+    font-size: 0.72rem;
+    color: var(--sbl-text-muted, #999);
+  }
+  footer a {
+    color: var(--sbl-accent, #1e40af);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+  .author { font-style: italic; }
 
   /* Cross-reference links */
   :global(.sbl-ref) {
@@ -558,68 +489,15 @@ onMount(async () => {
     border-bottom: 1px dotted var(--sbl-accent, #1e40af);
     cursor: pointer;
   }
-  :global(.sbl-ref:hover) {
-    text-decoration: underline;
-  }
-
-  /* Footer */
-  footer {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--sbl-border-light, #e7e5e4);
-    font-size: 0.82rem;
-    color: var(--sbl-text-muted, #a8a29e);
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  footer a {
-    color: var(--sbl-accent, #1e40af);
-    text-decoration: none;
-    font-weight: 500;
-  }
-  footer a:hover { text-decoration: underline; }
-
-  .author { font-style: italic; }
-
-  .source {
-    font-size: 0.75rem;
-    color: var(--sbl-text-muted, #a8a29e);
-    margin-top: 0.15rem;
-  }
-
-  @media (max-width: 500px) {
-    main { padding: 1rem; }
-    h1 { font-size: 1.5rem; }
-    .portrait, .portrait-caption {
-      float: none;
-      width: 100%;
-      max-width: 240px;
-      margin: 0 auto 1rem auto;
-      display: block;
-      text-align: center;
-    }
-  }
-
-  /* Cross-reference links (injected via {@html}) */
-  :global(.sbl-ref) {
-    color: var(--sbl-accent, #1e40af);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--sbl-accent, #1e40af);
-    cursor: pointer;
-  }
-  :global(.sbl-ref:hover) {
-    border-bottom-style: solid;
-  }
+  :global(.sbl-ref:hover) { border-bottom-style: solid; }
 
   /* Abbreviation tooltips */
   :global(abbr[title]) {
     text-decoration: none;
-    border-bottom: 1px dotted var(--sbl-text-muted, #a8a29e);
+    border-bottom: 1px dotted var(--sbl-text-muted, #ccc);
     cursor: help;
   }
   :global(abbr[title]:hover) {
-    border-bottom-color: var(--sbl-text-secondary, #57534e);
+    border-bottom-color: var(--sbl-text-secondary, #888);
   }
 </style>
