@@ -45,7 +45,7 @@ def _article_summary(rec: dict) -> str:
     occupation = rec.get("occupation", "")
     summary = f"SBL article: {name}"
     if occupation:
-        summary += f" — {occupation}"
+        summary += f" -- {occupation}"
     return summary
 
 
@@ -67,8 +67,6 @@ def register_view_tool(mcp) -> None:
             raise FileNotFoundError(msg)
         return html_path.read_text(encoding="utf-8")
 
-    # --- Tool 1: view_sbl_article (model + app visible, creates iframe) ---
-
     @mcp.tool(
         name="view_sbl_article",
         tags={"sbl", "biography", "viewer"},
@@ -87,7 +85,7 @@ def register_view_tool(mcp) -> None:
             Field(description="The SBL article ID from search_sbl results."),
         ],
     ) -> ToolResult:
-        """Display an SBL article in the viewer."""
+        """Display an SBL article in the viewer (creates a new viewer)."""
         logger.info("view_sbl_article called with article_id=%d", article_id)
 
         try:
@@ -97,20 +95,19 @@ def register_view_tool(mcp) -> None:
                     content=[types.TextContent(type="text", text=f"No SBL article found with id {article_id}.")],
                 )
 
-            state.set_article(rec)
+            view_id, _ = state.create_view(rec)
+            sc = {**rec, "view_id": view_id}
 
             return ToolResult(
                 content=[types.TextContent(type="text", text=_article_summary(rec))],
-                structured_content=rec,
+                structured_content=sc,
             )
 
         except Exception as exc:
             logger.error("view_sbl_article failed: %s: %s", type(exc).__name__, exc, exc_info=True)
             return ToolResult(
-                content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article — {exc!s}")],
+                content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article -- {exc!s}")],
             )
-
-    # --- Tool 2: load_sbl_article (app-only, for cross-reference navigation) ---
 
     @mcp.tool(
         name="load_sbl_article",
@@ -124,9 +121,13 @@ def register_view_tool(mcp) -> None:
             int,
             Field(description="The SBL article ID to load."),
         ],
+        view_id: Annotated[
+            str,
+            Field(description="The view ID from the initial tool result."),
+        ] = "",
     ) -> ToolResult:
         """Load an article in-place (called by the UI on cross-reference clicks)."""
-        logger.info("load_sbl_article called with article_id=%d", article_id)
+        logger.info("load_sbl_article called with article_id=%d, view_id=%s", article_id, view_id)
 
         try:
             rec = _fetch_article(article_id)
@@ -135,37 +136,45 @@ def register_view_tool(mcp) -> None:
                     content=[types.TextContent(type="text", text=f"No SBL article found with id {article_id}.")],
                 )
 
-            state.set_article(rec)
+            if view_id:
+                state.set_article(view_id, rec)
+
+            sc = {**rec, "view_id": view_id}
 
             return ToolResult(
                 content=[types.TextContent(type="text", text=_article_summary(rec))],
-                structured_content=rec,
+                structured_content=sc,
             )
 
         except Exception as exc:
             logger.error("load_sbl_article failed: %s: %s", type(exc).__name__, exc, exc_info=True)
             return ToolResult(
-                content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article — {exc!s}")],
+                content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article -- {exc!s}")],
             )
-
-    # --- Tool 3: get_sbl_state (app-only, polling for LLM-initiated loads) ---
 
     @mcp.tool(
         name="get_sbl_state",
         tags={"sbl", "biography", "viewer"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
         app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
-        description="Get the current SBL article state (app-only, for polling).",
+        description="Get the current SBL article state for a specific view (app-only, for polling).",
     )
-    async def get_sbl_state() -> ToolResult:
-        """Return the current article for the UI to poll."""
-        rec = state.get_article()
+    async def get_sbl_state(
+        view_id: Annotated[
+            str,
+            Field(description="The view ID to get state for."),
+        ] = "",
+    ) -> ToolResult:
+        """Return the current article for a specific view."""
+        rec = state.get_article(view_id) if view_id else None
         if not rec:
             return ToolResult(
                 content=[types.TextContent(type="text", text="No article loaded.")],
             )
 
+        sc = {**rec, "view_id": view_id}
+
         return ToolResult(
             content=[types.TextContent(type="text", text=_article_summary(rec))],
-            structured_content=rec,
+            structured_content=sc,
         )

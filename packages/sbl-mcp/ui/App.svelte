@@ -46,6 +46,7 @@ let error = $state<string | null>(null);
 let isLoading = $state(false);
 let history = $state<number[]>([]);
 let activeTab = $state<Tab>("meriter");
+let viewId = $state("");
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 function availableTabs(a: SBLArticle): { id: Tab; label: string }[] {
@@ -170,7 +171,7 @@ async function loadArticle(articleId: number) {
   try {
     const result = await app!.callServerTool({
       name: "load_sbl_article",
-      arguments: { article_id: articleId },
+      arguments: { article_id: articleId, view_id: viewId },
     });
     if (result.structuredContent) {
       article = result.structuredContent as SBLArticle;
@@ -195,9 +196,10 @@ function startPolling() {
   pollTimer = setInterval(async () => {
     if (!app) return;
     try {
+      if (!viewId) return;
       const result = await app.callServerTool({
         name: "get_sbl_state",
-        arguments: {},
+        arguments: { view_id: viewId },
       });
       const sc = result.structuredContent as SBLArticle | undefined;
       if (sc && sc.article_id !== article?.article_id) {
@@ -240,8 +242,11 @@ onMount(async () => {
       error = result.content?.map((c: any) => ("text" in c ? c.text : "")).join(" ") ?? "Unknown error";
       return;
     }
-    const sc = result.structuredContent as SBLArticle | undefined;
-    if (sc) { article = sc; error = null; history.push(sc.article_id); activeTab = "meriter"; }
+    const sc = result.structuredContent as (SBLArticle & { view_id?: string }) | undefined;
+    if (sc) {
+      if (sc.view_id) viewId = sc.view_id;
+      article = sc; error = null; history.push(sc.article_id); activeTab = "meriter";
+    }
   };
   instance.ontoolcancelled = () => { isLoading = false; };
   instance.onerror = (err) => { console.error("App error:", err); error = err.message; };
