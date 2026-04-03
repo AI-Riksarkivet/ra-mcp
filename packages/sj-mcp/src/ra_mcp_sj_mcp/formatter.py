@@ -33,7 +33,7 @@ def _format_juda_record(rec: dict, lines: list[str]) -> None:
 
     fbanm = rec.get("fbanm", "")
     if fbanm:
-        lines.append(f"Notes: {_truncate(fbanm, 400)}")
+        lines.append(f"Notes: {_truncate(fbanm, 150)}")
 
     lines.append("")
 

@@ -39,7 +39,7 @@ def _format_domboksregister_record(rec: dict, lines: list[str]) -> None:
 
     anteckning = rec.get("anteckning", "")
     if anteckning:
-        lines.append(f"Note: {_truncate(anteckning, 400)}")
+        lines.append(f"Note: {_truncate(anteckning, 150)}")
 
     lines.append("")
 
@@ -97,7 +97,7 @@ def _format_medelstad_record(rec: dict, lines: list[str]) -> None:
 
     mal_referat = rec.get("mal_referat", "")
     if mal_referat:
-        lines.append(f"Summary: {_truncate(mal_referat, 500)}")
+        lines.append(f"Summary: {_truncate(mal_referat, 200)}")
 
     lines.append("")
 

@@ -83,21 +83,12 @@ def format_sbl_results(result: SearchResult) -> str:
 
         cv = rec.get("cv", "")
         if cv:
-            truncated = cv[:500] + "..." if len(cv) > 500 else cv
+            truncated = cv[:200] + "..." if len(cv) > 200 else cv
             lines.append(f"CV: {truncated}")
-
-        sources = rec.get("sources", "")
-        if sources:
-            truncated = sources[:300] + "..." if len(sources) > 300 else sources
-            lines.append(f"Sources: {truncated}")
 
         sbl_uri = rec.get("sbl_uri", "")
         if sbl_uri:
             lines.append(f"SBL: {sbl_uri}")
-
-        image_files = rec.get("image_files", [])
-        if image_files:
-            lines.append(f"Portrait: {image_files[0]}")
 
         lines.append("")
 

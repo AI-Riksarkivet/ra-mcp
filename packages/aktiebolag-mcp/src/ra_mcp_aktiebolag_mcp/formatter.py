@@ -36,7 +36,7 @@ def _format_bolag_record(rec: dict, lines: list[str]) -> None:
 
     andamal = rec.get("bolagets_andamal", "")
     if andamal:
-        lines.append(f"Purpose: {_truncate(andamal, 400)}")
+        lines.append(f"Purpose: {_truncate(andamal, 200)}")
 
     _append_if(lines, "Director", rec.get("verkstall_dir", ""))
 
@@ -46,7 +46,7 @@ def _format_bolag_record(rec: dict, lines: list[str]) -> None:
 
     styrelsemedlemmar = rec.get("styrelsemedlemmar", "")
     if styrelsemedlemmar:
-        lines.append(f"Board: {_truncate(styrelsemedlemmar, 300)}")
+        lines.append(f"Board: {_truncate(styrelsemedlemmar, 200)}")
 
     lines.append("")
 

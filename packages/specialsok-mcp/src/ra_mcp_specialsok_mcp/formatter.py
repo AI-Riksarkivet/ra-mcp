@@ -58,7 +58,7 @@ def _format_flygvapen_record(rec: dict, lines: list[str]) -> None:
 
     sammanfattning = rec.get("sammanfattning", "")
     if sammanfattning:
-        lines.append(f"Summary: {_truncate(sammanfattning, 500)}")
+        lines.append(f"Summary: {_truncate(sammanfattning, 200)}")
 
     lines.append("")
 
@@ -130,11 +130,11 @@ def _format_kurhuset_record(rec: dict, lines: list[str]) -> None:
 
     beskrivning = rec.get("sjukdomsbeskrivning", "")
     if beskrivning:
-        lines.append(f"Description: {_truncate(beskrivning, 400)}")
+        lines.append(f"Description: {_truncate(beskrivning, 200)}")
 
     behandling = rec.get("sjukdomsbehandling", "")
     if behandling:
-        lines.append(f"Treatment: {_truncate(behandling, 400)}")
+        lines.append(f"Treatment: {_truncate(behandling, 200)}")
 
     _append_if(lines, "Note", rec.get("anmarkning", ""))
     lines.append("")
@@ -168,7 +168,7 @@ def _format_press_record(rec: dict, lines: list[str]) -> None:
 
     innehaall = rec.get("innehaall", "")
     if innehaall:
-        lines.append(f"Content: {_truncate(innehaall, 500)}")
+        lines.append(f"Content: {_truncate(innehaall, 200)}")
 
     _append_if(lines, "Note", rec.get("anmaerkning", ""))
     lines.append("")

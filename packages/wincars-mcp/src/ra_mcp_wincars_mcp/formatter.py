@@ -54,16 +54,6 @@ def _format_wincars_record(rec: dict, lines: list[str]) -> None:
 
     _append_if(lines, "Notes", rec.get("anm", ""))
 
-    arkivkod = rec.get("arkivkod", "")
-    volym = rec.get("volym", "")
-    if arkivkod or volym:
-        archive_parts = []
-        if arkivkod:
-            archive_parts.append(arkivkod)
-        if volym:
-            archive_parts.append(f"vol {volym}")
-        lines.append(f"Archive: {', '.join(archive_parts)}")
-
     lines.append("")
 
 

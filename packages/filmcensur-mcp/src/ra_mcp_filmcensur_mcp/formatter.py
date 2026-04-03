@@ -40,11 +40,7 @@ def _format_filmreg_record(rec: dict, lines: list[str]) -> None:
 
     fri_text = rec.get("fri_text", "")
     if fri_text:
-        lines.append(f"Description: {_truncate(fri_text, 500)}")
-
-    noteringar = rec.get("noteringar", "")
-    if noteringar:
-        lines.append(f"Notes: {_truncate(noteringar, 300)}")
+        lines.append(f"Description: {_truncate(fri_text, 200)}")
 
     lines.append("")
 

@@ -56,17 +56,13 @@ def format_sdhk_results(result: SearchResult) -> str:
 
         summary = rec.get("summary", "")
         if summary:
-            truncated = summary[:500] + "..." if len(summary) > 500 else summary
+            truncated = summary[:200] + "..." if len(summary) > 200 else summary
             lines.append(f"Summary: {truncated}")
 
         edition = rec.get("edition", "")
         if edition:
-            truncated = edition[:300] + "..." if len(edition) > 300 else edition
+            truncated = edition[:150] + "..." if len(edition) > 150 else edition
             lines.append(f"Edition: {truncated}")
-
-        printed = rec.get("printed", "")
-        if printed:
-            lines.append(f"Printed: {printed}")
 
         manifest_url = rec.get("manifest_url", "")
         has_transcription = rec.get("has_transcription", False)
@@ -163,7 +159,7 @@ def format_mpo_results(result: SearchResult) -> str:
 
         content = rec.get("content", "")
         if content:
-            truncated = content[:500] + "..." if len(content) > 500 else content
+            truncated = content[:200] + "..." if len(content) > 200 else content
             lines.append(f"Content: {truncated}")
 
         iiif_manifest = rec.get("iiif_manifest", "")

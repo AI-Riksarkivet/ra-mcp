@@ -55,12 +55,7 @@ def _format_fodelse_record(rec: dict, lines: list[str]) -> None:
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 300)}")
-
-    referenskod = rec.get("referenskod", "")
-    volym = rec.get("volym", "")
-    if referenskod or volym:
-        lines.append(f"Archive: {referenskod}, {volym}" if referenskod and volym else f"Archive: {referenskod or volym}")
+        lines.append(f"Note: {_truncate(anm, 150)}")
 
     lines.append("")
 
@@ -132,12 +127,7 @@ def _format_doda_record(rec: dict, lines: list[str]) -> None:
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 300)}")
-
-    referenskod = rec.get("referenskod", "")
-    volym = rec.get("volym", "")
-    if referenskod or volym:
-        lines.append(f"Archive: {referenskod}, {volym}" if referenskod and volym else f"Archive: {referenskod or volym}")
+        lines.append(f"Note: {_truncate(anm, 150)}")
 
     lines.append("")
 
@@ -213,12 +203,7 @@ def _format_vigsel_record(rec: dict, lines: list[str]) -> None:
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 300)}")
-
-    referenskod = rec.get("referenskod", "")
-    volym = rec.get("volym", "")
-    if referenskod or volym:
-        lines.append(f"Archive: {referenskod}, {volym}" if referenskod and volym else f"Archive: {referenskod or volym}")
+        lines.append(f"Note: {_truncate(anm, 150)}")
 
     lines.append("")
 

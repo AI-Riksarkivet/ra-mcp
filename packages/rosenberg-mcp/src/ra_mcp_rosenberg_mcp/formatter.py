@@ -34,7 +34,7 @@ def _format_rosenberg_record(rec: dict, lines: list[str]) -> None:
 
     beskrivning = rec.get("beskrivning", "")
     if beskrivning:
-        lines.append(f"Description: {_truncate(beskrivning, 600)}")
+        lines.append(f"Description: {_truncate(beskrivning, 300)}")
 
     # Collect industries with "1"
     from ra_mcp_rosenberg_lib.models import _INDUSTRY_DISPLAY
