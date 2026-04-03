@@ -231,16 +231,12 @@ $effect(() => {
   if (hostContext?.styles?.css?.fonts) applyHostFonts(hostContext.styles.css.fonts);
 });
 
-$effect(() => {
-  if (!app) return;
-  app.sendSizeChanged({ height: 480 });
-});
 
 onMount(async () => {
   const instance = new App(
     { name: "SBL Article Viewer", version: "1.0.0" },
     { availableDisplayModes: ["inline"] },
-    { autoResize: false },
+    { autoResize: true },
   );
 
   instance.ontoolinputpartial = () => { if (!article) isLoading = true; };
