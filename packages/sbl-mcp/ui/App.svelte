@@ -344,12 +344,12 @@ onMount(async () => {
 
   .state-msg {
     display: flex; align-items: center; justify-content: center;
-    min-height: 100px; color: var(--sbl-text-secondary, #888); font-size: 0.9rem;
+    min-height: 100px; opacity: 0.7; font-size: 0.9rem;
   }
   .error { color: #dc2626; }
 
   .card {
-    border: 1px solid var(--sbl-border, #e0e0e0);
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
     border-radius: 8px;
     overflow: hidden;
   }
@@ -359,13 +359,13 @@ onMount(async () => {
     margin: 0.5rem 0.75rem 0;
     padding: 0.2rem 0.5rem;
     font-size: 0.75rem;
-    color: var(--sbl-accent, #1e40af);
+    color: LinkText;
     background: none;
-    border: 1px solid var(--sbl-border, #e0e0e0);
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
     border-radius: 4px;
     cursor: pointer;
   }
-  .back-btn:hover { background: var(--sbl-bg-card, #f5f5f5); }
+  .back-btn:hover { background: color-mix(in srgb, currentColor 5%, transparent); }
 
   /* Hero header */
   header {
@@ -397,35 +397,35 @@ onMount(async () => {
 
   .occupation {
     font-size: 0.9rem;
-    color: var(--sbl-text-secondary, #666);
+    opacity: 0.7;
     font-style: italic;
     margin: 0 0 0.15rem;
   }
 
   .lifespan {
     font-size: 0.85rem;
-    color: var(--sbl-text-secondary, #666);
+    opacity: 0.7;
     margin: 0 0 0.1rem;
   }
 
   .places {
     font-size: 0.8rem;
-    color: var(--sbl-text-muted, #999);
+    opacity: 0.5;
     margin: 0 0 0.1rem;
   }
-  .sep { color: var(--sbl-text-muted, #bbb); }
+  .sep { opacity: 0.5; }
 
   .ref {
     font-size: 0.75rem;
-    color: var(--sbl-text-muted, #aaa);
+    opacity: 0.5;
     margin: 0.25rem 0 0;
   }
 
   /* Tabs */
   .tabs {
     display: flex;
-    border-top: 1px solid var(--sbl-border, #e0e0e0);
-    border-bottom: 1px solid var(--sbl-border, #e0e0e0);
+    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
     overflow-x: auto;
   }
 
@@ -434,7 +434,7 @@ onMount(async () => {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--sbl-text-secondary, #666);
+    opacity: 0.7;
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
@@ -442,10 +442,10 @@ onMount(async () => {
     white-space: nowrap;
     transition: color 0.15s, border-color 0.15s;
   }
-  .tab:hover { color: var(--sbl-text, #222); }
+  .tab:hover { color: inherit; }
   .tab.active {
-    color: var(--sbl-accent, #1e40af);
-    border-bottom-color: var(--sbl-accent, #1e40af);
+    color: LinkText;
+    border-bottom-color: LinkText;
   }
 
   /* Tab content */
@@ -471,12 +471,12 @@ onMount(async () => {
     gap: 0.75rem;
     align-items: center;
     padding: 0.5rem 1rem;
-    border-top: 1px solid var(--sbl-border, #e0e0e0);
+    border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
     font-size: 0.72rem;
-    color: var(--sbl-text-muted, #999);
+    opacity: 0.5;
   }
   footer a {
-    color: var(--sbl-accent, #1e40af);
+    color: LinkText;
     text-decoration: none;
   }
   footer a:hover { text-decoration: underline; }
@@ -484,9 +484,9 @@ onMount(async () => {
 
   /* Cross-reference links */
   :global(.sbl-ref) {
-    color: var(--sbl-accent, #1e40af);
+    color: LinkText;
     text-decoration: none;
-    border-bottom: 1px dotted var(--sbl-accent, #1e40af);
+    border-bottom: 1px dotted LinkText;
     cursor: pointer;
   }
   :global(.sbl-ref:hover) { border-bottom-style: solid; }
@@ -494,10 +494,14 @@ onMount(async () => {
   /* Abbreviation tooltips */
   :global(abbr[title]) {
     text-decoration: none;
-    border-bottom: 1px dotted var(--sbl-text-muted, #ccc);
+    border-bottom: 1px dotted currentColor;
+    opacity: 0.6;
     cursor: help;
   }
   :global(abbr[title]:hover) {
-    border-bottom-color: var(--sbl-text-secondary, #888);
+    opacity: 1;
   }
+
+  /* Tab needs color inherit for font color */
+  .tab { color: inherit; }
 </style>
