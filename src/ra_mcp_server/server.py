@@ -226,6 +226,18 @@ try:
 except ImportError:
     pass
 
+# tora-mcp is optional
+try:
+    from ra_mcp_tora_mcp import tora_mcp  # ty: ignore[unresolved-import]
+
+    AVAILABLE_MODULES["tora"] = {
+        "server": tora_mcp,
+        "description": "Geocode historical Swedish places via TORA (51K settlements with coordinates)",
+        "default": True,
+    }
+except ImportError:
+    pass
+
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
@@ -305,6 +317,7 @@ TOOL SELECTION:
 - Historical Swedish places/geography → rosenberg:search_rosenberg with keyword, filter by county/parish
 - Västra härad court cases (1611-1730) → court:search_domboksregister with keyword, filter by role/parish
 - Medelstad härad court cases (1668-1750) → court:search_medelstad with keyword, filter by case type/parish
+- Geocode historical place → tora:search_tora with name, optional parish/county
 - Genealogy: birth/baptism records (1600s-1914) → dds:search_fodelse with keyword, filter by parish/county/gender
 - Genealogy: death records (1600s-1951) → dds:search_doda with keyword, filter by parish/county/cause of death
 - Genealogy: marriage records (1600s-1929) → dds:search_vigsel with keyword, filter by parish/county
