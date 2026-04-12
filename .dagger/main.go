@@ -37,8 +37,10 @@ func (m *RaMcp) withUv(container *dagger.Container) *dagger.Container {
 
 // buildWithUv creates a development container with uv tooling and all dependencies (including CLI extras)
 func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dagger.Container, error) {
+	// Use slim (Debian/glibc) instead of alpine (musl) because lancedb
+	// only ships manylinux wheels that require glibc
 	container := dag.Container().
-		From("python:3.13-alpine").
+		From("python:3.13-slim").
 		WithDirectory("/app", source).
 		WithWorkdir("/app")
 
@@ -55,7 +57,7 @@ func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dag
 func (m *RaMcp) getVersion(ctx context.Context, source *dagger.Directory) (string, error) {
 	// Use a builder container with source files (not the production image)
 	container := dag.Container().
-		From("python:3.13-alpine").
+		From("python:3.13-slim").
 		WithDirectory("/app", source).
 		WithWorkdir("/app")
 
