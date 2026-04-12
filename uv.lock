@@ -53,6 +53,8 @@ members = [
     "ra-mcp-specialsok-mcp",
     "ra-mcp-suffrage-lib",
     "ra-mcp-suffrage-mcp",
+    "ra-mcp-tora-lib",
+    "ra-mcp-tora-mcp",
     "ra-mcp-tui",
     "ra-mcp-viewer-mcp",
     "ra-mcp-wincars-lib",
@@ -2176,6 +2178,7 @@ dependencies = [
     { name = "ra-mcp-sjomanshus-mcp" },
     { name = "ra-mcp-specialsok-mcp" },
     { name = "ra-mcp-suffrage-mcp" },
+    { name = "ra-mcp-tora-mcp" },
     { name = "ra-mcp-viewer-mcp" },
     { name = "ra-mcp-wincars-mcp" },
     { name = "requests" },
@@ -2225,6 +2228,9 @@ specialsok = [
 ]
 suffrage = [
     { name = "ra-mcp-suffrage-mcp" },
+]
+tora = [
+    { name = "ra-mcp-tora-mcp" },
 ]
 tui = [
     { name = "ra-mcp-tui" },
@@ -2289,6 +2295,8 @@ requires-dist = [
     { name = "ra-mcp-specialsok-mcp", marker = "extra == 'specialsok'", editable = "packages/specialsok-mcp" },
     { name = "ra-mcp-suffrage-mcp", editable = "packages/suffrage-mcp" },
     { name = "ra-mcp-suffrage-mcp", marker = "extra == 'suffrage'", editable = "packages/suffrage-mcp" },
+    { name = "ra-mcp-tora-mcp", editable = "packages/tora-mcp" },
+    { name = "ra-mcp-tora-mcp", marker = "extra == 'tora'", editable = "packages/tora-mcp" },
     { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
     { name = "ra-mcp-wincars-mcp", editable = "packages/wincars-mcp" },
@@ -2296,7 +2304,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.33.0" },
     { name = "starlette", specifier = ">=0.52.1" },
 ]
-provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "wincars", "sj", "tui"]
+provides-extras = ["cli", "label", "diplomatics", "sbl", "sjomanshus", "filmcensur", "rosenberg", "court", "aktiebolag", "faltjagare", "suffrage", "specialsok", "dds", "wincars", "sj", "tora", "tui"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2938,6 +2946,36 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.1.1" },
     { name = "ra-mcp-suffrage-lib", editable = "packages/suffrage-lib" },
+]
+
+[[package]]
+name = "ra-mcp-tora-lib"
+version = "0.11.3"
+source = { editable = "packages/tora-lib" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/common" },
+]
+
+[[package]]
+name = "ra-mcp-tora-mcp"
+version = "0.11.3"
+source = { editable = "packages/tora-mcp" }
+dependencies = [
+    { name = "fastmcp" },
+    { name = "ra-mcp-tora-lib" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "ra-mcp-tora-lib", editable = "packages/tora-lib" },
 ]
 
 [[package]]
