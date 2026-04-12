@@ -5,17 +5,17 @@ from ra_mcp_tora_mcp.formatter import format_tora_results
 
 
 def _make_place(**overrides) -> ToraPlace:
-    defaults = dict(
-        tora_id="9809",
-        name="Kerstinbo",
-        lat=60.2506,
-        lon=16.9486,
-        accuracy="high",
-        parish="Östervåla",
-        municipality="Heby kommun",
-        county="Uppsala län",
-        province="Uppland",
-    )
+    defaults = {
+        "tora_id": "9809",
+        "name": "Kerstinbo",
+        "lat": 60.2506,
+        "lon": 16.9486,
+        "accuracy": "high",
+        "parish": "Östervåla",
+        "municipality": "Heby kommun",
+        "county": "Uppsala län",
+        "province": "Uppland",
+    }
     defaults.update(overrides)
     return ToraPlace(**defaults)
 

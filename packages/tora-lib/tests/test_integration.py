@@ -38,7 +38,7 @@ async def test_live_geocode():
     result = await geocode("Kerstinbo")
 
     assert result is not None
-    lat, lon = result
+    lat, _lon = result
     assert 59 < lat < 61
 
 

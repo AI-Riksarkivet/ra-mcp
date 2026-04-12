@@ -1,7 +1,8 @@
 """Tests for TORA SPARQL client."""
 
-import pytest
 from unittest.mock import AsyncMock
+
+import pytest
 
 from ra_mcp_tora_lib.client import ToraClient
 

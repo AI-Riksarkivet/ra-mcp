@@ -1,6 +1,5 @@
 """Tests for the geocode convenience function."""
 
-import pytest
 from unittest.mock import AsyncMock, patch
 
 from ra_mcp_tora_lib.geocode import geocode
@@ -8,7 +7,7 @@ from ra_mcp_tora_lib.models import ToraPlace
 
 
 def _make_place(**overrides) -> ToraPlace:
-    defaults = dict(tora_id="1", name="Test", lat=60.0, lon=16.0, accuracy="high")
+    defaults = {"tora_id": "1", "name": "Test", "lat": 60.0, "lon": 16.0, "accuracy": "high"}
     defaults.update(overrides)
     return ToraPlace(**defaults)
 
