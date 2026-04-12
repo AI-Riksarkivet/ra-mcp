@@ -1,7 +1,10 @@
-"""Resolve LanceDB dataset paths — local first, HuggingFace remote fallback.
+"""Resolve LanceDB dataset paths — local, mount, or HuggingFace remote fallback.
 
-When a local data/ path doesn't exist, returns an hf:// URI so LanceDB
-reads directly from HuggingFace without downloading.
+Resolution order:
+1. Environment variable <NAME>_LANCEDB_URI
+2. Local data/<name>/ relative to project root (development)
+3. /data/<name>/ mount point (Docker with hf-mount)
+4. hf://datasets/carpelan/<name>-lance (remote fallback)
 """
 
 from __future__ import annotations
@@ -12,8 +15,11 @@ from pathlib import Path
 
 logger = logging.getLogger("ra_mcp.datasets")
 
-# HuggingFace org/user for dataset repos
+# HuggingFace org/user for dataset repos (remote fallback)
 HF_OWNER = "carpelan"
+
+# Mount point for hf-mount in Docker
+MOUNT_DIR = Path(os.getenv("RA_MCP_DATA_DIR", "/data"))
 
 
 def _resolve_project_root() -> Path | None:
@@ -31,8 +37,9 @@ def resolve_dataset_path(name: str) -> str:
 
     Resolution order:
     1. Environment variable <NAME>_LANCEDB_URI (e.g. DDS_LANCEDB_URI)
-    2. Local data/<name>/ relative to project root
-    3. HuggingFace remote via hf://datasets/carpelan/<name>-lance
+    2. Local data/<name>/ relative to project root (development)
+    3. /data/<name>/ mount point (Docker with hf-mount)
+    4. hf://datasets/carpelan/<name>-lance (remote fallback)
 
     Args:
         name: Dataset name (e.g. "dds", "rosenberg", "aktiebolag").
@@ -46,14 +53,20 @@ def resolve_dataset_path(name: str) -> str:
     if env_val:
         return env_val
 
-    # 2. Check local data/ directory
+    # 2. Check local data/ directory (development)
     root = _resolve_project_root()
     if root:
         local_path = root / "data" / name
         if local_path.exists():
             return str(local_path)
 
-    # 3. HuggingFace remote — LanceDB reads directly via hf:// protocol
+    # 3. Check mount point (Docker with hf-mount)
+    mount_path = MOUNT_DIR / name
+    if mount_path.exists():
+        logger.info("Using mounted dataset: %s", mount_path)
+        return str(mount_path)
+
+    # 4. HuggingFace remote — LanceDB reads directly via hf:// protocol
     hf_uri = f"hf://datasets/{HF_OWNER}/{name}-lance"
     logger.info("Using remote dataset: %s", hf_uri)
     return hf_uri

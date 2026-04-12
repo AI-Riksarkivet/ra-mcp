@@ -75,12 +75,13 @@ COPY --chown=ra-mcp:ra-mcp docs/assets/ ./docs/assets/
 COPY --chown=ra-mcp:ra-mcp packages/guide-mcp/resources/ ./resources/
 COPY --chown=ra-mcp:ra-mcp plugins/ ./plugins/
 
-RUN mkdir -p /app/data && chown ra-mcp:ra-mcp /app /app/data
+RUN mkdir -p /app/data /data && chown ra-mcp:ra-mcp /app /app/data /data
 
 USER ra-mcp
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRADIO_SERVER_NAME="0.0.0.0"
-ENV DIPLOMATICS_LANCEDB_URI="hf://datasets/carpelan/diplomatics-lance"
+# Datasets resolved via /data mount (hf-mount) or hf:// remote fallback
+ENV RA_MCP_DATA_DIR="/data"
 
 # Health check via /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
