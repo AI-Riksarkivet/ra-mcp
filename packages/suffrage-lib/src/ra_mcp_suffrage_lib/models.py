@@ -29,6 +29,7 @@ class RostrattRecord(BaseModel):
     bidrag_ore: str = ""
     fodelseuppgift: str = ""
     ovriga_anteckningar: str = ""
+    bild_id: str = ""
 
     @classmethod
     def from_csv_row(cls, row: dict[str, str]) -> RostrattRecord:
@@ -49,6 +50,7 @@ class RostrattRecord(BaseModel):
             bidrag_ore=_clean(row.get("Bidrag_öre", row.get("Bidrag_ore", ""))),
             fodelseuppgift=_clean(row.get("Födelseuppgift", row.get("Fodelseuppgift", ""))),
             ovriga_anteckningar=_clean(row.get("Övriga_anteckningar", row.get("Ovriga_anteckningar", ""))),
+            bild_id=_clean(row.get("BildID", "")),
         )
 
     @property
@@ -78,6 +80,7 @@ class FKPRRecord(BaseModel):
     adress: str = ""
     anteckningar: str = ""
     membership_years: list[int] = []
+    bild_id: str = ""
 
     @classmethod
     def from_csv_row(cls, row: dict[str, str]) -> FKPRRecord:
@@ -99,6 +102,7 @@ class FKPRRecord(BaseModel):
             adress=_clean(row.get("ADRESS", "")),
             anteckningar=_clean(row.get("ANTECKNINGAR", "")),
             membership_years=years,
+            bild_id=_clean(row.get("BILDID", "")),
         )
 
     @property

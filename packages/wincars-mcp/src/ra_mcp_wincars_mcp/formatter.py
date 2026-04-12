@@ -53,6 +53,8 @@ def _format_wincars_record(rec: dict, lines: list[str]) -> None:
         lines.append(f"Status: {status_display}")
 
     _append_if(lines, "Notes", rec.get("anm", ""))
+    _append_if(lines, "Archive", rec.get("arkivkod", ""))
+    _append_if(lines, "Volume", rec.get("volym", ""))
 
     lines.append("")
 
@@ -74,5 +76,8 @@ def format_wincars_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Use view_document with the archive reference code to see the original registration card.")
 
     return "\n".join(lines)

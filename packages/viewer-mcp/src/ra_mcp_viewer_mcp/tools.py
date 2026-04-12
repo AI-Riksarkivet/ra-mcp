@@ -14,7 +14,7 @@ from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
 from ra_mcp_viewer_mcp.models import ViewerState
-from ra_mcp_viewer_mcp.resolve import browse_resolve_document, manifest_resolve_document, validate_url_pairs
+from ra_mcp_viewer_mcp.resolve import bild_resolve_document, browse_resolve_document, manifest_resolve_document, validate_url_pairs
 from ra_mcp_viewer_mcp.state import get_active_state, get_state, put_state
 
 
@@ -178,6 +178,55 @@ async def view_manifest(
     sc = await put_state(state)
 
     logger.info("view_manifest: %s, resolved %d page(s), view_id=%s", manifest_url, len(resolved.image_urls), view_id)
+    return ToolResult(
+        content=[types.TextContent(type="text", text=summary)],
+        structured_content=sc,
+    )
+
+
+@mcp.tool(
+    name="view_bild",
+    description=(
+        "Display document pages by bild_id (image identifier). "
+        "A bild_id like 'C0056829_00001' directly identifies a single page image in Riksarkivet. "
+        "Found in DDS church records (födelse, döda, vigsel — the bild_id field in search results). "
+        "Pass one or more bild_ids to view the corresponding pages with transcription overlay."
+    ),
+    app=AppConfig(resource_uri=RESOURCE_URI),
+)
+async def view_bild(
+    bild_ids: Annotated[list[str], Field(description="One or more bild_ids (e.g. ['C0056829_00001'] or ['C0056829_00001', 'C0056829_00002']).")],
+    ctx: Context,
+    highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
+) -> ToolResult:
+    """View document pages by bild_id."""
+    try:
+        resolved = bild_resolve_document(bild_ids, highlight_term)
+    except ValueError as e:
+        return error_result(str(e))
+
+    has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
+    summary = build_summary(
+        len(resolved.image_urls),
+        resolved.page_numbers,
+        has_ui,
+        resolved.image_urls,
+    )
+
+    view_id = str(uuid4())
+    state = ViewerState(
+        view_id=view_id,
+        image_urls=resolved.image_urls,
+        text_layer_urls=resolved.text_layer_urls,
+        page_numbers=resolved.page_numbers,
+        bildvisning_urls=resolved.bildvisning_urls,
+        document_info=resolved.document_info,
+        highlight_term=highlight_term or "",
+        reference_code="",
+    )
+    sc = await put_state(state)
+
+    logger.info("view_bild: %s, resolved %d page(s), view_id=%s", bild_ids, len(resolved.image_urls), view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=summary)],
         structured_content=sc,

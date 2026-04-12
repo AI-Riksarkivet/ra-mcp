@@ -1,5 +1,6 @@
 """Document resolution — bridge between browse domain and viewer tools."""
 
+from ra_mcp_browse_lib import url_generator
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_common.http_client import HTTPClient, default_http_client
 from ra_mcp_iiif_lib import IIIFClient
@@ -70,6 +71,60 @@ async def manifest_resolve_document(
         page_numbers=list(range(1, len(canvases) + 1)),
         bildvisning_urls=[""] * len(canvases),
         document_info=f"**Document:** {manifest.label or 'Unknown'}\n\n**Manifest:** {manifest_url}",
+    )
+
+
+def _parse_bild_id(bild_id: str) -> tuple[str, str]:
+    """Split a bild_id into (manifest_id, page_number).
+
+    A bild_id like 'C0056829_00001' splits at the last '_' into
+    manifest_id='C0056829' and page_number='00001'.
+
+    Raises ValueError if the format is invalid.
+    """
+    idx = bild_id.rfind("_")
+    if idx <= 0:
+        raise ValueError(f"Invalid bild_id format: {bild_id!r} (expected e.g. 'C0056829_00001').")
+    return bild_id[:idx], bild_id[idx + 1 :]
+
+
+def bild_resolve_document(
+    bild_ids: list[str],
+    highlight_term: str | None = None,
+) -> ResolvedDocument:
+    """Resolve one or more bild_ids to a ResolvedDocument.
+
+    Each bild_id (e.g. 'C0056829_00001') is split into manifest_id + page_number,
+    then URLs are generated using the existing url_generator.
+
+    Raises ValueError if any bild_id is invalid.
+    """
+    if not bild_ids:
+        raise ValueError("bild_ids must not be empty.")
+
+    image_urls: list[str] = []
+    text_layer_urls: list[str] = []
+    page_numbers: list[int] = []
+    bildvisning_urls: list[str] = []
+
+    for bild_id in bild_ids:
+        manifest_id, page_num = _parse_bild_id(bild_id.strip())
+
+        image_url = url_generator.iiif_image_url(manifest_id, page_num)
+        alto = url_generator.alto_url(manifest_id, page_num)
+        bv = url_generator.bildvisning_url(manifest_id, page_num, highlight_term)
+
+        image_urls.append(image_url or "")
+        text_layer_urls.append(alto or "")
+        page_numbers.append(int(page_num) if page_num.lstrip("0").isdigit() or page_num == "0" * len(page_num) else 0)
+        bildvisning_urls.append(bv or "")
+
+    return ResolvedDocument(
+        image_urls=image_urls,
+        text_layer_urls=text_layer_urls,
+        page_numbers=page_numbers,
+        bildvisning_urls=bildvisning_urls,
+        document_info=f"**Bild ID:** {', '.join(bild_ids)}",
     )
 
 

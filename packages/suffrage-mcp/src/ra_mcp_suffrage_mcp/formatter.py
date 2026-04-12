@@ -44,6 +44,11 @@ def _format_rostratt_record(rec: dict, lines: list[str]) -> None:
     _append_if(lines, "Contribution", contribution)
     _append_if(lines, "Birth info", rec.get("fodelseuppgift", ""))
     _append_if(lines, "Notes", rec.get("ovriga_anteckningar", ""))
+
+    bild_id = rec.get("bild_id", "")
+    if bild_id:
+        lines.append(f"Source: https://sok.riksarkivet.se/bildvisning/{bild_id}")
+
     lines.append("")
 
 
@@ -67,6 +72,9 @@ def format_rostratt_results(result: SearchResult) -> str:
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
 
+    lines.append("")
+    lines.append("Tip: Use view_bild with the bild_id to see the original petition page, or open the Source link directly.")
+
     return "\n".join(lines)
 
 
@@ -84,6 +92,11 @@ def _format_fkpr_record(rec: dict, lines: list[str]) -> None:
         lines.append(f"Member: {', '.join(str(y) for y in years)}")
 
     _append_if(lines, "Notes", rec.get("anteckningar", ""))
+
+    bild_id = rec.get("bild_id", "")
+    if bild_id:
+        lines.append(f"Source: https://sok.riksarkivet.se/bildvisning/{bild_id}")
+
     lines.append("")
 
 
@@ -104,5 +117,8 @@ def format_fkpr_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Open the Source link to see the original membership register (login required for records < 110 years old).")
 
     return "\n".join(lines)

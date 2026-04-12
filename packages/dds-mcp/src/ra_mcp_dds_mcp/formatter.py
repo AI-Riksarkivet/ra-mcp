@@ -53,6 +53,9 @@ def _format_fodelse_record(rec: dict, lines: list[str]) -> None:
 
     _append_if(lines, "Birth place", rec.get("fodelseort", ""))
 
+    _append_if(lines, "Ref", rec.get("referenskod", ""))
+    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
+
     anm = rec.get("anm", "")
     if anm:
         lines.append(f"Note: {_truncate(anm, 150)}")
@@ -77,6 +80,9 @@ def format_fodelse_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Use view_bild with the Bild ID to see the original church book page.")
 
     return "\n".join(lines)
 
@@ -111,6 +117,9 @@ def _format_doda_record(rec: dict, lines: list[str]) -> None:
             lines.append(f"Cause of death: {dodsorsak} ({dodsorsak_klass})")
         else:
             lines.append(f"Cause of death: {dodsorsak or dodsorsak_klass}")
+
+    _append_if(lines, "Ref", rec.get("referenskod", ""))
+    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
 
     # Relative
     anhorig_parts = [rec.get("anhorig_fornamn", ""), rec.get("anhorig_efternamn", "")]
@@ -150,6 +159,9 @@ def format_doda_results(result: SearchResult) -> str:
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
 
+    lines.append("")
+    lines.append("Tip: Use view_bild with the Bild ID to see the original church book page.")
+
     return "\n".join(lines)
 
 
@@ -168,6 +180,9 @@ def _format_vigsel_record(rec: dict, lines: list[str]) -> None:
     lan = rec.get("lan", "")
     if forsamling or lan:
         lines.append(f"Parish: {forsamling}, {lan}" if forsamling and lan else f"Parish: {forsamling or lan}")
+
+    _append_if(lines, "Ref", rec.get("referenskod", ""))
+    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
 
     # Groom
     bg_parts = [rec.get("brudgum_fornamn", ""), rec.get("brudgum_efternamn", "")]
@@ -225,5 +240,8 @@ def format_vigsel_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Use view_bild with the Bild ID to see the original church book page.")
 
     return "\n".join(lines)

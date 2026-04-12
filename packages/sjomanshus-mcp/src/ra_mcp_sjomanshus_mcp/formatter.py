@@ -85,6 +85,17 @@ def _format_liggare_record(rec: dict, lines: list[str]) -> None:
     _append_if(lines, "Owner", rec.get("redare", ""))
     _append_if(lines, "Seamen's house", _format_sjomanshus(rec))
     _append_if(lines, "Archive", _format_archive(rec))
+
+    volym = rec.get("volym", "")
+    sida = rec.get("sida", "")
+    if volym or sida:
+        ref_parts = []
+        if volym:
+            ref_parts.append(f"Vol: {volym}")
+        if sida:
+            ref_parts.append(f"Page: {sida}")
+        lines.append(f"Source: {', '.join(ref_parts)}")
+
     lines.append("")
 
 
@@ -105,6 +116,9 @@ def format_liggare_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Use view_document with the archive reference code (arkivnr) and page number to see the original record.")
 
     return "\n".join(lines)
 
@@ -133,6 +147,17 @@ def _format_matrikel_record(rec: dict, lines: list[str]) -> None:
         lines.append(f"Deregistered: {', '.join(dereg_parts)}")
 
     _append_if(lines, "Archive", _format_archive(rec))
+
+    volym = rec.get("volym", "")
+    sida = rec.get("sida", "")
+    if volym or sida:
+        ref_parts = []
+        if volym:
+            ref_parts.append(f"Vol: {volym}")
+        if sida:
+            ref_parts.append(f"Page: {sida}")
+        lines.append(f"Source: {', '.join(ref_parts)}")
+
     lines.append("")
 
 
@@ -153,5 +178,8 @@ def format_matrikel_results(result: SearchResult) -> str:
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
         lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    lines.append("")
+    lines.append("Tip: Use view_document with the archive reference code (arkivnr) and page number to see the original record.")
 
     return "\n".join(lines)
