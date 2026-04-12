@@ -8,7 +8,7 @@ import logging
 import httpx
 
 from .config import SPARQL_ENDPOINT
-from .models import ToraImage, ToraPlace
+from .models import ToraImage, ToraMapSource, ToraPlace
 
 
 logger = logging.getLogger("ra_mcp.tora.client")
@@ -66,6 +66,27 @@ async def _sparql_post(query: str) -> dict | None:
             logger.error("TORA SPARQL returned %d", response.status_code)
             return None
         return json.loads(response.content)
+
+
+def _build_maps_query(tora_ids: list[str]) -> str:
+    """Build SPARQL query to fetch linked geometrical maps for given place IDs."""
+    uris = " ".join(f"<https://data.riksarkivet.se/tora/{tid}>" for tid in tora_ids)
+    return f"""
+PREFIX tora: <https://data.riksarkivet.se/tora/schema/>
+PREFIX dct: <http://purl.org/dc/terms/>
+
+SELECT DISTINCT ?place ?mapTitle ?mapBildId ?mapBildvisning ?mapDate WHERE {{
+  VALUES ?place {{ {uris} }}
+  ?cs a tora:CoordinateSource ;
+      dct:references ?place ;
+      dct:title ?mapTitle ;
+      dct:source ?mapBildId ;
+      dct:source ?mapBildvisning .
+  FILTER(REGEX(STR(?mapBildId), "^[A-Z][0-9]"))
+  FILTER(STRSTARTS(STR(?mapBildvisning), "https://"))
+  OPTIONAL {{ ?cs dct:date ?mapDate }}
+}}
+"""
 
 
 def _build_images_query(tora_ids: list[str]) -> str:
@@ -137,9 +158,10 @@ class ToraClient:
         accuracy_order = {"high": 0, "medium": 1, "low": 2, "": 3}
         places.sort(key=lambda p: accuracy_order.get(p.accuracy, 3))
 
-        # Fetch linked images for all found places
+        # Fetch linked images and maps for all found places
         if places:
             await self._enrich_with_images(places)
+            await self._enrich_with_maps(places)
 
         return places
 
@@ -182,3 +204,41 @@ class ToraClient:
                     place_map[tora_id].images.append(image)
                 except Exception as e:
                     logger.warning("Failed to parse TORA image binding: %s", e)
+
+    async def _enrich_with_maps(self, places: list[ToraPlace]) -> None:
+        """Fetch linked geometrical maps (coordinate sources) and attach to places."""
+        tora_ids = [p.tora_id for p in places]
+        query = _build_maps_query(tora_ids)
+
+        try:
+            data = await self._sparql(query)
+        except Exception as e:
+            logger.warning("TORA map query failed: %s", e)
+            return
+
+        if not data:
+            return
+
+        bindings = data.get("results", {}).get("bindings", [])
+        if not bindings:
+            return
+
+        place_map = {p.tora_id: p for p in places}
+        seen_maps: set[str] = set()
+
+        for binding in bindings:
+            place_uri = binding.get("place", {}).get("value", "")
+            tora_id = place_uri.rsplit("/", 1)[-1] if "/" in place_uri else ""
+            bild_id = binding.get("mapBildId", {}).get("value", "")
+
+            dedup_key = f"{tora_id}:{bild_id}"
+            if dedup_key in seen_maps:
+                continue
+            seen_maps.add(dedup_key)
+
+            if tora_id in place_map:
+                try:
+                    ms = ToraMapSource.from_sparql_binding(binding)
+                    place_map[tora_id].map_sources.append(ms)
+                except Exception as e:
+                    logger.warning("Failed to parse TORA map binding: %s", e)

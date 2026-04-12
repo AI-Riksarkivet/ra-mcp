@@ -23,10 +23,20 @@ def _format_place(place: ToraPlace, lines: list[str]) -> None:
     lines.append(f"TORA: {place.tora_url}")
     _append_if(lines, "Wikidata", place.wikidata_url)
 
+    if place.map_sources:
+        max_shown = 3
+        lines.append("")
+        lines.append(f"Geometrical maps ({len(place.map_sources)}):")
+        for ms in place.map_sources[:max_shown]:
+            date = f" ({ms.date})" if ms.date else ""
+            lines.append(f"  - {ms.title}{date} — bild_id: {ms.bild_id}")
+        if len(place.map_sources) > max_shown:
+            lines.append(f"  ... and {len(place.map_sources) - max_shown} more")
+
     if place.images:
         max_shown = 5
         lines.append("")
-        lines.append(f"Historical images ({len(place.images)}):")
+        lines.append(f"Suecia Antiqua engravings ({len(place.images)}):")
         for img in place.images[:max_shown]:
             creator = f" by {img.creator}" if img.creator else ""
             period = f" ({img.period})" if img.period else ""
@@ -53,13 +63,18 @@ def format_tora_results(query: str, places: list[ToraPlace]) -> str:
     lines.append("")
 
     has_images = False
+    has_maps = False
     for place in places:
         _format_place(place, lines)
         if place.images:
             has_images = True
+        if place.map_sources:
+            has_maps = True
 
     lines.append("Show the location on a map using the coordinates above.")
+    if has_maps:
+        lines.append("Use view_bild with the bild_id(s) to show the original 1600s geometrical map in the document viewer.")
     if has_images:
-        lines.append("Display the historical Suecia Antiqua engravings using view_document_urls — pass the image URLs as image_urls with empty strings for text_layer_urls.")
+        lines.append("Use view_document_urls to display the Suecia Antiqua engravings — pass image URLs as image_urls with empty strings for text_layer_urls.")
 
     return "\n".join(lines)

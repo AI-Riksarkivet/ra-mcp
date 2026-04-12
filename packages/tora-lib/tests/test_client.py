@@ -32,9 +32,10 @@ def mock_sparql():
 
 
 async def test_search_returns_places(mock_sparql):
-    # First call: place search, second call: image search (returns empty)
+    # Three calls: place search, image search, map search
     mock_sparql.side_effect = [
         _mock_sparql_response([_kerstinbo_binding()]),
+        _mock_sparql_response([]),
         _mock_sparql_response([]),
     ]
     client = ToraClient(sparql_fn=mock_sparql)
@@ -44,7 +45,7 @@ async def test_search_returns_places(mock_sparql):
     assert len(results) == 1
     assert results[0].name == "Kerstinbo"
     assert results[0].lat == 60.2506
-    assert mock_sparql.call_count == 2
+    assert mock_sparql.call_count == 3
 
 
 async def test_search_empty_results(mock_sparql):
@@ -59,6 +60,7 @@ async def test_search_empty_results(mock_sparql):
 async def test_search_with_parish_filter(mock_sparql):
     mock_sparql.side_effect = [
         _mock_sparql_response([_kerstinbo_binding()]),
+        _mock_sparql_response([]),
         _mock_sparql_response([]),
     ]
     client = ToraClient(sparql_fn=mock_sparql)
@@ -86,6 +88,7 @@ async def test_search_deduplicates(mock_sparql):
     mock_sparql.side_effect = [
         _mock_sparql_response([binding, binding]),
         _mock_sparql_response([]),
+        _mock_sparql_response([]),
     ]
     client = ToraClient(sparql_fn=mock_sparql)
 
@@ -107,6 +110,7 @@ async def test_search_returns_images(mock_sparql):
     mock_sparql.side_effect = [
         _mock_sparql_response([_kerstinbo_binding()]),
         _mock_sparql_response([img_binding]),
+        _mock_sparql_response([]),
     ]
     client = ToraClient(sparql_fn=mock_sparql)
 

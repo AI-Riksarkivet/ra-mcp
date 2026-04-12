@@ -22,6 +22,30 @@ def _extract_accuracy(uri: str) -> str:
     return uri
 
 
+class ToraMapSource(BaseModel):
+    """A linked geometrical map (1630-1700) used as coordinate source in TORA."""
+
+    title: str              # map sheet reference, e.g. "T6:61"
+    bild_id: str            # e.g. "R0000986_00039"
+    bildvisning_url: str    # direct link to Riksarkivet viewer
+    date: str = ""          # e.g. "1640"
+
+    @classmethod
+    def from_sparql_binding(cls, binding: dict) -> ToraMapSource:
+        def _get(key: str) -> str:
+            entry = binding.get(key)
+            if entry is None:
+                return ""
+            return entry.get("value", "")
+
+        return cls(
+            title=_get("mapTitle"),
+            bild_id=_get("mapBildId"),
+            bildvisning_url=_get("mapBildvisning"),
+            date=_get("mapDate"),
+        )
+
+
 class ToraImage(BaseModel):
     """A linked historical image (Suecia Antiqua engraving etc.) from TORA."""
 
@@ -62,6 +86,7 @@ class ToraPlace(BaseModel):
     province: str = ""
     wikidata_url: str = ""
     images: list[ToraImage] = []
+    map_sources: list[ToraMapSource] = []
 
     @computed_field  # type: ignore[prop-decorator]
     @property
