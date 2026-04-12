@@ -8,7 +8,6 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_tora_lib.client import ToraClient
-from ra_mcp_common.http_client import default_http_client
 
 from .formatter import format_tora_results
 
@@ -51,7 +50,7 @@ def register_tora_tool(mcp) -> None:
         logger.info("search_tora called with name='%s', parish=%s, county=%s", name, parish, county)
 
         try:
-            client = ToraClient(http_client=default_http_client)
+            client = ToraClient()
             places = await client.search(name.strip(), parish=parish, county=county)
             return format_tora_results(name, places)
 

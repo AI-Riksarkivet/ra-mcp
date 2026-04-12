@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from ra_mcp_common.http_client import default_http_client
-
 from .client import ToraClient
 
 
@@ -22,7 +20,7 @@ async def geocode(
     Returns:
         (lat, lon) tuple for the best match, or None if not found.
     """
-    client = ToraClient(http_client=default_http_client)
+    client = ToraClient()
     places = await client.search(name, parish=parish, county=county)
     if not places:
         return None

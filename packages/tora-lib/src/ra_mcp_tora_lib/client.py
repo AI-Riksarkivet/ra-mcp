@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
-import urllib.parse
 
-from ra_mcp_common.http_client import HTTPClient, default_http_client
+import httpx
 
 from .config import SPARQL_ENDPOINT
 from .models import ToraPlace
@@ -47,11 +47,32 @@ SELECT DISTINCT ?place ?name ?lat ?long ?accuracy ?parish ?municipality ?county 
 """
 
 
+async def _sparql_post(query: str) -> dict | None:
+    """Execute a SPARQL query via POST and return parsed JSON.
+
+    The TORA endpoint only returns JSON for POST requests with
+    application/x-www-form-urlencoded encoding.
+    """
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(
+            SPARQL_ENDPOINT,
+            data={"query": query},
+            headers={
+                "Accept": "application/sparql-results+json",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        )
+        if response.status_code != 200:
+            logger.error("TORA SPARQL returned %d", response.status_code)
+            return None
+        return json.loads(response.content)
+
+
 class ToraClient:
     """Client for querying TORA settlements via SPARQL."""
 
-    def __init__(self, http_client: HTTPClient = default_http_client) -> None:
-        self._http = http_client
+    def __init__(self, sparql_fn=_sparql_post) -> None:
+        self._sparql = sparql_fn
 
     async def search(
         self,
@@ -61,10 +82,9 @@ class ToraClient:
     ) -> list[ToraPlace]:
         """Search for settlements by name, optionally filtered by parish/county."""
         query = _build_search_query(name, parish, county)
-        url = f"{SPARQL_ENDPOINT}?query={urllib.parse.quote(query)}"
 
         try:
-            data = await self._http.get_json(url, headers={"Accept": "application/sparql-results+json"})
+            data = await self._sparql(query)
         except Exception as e:
             logger.error("TORA SPARQL query failed: %s", e)
             return []
