@@ -52,7 +52,14 @@ def format_tora_results(query: str, places: list[ToraPlace]) -> str:
         lines.append(f"TORA result for '{query}':")
     lines.append("")
 
+    has_images = False
     for place in places:
         _format_place(place, lines)
+        if place.images:
+            has_images = True
+
+    lines.append("Show the location on a map using the coordinates above.")
+    if has_images:
+        lines.append("Display the historical Suecia Antiqua engraving images inline.")
 
     return "\n".join(lines)

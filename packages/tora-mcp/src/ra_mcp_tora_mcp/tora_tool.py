@@ -25,8 +25,11 @@ def register_tora_tool(mcp) -> None:
         description=(
             "Geocode historical Swedish places using TORA (Topografiskt register på Riksarkivet). "
             "Returns WGS84 coordinates, parish, municipality, county, and province for 51,000 settlements. "
+            "Many places include linked historical Suecia Antiqua engravings (1600s) from KB. "
             "Use to find the location of a historical Swedish place, village, or settlement. "
-            "Optionally filter by parish or county to disambiguate common place names."
+            "Optionally filter by parish or county to disambiguate common place names. "
+            "When presenting results: show the location on a map using the coordinates, "
+            "and display any linked historical images inline."
         ),
     )
     async def search_tora(
