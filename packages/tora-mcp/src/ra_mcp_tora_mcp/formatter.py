@@ -22,6 +22,21 @@ def _format_place(place: ToraPlace, lines: list[str]) -> None:
     _append_if(lines, "Province", place.province)
     lines.append(f"TORA: {place.tora_url}")
     _append_if(lines, "Wikidata", place.wikidata_url)
+
+    if place.images:
+        max_shown = 5
+        lines.append("")
+        lines.append(f"Historical images ({len(place.images)}):")
+        for img in place.images[:max_shown]:
+            creator = f" by {img.creator}" if img.creator else ""
+            period = f" ({img.period})" if img.period else ""
+            lines.append(f"  - {img.title}{creator}{period}")
+            lines.append(f"    Image: {img.image_url}")
+            if img.libris_url:
+                lines.append(f"    Libris: {img.libris_url}")
+        if len(place.images) > max_shown:
+            lines.append(f"  ... and {len(place.images) - max_shown} more")
+
     lines.append("")
 
 

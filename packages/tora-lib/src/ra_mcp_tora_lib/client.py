@@ -8,7 +8,7 @@ import logging
 import httpx
 
 from .config import SPARQL_ENDPOINT
-from .models import ToraPlace
+from .models import ToraImage, ToraPlace
 
 
 logger = logging.getLogger("ra_mcp.tora.client")
@@ -68,6 +68,30 @@ async def _sparql_post(query: str) -> dict | None:
         return json.loads(response.content)
 
 
+def _build_images_query(tora_ids: list[str]) -> str:
+    """Build SPARQL query to fetch linked Suecia images for given place IDs."""
+    uris = " ".join(f"<https://data.riksarkivet.se/tora/{tid}>" for tid in tora_ids)
+    return f"""
+PREFIX tora: <https://data.riksarkivet.se/tora/schema/>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX schema: <http://schema.org/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT DISTINCT ?place ?imgTitle ?imgUrl ?imgLibris ?imgCreator ?imgPeriod WHERE {{
+  VALUES ?place {{ {uris} }}
+  ?dsm a tora:DigitizedSourceMaterial ;
+       dct:references ?place ;
+       skos:prefLabel ?imgTitle ;
+       schema:image ?imgUrl .
+  FILTER(CONTAINS(STR(?imgUrl), ".jpg"))
+  OPTIONAL {{ ?dsm dct:source ?imgLibris }}
+  OPTIONAL {{ ?dsm dc:creator ?imgCreator }}
+  OPTIONAL {{ ?dsm dct:description ?imgPeriod }}
+}}
+"""
+
+
 class ToraClient:
     """Client for querying TORA settlements via SPARQL."""
 
@@ -113,4 +137,48 @@ class ToraClient:
         accuracy_order = {"high": 0, "medium": 1, "low": 2, "": 3}
         places.sort(key=lambda p: accuracy_order.get(p.accuracy, 3))
 
+        # Fetch linked images for all found places
+        if places:
+            await self._enrich_with_images(places)
+
         return places
+
+    async def _enrich_with_images(self, places: list[ToraPlace]) -> None:
+        """Fetch linked Suecia images and attach to places."""
+        tora_ids = [p.tora_id for p in places]
+        query = _build_images_query(tora_ids)
+
+        try:
+            data = await self._sparql(query)
+        except Exception as e:
+            logger.warning("TORA image query failed: %s", e)
+            return
+
+        if not data:
+            return
+
+        bindings = data.get("results", {}).get("bindings", [])
+        if not bindings:
+            return
+
+        # Group images by place URI
+        place_map = {p.tora_id: p for p in places}
+        seen_images: set[str] = set()
+
+        for binding in bindings:
+            place_uri = binding.get("place", {}).get("value", "")
+            tora_id = place_uri.rsplit("/", 1)[-1] if "/" in place_uri else ""
+            img_url = binding.get("imgUrl", {}).get("value", "")
+
+            # Deduplicate by image URL per place
+            dedup_key = f"{tora_id}:{img_url}"
+            if dedup_key in seen_images:
+                continue
+            seen_images.add(dedup_key)
+
+            if tora_id in place_map:
+                try:
+                    image = ToraImage.from_sparql_binding(binding)
+                    place_map[tora_id].images.append(image)
+                except Exception as e:
+                    logger.warning("Failed to parse TORA image binding: %s", e)

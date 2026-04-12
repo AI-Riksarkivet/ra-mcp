@@ -22,6 +22,32 @@ def _extract_accuracy(uri: str) -> str:
     return uri
 
 
+class ToraImage(BaseModel):
+    """A linked historical image (Suecia Antiqua engraving etc.) from TORA."""
+
+    title: str
+    image_url: str          # JPG at weburn.kb.se
+    libris_url: str = ""    # link to Libris catalog entry
+    creator: str = ""       # artist/engraver
+    period: str = ""        # e.g. "[166-]"
+
+    @classmethod
+    def from_sparql_binding(cls, binding: dict) -> ToraImage:
+        def _get(key: str) -> str:
+            entry = binding.get(key)
+            if entry is None:
+                return ""
+            return entry.get("value", "")
+
+        return cls(
+            title=_get("imgTitle"),
+            image_url=_get("imgUrl"),
+            libris_url=_get("imgLibris"),
+            creator=_get("imgCreator"),
+            period=_get("imgPeriod"),
+        )
+
+
 class ToraPlace(BaseModel):
     """A geocoded historical settlement from TORA."""
 
@@ -35,6 +61,7 @@ class ToraPlace(BaseModel):
     county: str = ""
     province: str = ""
     wikidata_url: str = ""
+    images: list[ToraImage] = []
 
     @computed_field  # type: ignore[prop-decorator]
     @property
