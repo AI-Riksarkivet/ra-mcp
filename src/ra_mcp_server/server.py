@@ -94,14 +94,14 @@ try:
 except ImportError:
     pass
 
-# sjomanshus-mcp is optional (requires lancedb which has limited platform wheels)
+# sjomanshus-mcp — PDM-licensed, disabled by default pending licence review
 try:
     from ra_mcp_sjomanshus_mcp import sjomanshus_mcp  # ty: ignore[unresolved-import]
 
     AVAILABLE_MODULES["sjomanshus"] = {
         "server": sjomanshus_mcp,
         "description": "Search Swedish seamen's house records (voyages and registrations)",
-        "default": True,
+        "default": False,
     }
 except ImportError:
     pass
@@ -118,14 +118,14 @@ try:
 except ImportError:
     pass
 
-# rosenberg-mcp is optional (requires lancedb which has limited platform wheels)
+# rosenberg-mcp — PDM-licensed, disabled by default pending licence review
 try:
     from ra_mcp_rosenberg_mcp import rosenberg_mcp  # ty: ignore[unresolved-import]
 
     AVAILABLE_MODULES["rosenberg"] = {
         "server": rosenberg_mcp,
         "description": "Search Rosenberg's geographical lexicon of Sweden (66K historical places)",
-        "default": True,
+        "default": False,
     }
 except ImportError:
     pass
