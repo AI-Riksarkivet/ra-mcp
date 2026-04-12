@@ -77,6 +77,7 @@ class SDHKRecord(BaseModel):
         return SDHK_MANIFEST_TEMPLATE.format(sdhk_id=self.id)
 
 
+
 class MPORecord(BaseModel):
     """A record from the Medieval Provenance Objects (MPO) corpus."""
 

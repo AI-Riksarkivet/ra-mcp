@@ -39,9 +39,9 @@ def register_sdhk_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search SDHK (Diplomatarium Suecanum) — 44,000+ medieval Swedish charters dated before 1540. "
-            "Returns charter metadata including title, author, date, place, language, summary, and edition excerpts. "
+            "Returns results as a markdown table with key columns (ID, date, place, author, summary, status). "
+            "ALWAYS present search results to the user as a table — do not convert to prose. "
             "About 15,000 charters are digitized — these include IIIF manifest URLs you can pass to view_manifest. "
-            "Results show digitization status: 'Digitized + Transcribed', 'Digitized', or 'Not digitized'. "
             "Only use view_manifest on results that have a manifest URL. "
             "Paginate with offset (0, 25, 50, ...)."
         ),

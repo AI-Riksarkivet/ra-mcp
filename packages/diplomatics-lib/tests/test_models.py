@@ -98,17 +98,20 @@ def test_sdhk_searchable_text_skips_empty_parts() -> None:
 
 def test_sdhk_manifest_url_format() -> None:
     record = SDHKRecord.from_csv_row(SDHK_CSV_ROW)
+    record.has_manifest = True
     assert record.manifest_url == "https://lbiiif.riksarkivet.se/sdhk!12345/manifest"
 
 
 def test_sdhk_manifest_url_uses_record_id() -> None:
     record = SDHKRecord.from_csv_row({"Id": "42"})
+    record.has_manifest = True
     assert record.manifest_url == "https://lbiiif.riksarkivet.se/sdhk!42/manifest"
 
 
-def test_sdhk_bildvisning_url_format() -> None:
-    record = SDHKRecord.from_csv_row(SDHK_CSV_ROW)
-    assert record.bildvisning_url == "https://sok.riksarkivet.se/bildvisning/sdhk!12345"
+def test_sdhk_manifest_url_empty_when_not_digitized() -> None:
+    """Records without has_manifest should return empty manifest_url."""
+    record = SDHKRecord.from_csv_row({"Id": "42"})
+    assert record.manifest_url == ""
 
 
 # ---------------------------------------------------------------------------
@@ -250,4 +253,5 @@ def test_mpo_searchable_text_skips_empty_parts() -> None:
 )
 def test_sdhk_manifest_url_parametrized(sdhk_id: str, expected_manifest: str) -> None:
     record = SDHKRecord.from_csv_row({"Id": sdhk_id})
+    record.has_manifest = True
     assert record.manifest_url == expected_manifest
