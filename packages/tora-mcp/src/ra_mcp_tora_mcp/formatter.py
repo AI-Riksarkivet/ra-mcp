@@ -60,6 +60,6 @@ def format_tora_results(query: str, places: list[ToraPlace]) -> str:
 
     lines.append("Show the location on a map using the coordinates above.")
     if has_images:
-        lines.append("Display the historical Suecia Antiqua engraving images inline.")
+        lines.append("Display the historical Suecia Antiqua engravings using view_document_urls — pass the image URLs as image_urls with empty strings for text_layer_urls.")
 
     return "\n".join(lines)

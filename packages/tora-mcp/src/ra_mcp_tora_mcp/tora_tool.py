@@ -29,7 +29,8 @@ def register_tora_tool(mcp) -> None:
             "Use to find the location of a historical Swedish place, village, or settlement. "
             "Optionally filter by parish or county to disambiguate common place names. "
             "When presenting results: show the location on a map using the coordinates, "
-            "and display any linked historical images inline."
+            "and use view_document_urls to display linked historical images in the document viewer "
+            "(pass image URLs as image_urls, empty strings as text_layer_urls)."
         ),
     )
     async def search_tora(
