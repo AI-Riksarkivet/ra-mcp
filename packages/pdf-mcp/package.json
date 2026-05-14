@@ -11,7 +11,7 @@
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "^1.3.2",
     "pdfjs-dist": "^5.0.0",
-    "svelte": "^5.55.1"
+    "svelte": "^5.55.7"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
