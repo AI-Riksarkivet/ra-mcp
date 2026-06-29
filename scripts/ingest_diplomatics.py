@@ -17,8 +17,10 @@ from urllib.request import urlopen
 
 import lancedb
 
-DEFAULT_OUTPUT = Path("data/diplomatics")
 from ra_mcp_diplomatics_lib.ingest import ingest_mpo, ingest_sdhk
+
+
+DEFAULT_OUTPUT = Path("data/diplomatics")
 
 SDHK_CSV_URL = "https://filer.riksarkivet.se/registerdata/SDHK/csv/sdhk_2411.csv"
 MPO_ZIP_URL = "https://zenodo.org/api/records/17287665/files-archive"
@@ -71,7 +73,8 @@ def main() -> None:
             download_sdhk(sdhk_path)
         print(f"Ingesting SDHK from {sdhk_path} ...")
         sdhk_table = ingest_sdhk(
-            db, sdhk_path,
+            db,
+            sdhk_path,
             manifest_ids_path=args.manifest_ids,
             no_transcription_ids_path=args.no_transcription_ids,
         )

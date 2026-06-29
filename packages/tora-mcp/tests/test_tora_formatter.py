@@ -1,11 +1,13 @@
 """Tests for TORA formatter."""
 
+from typing import Any
+
 from ra_mcp_tora_lib.models import ToraPlace
 from ra_mcp_tora_mcp.formatter import format_tora_results
 
 
 def _make_place(**overrides) -> ToraPlace:
-    defaults = {
+    defaults: dict[str, Any] = {
         "tora_id": "9809",
         "name": "Kerstinbo",
         "lat": 60.2506,

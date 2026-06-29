@@ -25,10 +25,10 @@ def _extract_accuracy(uri: str) -> str:
 class ToraMapSource(BaseModel):
     """A linked geometrical map (1630-1700) used as coordinate source in TORA."""
 
-    title: str              # map sheet reference, e.g. "T6:61"
-    bild_id: str            # e.g. "R0000986_00039"
-    bildvisning_url: str    # direct link to Riksarkivet viewer
-    date: str = ""          # e.g. "1640"
+    title: str  # map sheet reference, e.g. "T6:61"
+    bild_id: str  # e.g. "R0000986_00039"
+    bildvisning_url: str  # direct link to Riksarkivet viewer
+    date: str = ""  # e.g. "1640"
 
     @classmethod
     def from_sparql_binding(cls, binding: dict) -> ToraMapSource:
@@ -50,10 +50,10 @@ class ToraImage(BaseModel):
     """A linked historical image (Suecia Antiqua engraving etc.) from TORA."""
 
     title: str
-    image_url: str          # JPG at weburn.kb.se
-    libris_url: str = ""    # link to Libris catalog entry
-    creator: str = ""       # artist/engraver
-    period: str = ""        # e.g. "[166-]"
+    image_url: str  # JPG at weburn.kb.se
+    libris_url: str = ""  # link to Libris catalog entry
+    creator: str = ""  # artist/engraver
+    period: str = ""  # e.g. "[166-]"
 
     @classmethod
     def from_sparql_binding(cls, binding: dict) -> ToraImage:

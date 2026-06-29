@@ -2,8 +2,8 @@
 
 from fastmcp import FastMCP
 
-from .sdhk_tool import register_sdhk_tool
 from .mpo_tool import register_mpo_tool
+from .sdhk_tool import register_sdhk_tool
 
 
 diplomatics_mcp = FastMCP(

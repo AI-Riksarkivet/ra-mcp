@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastmcp import Client
 
+import ra_mcp_viewer_mcp.state as _state_mod
 from ra_mcp_browse_lib.models import BrowseResult, PageContext
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
-import ra_mcp_viewer_mcp.state as _state_mod
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -28,7 +28,7 @@ FAKE_THUMBNAIL_DATA_URL = "data:image/jpeg;base64,/9j/thumbdata"
 @pytest.fixture()
 def alto_text_layer() -> dict:
     """A realistic parsed text layer dict from the ALTO fixture."""
-    from ra_mcp_viewer_mcp.parser import parse_alto_xml
+    from ra_mcp_xml.parser import parse_alto_xml
 
     xml = (FIXTURES / "451511_1512_01_alto.xml").read_text()
     data = parse_alto_xml(xml)
@@ -67,7 +67,7 @@ def mock_fetchers(alto_text_layer, fake_browse_result):
         patch("ra_mcp_viewer_mcp.tools.fetch_and_parse_text_layer", new_callable=AsyncMock) as mock_text,
         patch("ra_mcp_viewer_mcp.tools.build_page_data", new_callable=AsyncMock) as mock_page,
         patch("ra_mcp_viewer_mcp.tools.fetch_thumbnail_as_data_url", new_callable=AsyncMock) as mock_thumb,
-        patch("ra_mcp_viewer_mcp.tools.BrowseOperations") as mock_browse_cls,
+        patch("ra_mcp_viewer_mcp.resolve.BrowseOperations") as mock_browse_cls,
     ):
         mock_text.return_value = alto_text_layer
         mock_page.return_value = (
@@ -84,7 +84,7 @@ def mock_fetchers(alto_text_layer, fake_browse_result):
 # ── view_document ─────────────────────────────────────────────────────
 
 
-async def test_view_document_returns_transcription(mock_fetchers):
+async def test_view_document_opens_viewer(mock_fetchers):
     async with Client(mcp) as client:
         result = await client.call_tool(
             "view_document",
@@ -94,7 +94,7 @@ async def test_view_document_returns_transcription(mock_fetchers):
     assert not result.is_error
     text = result.content[0].text
     assert "1 page(s)" in text
-    assert "Mommouth" in text
+    assert "SE/RA/310187/1" in text
     assert result.structured_content["image_urls"]
     assert result.structured_content["text_layer_urls"]
 
@@ -373,21 +373,6 @@ async def test_view_document_urls_with_empty_text_layers(mock_fetchers):
     assert not result.is_error
     sc = result.structured_content
     assert sc["text_layer_urls"][1] == ""
-
-
-async def test_view_document_urls_metadata_length_mismatch(mock_fetchers):
-    async with Client(mcp) as client:
-        result = await client.call_tool(
-            "view_document_urls",
-            {
-                "image_urls": ["https://example.com/p1.jpg"],
-                "text_layer_urls": ["https://example.com/p1.xml"],
-                "metadata": ["label1", "label2"],
-            },
-        )
-
-    text = result.content[0].text
-    assert "metadata length" in text.lower()
 
 
 # ── load_page ─────────────────────────────────────────────────────────

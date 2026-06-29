@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 from uuid import uuid4
 
 from fastmcp import Context
@@ -23,12 +23,16 @@ from ra_mcp_viewer_mcp.tools import RESOURCE_URI
 from .formatter import format_sdhk_info
 
 
+if TYPE_CHECKING:
+    import lancedb
+
+
 logger = logging.getLogger("ra_mcp.diplomatics.view_sdhk")
 
 _db = None
 
 
-def _get_db():
+def _get_db() -> lancedb.DBConnection:
     global _db
     if _db is None:
         import lancedb
@@ -50,7 +54,7 @@ def register_view_sdhk_tool(mcp) -> None:
             "with the charter images and a metadata panel showing author, date, summary, "
             "edition text, and seal descriptions. Only works for digitized charters."
         ),
-        app=AppConfig(resource_uri=RESOURCE_URI),
+        app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
     )
     async def view_sdhk(
         sdhk_id: Annotated[int, Field(description="SDHK charter ID (e.g. 85, 28672).")],
@@ -72,10 +76,7 @@ def register_view_sdhk_tool(mcp) -> None:
 
         manifest_url = row.get("manifest_url", "")
         if not manifest_url:
-            return error_result(
-                f"SDHK {sdhk_id} is not digitized — no images available. "
-                f"The record metadata is:\n\n{format_sdhk_info(row)}"
-            )
+            return error_result(f"SDHK {sdhk_id} is not digitized — no images available. The record metadata is:\n\n{format_sdhk_info(row)}")
 
         try:
             resolved = await manifest_resolve_document(manifest_url, max_pages)

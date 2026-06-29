@@ -56,7 +56,7 @@ def _error_result(text: str) -> ToolResult:
         "Must be called before search_pdf, read_pdf_page, pdf_go_to_page, or pdf_set_search. "
         "Defaults to Medeltidens samhalle if no URL given. Use list_pdfs to see available PDFs."
     ),
-    app=AppConfig(resource_uri=RESOURCE_URI),
+    app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def display_pdf(
     url: Annotated[str, Field(description="URL to a PDF file. Supports direct links and academic sources (arxiv, etc).")] = DEFAULT_PDF,
@@ -106,7 +106,7 @@ async def display_pdf(
 @mcp.tool(
     name="read_pdf_bytes",
     description="Read a range of bytes from a PDF file (max 4MB per request). Used by the viewer to stream PDF data.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def read_pdf_bytes(
     url: Annotated[str, Field(description="URL of the PDF file.")],
@@ -144,7 +144,7 @@ async def read_pdf_bytes(
 @mcp.tool(
     name="get_pdf_state",
     description="Get the current PDF viewer state by view_id. Used by the viewer to poll for LLM-initiated changes.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def get_pdf_state(
     view_id: Annotated[str, Field(description="View ID from the initial tool result.")],
@@ -164,7 +164,7 @@ async def get_pdf_state(
 @mcp.tool(
     name="get_page_blocks",
     description="Get all structured blocks for a page with bounding boxes and types. Used by the viewer for block overlay.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def get_page_blocks(
     url: Annotated[str, Field(description="URL of the PDF.")],

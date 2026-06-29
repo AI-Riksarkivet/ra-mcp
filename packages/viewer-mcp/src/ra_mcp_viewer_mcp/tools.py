@@ -32,7 +32,7 @@ RESOURCE_URI = "ui://document-viewer/mcp-app.html"
         "Use after search to visually inspect document pages with transcription overlay. "
         "Use highlight_term to pre-populate the search bar and highlight matching text lines."
     ),
-    app=AppConfig(resource_uri=RESOURCE_URI),
+    app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def view_document(
     reference_code: Annotated[str, Field(description="Document reference code from search results (e.g. 'SE/RA/420422/01').")],
@@ -93,7 +93,7 @@ async def view_document(
         "Use this when you already have IIIF image URLs and ALTO XML URLs. "
         "Prefer view_document (with reference_code) when you have an archive reference code."
     ),
-    app=AppConfig(resource_uri=RESOURCE_URI),
+    app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def view_document_urls(
     image_urls: Annotated[list[str], Field(description="List of image URLs (one per page, IIIF or direct JPEG/PNG).")],
@@ -140,14 +140,16 @@ async def view_document_urls(
         "Use this to view documents from SDHK or MPO search results, or any Riksarkivet IIIF manifest. "
         "Fetches the manifest, extracts page images, and opens the interactive viewer."
     ),
-    app=AppConfig(resource_uri=RESOURCE_URI),
+    app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def view_manifest(
     manifest_url: Annotated[str, Field(description="Full IIIF manifest URL (e.g. 'https://lbiiif.riksarkivet.se/sdhk!85/manifest').")],
     ctx: Context,
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
     max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
-    document_info: Annotated[str | None, Field(description="Optional markdown-formatted document metadata for the info panel. Overrides the manifest label if provided.")] = None,
+    document_info: Annotated[
+        str | None, Field(description="Optional markdown-formatted document metadata for the info panel. Overrides the manifest label if provided.")
+    ] = None,
 ) -> ToolResult:
     """View document pages from a IIIF manifest URL."""
     try:
@@ -193,7 +195,7 @@ async def view_manifest(
         "Found in DDS church records (födelse, döda, vigsel — the bild_id field in search results). "
         "Pass one or more bild_ids to view the corresponding pages with transcription overlay."
     ),
-    app=AppConfig(resource_uri=RESOURCE_URI),
+    app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def view_bild(
     bild_ids: Annotated[list[str], Field(description="One or more bild_ids (e.g. ['C0056829_00001'] or ['C0056829_00001', 'C0056829_00002']).")],
@@ -237,7 +239,7 @@ async def view_bild(
 @mcp.tool(
     name="get_viewer_state",
     description="Get the current viewer state by view_id. Used by the viewer to poll for changes.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def get_viewer_state(
     view_id: Annotated[str, Field(description="View ID from the initial tool result.")],
@@ -404,7 +406,7 @@ async def viewer_navigate_urls(
 @mcp.tool(
     name="load_page",
     description="Load a single document page (image + text layer). Used by the viewer for pagination.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def load_page(
     image_url: Annotated[str, "Image URL for the page."],
@@ -430,7 +432,7 @@ async def load_page(
 @mcp.tool(
     name="load_thumbnails",
     description="Load thumbnail images for a batch of document pages. Used by the viewer for lazy-loading the thumbnail strip.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def load_thumbnails(
     image_urls: Annotated[list[str], "Image URLs for the pages to thumbnail."],
@@ -476,7 +478,7 @@ async def load_thumbnails(
 @mcp.tool(
     name="search_all_pages",
     description="Search for a term across all document pages. Returns match counts per page.",
-    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),
+    app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
 )
 async def search_all_pages(
     text_layer_urls: Annotated[list[str], "List of text layer XML URLs to search across."],

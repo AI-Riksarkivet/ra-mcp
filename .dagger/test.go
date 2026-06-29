@@ -11,8 +11,9 @@ func (m *RaMcp) Test(
 	// +defaultPath="/"
 	// +optional
 	source *dagger.Directory,
-	// Base image to use (default: python:3.13-alpine)
-	// +default="python:3.13-alpine"
+	// Base image to use (default: python:3.13-slim — glibc, required for
+	// lancedb/opencv manylinux wheels used by the dataset packages)
+	// +default="python:3.13-slim"
 	baseImage string,
 ) (string, error) {
 	if source == nil {
@@ -35,7 +36,7 @@ func (m *RaMcp) Test(
 				"LICENSE",
 			},
 		}).
-		WithExec([]string{"uv", "sync", "--frozen", "--no-cache"}) // Include dev dependencies
+		WithExec([]string{"uv", "sync", "--frozen", "--no-cache", "--all-packages"}) // all workspace packages + dev deps
 
 	output, err := container.
 		WithExec([]string{"uv", "run", "pytest", "--tb=short", "-q"}).

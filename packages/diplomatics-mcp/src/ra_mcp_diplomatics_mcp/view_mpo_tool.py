@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 from uuid import uuid4
 
 from fastmcp import Context
@@ -23,12 +23,16 @@ from ra_mcp_viewer_mcp.tools import RESOURCE_URI
 from .formatter import format_mpo_info
 
 
+if TYPE_CHECKING:
+    import lancedb
+
+
 logger = logging.getLogger("ra_mcp.diplomatics.view_mpo")
 
 _db = None
 
 
-def _get_db():
+def _get_db() -> lancedb.DBConnection:
     global _db
     if _db is None:
         import lancedb
@@ -50,7 +54,7 @@ def register_view_mpo_tool(mcp) -> None:
             "with the fragment images and a metadata panel showing manuscript type, dating, "
             "script, material, content, decoration, and damage descriptions."
         ),
-        app=AppConfig(resource_uri=RESOURCE_URI),
+        app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
     )
     async def view_mpo(
         mpo_id: Annotated[int, Field(description="MPO fragment ID (e.g. 1, 42).")],
@@ -72,10 +76,7 @@ def register_view_mpo_tool(mcp) -> None:
 
         manifest_url = row.get("manifest_url", "")
         if not manifest_url:
-            return error_result(
-                f"MPO {mpo_id} has no IIIF manifest — no images available. "
-                f"The record metadata is:\n\n{format_mpo_info(row)}"
-            )
+            return error_result(f"MPO {mpo_id} has no IIIF manifest — no images available. The record metadata is:\n\n{format_mpo_info(row)}")
 
         try:
             resolved = await manifest_resolve_document(manifest_url, max_pages)

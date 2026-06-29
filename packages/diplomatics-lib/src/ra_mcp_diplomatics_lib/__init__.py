@@ -4,4 +4,5 @@ __version__ = "0.3.0"
 
 from .search_operations import DiplomaticsSearch
 
+
 __all__ = ["DiplomaticsSearch"]

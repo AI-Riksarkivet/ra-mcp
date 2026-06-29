@@ -37,7 +37,7 @@ class SDHKRecord(BaseModel):
     has_transcription: bool = False
 
     @classmethod
-    def from_csv_row(cls, row: dict[str, str]) -> "SDHKRecord":
+    def from_csv_row(cls, row: dict[str, str]) -> SDHKRecord:
         """Construct an SDHKRecord from a raw CSV row dict."""
         return cls(
             id=int(row["Id"]),
@@ -66,7 +66,19 @@ class SDHKRecord(BaseModel):
     @property
     def searchable_text(self) -> str:
         """Combined text for full-text search indexing."""
-        parts = [self.author, self.summary, self.edition, self.comments, self.seals, self.additional, self.place, self.language, self.date, self.printed, self.title]
+        parts = [
+            self.author,
+            self.summary,
+            self.edition,
+            self.comments,
+            self.seals,
+            self.additional,
+            self.place,
+            self.language,
+            self.date,
+            self.printed,
+            self.title,
+        ]
         return " ".join(p for p in parts if p)
 
     @property
@@ -75,7 +87,6 @@ class SDHKRecord(BaseModel):
         if not self.has_manifest:
             return ""
         return SDHK_MANIFEST_TEMPLATE.format(sdhk_id=self.id)
-
 
 
 class MPORecord(BaseModel):
@@ -122,7 +133,7 @@ class MPORecord(BaseModel):
     iiif_manifest: str = ""
 
     @classmethod
-    def from_csv_row(cls, row: dict[str, str]) -> "MPORecord":
+    def from_csv_row(cls, row: dict[str, str]) -> MPORecord:
         """Construct an MPORecord from a raw CSV row dict."""
         return cls(
             id=int(row["signatur"]),
@@ -172,5 +183,24 @@ class MPORecord(BaseModel):
     @property
     def searchable_text(self) -> str:
         """Combined text for full-text search indexing."""
-        parts = [self.manuscript_type, self.title, self.author, self.content, self.notes, self.decoration, self.literature, self.damage, self.script, self.category, self.collection, self.dating, self.origin_place, self.use_place, self.material, self.notation, self.ccm_signum, self.codex]
+        parts = [
+            self.manuscript_type,
+            self.title,
+            self.author,
+            self.content,
+            self.notes,
+            self.decoration,
+            self.literature,
+            self.damage,
+            self.script,
+            self.category,
+            self.collection,
+            self.dating,
+            self.origin_place,
+            self.use_place,
+            self.material,
+            self.notation,
+            self.ccm_signum,
+            self.codex,
+        ]
         return " ".join(p for p in parts if p)
