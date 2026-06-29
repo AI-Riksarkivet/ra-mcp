@@ -1,6 +1,6 @@
 # Riksarkivet Tools Plugin for Claude Code
 
-A Claude Code plugin providing skills for archive research workflows — search strategy, research methodology, HTR transcription, document viewing, and file uploads.
+A Claude Code plugin providing skills for archive research workflows — search strategy, research methodology, archival record knowledge, HTR transcription, document and PDF viewing, Label Studio feedback, and file uploads.
 
 ## Installation
 
@@ -24,6 +24,12 @@ Research methodology guide. Covers research integrity rules (never fabricate dat
 
 **Trigger phrases**: browse document, read pages, translate old Swedish, cite sources, present findings, research methodology
 
+### `/archival-guide`
+
+Swedish archival record-type and administrative-history guide. Maps research topics to the correct *Förvaltningshistorik* chapters (served as MCP resources) so you know what record types exist, which authorities created them, and where to find them — court records, church records, folkbokföring, bouppteckning, dombok, husförhörslängd, mantalslängd, military, tax, and prison records.
+
+**Trigger phrases**: what records exist, which archive, document types, court records, church records, folkbokföring, bouppteckning, dombok, husförhörslängd, mantalslängd, Swedish administrative history
+
 ### `/htr-transcription`
 
 HTR workflow guide. Covers the full pipeline: determine image source, batch all images into a single `htr_transcribe` call, present results as an inline artifact with the interactive viewer. Documents language options (Swedish, Norwegian, English, medieval), layout modes, export formats (ALTO XML, PAGE XML, JSON), and custom HTRflow YAML pipelines.
@@ -32,9 +38,21 @@ HTR workflow guide. Covers the full pipeline: determine image source, batch all 
 
 ### `/view_document-guide`
 
-Document viewer guide. Covers the `view_document` tool's required arguments (`image_urls` paired 1:1 with `text_layer_urls`), optional metadata, and common mistakes (mismatched list lengths, non-public URLs, forgetting empty strings for missing text layers).
+Document viewer guide. Covers the three viewer entry points and how to choose between them: `view_document` (when you have a Riksarkivet reference code), `view_manifest` (when you have a IIIF manifest URL, e.g. from SDHK/MPO search), and `view_document_urls` (when you already have raw image and text-layer XML URLs).
 
-**Trigger phrases**: view document, display pages, show document, document viewer
+**Trigger phrases**: view document, display pages, show document, document viewer, view manifest
+
+### `/pdf-guide`
+
+Riksarkivet PDF guide reader. Covers searching and reading the archival PDF guides (medieval Sweden, governance 1520–1920, Sami history) via `search_guides`, `read_pdf_page`, `display_pdf`, and `search_pdf`, returning section-level references with page numbers for citation.
+
+**Trigger phrases**: Swedish history, archives, medieval charters, governance, Sami, open PDF guide, search PDF guides
+
+### `/feedback-ls`
+
+Label Studio feedback workflow. Covers sending document pages to Label Studio for human annotation via `import_to_label_studio` — both ALTO pre-annotated tasks and image-only blank tasks, with transcription/segmentation feedback choices and optional assignment.
+
+**Trigger phrases**: feedback, label studio, annotation, review transcription, quality check, human review, segmentation feedback, transcription feedback
 
 ### `/upload-files`
 

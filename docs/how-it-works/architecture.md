@@ -1,24 +1,66 @@
 # Architecture
 
-ra-mcp is organized as a **uv workspace** with modular packages, each with a single responsibility.
+ra-mcp is organized as a **uv workspace** with 44 packages under `packages/` plus a root server, each with a single responsibility. Packages follow a naming convention by role:
+
+- `*-lib` — domain libraries (Pydantic models, API clients, operations), plus `common`
+- `*-mcp` — FastMCP servers that wrap a domain library as MCP tools/resources
+- `search-cli` / `browse-cli` / `tui` — CLI and terminal-UI front-ends
 
 ---
 
 ## Package Overview
 
+### Foundation & domain libraries (Layer 0–1)
+
 | Package | Layer | Purpose |
 |---------|-------|---------|
-| **ra-mcp-common** | 0 | Shared HTTP client, telemetry helpers, formatting utilities |
-| **ra-mcp-search** | 1 | Search domain: Pydantic models, API client, operations |
-| **ra-mcp-browse** | 1 | Browse domain: models, ALTO/IIIF/OAI-PMH clients, operations |
+| **ra-mcp-common** | 0 | Shared HTTP client, telemetry helpers, formatting, dataset utilities |
+| **ra-mcp-xml** | 1 | `ALTOClient` — ALTO XML parsing (extracted from browse) |
+| **ra-mcp-iiif-lib** | 1 | `IIIFClient` — IIIF collections & manifests (extracted from browse) |
+| **ra-mcp-oai-pmh-lib** | 1 | `OAIPMHClient` — OAI-PMH metadata (extracted from browse) |
+| **ra-mcp-search-lib** | 1 | Search domain: Pydantic models, API client, operations |
+| **ra-mcp-browse-lib** | 1 | Browse domain: models, operations, URL generation |
+
+### Core MCP & front-end packages (Layer 2)
+
+| Package | Layer | Purpose |
+|---------|-------|---------|
 | **ra-mcp-search-mcp** | 2 | MCP tools: `search_transcribed`, `search_metadata` |
 | **ra-mcp-browse-mcp** | 2 | MCP tool: `browse_document` |
-| **ra-mcp-guide-mcp** | 2 | MCP resources: archival research guides (50+ sections) |
+| **ra-mcp-guide-mcp** | 2 | MCP resources: archival research guides |
 | **ra-mcp-htr-mcp** | 2 | MCP tool: `htr_transcribe` (handwritten text recognition) |
 | **ra-mcp-viewer-mcp** | 2 | MCP App: interactive document viewer with zoomable images |
+| **ra-mcp-pdf-mcp** | 2 | MCP App: interactive PDF viewer (PDF.js, search, annotations) |
+| **ra-mcp-label-mcp** | 2 | MCP tool: import pages to Label Studio for human annotation (optional) |
 | **ra-mcp-search-cli** | 2 | CLI command: `ra search` |
 | **ra-mcp-browse-cli** | 2 | CLI command: `ra browse` |
 | **ra-mcp-tui** | 2 | Interactive terminal browser: `ra tui` |
+
+### Dataset packages (Layer 1–2, optional)
+
+Each dataset ships as a `*-lib` (LanceDB-backed query layer) plus a `*-mcp` (MCP tools). All are optional — they load only when `lancedb` is installed.
+
+| Package pair | Dataset / tools |
+|--------------|-----------------|
+| **diplomatics-lib / -mcp** | SDHK medieval charters + MPO parchment fragments |
+| **sbl-lib / -mcp** | Svenskt biografiskt lexikon (biographical articles) |
+| **sjomanshus-lib / -mcp** | Seamen's house records (voyages, registrations) |
+| **filmcensur-lib / -mcp** | Film censorship records 1911–2011 |
+| **rosenberg-lib / -mcp** | Rosenberg's geographical lexicon |
+| **court-lib / -mcp** | Court records (Domboksregister, Medelstad) |
+| **aktiebolag-lib / -mcp** | Joint-stock company records |
+| **faltjagare-lib / -mcp** | Jämtland field regiment soldiers |
+| **suffrage-lib / -mcp** | Women's suffrage records |
+| **specialsok-lib / -mcp** | Specialsök datasets (flygvapen, fångrullor, kurhuset, press, video) |
+| **dds-lib / -mcp** | Church records (births, deaths, marriages) |
+| **wincars-lib / -mcp** | Norrland vehicle registrations |
+| **sj-lib / -mcp** | SJ railway properties & technical drawings |
+| **tora-lib / -mcp** | TORA historical-place geocoding |
+
+### Composition & plugin
+
+| Package | Layer | Purpose |
+|---------|-------|---------|
 | **ra-mcp** (root) | 3 | Server composition + Typer CLI entry point |
 | **ra-mcp-tools** (plugin) | — | Claude Code skills for research workflows |
 
@@ -28,35 +70,43 @@ ra-mcp is organized as a **uv workspace** with modular packages, each with a sin
 graph TD
   common["ra-mcp-common\nshared HTTP client, telemetry"]
 
-  search["ra-mcp-search\nsearch domain"]
-  browse["ra-mcp-browse\nbrowse domain"]
+  clients["xml / iiif-lib / oai-pmh-lib\nALTO, IIIF, OAI-PMH clients"]
+  search["ra-mcp-search-lib\nsearch domain"]
+  browse["ra-mcp-browse-lib\nbrowse domain"]
+  datasets["*-lib\n14 LanceDB dataset libraries"]
 
-  search_mcp["ra-mcp-search-mcp\nMCP tools"]
-  search_cli["ra-mcp-search-cli\nCLI command"]
-  browse_mcp["ra-mcp-browse-mcp\nMCP tool"]
-  browse_cli["ra-mcp-browse-cli\nCLI command"]
-  guide["ra-mcp-guide-mcp\nMCP resources"]
-  htr["ra-mcp-htr-mcp\nHTR tool"]
+  search_mcp["ra-mcp-search-mcp"]
+  browse_mcp["ra-mcp-browse-mcp"]
+  guide["ra-mcp-guide-mcp"]
+  htr["ra-mcp-htr-mcp"]
   viewer["ra-mcp-viewer-mcp\nMCP App"]
-  tui["ra-mcp-tui\nTerminal UI"]
+  pdf["ra-mcp-pdf-mcp\nMCP App"]
+  dataset_mcp["*-mcp\ndataset MCP servers"]
+  cli["search-cli / browse-cli / tui"]
 
-  root["ra-mcp (root)\ncomposes all packages"]
+  root["ra-mcp (root)\ncomposes all MCP packages"]
 
-  common --> search & browse & guide
-  search --> search_mcp & search_cli & tui
-  browse --> browse_mcp & browse_cli & tui
-  search_mcp & search_cli & browse_mcp & browse_cli & guide & htr & viewer & tui --> root
+  common --> clients & search & browse & datasets & guide
+  clients --> browse
+  search --> search_mcp & cli
+  browse --> browse_mcp & cli
+  datasets --> dataset_mcp
+  search_mcp & browse_mcp & guide & htr & viewer & pdf & dataset_mcp & cli --> root
 ```
 
 ## Layer Architecture
 
 **Layer 0 — Foundation**
 
-`ra-mcp-common` has no internal dependencies. It provides the `HTTPClient` (with retry, telemetry, and logging) used by all other packages.
+`ra-mcp-common` has no internal dependencies. It provides the `HTTPClient` (with retry, telemetry, and logging) plus shared formatting and dataset utilities used by all other packages.
 
 **Layer 1 — Domain**
 
-`ra-mcp-search` and `ra-mcp-browse` contain pure business logic: Pydantic models, API clients, and operations. No MCP or CLI dependency — they can be used as standalone Python libraries.
+The domain libraries contain pure business logic — Pydantic models, API clients, and operations — with no MCP or CLI dependency, so they can be used as standalone Python libraries:
+
+- `ra-mcp-search-lib` and `ra-mcp-browse-lib` cover full-text search and page browsing.
+- The HTTP clients that used to live inside browse are now their own packages: **`ra-mcp-xml`** (`ALTOClient`), **`ra-mcp-iiif-lib`** (`IIIFClient`), and **`ra-mcp-oai-pmh-lib`** (`OAIPMHClient`). `browse-lib` depends on them.
+- Each dataset has a `*-lib` package that queries a local LanceDB table.
 
 **Layer 2 — Interface**
 
@@ -66,29 +116,52 @@ Thin wrappers that expose domain logic through different interfaces:
 - **CLI packages** (`*-cli`) register Typer commands with Rich output
 - **TUI** (`ra-mcp-tui`) provides an interactive Textual application
 - **HTR** (`ra-mcp-htr-mcp`) delegates to a remote Gradio Space
-- **Viewer** (`ra-mcp-viewer-mcp`) is an MCP App serving an interactive HTML viewer
+- **Viewer** (`ra-mcp-viewer-mcp`) and **PDF** (`ra-mcp-pdf-mcp`) are MCP Apps serving interactive HTML UIs
 
 **Layer 3 — Composition**
 
-The root package composes all MCP sub-servers into a single server using `FastMCP.add_provider()`. Each module gets a namespace (e.g., `search.transcribed`, `browse.document`) except the viewer which registers at root level.
+The root package composes all enabled MCP sub-servers into a single server using `FastMCP.add_provider()`. Each module gets a namespace derived from the module name (e.g. tool `search_domboksregister` in the `court` module is exposed as `court:search_domboksregister`), except modules flagged `no_namespace` — currently **viewer**, **pdf**, and **sbl** — which register their tools at root level.
 
 ## Module System
 
-The root server has a registry of available modules:
+The root server has a registry of available modules (`AVAILABLE_MODULES` in `src/ra_mcp_server/server.py`). All 21 modules are enabled by default. The optional dataset/annotation modules are wrapped in `try/except ImportError`, so they only register when their dependencies (e.g. `lancedb`, `label-studio-sdk`) are installed.
 
-| Module | Default | Tools / Resources |
-|--------|---------|-------------------|
-| `search` | Enabled | `search_transcribed`, `search_metadata` |
-| `browse` | Enabled | `browse_document` |
-| `guide` | Enabled | Historical research guides (MCP resources) |
-| `htr` | Enabled | `htr_transcribe` |
-| `viewer` | Enabled | `view_document`, `load_page`, `load_thumbnails` |
+**Always-on core modules**
+
+| Module | Namespaced | Tools / Resources |
+|--------|------------|-------------------|
+| `search` | `search:` | `search_transcribed`, `search_metadata` |
+| `browse` | `browse:` | `browse_document` |
+| `guide` | `guide:` | Historical research guides (MCP resources) |
+| `htr` | `htr:` | `htr_transcribe` |
+| `viewer` | root (no namespace) | `view_document`, `view_manifest`, `view_bild`, `load_page`, `load_thumbnails`, plus viewer-app controls |
+| `pdf` | root (no namespace) | `display_pdf`, `search_pdf`, `list_pdfs`, `read_pdf_page`, plus pdf-app controls |
+
+**Optional modules** (load when dependencies are present)
+
+| Module | Namespaced | Tools |
+|--------|------------|-------|
+| `label` | `label:` | `import_to_label_studio` |
+| `diplomatics` | `diplomatics:` | `search_sdhk`, `search_mpo`, `view_sdhk`, `view_mpo` |
+| `sbl` | root (no namespace) | `search_sbl`, `view_sbl_article`, `load_sbl_article` |
+| `sjomanshus` | `sjomanshus:` | `search_liggare`, `search_matrikel` |
+| `filmcensur` | `filmcensur:` | `search_filmreg` |
+| `rosenberg` | `rosenberg:` | `search_rosenberg` |
+| `court` | `court:` | `search_domboksregister`, `search_medelstad` |
+| `aktiebolag` | `aktiebolag:` | `search_bolag`, `search_styrelse` |
+| `faltjagare` | `faltjagare:` | `search_faltjagare` |
+| `suffrage` | `suffrage:` | `search_rostratt`, `search_fkpr` |
+| `specialsok` | `specialsok:` | `search_flygvapen`, `search_fangrullor`, `search_kurhuset`, `search_press`, `search_video` |
+| `dds` | `dds:` | `search_fodelse`, `search_doda`, `search_vigsel` |
+| `wincars` | `wincars:` | `search_wincars` |
+| `sj` | `sj:` | `search_juda`, `search_ritningar` |
+| `tora` | `tora:` | `search_tora` |
 
 Modules can be selectively enabled:
 
 ```bash
 ra serve --modules search,browse     # Only search and browse
-ra serve --list-modules              # Show available modules
+ra serve --list-modules              # Show available modules and exit
 ```
 
 ## Plugin System
@@ -100,20 +173,31 @@ The server discovers skills from `plugins/*/skills/` directories at startup usin
 ```
 ra-mcp/
 ├── src/ra_mcp_server/          # Root: Server composition, CLI, telemetry
-├── packages/
-│   ├── common/                 # Layer 0: HTTPClient, telemetry, formatting
-│   ├── search/                 # Layer 1: Search domain
-│   ├── browse/                 # Layer 1: Browse domain
-│   ├── search-mcp/            # Layer 2: MCP tools for search
-│   ├── browse-mcp/            # Layer 2: MCP tool for browse
-│   ├── guide-mcp/             # Layer 2: MCP resources for guides
-│   ├── htr-mcp/               # Layer 2: MCP tool for HTR
-│   ├── viewer-mcp/            # Layer 2: MCP App for document viewing
-│   ├── search-cli/            # Layer 2: CLI for search
-│   ├── browse-cli/            # Layer 2: CLI for browse
-│   └── tui/                   # Layer 2: Terminal UI
+│   └── server.py               # FastMCP composition + AVAILABLE_MODULES registry
+├── packages/                   # 44 workspace packages
+│   ├── common/                 # Layer 0: HTTPClient, telemetry, formatting, datasets
+│   ├── xml-lib/                # Layer 1: ALTOClient (ALTO XML)
+│   ├── iiif-lib/               # Layer 1: IIIFClient
+│   ├── oai-pmh-lib/            # Layer 1: OAIPMHClient
+│   ├── search-lib/             # Layer 1: Search domain
+│   ├── browse-lib/             # Layer 1: Browse domain (depends on xml/iiif/oai)
+│   ├── search-mcp/             # Layer 2: MCP tools for search
+│   ├── browse-mcp/             # Layer 2: MCP tool for browse
+│   ├── guide-mcp/              # Layer 2: MCP resources for guides
+│   ├── htr-mcp/                # Layer 2: MCP tool for HTR
+│   ├── viewer-mcp/             # Layer 2: MCP App for document viewing
+│   ├── pdf-mcp/                # Layer 2: MCP App for PDF viewing
+│   ├── label-mcp/              # Layer 2: Label Studio import (optional)
+│   ├── search-cli/             # Layer 2: CLI for search
+│   ├── browse-cli/             # Layer 2: CLI for browse
+│   ├── tui/                    # Layer 2: Terminal UI
+│   └── <dataset>-lib/-mcp/     # 14 optional dataset modules (diplomatics, sbl,
+│                               #   sjomanshus, filmcensur, rosenberg, court,
+│                               #   aktiebolag, faltjagare, suffrage, specialsok,
+│                               #   dds, wincars, sj, tora)
 ├── plugins/
-│   └── ra-mcp-tools/          # Claude Code skills plugin
+│   └── ra-mcp-tools/          # Claude Code skills plugin (8 skills)
+├── resources/                  # Historical guide markdown files
 ├── docs/                       # Documentation site (Zensical)
 ├── charts/ra-mcp/             # Helm chart
 ├── pyproject.toml             # Workspace root

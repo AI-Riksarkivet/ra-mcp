@@ -51,8 +51,10 @@ claude mcp add --transport http ra-mcp https://riksarkivet-ra-mcp.hf.space/mcp
 
 ## Quick Start (CLI)
 
+The `ra` command imports the search, browse, and TUI sub-apps unconditionally, so install the `cli` and `tui` extras to get a working CLI:
+
 ```bash
-uv pip install ra-mcp
+uv pip install "ra-mcp[cli,tui]"
 ```
 
 ```bash

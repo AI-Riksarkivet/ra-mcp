@@ -53,7 +53,7 @@ python -m ra_mcp_htr_mcp.server --port 3002
 
 ## Dependencies
 
-- External: `fastmcp`, `gradio-client`, `pydantic`
+- External: `fastmcp`, `gradio-client`
 
 ## Part of ra-mcp
 

@@ -26,7 +26,7 @@ The `--pages` / `--page` flags accept three formats:
 | Range | `"1-10"` | Pages 1 through 10 |
 | List | `"5,7,9"` | Specific pages |
 
-`--page` and `--pages` are interchangeable aliases.
+`--page` and `--pages` accept the same formats. If both are provided, `--page` takes precedence. If neither is given, the default is `1-20`.
 
 ## Flags
 
@@ -46,7 +46,7 @@ The `--pages` / `--page` flags accept three formats:
 
 ## Dependencies
 
-- Internal: `ra-mcp-browse`
+- Internal: `ra-mcp-browse-lib`
 - External: `typer`, `rich`
 
 ## Part of ra-mcp

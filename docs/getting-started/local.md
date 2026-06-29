@@ -6,8 +6,10 @@ If you want to search and browse directly from your terminal (no AI client neede
 
 ## Install the CLI
 
+The `ra` command imports the search, browse, and TUI sub-apps unconditionally, so install the `cli` and `tui` extras for a working CLI:
+
 ```bash
-uv pip install ra-mcp
+uv pip install "ra-mcp[cli,tui]"
 ```
 
 ```bash
@@ -21,10 +23,10 @@ ra browse "SE/RA/310187/1" --pages "7,8,52" --search-term "trolldom"
 
 ## Interactive TUI
 
-For a full terminal browser experience:
+The TUI ships in the `tui` extra (already included above). If you only want the terminal browser:
 
 ```bash
-uv pip install "ra-mcp[tui]"
+uv pip install "ra-mcp[cli,tui]"
 ```
 
 ```bash
@@ -45,6 +47,9 @@ For development or private deployments:
 git clone https://github.com/AI-Riksarkivet/ra-mcp.git
 cd ra-mcp
 uv sync
+
+# Build the viewer-mcp and pdf-mcp App UIs (required before serving, or the MCP App UIs won't be built)
+make build-ui
 
 # Run MCP server on HTTP
 uv run ra serve --port 7860
