@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
@@ -50,7 +50,7 @@ class SearchScreen(Screen):
 
     @property
     def _service(self) -> RiksarkivetApp:
-        return self.app  # type: ignore[return-value]
+        return cast("RiksarkivetApp", self.app)
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -95,7 +95,9 @@ class SearchScreen(Screen):
 
     def _handle_search_result(self, event: Worker.StateChanged) -> None:
         if event.state == WorkerState.SUCCESS:
-            result: SearchResult = event.worker.result  # type: ignore[assignment]
+            result = cast("SearchResult | None", event.worker.result)
+            if result is None:
+                return
             self._total_hits = result.total_hits
             self.query_one(ResultList).set_results(result.items, result.total_hits, self._current_keyword, self._current_offset, self._current_limit)
         elif event.state == WorkerState.ERROR:
@@ -105,8 +107,12 @@ class SearchScreen(Screen):
         from .page import PageScreen
 
         if event.state == WorkerState.SUCCESS:
-            result: BrowseResult = event.worker.result  # type: ignore[assignment]
+            result = cast("BrowseResult | None", event.worker.result)
             record = self._snippet_record
+            if result is None:
+                self._snippet_record = None
+                self.notify("Page not found")
+                return
             self._snippet_record = None
             if result.contexts and record:
                 self.app.push_screen(

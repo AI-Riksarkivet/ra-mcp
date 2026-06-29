@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
@@ -57,7 +57,7 @@ class PageScreen(Screen):
 
     @property
     def _service(self) -> RiksarkivetApp:
-        return self.app  # type: ignore[return-value]
+        return cast("RiksarkivetApp", self.app)
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -122,7 +122,9 @@ class PageScreen(Screen):
             return
         self._loading = False
         if event.state == WorkerState.SUCCESS:
-            result: BrowseResult = event.worker.result  # type: ignore[assignment]
+            result = event.worker.result
+            if result is None:
+                return
             if result.contexts:
                 if self._load_direction == "prev":
                     self._all_pages = result.contexts + self._all_pages

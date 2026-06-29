@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Protocol
 
 from .config import FANGRULLOR_TABLE, FLYGVAPEN_TABLE, KURHUSET_TABLE, PRESS_TABLE, VIDEO_TABLE
 from .models import (
@@ -24,11 +24,23 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class CsvRecord(Protocol):
+    """Structural type for the Pydantic record models ingested here."""
+
+    @classmethod
+    def from_csv_row(cls, row: dict[str, str]) -> CsvRecord: ...
+
+    @property
+    def searchable_text(self) -> str: ...
+
+    def model_dump(self) -> dict[str, Any]: ...
+
+
 def _ingest_simple(
     db: lancedb.DBConnection,
     csv_path: str | Path,
     table_name: str,
-    record_cls: type,
+    record_cls: type[CsvRecord],
     *,
     fieldnames: list[str] | None = None,
 ) -> lancedb.table.Table:

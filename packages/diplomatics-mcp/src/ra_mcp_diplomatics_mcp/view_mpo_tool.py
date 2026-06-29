@@ -54,7 +54,7 @@ def register_view_mpo_tool(mcp) -> None:
             "with the fragment images and a metadata panel showing manuscript type, dating, "
             "script, material, content, decoration, and damage descriptions."
         ),
-        app=AppConfig(resource_uri=RESOURCE_URI),
+        app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
     )
     async def view_mpo(
         mpo_id: Annotated[int, Field(description="MPO fragment ID (e.g. 1, 42).")],

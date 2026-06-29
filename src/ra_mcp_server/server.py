@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 from fastmcp import FastMCP
 from fastmcp.server.providers import FastMCPProvider
@@ -59,7 +60,7 @@ AVAILABLE_MODULES = {
 
 # label-mcp is optional (requires glibc for opencv-python-headless via label-studio-sdk)
 try:
-    from ra_mcp_label_mcp.tools import label_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_label_mcp.tools import label_mcp
 
     AVAILABLE_MODULES["label"] = {
         "server": label_mcp,
@@ -71,7 +72,7 @@ except ImportError:
 
 # diplomatics-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_diplomatics_mcp import diplomatics_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_diplomatics_mcp import diplomatics_mcp
 
     AVAILABLE_MODULES["diplomatics"] = {
         "server": diplomatics_mcp,
@@ -83,7 +84,7 @@ except ImportError:
 
 # sbl-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_sbl_mcp import sbl_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_sbl_mcp import sbl_mcp
 
     AVAILABLE_MODULES["sbl"] = {
         "server": sbl_mcp,
@@ -96,7 +97,7 @@ except ImportError:
 
 # sjomanshus-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_sjomanshus_mcp import sjomanshus_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_sjomanshus_mcp import sjomanshus_mcp
 
     AVAILABLE_MODULES["sjomanshus"] = {
         "server": sjomanshus_mcp,
@@ -108,7 +109,7 @@ except ImportError:
 
 # filmcensur-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_filmcensur_mcp import filmcensur_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_filmcensur_mcp import filmcensur_mcp
 
     AVAILABLE_MODULES["filmcensur"] = {
         "server": filmcensur_mcp,
@@ -120,7 +121,7 @@ except ImportError:
 
 # rosenberg-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_rosenberg_mcp import rosenberg_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_rosenberg_mcp import rosenberg_mcp
 
     AVAILABLE_MODULES["rosenberg"] = {
         "server": rosenberg_mcp,
@@ -132,7 +133,7 @@ except ImportError:
 
 # court-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_court_mcp import court_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_court_mcp import court_mcp
 
     AVAILABLE_MODULES["court"] = {
         "server": court_mcp,
@@ -144,7 +145,7 @@ except ImportError:
 
 # aktiebolag-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_aktiebolag_mcp import aktiebolag_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_aktiebolag_mcp import aktiebolag_mcp
 
     AVAILABLE_MODULES["aktiebolag"] = {
         "server": aktiebolag_mcp,
@@ -156,7 +157,7 @@ except ImportError:
 
 # faltjagare-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_faltjagare_mcp import faltjagare_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_faltjagare_mcp import faltjagare_mcp
 
     AVAILABLE_MODULES["faltjagare"] = {
         "server": faltjagare_mcp,
@@ -168,7 +169,7 @@ except ImportError:
 
 # suffrage-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_suffrage_mcp import suffrage_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_suffrage_mcp import suffrage_mcp
 
     AVAILABLE_MODULES["suffrage"] = {
         "server": suffrage_mcp,
@@ -180,7 +181,7 @@ except ImportError:
 
 # specialsok-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_specialsok_mcp import specialsok_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_specialsok_mcp import specialsok_mcp
 
     AVAILABLE_MODULES["specialsok"] = {
         "server": specialsok_mcp,
@@ -192,7 +193,7 @@ except ImportError:
 
 # dds-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_dds_mcp import dds_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_dds_mcp import dds_mcp
 
     AVAILABLE_MODULES["dds"] = {
         "server": dds_mcp,
@@ -204,7 +205,7 @@ except ImportError:
 
 # wincars-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_wincars_mcp import wincars_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_wincars_mcp import wincars_mcp
 
     AVAILABLE_MODULES["wincars"] = {
         "server": wincars_mcp,
@@ -216,7 +217,7 @@ except ImportError:
 
 # sj-mcp is optional (requires lancedb which has limited platform wheels)
 try:
-    from ra_mcp_sj_mcp import sj_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_sj_mcp import sj_mcp
 
     AVAILABLE_MODULES["sj"] = {
         "server": sj_mcp,
@@ -228,7 +229,7 @@ except ImportError:
 
 # tora-mcp is optional
 try:
-    from ra_mcp_tora_mcp import tora_mcp  # ty: ignore[unresolved-import]
+    from ra_mcp_tora_mcp import tora_mcp
 
     AVAILABLE_MODULES["tora"] = {
         "server": tora_mcp,
@@ -406,7 +407,7 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
             continue
 
         module_config = AVAILABLE_MODULES[module_name]
-        module_server: FastMCP = module_config["server"]  # type: ignore[assignment]
+        module_server = cast(FastMCP, module_config["server"])
         try:
             namespace = "" if module_config.get("no_namespace") else module_name
             server.add_provider(FastMCPProvider(module_server), namespace=namespace)

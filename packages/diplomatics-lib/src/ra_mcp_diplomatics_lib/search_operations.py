@@ -152,7 +152,7 @@ class DiplomaticsSearch:
         Returns the record dict or None if not found.
         """
         table = self._db.open_table(SDHK_TABLE)
-        rows = table.filter(f"id = {sdhk_id}").limit(1).to_list()
+        rows = table.search().where(f"id = {sdhk_id}").limit(1).to_list()
         return rows[0] if rows else None
 
     def get_mpo_by_id(self, mpo_id: int) -> dict | None:
@@ -161,5 +161,5 @@ class DiplomaticsSearch:
         Returns the record dict or None if not found.
         """
         table = self._db.open_table(MPO_TABLE)
-        rows = table.filter(f"id = {mpo_id}").limit(1).to_list()
+        rows = table.search().where(f"id = {mpo_id}").limit(1).to_list()
         return rows[0] if rows else None

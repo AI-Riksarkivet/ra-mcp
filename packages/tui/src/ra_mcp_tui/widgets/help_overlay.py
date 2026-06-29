@@ -43,5 +43,5 @@ class HelpScreen(ModalScreen[None]):
             yield Static(HELP_TEXT, id="help-text")
             yield Label("Press Escape to close", id="help-hint")
 
-    def action_dismiss(self) -> None:  # type: ignore[override]
-        self.dismiss(None)
+    async def action_dismiss(self, result: None = None) -> None:
+        self.dismiss(result)

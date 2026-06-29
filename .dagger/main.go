@@ -46,9 +46,10 @@ func (m *RaMcp) buildWithUv(ctx context.Context, source *dagger.Directory) (*dag
 
 	container = m.withUv(container)
 
-	// Install all dependencies including optional extras for type checking
-	// Exclude label extra: label-studio-sdk requires opencv which has no Alpine/musl wheel
-	container = container.WithExec([]string{"uv", "sync", "--frozen", "--no-cache", "--extra", "cli", "--extra", "tui"})
+	// Install all workspace packages so type checking and tests can resolve
+	// every package (datasets, cli, tui). Uses glibc (slim) so lancedb/opencv
+	// manylinux wheels are available; --all-packages installs every member.
+	container = container.WithExec([]string{"uv", "sync", "--frozen", "--no-cache", "--all-packages"})
 
 	return container, nil
 }

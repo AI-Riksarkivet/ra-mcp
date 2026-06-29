@@ -1,5 +1,7 @@
 """Tests for IIIFClient.fetch_manifest and related canvas parsing methods."""
 
+from typing import Any
+
 import httpx
 import respx
 
@@ -10,7 +12,7 @@ from ra_mcp_iiif_lib.models import IIIFCanvas, IIIFManifestDetail
 
 MANIFEST_URL = "https://lbiiif.riksarkivet.se/sdhk!85/manifest"
 
-SAMPLE_MANIFEST = {
+SAMPLE_MANIFEST: dict[str, Any] = {
     "@context": "http://iiif.io/api/presentation/3/context.json",
     "id": MANIFEST_URL,
     "type": "Manifest",
