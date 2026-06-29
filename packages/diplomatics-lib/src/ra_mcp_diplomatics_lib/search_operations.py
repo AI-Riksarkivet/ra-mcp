@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from .config import MPO_TABLE, SDHK_TABLE
+
 
 if TYPE_CHECKING:
     import lancedb
@@ -26,7 +27,7 @@ class SearchResult:
 class DiplomaticsSearch:
     """Search operations over SDHK and MPO LanceDB tables."""
 
-    def __init__(self, db: "lancedb.DBConnection") -> None:
+    def __init__(self, db: lancedb.DBConnection) -> None:
         self._db = db
 
     def search_sdhk(
@@ -62,11 +63,7 @@ class DiplomaticsSearch:
         fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
 
         table = self._db.open_table(SDHK_TABLE)
-        rows = (
-            table.search(keyword, query_type="fts")
-            .limit(fetch_limit)
-            .to_list()
-        )
+        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
 
         # Apply post-filters
         if author:
@@ -124,11 +121,7 @@ class DiplomaticsSearch:
         fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
 
         table = self._db.open_table(MPO_TABLE)
-        rows = (
-            table.search(keyword, query_type="fts")
-            .limit(fetch_limit)
-            .to_list()
-        )
+        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
 
         # Apply post-filters
         if category:

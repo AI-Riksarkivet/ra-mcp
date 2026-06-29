@@ -232,7 +232,7 @@ python-version = "3.13"
 asyncio_mode = "auto"
 markers = ["integration: tests that hit live external endpoints (require network)"]
 testpaths = ["packages/*/tests", "tests"]
-addopts = "--cov --cov-report=term-missing:skip-covered"
+addopts = "--import-mode=importlib --cov --cov-report=term-missing:skip-covered"
 
 [tool.coverage.run]
 branch = true

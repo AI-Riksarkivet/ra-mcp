@@ -28,18 +28,11 @@ def format_sdhk_results(result: SearchResult) -> str:
     """
     if not result.records:
         if result.offset > 0:
-            return (
-                f"No more SDHK results for '{result.keyword}' at offset {result.offset}. "
-                f"Total found: {result.total_hits}"
-            )
+            return f"No more SDHK results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
         return f"No SDHK results found for '{result.keyword}'."
 
     lines: list[str] = []
-    lines.append(
-        f"SDHK results for '{result.keyword}': "
-        f"showing {len(result.records)} of {result.total_hits} "
-        f"(offset {result.offset})"
-    )
+    lines.append(f"SDHK results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} (offset {result.offset})")
     lines.append("")
     lines.append("PRESENT THESE RESULTS AS A TABLE.")
     lines.append("")
@@ -62,9 +55,7 @@ def format_sdhk_results(result: SearchResult) -> str:
         else:
             status = "Not digitized"
 
-        lines.append(
-            f"| {sdhk_id} | {date} | {place} | {author} | {summary} | {status} |"
-        )
+        lines.append(f"| {sdhk_id} | {date} | {place} | {author} | {summary} | {status} |")
 
     lines.append("")
 
@@ -92,9 +83,7 @@ def format_sdhk_results(result: SearchResult) -> str:
     # Pagination info
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
-        lines.append(
-            f"More results available. Use offset={next_offset} to see the next page."
-        )
+        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
 
     return "\n".join(lines)
 
@@ -110,18 +99,11 @@ def format_mpo_results(result: SearchResult) -> str:
     """
     if not result.records:
         if result.offset > 0:
-            return (
-                f"No more MPO results for '{result.keyword}' at offset {result.offset}. "
-                f"Total found: {result.total_hits}"
-            )
+            return f"No more MPO results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
         return f"No MPO results found for '{result.keyword}'."
 
     lines: list[str] = []
-    lines.append(
-        f"MPO results for '{result.keyword}': "
-        f"showing {len(result.records)} of {result.total_hits} "
-        f"(offset {result.offset})"
-    )
+    lines.append(f"MPO results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} (offset {result.offset})")
     lines.append("")
     lines.append("PRESENT THESE RESULTS AS A TABLE.")
     lines.append("")
@@ -138,9 +120,7 @@ def format_mpo_results(result: SearchResult) -> str:
         script = _escape_pipe(rec.get("script", "") or "")
         content = _escape_pipe(_truncate(rec.get("content", "") or "", 120))
 
-        lines.append(
-            f"| {mpo_id} | {category} | {dating} | {origin} | {script} | {content} |"
-        )
+        lines.append(f"| {mpo_id} | {category} | {dating} | {origin} | {script} | {content} |")
 
     lines.append("")
 
@@ -174,9 +154,7 @@ def format_mpo_results(result: SearchResult) -> str:
     # Pagination info
     next_offset = result.offset + result.limit
     if next_offset < result.total_hits:
-        lines.append(
-            f"More results available. Use offset={next_offset} to see the next page."
-        )
+        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
 
     return "\n".join(lines)
 

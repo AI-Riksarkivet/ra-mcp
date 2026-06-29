@@ -147,7 +147,9 @@ async def view_manifest(
     ctx: Context,
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
     max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
-    document_info: Annotated[str | None, Field(description="Optional markdown-formatted document metadata for the info panel. Overrides the manifest label if provided.")] = None,
+    document_info: Annotated[
+        str | None, Field(description="Optional markdown-formatted document metadata for the info panel. Overrides the manifest label if provided.")
+    ] = None,
 ) -> ToolResult:
     """View document pages from a IIIF manifest URL."""
     try:

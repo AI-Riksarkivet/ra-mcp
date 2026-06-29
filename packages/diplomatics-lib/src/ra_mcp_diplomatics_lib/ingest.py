@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import logging
 from pathlib import Path
@@ -9,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from .config import MPO_TABLE, SDHK_TABLE
 from .models import MPORecord, SDHKRecord
+
 
 if TYPE_CHECKING:
     import lancedb
@@ -28,19 +30,17 @@ def _load_id_set(path: str | Path | None) -> set[int]:
         for line in f:
             line = line.strip()
             if line:
-                try:
+                with contextlib.suppress(ValueError):
                     ids.add(int(line))
-                except ValueError:
-                    pass
     return ids
 
 
 def ingest_sdhk(
-    db: "lancedb.DBConnection",
+    db: lancedb.DBConnection,
     csv_path: str | Path,
     manifest_ids_path: str | Path | None = None,
     no_transcription_ids_path: str | Path | None = None,
-) -> "lancedb.table.Table":
+) -> lancedb.table.Table:
     """Ingest SDHK CSV into a LanceDB table with FTS index.
 
     Args:
@@ -86,7 +86,7 @@ def ingest_sdhk(
     return table
 
 
-def ingest_mpo(db: "lancedb.DBConnection", csv_path: str | Path) -> "lancedb.table.Table":
+def ingest_mpo(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.Table:
     """Ingest MPO CSV into a LanceDB table with FTS index.
 
     Args:

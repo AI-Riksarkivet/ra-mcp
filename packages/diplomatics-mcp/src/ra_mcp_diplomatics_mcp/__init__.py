@@ -4,4 +4,5 @@ __version__ = "0.3.0"
 
 from .tools import diplomatics_mcp
 
+
 __all__ = ["diplomatics_mcp"]

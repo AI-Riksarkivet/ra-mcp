@@ -8,6 +8,7 @@ import pytest
 from ra_mcp_diplomatics_lib.ingest import ingest_mpo, ingest_sdhk
 from ra_mcp_diplomatics_lib.search_operations import DiplomaticsSearch
 
+
 FIXTURES = Path(__file__).parent / "fixtures"
 SDHK_FIXTURE = FIXTURES / "sdhk_sample.csv"
 MPO_FIXTURE = FIXTURES / "mpo_sample.csv"

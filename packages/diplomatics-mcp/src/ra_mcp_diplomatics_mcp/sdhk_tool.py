@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
+
+
+if TYPE_CHECKING:
+    import lancedb
 
 from pydantic import Field
 
@@ -19,7 +23,7 @@ logger = logging.getLogger("ra_mcp.diplomatics.sdhk_tool")
 _db = None
 
 
-def _get_db():
+def _get_db() -> lancedb.DBConnection:
     """Return a cached LanceDB connection, opening it on first use."""
     global _db
     if _db is None:

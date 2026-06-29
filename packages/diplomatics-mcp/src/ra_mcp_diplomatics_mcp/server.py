@@ -6,7 +6,7 @@ import os
 from .tools import diplomatics_mcp
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Diplomatics MCP Server")
     parser.add_argument("--stdio", action="store_true")
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "3003")))

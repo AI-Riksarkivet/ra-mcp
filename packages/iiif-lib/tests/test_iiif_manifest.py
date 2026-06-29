@@ -1,7 +1,5 @@
 """Tests for IIIFClient.fetch_manifest and related canvas parsing methods."""
 
-import pytest
-
 import httpx
 import respx
 

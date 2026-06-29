@@ -22,7 +22,7 @@ class _FilteredQuery:
 
     def to_list(self):
         target_id = int(self._expr.split("=")[1].strip())
-        return [r for r in self._rows if r.get("id") == target_id][:self._limit]
+        return [r for r in self._rows if r.get("id") == target_id][: self._limit]
 
 
 class FakeDB:
