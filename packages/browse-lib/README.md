@@ -1,20 +1,24 @@
-# ra-mcp-browse
+# ra-mcp-browse-lib
 
 Browse domain package for Riksarkivet document pages.
 
 ## Overview
 
-Contains the business logic for browsing and retrieving document page transcriptions. This is a pure domain package — no MCP or CLI dependency. It orchestrates three different API clients (ALTO, IIIF, OAI-PMH) to assemble full page views with transcribed text, image links, and metadata.
+Contains the business logic for browsing and retrieving document page transcriptions. This is a pure domain package — no MCP or CLI dependency. It orchestrates three API clients — `ALTOClient`, `IIIFClient`, and `OAIPMHClient` — to assemble full page views with transcribed text, image links, and metadata. Those clients now live in their own workspace packages (`ra-mcp-xml`, `ra-mcp-iiif-lib`, `ra-mcp-oai-pmh-lib`) and are re-exported here for convenience.
 
 ## Components
 
-- **models.py**: Pydantic models — `BrowseResult` (full document browse result), `PageContext` (single page with transcription, image URL, ALTO URL), `OAIPMHMetadata` (document-level metadata)
-- **clients/alto_client.py**: `ALTOClient` — fetches and parses ALTO XML transcriptions into plain text
-- **clients/iiif_client.py**: `IIIFClient` — resolves IIIF collection manifests to discover page image URLs and identifiers
-- **clients/oai_pmh_client.py**: `OAIPMHClient` — fetches document metadata and IIIF manifest IDs via OAI-PMH protocol
-- **operations/browse_operations.py**: `BrowseOperations` — high-level orchestration: resolves reference code to assembled pages
-- **url_generator.py**: URL construction helpers for bildvisaren (image viewer), IIIF images, and ALTO XML
-- **config.py**: API base URLs, XML namespaces, and constants
+- **models.py**: Pydantic models — `BrowseResult` (full document browse result) and `PageContext` (single page with `full_text`, `image_url`, `alto_url`, `bildvisning_url`). `OAIPMHMetadata` is imported from `ra-mcp-oai-pmh-lib`.
+- **browse_operations.py**: `BrowseOperations` — high-level orchestration: resolves a reference code to assembled pages. Constructs `ALTOClient`, `OAIPMHClient`, and `IIIFClient` internally from the injected `HTTPClient`.
+- **url_generator.py**: URL construction helpers for bildvisning (image viewer), IIIF images, and ALTO XML
+- **utils.py**: Helpers such as `parse_page_range`
+- **config.py**: API base URLs and constants
+
+External clients used by `BrowseOperations` (each in its own package):
+
+- `ALTOClient` (`ra-mcp-xml`) — fetches and parses ALTO XML transcriptions into a text layer
+- `IIIFClient` (`ra-mcp-iiif-lib`) — resolves IIIF collection manifests to discover page image URLs and identifiers
+- `OAIPMHClient` (`ra-mcp-oai-pmh-lib`) — fetches document metadata and derives IIIF manifest IDs via OAI-PMH
 
 ## How the Clients Work Together
 
@@ -22,43 +26,51 @@ Contains the business logic for browsing and retrieving document page transcript
 Reference Code (e.g., SE/RA/420422/01)
     |
     v
-OAI-PMH Client --> metadata + IIIF manifest ID
+OAIPMHClient (ra-mcp-oai-pmh-lib) --> metadata + IIIF manifest ID
     |
     v
-IIIF Client    --> page list with image IDs
+IIIFClient (ra-mcp-iiif-lib)      --> page list with image IDs
     |
     v
-ALTO Client    --> transcribed text for each page
+ALTOClient (ra-mcp-xml)           --> transcribed text for each page
     |
     v
-BrowseResult   --> assembled pages with text + image links + metadata
+BrowseResult                      --> assembled pages with text + image links + metadata
 ```
 
 ## Usage
 
+`BrowseOperations.browse_document` is async and must be awaited.
+
 ```python
+import asyncio
+
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_browse.browse_operations import BrowseOperations
+from ra_mcp_browse_lib.browse_operations import BrowseOperations
 
-ops = BrowseOperations(http_client=HTTPClient())
 
-result = ops.browse_document(
-    reference_code="SE/RA/420422/01",
-    pages="1-5",
-    highlight_term="Stockholm",
-    max_pages=20,
-)
+async def main():
+    ops = BrowseOperations(http_client=HTTPClient())
 
-for page in result.contexts:
-    print(f"Page {page.page_number}: {page.transcription[:100]}...")
-    print(f"  Image: {page.image_url}")
-    print(f"  Viewer: {page.bildvisaren_url}")
+    result = await ops.browse_document(
+        reference_code="SE/RA/420422/01",
+        pages="1-5",
+        highlight_term="Stockholm",
+        max_pages=20,
+    )
+
+    for page in result.contexts:
+        print(f"Page {page.page_number}: {page.full_text[:100]}...")
+        print(f"  Image: {page.image_url}")
+        print(f"  Viewer: {page.bildvisning_url}")
+
+
+asyncio.run(main())
 ```
 
 ## Dependencies
 
-- Internal: `ra-mcp-common`
-- External: `pydantic`
+- Internal: `ra-mcp-common`, `ra-mcp-xml`, `ra-mcp-iiif-lib`, `ra-mcp-oai-pmh-lib`
 
 ## Part of ra-mcp
 

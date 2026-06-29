@@ -24,7 +24,7 @@ graph TD
   B["delegate search_transcribed\n<i>FastMCP — composed server</i>"]
   C["tools/call search_transcribed\n<i>FastMCP — provider</i>"]
   D["SearchOperations.search\n<i>domain layer</i>"]
-  E["SearchAPI.search\n<i>API client</i>"]
+  E["SearchClient.search\n<i>API client</i>"]
   F["HTTP GET\n<i>HTTP client</i>"]
 
   A --> B --> C --> D --> E --> F
@@ -35,7 +35,7 @@ graph TD
 | Component | Tracer name | Spans | Metrics |
 |-----------|-------------|-------|---------|
 | HTTP client | `ra_mcp.http_client` | `HTTP GET` | request count, error count, duration, response size |
-| Search API | `ra_mcp.search_api` | `SearchAPI.search` | — |
+| Search client | `ra_mcp.search.client` | `SearchClient.search` | — |
 | Search ops | `ra_mcp.search_operations` | `SearchOperations.search` | — |
 | Browse ops | `ra_mcp.browse_operations` | `browse_document`, `_fetch_page_contexts` | — |
 | ALTO client | `ra_mcp.alto_client` | `ALTOClient.fetch_content` | — |

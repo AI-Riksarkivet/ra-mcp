@@ -20,18 +20,30 @@ Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
 
 ## Running the Server
 
+The viewer and PDF modules ship Svelte UIs that must be built into single HTML files before
+serving. Run `make build-ui` once (and after any UI change) before `ra serve`; the `make serve`
+and `make serve-http` targets do this for you.
+
 ```bash
-# MCP server (stdio) — for Claude Desktop integration
+# Build the viewer + PDF MCP App UIs (Svelte → HTML)
+make build-ui
+
+# MCP server (stdio, the default) — for Claude Desktop integration
 uv run ra serve
 
-# MCP server (HTTP) — for web clients, testing, and development
+# MCP server (HTTP) — passing --port switches to HTTP/SSE transport
 uv run ra serve --port 7860
 
 # With verbose logging
 uv run ra serve --port 7860 -v
 
-# Selective modules
+# Selective modules / list modules
 uv run ra serve --port 7860 --modules search,browse
+uv run ra serve --list-modules
+
+# Or use the Makefile (runs build-ui first)
+make serve        # stdio
+make serve-http   # HTTP on port 7860
 ```
 
 ## Testing with MCP Inspector
@@ -47,12 +59,11 @@ npx @modelcontextprotocol/inspector uv run ra serve
 uv run pytest
 
 # Run specific package tests
-uv run pytest packages/common/tests/ -v
-uv run pytest packages/search/tests/ -v
-uv run pytest packages/browse/tests/ -v
+uv run pytest packages/search-lib/tests/ -v
+uv run pytest packages/browse-lib/tests/ -v
 
 # Run with coverage
-uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search --cov=ra_mcp_browse --cov-report=html
+uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search_lib --cov=ra_mcp_browse_lib --cov-report=html
 ```
 
 ### Testing Principles
@@ -117,9 +128,9 @@ Always run `dagger call checks` before committing.
 
 ## Adding a New Module
 
-1. Create domain package: `packages/mymodule/` with models, clients, operations
+1. Create domain library: `packages/mymodule-lib/` with models, clients, operations
 2. Create MCP package: `packages/mymodule-mcp/` with tool registration
-3. Register in `src/ra_mcp_server/server.py` `AVAILABLE_MODULES`:
+3. Register in `src/ra_mcp_server/server.py` `AVAILABLE_MODULES` (wrap optional/heavy-dependency modules in `try/except ImportError`, and set `no_namespace=True` to expose tools without a module prefix):
 
 ```python
 AVAILABLE_MODULES = {

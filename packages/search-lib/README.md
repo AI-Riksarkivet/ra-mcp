@@ -1,4 +1,4 @@
-# ra-mcp-search
+# ra-mcp-search-lib
 
 Search domain package for Riksarkivet transcribed documents.
 
@@ -9,34 +9,43 @@ Contains the business logic for searching the Swedish National Archives. This is
 ## Components
 
 - **models.py**: Pydantic models — `SearchRecord` (single result with metadata + transcribed text snippets), `RecordsResponse` (API response wrapper), `SearchResult` (paginated result set)
-- **clients/search_client.py**: `SearchAPI` — client for the Riksarkivet records API (`https://data.riksarkivet.se/api/records`)
-- **operations/search_operations.py**: `SearchOperations` — high-level search orchestration with pagination, filtering, and dedup support
-- **config.py**: API URL, default limit (25), and max display (10) constants
+- **search_client.py**: `SearchClient` — client for the Riksarkivet records API (`https://data.riksarkivet.se/api/records`)
+- **search_operations.py**: `SearchOperations` — high-level search orchestration with pagination, filtering, and dedup support
+- **config.py**: API URL, default limit (`DEFAULT_LIMIT=50`), and max display (`DEFAULT_MAX_DISPLAY=20`) constants
 
 ## Usage
 
+`SearchOperations.search` is async and must be awaited.
+
 ```python
+import asyncio
+
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_search.search_operations import SearchOperations
+from ra_mcp_search_lib.search_operations import SearchOperations
 
-ops = SearchOperations(http_client=HTTPClient())
 
-result = ops.search(
-    keyword="trolldom",
-    transcribed_only=True,
-    only_digitised=True,
-    offset=0,
-    limit=25,
-    sort="relevance",
-    year_min=1600,
-    year_max=1700,
-)
+async def main():
+    ops = SearchOperations(http_client=HTTPClient())
 
-for record in result.items:
-    print(record.metadata.reference_code, record.metadata.title)
-    if record.transcribed_text:
-        for snippet in record.transcribed_text.snippets:
-            print(f"  Page {snippet.pages[0].id}: {snippet.text[:100]}...")
+    result = await ops.search(
+        keyword="trolldom",
+        transcribed_only=True,
+        only_digitised=True,
+        offset=0,
+        limit=50,
+        sort="relevance",
+        year_min=1600,
+        year_max=1700,
+    )
+
+    for record in result.items:
+        print(record.metadata.reference_code, record.metadata.title)
+        if record.transcribed_text:
+            for snippet in record.transcribed_text.snippets:
+                print(f"  Page {snippet.pages[0].id}: {snippet.text[:100]}...")
+
+
+asyncio.run(main())
 ```
 
 ## Search Modes
@@ -47,7 +56,6 @@ for record in result.items:
 ## Dependencies
 
 - Internal: `ra-mcp-common`
-- External: `pydantic`
 
 ## Part of ra-mcp
 

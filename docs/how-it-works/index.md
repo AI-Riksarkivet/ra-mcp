@@ -17,6 +17,7 @@ graph LR
   A["AI Client\n(Claude, ChatGPT, etc)"] <-->|"MCP\ntool calls"| B["ra-mcp Server"]
   B --> C["Riksarkivet\nData Platform\n(Search, IIIF, ALTO, OAI-PMH)"]
   B --> D["HTRflow\nGradio Space\n(Handwritten text recognition)"]
+  B --> E["Local LanceDB datasets\n(SBL, court, church records,\ngeo lexicon, …)"]
 ```
 
 When you ask Claude *"Find documents about trolldom"*, the AI:
@@ -61,7 +62,15 @@ Transcribes handwritten document images using AI-powered handwritten text recogn
 
 ### view_document
 
-Displays document pages in an interactive viewer with zoomable images and text layer overlays. The viewer runs directly inside the MCP host (Claude, ChatGPT) as an MCP App.
+Displays document pages in an interactive viewer with zoomable images and text layer overlays. The viewer runs directly inside the MCP host (Claude, ChatGPT) as an MCP App. Companion entry points `view_manifest` (IIIF manifest) and `view_bild` (bildvisning URL) open the same viewer from different references.
+
+### display_pdf
+
+Opens a PDF in an interactive PDF.js viewer (search, page navigation, annotations) as an MCP App. Paired tools `search_pdf`, `list_pdfs`, and `read_pdf_page` let the AI search and read the bundled Riksarkivet archival PDF guides.
+
+### Dataset tools
+
+When the optional dataset modules are installed, the server also exposes namespaced search tools over local datasets — for example `sbl:search_sbl` (biographical lexicon), `court:search_domboksregister` (court records), `dds:search_fodelse` (church birth records), and `rosenberg:search_rosenberg` (geographical lexicon). See [Data Sources](data-sources.md#local-lancedb-datasets) for the full list.
 
 See [Tools & Skills](../tools/index.md) for full parameter documentation.
 

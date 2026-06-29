@@ -39,11 +39,14 @@ Use the table of contents resource to discover all available sections.
 ## Standalone Usage
 
 ```bash
-# stdio transport
+# HTTP transport (default, port 3001)
 python -m ra_mcp_guide_mcp.server
 
-# HTTP transport
+# HTTP transport on a custom port
 python -m ra_mcp_guide_mcp.server --port 3003
+
+# stdio transport
+python -m ra_mcp_guide_mcp.server --stdio
 ```
 
 ## Dependencies

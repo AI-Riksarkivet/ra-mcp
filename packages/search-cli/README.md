@@ -21,8 +21,8 @@ ra search "Stockholm" --log
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--limit` | 25 | Maximum records to fetch from API (pagination size) |
-| `--max-display` | 10 | Maximum records to display in output |
+| `--limit` | 50 | Maximum records to fetch from API (pagination size) |
+| `--max-display` | 20 | Maximum records to display in output |
 | `--max-hits-per-vol` | 3 | Limit hits per volume (useful for broad searches) |
 | `--transcribed-text` / `--text` | `--transcribed-text` | Search AI-transcribed text (default) or metadata fields |
 | `--only-digitised-materials` / `--include-all-materials` | `--only-digitised-materials` | Limit to digitised materials or include all records |
@@ -38,7 +38,7 @@ ra search "Stockholm" --log
 
 ## Dependencies
 
-- Internal: `ra-mcp-search`
+- Internal: `ra-mcp-search-lib`
 - External: `typer`, `rich`
 
 ## Part of ra-mcp

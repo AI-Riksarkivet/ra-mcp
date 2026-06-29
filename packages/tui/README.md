@@ -28,6 +28,7 @@ ra tui "Stockholm"    # Search on launch
 | `Enter` | Submit search / Open selected item |
 | `Escape` | Go back / Clear search |
 | `m` | Toggle search mode (Transcribed / Metadata) |
+| `d` | Open the highlighted result as a Document (search screen) |
 | `n` / `p` | Next / Previous page of results |
 | `o` | Open in browser (works on all screens) |
 | `y` | Copy reference code to clipboard |
@@ -46,7 +47,7 @@ ra tui "Stockholm"    # Search on launch
 
 ## Dependencies
 
-- Internal: `ra-mcp-search`, `ra-mcp-browse`
+- Internal: `ra-mcp-search-lib`, `ra-mcp-browse-lib`
 - External: `textual`, `typer`
 
 ## Part of ra-mcp

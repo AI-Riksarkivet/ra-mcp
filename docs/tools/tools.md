@@ -91,3 +91,56 @@ Display document pages with zoomable images and text layer overlays in an intera
 | `metadata` | list[str] \| None | None | Per-page labels (reference codes, descriptions). |
 
 Both lists must have the same length.
+
+The viewer module also exposes two convenience entry points that open the same viewer from a different reference:
+
+- **view_manifest** — `manifest_url` (full IIIF manifest URL, e.g. SDHK/MPO results); optional `highlight_term`.
+- **view_bild** — `bild_ids` (one or more bildvisning image IDs, e.g. `C0056829_00001`).
+
+In addition the viewer registers app-control tools used by the running MCP App UI (`load_page`, `load_thumbnails`, `search_all_pages`, `viewer_navigate`, `viewer_go_to_page`, `viewer_set_highlight`, `viewer_reopen`, `get_viewer_state`).
+
+## display_pdf
+
+Open a PDF in an interactive PDF.js viewer (search, navigation, annotations) running as an MCP App.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | str | *(bundled default)* | URL to a PDF file (direct links and academic sources supported). |
+| `title` | str \| None | None | Optional display title for the PDF. |
+
+Companion PDF tools:
+
+| Tool | Parameters | Purpose |
+|------|-----------|---------|
+| `search_pdf` | `url`, `term` | Find a term within a previously opened PDF. |
+| `read_pdf_page` | `url`, `page`, `count` (≤5) | Extract text from page(s) of a PDF. |
+| `list_pdfs` | — | List PDFs available in the gallery (bundled Riksarkivet guides). |
+
+The PDF module also registers app-control tools (`pdf_go_to_page`, `pdf_set_search`, `get_pdf_state`, `get_page_blocks`, `read_pdf_bytes`, `search_guides`).
+
+## Dataset tools
+
+When the optional dataset modules are installed, the server exposes namespaced search tools over local LanceDB datasets (see [Data Sources](../how-it-works/data-sources.md#local-lancedb-datasets) for coverage figures). Most follow a shared shape: a free-text `keyword`, `offset`/`limit` pagination, a `research_context`, and dataset-specific filters (e.g. `socken`/parish, `roll`/role, `datum_from`/`datum_till` date range on `court:search_domboksregister`).
+
+| Module | Tools |
+|--------|-------|
+| `diplomatics` | `search_sdhk`, `search_mpo`, `view_sdhk`, `view_mpo` |
+| `sbl` | `search_sbl`, `view_sbl_article`, `load_sbl_article` |
+| `sjomanshus` | `search_liggare`, `search_matrikel` |
+| `filmcensur` | `search_filmreg` |
+| `rosenberg` | `search_rosenberg` |
+| `court` | `search_domboksregister`, `search_medelstad` |
+| `aktiebolag` | `search_bolag`, `search_styrelse` |
+| `faltjagare` | `search_faltjagare` |
+| `suffrage` | `search_rostratt`, `search_fkpr` |
+| `specialsok` | `search_flygvapen`, `search_fangrullor`, `search_kurhuset`, `search_press`, `search_video` |
+| `dds` | `search_fodelse`, `search_doda`, `search_vigsel` |
+| `wincars` | `search_wincars` |
+| `sj` | `search_juda`, `search_ritningar` |
+| `tora` | `search_tora` |
+
+Note that `sbl` tools are exposed without a namespace prefix (e.g. `search_sbl`, not `sbl:search_sbl`); all other dataset tools are namespaced by module.
+
+## import_to_label_studio
+
+Imports document pages (images plus optional ALTO transcription) into a Label Studio project for human annotation and transcription feedback. Provided by the optional `label` module.

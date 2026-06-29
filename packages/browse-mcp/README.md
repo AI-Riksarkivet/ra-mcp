@@ -4,11 +4,13 @@ MCP tool for browsing Riksarkivet document pages.
 
 ## Overview
 
-Thin MCP wrapper around `ra-mcp-browse`. Registers the `browse_document` FastMCP tool that retrieves full page transcriptions with session-based deduplication, keyword highlighting, and LLM-friendly formatted output including links to the original images.
+Thin MCP wrapper around `ra-mcp-browse-lib`. Registers one FastMCP tool that retrieves full page transcriptions with session-based deduplication, keyword highlighting, and LLM-friendly formatted output including links to the original images.
+
+The tool is registered under the bare name `document` (see `@mcp.tool(name="document")` in `browse_tool.py`). When the root server composes this provider it adds the `browse` namespace, so clients of the composed server call it as `browse_document`. In standalone mode (running this server directly) the name is the bare `document`.
 
 ## MCP Tools
 
-### `browse_document`
+### `document` (namespaced: `browse_document`)
 
 View full page transcriptions by reference code. Returns original text (usually Swedish), links to bildvisaren (image viewer), and ALTO XML.
 
@@ -31,17 +33,20 @@ View full page transcriptions by reference code. Returns original text (usually 
 
 ## Standalone Usage
 
-```bash
-# stdio transport
-python -m ra_mcp_browse_mcp.server
+The default transport is HTTP (streamable-http) on port 3001. Pass `--stdio` for stdio transport.
 
-# HTTP transport
-python -m ra_mcp_browse_mcp.server --port 3002
+```bash
+# HTTP transport (default) — serves http://localhost:3001/mcp
+python -m ra_mcp_browse_mcp.server
+python -m ra_mcp_browse_mcp.server --port 3001
+
+# stdio transport
+python -m ra_mcp_browse_mcp.server --stdio
 ```
 
 ## Dependencies
 
-- Internal: `ra-mcp-browse`
+- Internal: `ra-mcp-browse-lib`
 - External: `fastmcp`
 
 ## Part of ra-mcp
