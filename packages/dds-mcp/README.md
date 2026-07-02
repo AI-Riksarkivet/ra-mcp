@@ -81,7 +81,7 @@ The default port is `3013` (overridable via the `PORT` environment variable or `
 ## Dependencies
 
 - Internal: `ra-mcp-dds-lib`
-- External: `fastmcp==3.1.1`
+- External: `fastmcp==3.4.2`
 
 ## Part of ra-mcp
 

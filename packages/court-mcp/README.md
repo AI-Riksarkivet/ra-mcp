@@ -64,7 +64,7 @@ The default port is `3008` (overridable via the `PORT` environment variable or `
 ## Dependencies
 
 - Internal: `ra-mcp-court-lib`
-- External: `fastmcp==3.1.1`
+- External: `fastmcp==3.4.2`
 
 ## Part of ra-mcp
 

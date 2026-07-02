@@ -544,34 +544,65 @@ wheels = [
 
 [[package]]
 name = "fastmcp"
-version = "3.1.1"
+version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "fastmcp-slim", extra = ["client", "server"] },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/29/18/46beaec18c9f86a599ae3f9cdf6677dd6b50240cfd844d18233710b47f13/fastmcp-3.4.2.tar.gz", hash = "sha256:b468722946fc467c3796a6572f7a14d93d48c014cf8fea12910245220cbbe4e1", size = 28756849, upload-time = "2026-06-06T01:30:35.694Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/58/4d/8b1ba42251160e11ca34686344572121432c23a082d56ef6bbdec5888fc1/fastmcp-3.4.2-py3-none-any.whl", hash = "sha256:c87a62b029f0c5400ada85f683629345d2466c39169f0cb853e487b2f7308c08", size = 8018, upload-time = "2026-06-06T01:30:38.118Z" },
+]
+
+[[package]]
+name = "fastmcp-slim"
+version = "3.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "platformdirs" },
+    { name = "pydantic", extra = ["email"] },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+    { name = "rich" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a3/2e/d627b28b7403ecc526991ef732921b08bde010006e6148635f053fd29f4c/fastmcp_slim-3.4.2.tar.gz", hash = "sha256:290646e0955a516235a317151034559aa48336cb843d3f006131aedad8759bb4", size = 576291, upload-time = "2026-06-06T01:30:12.553Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f7/58/22afebf18df7260b09148199cbeb90cdcc4b3a4e1b5d7460e3591c3a7add/fastmcp_slim-3.4.2-py3-none-any.whl", hash = "sha256:bdc72492212681ca502755fa8acc0457f559295da1fc3dfc0599adc1c04b82f3", size = 749195, upload-time = "2026-06-06T01:30:11.22Z" },
+]
+
+[package.optional-dependencies]
+client = [
+    { name = "authlib" },
+    { name = "exceptiongroup" },
+    { name = "httpx" },
+    { name = "mcp" },
+    { name = "opentelemetry-api" },
+    { name = "py-key-value-aio", extra = ["filetree", "keyring", "memory"] },
+    { name = "starlette" },
+]
+server = [
     { name = "authlib" },
     { name = "cyclopts" },
     { name = "exceptiongroup" },
+    { name = "griffelib" },
     { name = "httpx" },
+    { name = "joserfc" },
     { name = "jsonref" },
     { name = "jsonschema-path" },
     { name = "mcp" },
     { name = "openapi-pydantic" },
     { name = "opentelemetry-api" },
     { name = "packaging" },
-    { name = "platformdirs" },
     { name = "py-key-value-aio", extra = ["filetree", "keyring", "memory"] },
-    { name = "pydantic", extra = ["email"] },
     { name = "pyperclip" },
-    { name = "python-dotenv" },
+    { name = "python-multipart" },
     { name = "pyyaml" },
-    { name = "rich" },
+    { name = "starlette" },
     { name = "uncalled-for" },
     { name = "uvicorn" },
     { name = "watchfiles" },
     { name = "websockets" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/25/83/c95d3bf717698a693eccb43e137a32939d2549876e884e246028bff6ecce/fastmcp-3.1.1.tar.gz", hash = "sha256:db184b5391a31199323766a3abf3a8bfbb8010479f77eca84c0e554f18655c48", size = 17347644, upload-time = "2026-03-14T19:12:20.235Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/ea/570122de7e24f72138d006f799768e14cc1ccf7fcb22b7750b2bd276c711/fastmcp-3.1.1-py3-none-any.whl", hash = "sha256:8132ba069d89f14566b3266919d6d72e2ec23dd45d8944622dca407e9beda7eb", size = 633754, upload-time = "2026-03-14T19:12:22.736Z" },
 ]
 
 [[package]]
@@ -974,6 +1005,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/41/f2/d34e8b3a08a9cc79a50b2208a93dce981fe615b64d5a4d4abee421d898df/joblib-1.5.3.tar.gz", hash = "sha256:8561a3269e6801106863fd0d6d84bb737be9e7631e33aaed3fb9ce5953688da3", size = 331603, upload-time = "2025-12-15T08:41:46.427Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7b/91/984aca2ec129e2757d1e4e3c81c3fcda9d0f85b74670a094cc443d9ee949/joblib-1.5.3-py3-none-any.whl", hash = "sha256:5fc3c5039fc5ca8c0276333a188bbd59d6b7ab37fe6632daa76bc7f9ec18e713", size = 309071, upload-time = "2025-12-15T08:41:44.973Z" },
+]
+
+[[package]]
+name = "joserfc"
+version = "1.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f1/26/abe1ad855eb334b5ebc9c6495d4798e12bee70e5e8e815d54570710b8312/joserfc-1.7.2.tar.gz", hash = "sha256:537ffb8888b2df039cb5b6d017d7cff6f09d521ce65d89cc9b8ab752b1cff947", size = 233183, upload-time = "2026-06-29T09:03:10.868Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/80/d1b30336582cced4dce0dae776508a6011723e32f907bc7a702c0b25890a/joserfc-1.7.2-py3-none-any.whl", hash = "sha256:ddd818c0ca9b4f17bbc2d72cb3966e6ded7502be089316c62c3cc64ae86132b5", size = 70426, upload-time = "2026-06-29T09:03:09.393Z" },
 ]
 
 [[package]]
@@ -2260,7 +2303,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "cryptography", specifier = ">=46.0.7" },
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "nltk", specifier = ">=3.9.4" },
     { name = "opentelemetry-exporter-otlp", specifier = ">=1.28.0" },
     { name = "opentelemetry-sdk", specifier = ">=1.28.0" },
@@ -2354,7 +2397,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-aktiebolag-lib", editable = "packages/aktiebolag-lib" },
 ]
 
@@ -2405,7 +2448,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-browse-lib", editable = "packages/browse-lib" },
 ]
 
@@ -2461,7 +2504,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-court-lib", editable = "packages/court-lib" },
 ]
 
@@ -2495,7 +2538,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-dds-lib", editable = "packages/dds-lib" },
 ]
 
@@ -2530,7 +2573,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-diplomatics-lib", editable = "packages/diplomatics-lib" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/viewer-mcp" },
 ]
@@ -2565,7 +2608,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-faltjagare-lib", editable = "packages/faltjagare-lib" },
 ]
 
@@ -2599,7 +2642,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-filmcensur-lib", editable = "packages/filmcensur-lib" },
 ]
 
@@ -2614,7 +2657,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-common", editable = "packages/common" },
 ]
 
@@ -2629,7 +2672,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "gradio-client" },
 ]
 
@@ -2657,7 +2700,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "label-studio-sdk", specifier = ">=2.0.17" },
     { name = "ra-mcp-common", editable = "packages/common" },
@@ -2692,7 +2735,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
 ]
@@ -2733,7 +2776,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-rosenberg-lib", editable = "packages/rosenberg-lib" },
 ]
 
@@ -2767,7 +2810,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-sbl-lib", editable = "packages/sbl-lib" },
 ]
 
@@ -2810,7 +2853,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-search-lib", editable = "packages/search-lib" },
 ]
 
@@ -2844,7 +2887,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-sj-lib", editable = "packages/sj-lib" },
 ]
 
@@ -2878,7 +2921,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-sjomanshus-lib", editable = "packages/sjomanshus-lib" },
 ]
 
@@ -2912,7 +2955,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-specialsok-lib", editable = "packages/specialsok-lib" },
 ]
 
@@ -2946,7 +2989,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-suffrage-lib", editable = "packages/suffrage-lib" },
 ]
 
@@ -2976,7 +3019,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-tora-lib", editable = "packages/tora-lib" },
 ]
 
@@ -3022,7 +3065,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
     { name = "pillow", specifier = ">=12.1.1" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
@@ -3068,7 +3111,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastmcp", specifier = "==3.1.1" },
+    { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-wincars-lib", editable = "packages/wincars-lib" },
 ]
 
@@ -3409,14 +3452,14 @@ wheels = [
 
 [[package]]
 name = "starlette"
-version = "0.52.1"
+version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c4/68/79977123bb7be889ad680d79a40f339082c1978b5cfcf62c2d8d196873ac/starlette-0.52.1.tar.gz", hash = "sha256:834edd1b0a23167694292e94f597773bc3f89f362be6effee198165a35d62933", size = 2653702, upload-time = "2026-01-18T13:34:11.062Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/e3/7c1dc7381d9f8ab7d854328ebfa884e62cb3f3d8549ddfd37c7814f42afa/starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0", size = 2703240, upload-time = "2026-06-12T09:23:11.602Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/0d/13d1d239a25cbfb19e740db83143e95c772a1fe10202dda4b76792b114dd/starlette-0.52.1-py3-none-any.whl", hash = "sha256:0029d43eb3d273bc4f83a08720b4912ea4b071087a3b48db01b7c839f7954d74", size = 74272, upload-time = "2026-01-18T13:34:09.188Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/bb/2799cc2ede3ed41131f8975621e7213dfc7ef4acbbaadfa440f32500c370/starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6", size = 73632, upload-time = "2026-06-12T09:23:10.017Z" },
 ]
 
 [[package]]

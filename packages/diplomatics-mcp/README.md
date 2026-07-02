@@ -87,7 +87,7 @@ The default port is `3003` (overridable via the `PORT` environment variable or `
 ## Dependencies
 
 - Internal: `ra-mcp-diplomatics-lib`, `ra-mcp-viewer-mcp`
-- External: `fastmcp==3.1.1`
+- External: `fastmcp==3.4.2`
 
 ## Part of ra-mcp
 

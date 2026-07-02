@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Annotated
 from uuid import uuid4
 
 from fastmcp import Context
-from fastmcp.server.apps import UI_EXTENSION_ID, AppConfig
+from fastmcp.apps import UI_EXTENSION_ID, AppConfig
 from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field

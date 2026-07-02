@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
-from fastmcp.server.apps import AppConfig, ResourceCSP
+from fastmcp.apps import AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field

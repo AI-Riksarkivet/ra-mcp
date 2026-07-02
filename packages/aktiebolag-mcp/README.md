@@ -57,7 +57,7 @@ The default port is `3009` (overridable via the `PORT` environment variable or `
 ## Dependencies
 
 - Internal: `ra-mcp-aktiebolag-lib`
-- External: `fastmcp==3.1.1`
+- External: `fastmcp==3.4.2`
 
 ## Part of ra-mcp
 
