@@ -5,7 +5,7 @@ Shared utilities used across every ra-mcp package (`ra-mcp-common`, module
 
 ## HTTP Client
 
-Source: [`packages/common/src/ra_mcp_common/http_client.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/src/ra_mcp_common/http_client.py)
+Source: [`packages/libs/common/src/ra_mcp_common/http_client.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/libs/common/src/ra_mcp_common/http_client.py)
 
 `HTTPClient` is the centralized async `httpx` client used by every domain
 library. It adds exponential-backoff retry on transient failures (429, 500,
@@ -23,21 +23,21 @@ OpenTelemetry spans/metrics.
 
 ## Formatting Utilities
 
-Source: [`packages/common/src/ra_mcp_common/formatting.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/src/ra_mcp_common/formatting.py)
+Source: [`packages/libs/common/src/ra_mcp_common/formatting.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/libs/common/src/ra_mcp_common/formatting.py)
 
 Presentation helpers shared by the CLI and MCP formatters (text truncation,
 snippet highlighting, reference-code formatting).
 
 ## Datasets
 
-Source: [`packages/common/src/ra_mcp_common/datasets.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/src/ra_mcp_common/datasets.py)
+Source: [`packages/libs/common/src/ra_mcp_common/datasets.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/libs/common/src/ra_mcp_common/datasets.py)
 
 Resolves LanceDB dataset paths for the optional dataset modules, with a
 local → mount → Hugging Face Hub fallback chain.
 
 ## Telemetry
 
-Source: [`packages/common/src/ra_mcp_common/telemetry.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/common/src/ra_mcp_common/telemetry.py)
+Source: [`packages/libs/common/src/ra_mcp_common/telemetry.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/libs/common/src/ra_mcp_common/telemetry.py)
 
 Thin wrappers over `opentelemetry-api` that return no-op instances when no SDK
 is configured (zero overhead when telemetry is disabled).

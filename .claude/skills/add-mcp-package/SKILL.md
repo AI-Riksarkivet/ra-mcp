@@ -16,7 +16,7 @@ Example mapping for a package called **viewer**:
 
 | Slot | Value |
 |------|-------|
-| Directory | `packages/viewer-mcp/` |
+| Directory | `packages/mcps/viewer-mcp/` |
 | PyPI name | `ra-mcp-viewer-mcp` |
 | Python package | `ra_mcp_viewer_mcp` |
 | FastMCP instance | `viewer_mcp` |

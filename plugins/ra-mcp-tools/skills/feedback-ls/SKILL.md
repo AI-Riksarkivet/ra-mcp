@@ -190,4 +190,4 @@ want pre-annotations).
 | `LS_TOKEN` | Label Studio Personal Access Token (JWT PAT) |
 | `LS_PROJECT_ID` | Target project ID |
 
-These are configured in `packages/label-mcp/.env` and loaded automatically.
+These are configured in `packages/mcps/label-mcp/.env` and loaded automatically.

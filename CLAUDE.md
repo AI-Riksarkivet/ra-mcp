@@ -9,11 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Architecture
 
 The project is organized as a **uv workspace** with 44 packages under `packages/` plus a root server.
-Packages follow a naming convention by role:
+Packages are grouped by role into subfolders:
 
-- `*-lib` — domain libraries (models, clients, operations), plus `common`
-- `*-mcp` — FastMCP servers that wrap a domain library as MCP tools/resources
-- `search-cli` / `browse-cli` / `tui` — CLI and terminal-UI front-ends
+- `packages/libs/` — domain libraries (`*-lib`), plus `common`
+- `packages/mcps/` — FastMCP servers (`*-mcp`) that wrap a domain library as MCP tools/resources
+- `packages/search-cli` / `packages/browse-cli` / `packages/tui` — CLI and terminal-UI front-ends (top level)
 
 ```
 ra-mcp/
@@ -21,25 +21,28 @@ ra-mcp/
 │   ├── server.py               # FastMCP composition entry point + AVAILABLE_MODULES registry
 │   └── cli/app.py              # Typer CLI root (ra command)
 ├── packages/
-│   ├── common/                 # ra-mcp-common: Shared HTTP client, formatting, datasets, telemetry
-│   ├── xml-lib/                # ra-mcp-xml: ALTOClient (ALTO XML parsing)
-│   ├── iiif-lib/               # ra-mcp-iiif-lib: IIIFClient
-│   ├── oai-pmh-lib/            # ra-mcp-oai-pmh-lib: OAIPMHClient
-│   ├── search-lib/             # ra-mcp-search-lib: Search domain (models, client, operations)
-│   ├── browse-lib/             # ra-mcp-browse-lib: Browse domain (models, operations, url_generator)
-│   ├── search-mcp/             # ra-mcp-search-mcp: MCP tools for search
-│   ├── browse-mcp/             # ra-mcp-browse-mcp: MCP tool for browse
-│   ├── guide-mcp/              # ra-mcp-guide-mcp: MCP resources for historical guides
-│   ├── htr-mcp/                # ra-mcp-htr-mcp: Handwritten text recognition (HTRflow)
-│   ├── viewer-mcp/             # ra-mcp-viewer-mcp: Interactive document viewer (MCP App UI)
-│   ├── pdf-mcp/                # ra-mcp-pdf-mcp: Interactive PDF viewer (MCP App UI)
-│   ├── label-mcp/              # ra-mcp-label-mcp: Label Studio import (optional)
+│   ├── libs/                   # domain libraries (*-lib) + common
+│   │   ├── common/             # ra-mcp-common: Shared HTTP client, formatting, datasets, telemetry
+│   │   ├── xml-lib/            # ra-mcp-xml: ALTOClient (ALTO XML parsing)
+│   │   ├── iiif-lib/           # ra-mcp-iiif-lib: IIIFClient
+│   │   ├── oai-pmh-lib/        # ra-mcp-oai-pmh-lib: OAIPMHClient
+│   │   ├── search-lib/         # ra-mcp-search-lib: Search domain (models, client, operations)
+│   │   ├── browse-lib/         # ra-mcp-browse-lib: Browse domain (models, operations, url_generator)
+│   │   └── <dataset>-lib/      # 14 dataset libs (diplomatics, sbl, sjomanshus, filmcensur,
+│   │                           #   rosenberg, court, aktiebolag, faltjagare, suffrage,
+│   │                           #   specialsok, dds, wincars, sj, tora)
+│   ├── mcps/                   # FastMCP servers wrapping the libs (*-mcp)
+│   │   ├── search-mcp/         # ra-mcp-search-mcp: MCP tools for search
+│   │   ├── browse-mcp/         # ra-mcp-browse-mcp: MCP tool for browse
+│   │   ├── guide-mcp/          # ra-mcp-guide-mcp: MCP resources for historical guides
+│   │   ├── htr-mcp/            # ra-mcp-htr-mcp: Handwritten text recognition (HTRflow)
+│   │   ├── viewer-mcp/         # ra-mcp-viewer-mcp: Interactive document viewer (MCP App UI)
+│   │   ├── pdf-mcp/            # ra-mcp-pdf-mcp: Interactive PDF viewer (MCP App UI)
+│   │   ├── label-mcp/          # ra-mcp-label-mcp: Label Studio import (optional)
+│   │   └── <dataset>-mcp/      # 14 dataset MCP servers (one per dataset lib above)
 │   ├── search-cli/             # ra-mcp-search-cli: CLI command for search
 │   ├── browse-cli/             # ra-mcp-browse-cli: CLI command for browse
-│   ├── tui/                    # ra-mcp-tui: Interactive terminal browser
-│   └── <dataset>-lib/-mcp/     # 13 LanceDB dataset packages (diplomatics, sbl, sjomanshus,
-│                               #   filmcensur, rosenberg, court, aktiebolag, faltjagare,
-│                               #   suffrage, specialsok, dds, wincars, sj) + tora geocoding
+│   └── tui/                    # ra-mcp-tui: Interactive terminal browser
 ├── resources/                  # Historical guide markdown files
 ├── pyproject.toml              # Workspace configuration
 └── uv.lock                     # Shared lockfile
@@ -48,37 +51,37 @@ ra-mcp/
 ### Package Structure
 
 **ra-mcp-common** (no internal dependencies):
-- [http_client.py](packages/common/src/ra_mcp_common/http_client.py): Centralized httpx-based async HTTP client with logging
-- [formatting.py](packages/common/src/ra_mcp_common/formatting.py), [datasets.py](packages/common/src/ra_mcp_common/datasets.py), [telemetry.py](packages/common/src/ra_mcp_common/telemetry.py)
+- [http_client.py](packages/libs/common/src/ra_mcp_common/http_client.py): Centralized httpx-based async HTTP client with logging
+- [formatting.py](packages/libs/common/src/ra_mcp_common/formatting.py), [datasets.py](packages/libs/common/src/ra_mcp_common/datasets.py), [telemetry.py](packages/libs/common/src/ra_mcp_common/telemetry.py)
 
 **Shared client libs** (depend on common): the ALTO/IIIF/OAI-PMH clients were extracted out of browse into their own packages so any package can reuse them:
-- [ra-mcp-xml](packages/xml-lib/src/ra_mcp_xml/client.py): `ALTOClient` (ALTO XML fetching + parsing)
-- [ra-mcp-iiif-lib](packages/iiif-lib/src/ra_mcp_iiif_lib/client.py): `IIIFClient`
-- [ra-mcp-oai-pmh-lib](packages/oai-pmh-lib/src/ra_mcp_oai_pmh_lib/client.py): `OAIPMHClient`
+- [ra-mcp-xml](packages/libs/xml-lib/src/ra_mcp_xml/client.py): `ALTOClient` (ALTO XML fetching + parsing)
+- [ra-mcp-iiif-lib](packages/libs/iiif-lib/src/ra_mcp_iiif_lib/client.py): `IIIFClient`
+- [ra-mcp-oai-pmh-lib](packages/libs/oai-pmh-lib/src/ra_mcp_oai_pmh_lib/client.py): `OAIPMHClient`
 
 **ra-mcp-search-lib** (module `ra_mcp_search_lib`, depends on common):
-- [config.py](packages/search-lib/src/ra_mcp_search_lib/config.py): Search API URL and constants
-- [models.py](packages/search-lib/src/ra_mcp_search_lib/models.py): Pydantic models (SearchRecord, RecordsResponse, SearchResult)
-- [search_client.py](packages/search-lib/src/ra_mcp_search_lib/search_client.py): SearchClient client
-- [search_operations.py](packages/search-lib/src/ra_mcp_search_lib/search_operations.py): Search business logic
+- [config.py](packages/libs/search-lib/src/ra_mcp_search_lib/config.py): Search API URL and constants
+- [models.py](packages/libs/search-lib/src/ra_mcp_search_lib/models.py): Pydantic models (SearchRecord, RecordsResponse, SearchResult)
+- [search_client.py](packages/libs/search-lib/src/ra_mcp_search_lib/search_client.py): SearchClient client
+- [search_operations.py](packages/libs/search-lib/src/ra_mcp_search_lib/search_operations.py): Search business logic
 
 **ra-mcp-browse-lib** (module `ra_mcp_browse_lib`, depends on common + xml/iiif/oai-pmh libs):
-- [config.py](packages/browse-lib/src/ra_mcp_browse_lib/config.py): Browse API URLs and constants
-- [models.py](packages/browse-lib/src/ra_mcp_browse_lib/models.py): Pydantic models (BrowseResult, PageContext)
-- [browse_operations.py](packages/browse-lib/src/ra_mcp_browse_lib/browse_operations.py): Browse business logic (uses ALTOClient, IIIFClient, OAIPMHClient)
-- [url_generator.py](packages/browse-lib/src/ra_mcp_browse_lib/url_generator.py): URL construction helpers
+- [config.py](packages/libs/browse-lib/src/ra_mcp_browse_lib/config.py): Browse API URLs and constants
+- [models.py](packages/libs/browse-lib/src/ra_mcp_browse_lib/models.py): Pydantic models (BrowseResult, PageContext)
+- [browse_operations.py](packages/libs/browse-lib/src/ra_mcp_browse_lib/browse_operations.py): Browse business logic (uses ALTOClient, IIIFClient, OAIPMHClient)
+- [url_generator.py](packages/libs/browse-lib/src/ra_mcp_browse_lib/url_generator.py): URL construction helpers
 
 **ra-mcp-search-mcp** (depends on search-lib + fastmcp):
-- [tools.py](packages/search-mcp/src/ra_mcp_search_mcp/tools.py): FastMCP server setup, instructions, and tool registration
-- [search_tool.py](packages/search-mcp/src/ra_mcp_search_mcp/search_tool.py): `search_transcribed` and `search_metadata` MCP tools
-- [server.py](packages/search-mcp/src/ra_mcp_search_mcp/server.py): Standalone entry point for isolated dev/testing
-- [formatter.py](packages/search-mcp/src/ra_mcp_search_mcp/formatter.py): Search result formatting for LLM output
+- [tools.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/tools.py): FastMCP server setup, instructions, and tool registration
+- [search_tool.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/search_tool.py): `search_transcribed` and `search_metadata` MCP tools
+- [server.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/server.py): Standalone entry point for isolated dev/testing
+- [formatter.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/formatter.py): Search result formatting for LLM output
 
 **ra-mcp-browse-mcp** (depends on browse-lib + fastmcp):
-- [tools.py](packages/browse-mcp/src/ra_mcp_browse_mcp/tools.py): FastMCP server setup, instructions, and tool registration
-- [browse_tool.py](packages/browse-mcp/src/ra_mcp_browse_mcp/browse_tool.py): `browse_document` MCP tool
-- [server.py](packages/browse-mcp/src/ra_mcp_browse_mcp/server.py): Standalone entry point for isolated dev/testing
-- [formatter.py](packages/browse-mcp/src/ra_mcp_browse_mcp/formatter.py): Browse result formatting for LLM output
+- [tools.py](packages/mcps/browse-mcp/src/ra_mcp_browse_mcp/tools.py): FastMCP server setup, instructions, and tool registration
+- [browse_tool.py](packages/mcps/browse-mcp/src/ra_mcp_browse_mcp/browse_tool.py): `browse_document` MCP tool
+- [server.py](packages/mcps/browse-mcp/src/ra_mcp_browse_mcp/server.py): Standalone entry point for isolated dev/testing
+- [formatter.py](packages/mcps/browse-mcp/src/ra_mcp_browse_mcp/formatter.py): Browse result formatting for LLM output
 
 **ra-mcp-search-cli** (module `ra_mcp_search_cli`, depends on search-lib + typer + rich):
 - [app.py](packages/search-cli/src/ra_mcp_search_cli/app.py): Typer sub-app (`search_app`)
@@ -93,8 +96,8 @@ ra-mcp/
 **ra-mcp-tui** (module `ra_mcp_tui`): Textual-based interactive terminal browser (`tui_app`, `ra tui`).
 
 **ra-mcp-guide-mcp** (depends on common + fastmcp):
-- [tools.py](packages/guide-mcp/src/ra_mcp_guide_mcp/tools.py): FastMCP server and MCP resources for historical guides from `resources/`
-- [server.py](packages/guide-mcp/src/ra_mcp_guide_mcp/server.py): Standalone entry point for isolated dev/testing
+- [tools.py](packages/mcps/guide-mcp/src/ra_mcp_guide_mcp/tools.py): FastMCP server and MCP resources for historical guides from `resources/`
+- [server.py](packages/mcps/guide-mcp/src/ra_mcp_guide_mcp/server.py): Standalone entry point for isolated dev/testing
 
 **Dataset / feature MCP modules**: `htr-mcp`, `viewer-mcp`, `pdf-mcp`, `label-mcp`, and 13 LanceDB-backed dataset modules (each a `<name>-lib` + `<name>-mcp` pair): diplomatics, sbl, sjomanshus, filmcensur, rosenberg, court, aktiebolag, faltjagare, suffrage, specialsok, dds, wincars, sj, plus `tora` geocoding. These follow the same lib/mcp split.
 
@@ -228,9 +231,9 @@ uv run ra browse --help
 uv run pytest
 
 # Run specific package tests
-uv run pytest packages/common/tests/ -v
-uv run pytest packages/search-lib/tests/ -v
-uv run pytest packages/browse-lib/tests/ -v
+uv run pytest packages/libs/common/tests/ -v
+uv run pytest packages/libs/search-lib/tests/ -v
+uv run pytest packages/libs/browse-lib/tests/ -v
 
 # Run with coverage
 uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search_lib --cov=ra_mcp_browse_lib --cov-report=html
@@ -623,12 +626,12 @@ missing `lancedb` wheel just skips the module instead of breaking startup.
 
 ### Adding a New MCP Tool
 
-1. Create a new tool file in the appropriate MCP package (e.g., [search_tool.py](packages/search-mcp/src/ra_mcp_search_mcp/search_tool.py))
+1. Create a new tool file in the appropriate MCP package (e.g., [search_tool.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/search_tool.py))
 2. Define a `register_*_tool(mcp)` function that uses `@mcp.tool()` decorator
 3. Add detailed docstring with examples and parameter documentation
-4. Call the register function from the package's [tools.py](packages/search-mcp/src/ra_mcp_search_mcp/tools.py)
+4. Call the register function from the package's [tools.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/tools.py)
 
-Example pattern (from [search_tool.py](packages/search-mcp/src/ra_mcp_search_mcp/search_tool.py)):
+Example pattern (from [search_tool.py](packages/mcps/search-mcp/src/ra_mcp_search_mcp/search_tool.py)):
 ```python
 def register_search_tool(mcp: FastMCP):
     @mcp.tool()
@@ -641,8 +644,8 @@ def register_search_tool(mcp: FastMCP):
 
 To add a new module (e.g., `ra-mcp-metadata`):
 
-1. Create domain lib package: `packages/metadata-lib/` (module `ra_mcp_metadata_lib`) with models, client, operations
-2. Create MCP package: `packages/metadata-mcp/` (module `ra_mcp_metadata_mcp`) exposing a FastMCP server (e.g. `metadata_mcp`)
+1. Create domain lib package: `packages/libs/metadata-lib/` (module `ra_mcp_metadata_lib`) with models, client, operations
+2. Create MCP package: `packages/mcps/metadata-mcp/` (module `ra_mcp_metadata_mcp`) exposing a FastMCP server (e.g. `metadata_mcp`)
 3. Register the workspace member + source mapping in the root [pyproject.toml](pyproject.toml):
    - add `ra-mcp-metadata-mcp` to `dependencies` (always-on) or to `[project.optional-dependencies]` as its own extra (optional)
    - add `ra-mcp-metadata-lib`/`ra-mcp-metadata-mcp` under `[tool.uv.sources]` and `known-first-party`
@@ -692,14 +695,14 @@ suffrage, specialsok, dds, wincars, sj, tora).
 ### Adding API Clients
 
 1. Create a new client lib package (the ALTO/IIIF/OAI-PMH clients each live in their own `*-lib` package)
-2. Follow existing patterns (see [client.py](packages/xml-lib/src/ra_mcp_xml/client.py) for `ALTOClient`, or [iiif-lib](packages/iiif-lib/src/ra_mcp_iiif_lib/client.py) / [oai-pmh-lib](packages/oai-pmh-lib/src/ra_mcp_oai_pmh_lib/client.py))
+2. Follow existing patterns (see [client.py](packages/libs/xml-lib/src/ra_mcp_xml/client.py) for `ALTOClient`, or [iiif-lib](packages/libs/iiif-lib/src/ra_mcp_iiif_lib/client.py) / [oai-pmh-lib](packages/libs/oai-pmh-lib/src/ra_mcp_oai_pmh_lib/client.py))
 3. Use the centralized HTTPClient from `ra_mcp_common`
 4. Add comprehensive error handling
 5. Use dependency injection for HTTP client
 
 ### Adding a New MCP Resource
 
-Resources provide static or dynamic content to MCP clients (see [guide_mcp/tools.py](packages/guide-mcp/src/ra_mcp_guide_mcp/tools.py) for examples):
+Resources provide static or dynamic content to MCP clients (see [guide_mcp/tools.py](packages/mcps/guide-mcp/src/ra_mcp_guide_mcp/tools.py) for examples):
 
 ```python
 @mcp.resource("riksarkivet://my-resource/{param}")
@@ -712,7 +715,7 @@ def get_my_resource(param: str) -> str:
 
 ```bash
 # Add new dependency to a package
-cd packages/common && uv add package-name
+cd packages/libs/common && uv add package-name
 
 # Add development dependency (root)
 uv add --dev package-name
@@ -958,7 +961,7 @@ When working with this codebase:
 2. **Read full context**: Use the Read tool on complete files, not just snippets
 3. **Prefer modifications**: Edit existing code rather than creating new files
 4. **Check types**: The project uses type hints - maintain them in all code
-5. **Follow patterns**: Match existing code style and patterns (see [packages/search-lib/src/ra_mcp_search_lib/](packages/search-lib/src/ra_mcp_search_lib/))
+5. **Follow patterns**: Match existing code style and patterns (see [packages/libs/search-lib/src/ra_mcp_search_lib/](packages/libs/search-lib/src/ra_mcp_search_lib/))
 6. **Document thoroughly**: MCP tools need excellent documentation for LLM understanding
 7. **Workspace awareness**: Changes to common affect all packages; changes to search-lib affect search-mcp, search-cli, and the TUI
 8. **Layered architecture**: Domain logic lives in `*-lib` packages; MCP wrappers in `*-mcp` packages; CLI in `*-cli` packages and the TUI in `tui`

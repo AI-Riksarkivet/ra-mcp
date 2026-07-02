@@ -6,10 +6,10 @@ install:
 
 # Build viewer UI (Svelte → single HTML file)
 build-ui:
-	npm install --prefix packages/viewer-mcp
-	npm run build --prefix packages/viewer-mcp
-	npm install --prefix packages/pdf-mcp
-	npm run build --prefix packages/pdf-mcp
+	npm install --prefix packages/mcps/viewer-mcp
+	npm run build --prefix packages/mcps/viewer-mcp
+	npm install --prefix packages/mcps/pdf-mcp
+	npm run build --prefix packages/mcps/pdf-mcp
 
 # Run MCP server (stdio transport)
 serve: build-ui

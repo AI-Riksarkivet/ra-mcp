@@ -106,7 +106,7 @@ build-backend = "hatchling.build"
 packages = ["src/ra_mcp_server"]
 
 [tool.uv.workspace]
-members = ["packages/*"]
+members = ["packages/libs/*", "packages/mcps/*", "packages/search-cli", "packages/browse-cli", "packages/tui"]
 
 [tool.uv.sources]
 ra-mcp-common = { workspace = true }
@@ -199,12 +199,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/ra_mcp_server/server.py" = ["T201"]
-"packages/common/src/ra_mcp_common/utils/http_client.py" = ["T201"]
 "scripts/**" = ["T201", "S310"]
-"packages/*/tests/**" = ["S101", "ANN201", "ANN202"]
-"packages/viewer-mcp/src/**" = ["G004"]
-"packages/pdf-mcp/src/**" = ["G004"]
-"packages/label-mcp/src/**" = ["G004"]
+"packages/**/tests/**" = ["S101", "ANN201", "ANN202"]
+"packages/mcps/viewer-mcp/src/**" = ["G004"]
+"packages/mcps/pdf-mcp/src/**" = ["G004"]
+"packages/mcps/label-mcp/src/**" = ["G004"]
 "tests/**" = ["S101", "ANN201"]
 
 [tool.ruff.lint.mccabe]
@@ -224,7 +223,7 @@ error-on-warning = true
 [tool.ty.src]
 # label-mcp depends on label-studio-sdk (opencv) which has no Alpine/musl wheel;
 # exclude from type checking when the extra is not installed.
-exclude = ["packages/label-mcp"]
+exclude = ["packages/mcps/label-mcp"]
 
 [tool.ty.environment]
 python-version = "3.13"
@@ -233,7 +232,7 @@ python-version = "3.13"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 markers = ["integration: tests that hit live external endpoints (require network)"]
-testpaths = ["packages/*/tests", "tests"]
+testpaths = ["packages/libs/*/tests", "packages/mcps/*/tests", "packages/*/tests", "tests"]
 addopts = "--import-mode=importlib --cov --cov-report=term-missing:skip-covered"
 
 [tool.coverage.run]
