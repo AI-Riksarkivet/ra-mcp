@@ -83,7 +83,7 @@ async def fetch_image_as_data_url(url: str) -> str:
         cached = await _cache_get(url, _COL_IMAGES)
         if cached is not None:
             return cached["data_url"]
-        with tracer.start_as_current_span("fetch_image", attributes={"url": url}):
+        with tracer.start_as_current_span("fetch_image", attributes={"url.full": url}):
             logger.debug("Fetching image: %s", url)
             resp = await _http.get(url)
             resp.raise_for_status()
@@ -118,7 +118,7 @@ async def fetch_thumbnail_as_data_url(url: str, max_width: int = 150) -> str:
         cached = await _cache_get(url, _COL_THUMBNAILS)
         if cached is not None:
             return cached["data_url"]
-        with tracer.start_as_current_span("fetch_thumbnail", attributes={"url": url, "max_width": max_width}):
+        with tracer.start_as_current_span("fetch_thumbnail", attributes={"url.full": url, "image.max_width": max_width}):
             logger.debug("Fetching thumbnail: %s", url)
             resp = await _http.get(url)
             resp.raise_for_status()
@@ -137,7 +137,7 @@ async def fetch_and_parse_text_layer(url: str) -> dict:
         cached = await _cache_get(url, _COL_TEXT_LAYERS)
         if cached is not None:
             return cached
-        with tracer.start_as_current_span("fetch_text_layer", attributes={"url": url}):
+        with tracer.start_as_current_span("fetch_text_layer", attributes={"url.full": url}):
             xml = await fetch_xml_from_url(url)
             data = detect_and_parse(xml)
             result = {

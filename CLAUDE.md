@@ -861,6 +861,7 @@ RA_MCP_OTEL_ENABLED=true              # Master switch (default: false)
 OTEL_EXPORTER_OTLP_ENDPOINT=...       # Collector endpoint (default: http://localhost:4317)
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc      # grpc or http/protobuf (default: grpc)
 OTEL_SERVICE_NAME=ra-mcp              # Service name (default: ra-mcp)
+ENVIRONMENT=production                # deployment.environment.name resource attr (optional)
 RA_MCP_OTEL_LOG_BRIDGE=true           # Bridge Python logging to OTel (default: true)
 ```
 
@@ -880,12 +881,21 @@ RA_MCP_OTEL_LOG_BRIDGE=true           # Bridge Python logging to OTel (default: 
 
 ### Error recording pattern
 
-Follow the HTTP client pattern (the gold standard in this codebase):
+Follow the HTTP client pattern (the gold standard in this codebase). The OTel
+Span Event API (`span.record_exception`) is being deprecated, so exception
+detail is emitted as a structured log record via the shared
+`record_span_exception(logger, exc)` helper (`ra_mcp_common.telemetry`) instead
+of a span event. The span still carries `set_status(ERROR, ...)` — with the
+error class in the message — and the log record (`exception.type` /
+`exception.message` / `exception.stacktrace`) inherits the active `trace_id` /
+`span_id` through the OTLP log bridge:
 
 ```python
+from ra_mcp_common.telemetry import record_span_exception
+
 except SomeError as e:
-    span.set_status(StatusCode.ERROR, str(e))
-    span.record_exception(e)
+    span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
+    record_span_exception(logger, e)
     self._error_counter.add(1, {"error.type": type(e).__name__})
     raise
 ```

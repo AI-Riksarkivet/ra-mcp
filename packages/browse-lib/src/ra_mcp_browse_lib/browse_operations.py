@@ -3,10 +3,12 @@ Browse operations for viewing document pages.
 Handles document browsing, page fetching, and metadata retrieval.
 """
 
+import logging
+
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 from ra_mcp_iiif_lib import IIIFClient
 from ra_mcp_oai_pmh_lib import OAIPMHClient
 from ra_mcp_xml import ALTOClient
@@ -16,11 +18,13 @@ from .models import BrowseResult, PageContext
 from .utils import parse_page_range
 
 
+logger = logging.getLogger("ra_mcp.browse_operations")
+
 _tracer = get_tracer("ra_mcp.browse_operations")
 _meter = get_meter("ra_mcp.browse_operations")
-_browse_counter = _meter.create_counter("ra_mcp.browse.requests", description="Browse operations executed")
-_pages_histogram = _meter.create_histogram("ra_mcp.browse.pages", description="Pages returned per browse request")
-_empty_pages_counter = _meter.create_counter("ra_mcp.browse.empty_pages", description="Blank pages encountered")
+_browse_counter = _meter.create_counter("ra_mcp.browse.requests", unit="{request}", description="Browse operations executed")
+_pages_histogram = _meter.create_histogram("ra_mcp.browse.pages", unit="{page}", description="Pages returned per browse request")
+_empty_pages_counter = _meter.create_counter("ra_mcp.browse.empty_pages", unit="{page}", description="Blank pages encountered")
 
 
 class BrowseOperations:
@@ -112,8 +116,8 @@ class BrowseOperations:
                     oai_metadata=oai_metadata,
                 )
             except Exception as e:
-                span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
+                record_span_exception(logger, e)
                 _browse_counter.add(1, {"browse.status": "error"})
                 raise
 

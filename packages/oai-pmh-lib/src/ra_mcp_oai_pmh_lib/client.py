@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 from ra_mcp_oai_pmh_lib.config import NAMESPACES, OAI_BASE_URL
 from ra_mcp_oai_pmh_lib.models import OAIPMHMetadata
 
@@ -17,7 +17,7 @@ logger = logging.getLogger("ra_mcp.oai_pmh_client")
 
 _tracer = get_tracer("ra_mcp.oai_pmh_client")
 _meter = get_meter("ra_mcp.oai_pmh_client")
-_fetch_counter = _meter.create_counter("ra_mcp.oai_pmh.fetches", description="OAI-PMH metadata fetch outcomes")
+_fetch_counter = _meter.create_counter("ra_mcp.oai_pmh.fetches", unit="{fetch}", description="OAI-PMH metadata fetch outcomes")
 
 _OAI_NS = NAMESPACES["oai"]
 _EAD_NS = NAMESPACES["ead"]
@@ -43,7 +43,7 @@ class OAIPMHClient:
         Returns:
             Parsed metadata, or None on fetch/parse failure.
         """
-        with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai.identifier": identifier}) as span:
+        with _tracer.start_as_current_span("OAIPMHClient.get_metadata", attributes={"oai_pmh.identifier": identifier}) as span:
             try:
                 params: dict[str, str | int] = {"verb": "GetRecord", "identifier": identifier, "metadataPrefix": "oai_ape_ead"}
                 xml_root = await self._make_request(params)
@@ -57,20 +57,20 @@ class OAIPMHClient:
             except Exception as e:
                 logger.warning("Failed to get OAI-PMH metadata for %s: %s", identifier, e)
                 span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 _fetch_counter.add(1, {"oai_pmh.result": "error"})
                 return None
 
     async def extract_manifest_id(self, identifier: str) -> str | None:
         """Extract PID from a record for IIIF access."""
-        with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai.identifier": identifier}) as span:
+        with _tracer.start_as_current_span("OAIPMHClient.extract_manifest_id", attributes={"oai_pmh.identifier": identifier}) as span:
             try:
                 metadata = await self.get_metadata(identifier)
                 return self.manifest_id_from_metadata(metadata)
             except Exception as e:
                 logger.warning("Failed to extract manifest ID for %s: %s", identifier, e)
                 span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 return None
 
     def manifest_id_from_metadata(self, metadata: OAIPMHMetadata | None) -> str | None:

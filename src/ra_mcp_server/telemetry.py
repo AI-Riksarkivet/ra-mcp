@@ -45,7 +45,14 @@ def init_telemetry() -> None:
     from ra_mcp_server import __version__
 
     service_name = os.getenv("OTEL_SERVICE_NAME", "ra-mcp")
-    resource = Resource.create({"service.name": service_name, "service.version": __version__})
+    resource_attrs = {"service.name": service_name, "service.version": __version__}
+    # deployment.environment.name is a required resource attribute (semconv); source it
+    # from ENVIRONMENT (fallback DEPLOYMENT_ENVIRONMENT) when set. Resource.create still
+    # merges anything provided via OTEL_RESOURCE_ATTRIBUTES on top of these.
+    environment = os.getenv("ENVIRONMENT") or os.getenv("DEPLOYMENT_ENVIRONMENT")
+    if environment:
+        resource_attrs["deployment.environment.name"] = environment
+    resource = Resource.create(resource_attrs)
 
     protocol = os.getenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
 
@@ -70,11 +77,11 @@ def init_telemetry() -> None:
 
     # Build-info gauge (Prometheus _info pattern: value=1 with version label)
     meter = metrics.get_meter("ra_mcp")
-    build_info = meter.create_gauge("ra_mcp.build_info", description="Build information for the ra-mcp server")
+    build_info = meter.create_gauge("ra_mcp.build_info", unit="1", description="Build information for the ra-mcp server")
     build_info.set(1, {"version": __version__})
 
     # Log message counter (by severity level)
-    log_counter = meter.create_counter("ra_mcp.log.messages", description="Log messages emitted by severity level")
+    log_counter = meter.create_counter("ra_mcp.log.messages", unit="{message}", description="Log messages emitted by severity level")
     _setup_log_metrics(log_counter)
 
     # Log bridge

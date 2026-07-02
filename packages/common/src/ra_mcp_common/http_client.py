@@ -18,7 +18,7 @@ import time
 import httpx
 from opentelemetry.trace import SpanKind, StatusCode
 
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 
 
 logger = logging.getLogger("ra_mcp.http_client")
@@ -63,11 +63,11 @@ class HTTPClient:
         # Telemetry
         self._tracer = get_tracer("ra_mcp.http_client")
         meter = get_meter("ra_mcp.http_client")
-        self._request_counter = meter.create_counter("ra_mcp.http.requests", description="HTTP requests made")
-        self._error_counter = meter.create_counter("ra_mcp.http.errors", description="HTTP request errors")
+        self._request_counter = meter.create_counter("ra_mcp.http.requests", unit="{request}", description="HTTP requests made")
+        self._error_counter = meter.create_counter("ra_mcp.http.errors", unit="{error}", description="HTTP request errors")
         self._duration_histogram = meter.create_histogram("ra_mcp.http.request.duration", unit="s", description="HTTP request duration")
         self._response_size_histogram = meter.create_histogram("ra_mcp.http.response.size", unit="By", description="HTTP response body size")
-        self._retry_counter = meter.create_counter("ra_mcp.http.retries", description="HTTP request retry attempts")
+        self._retry_counter = meter.create_counter("ra_mcp.http.retries", unit="{retry}", description="HTTP request retry attempts")
 
     async def _execute_with_retry(
         self, method: str, url: str, *, params: dict | None = None, headers: dict[str, str] | None = None, timeout: float
@@ -181,7 +181,7 @@ class HTTPClient:
                 logger.error("✗ TIMEOUT after %.3fs on %s", duration, url)
                 logger.error("Timeout limit was %ds", timeout)
                 span.set_status(StatusCode.ERROR, f"Timeout after {timeout}s")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": "TimeoutError"})
                 raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
 
@@ -197,7 +197,7 @@ class HTTPClient:
                 logger.error("✗ GET JSON %s - %.3fs - HTTPStatusError: %s", url, duration, e.response.status_code)
 
                 span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 span.set_attribute("http.response.status_code", e.response.status_code)
                 self._error_counter.add(1, {"error.type": "HTTPStatusError"})
                 raise
@@ -208,7 +208,7 @@ class HTTPClient:
                 logger.error("✗ GET JSON %s - %.3fs - %s: %s", url, duration, error_type, e)
 
                 span.set_status(StatusCode.ERROR, f"{error_type}: {e}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": error_type})
                 raise
 
@@ -216,7 +216,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 logger.error("✗ Unexpected error after %.3fs: %s: %s", duration, type(e).__name__, e)
                 span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 raise
 
@@ -279,7 +279,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 logger.error("GET XML %s - %.3fs - ERROR: TimeoutError", url, duration)
                 span.set_status(StatusCode.ERROR, f"TimeoutError: {e}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": "TimeoutError"})
                 raise TimeoutError(f"Request timeout: {url}") from e
 
@@ -291,7 +291,7 @@ class HTTPClient:
                 logger.error("GET XML %s - %.3fs - ERROR: %s%s", url, duration, e.response.status_code, error_body)
 
                 span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 span.set_attribute("http.response.status_code", e.response.status_code)
                 self._error_counter.add(1, {"error.type": "HTTPStatusError"})
                 raise
@@ -300,7 +300,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
                 span.set_status(StatusCode.ERROR, f"ConnectError: {e}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": "ConnectError"})
                 raise
 
@@ -308,7 +308,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
                 span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 raise
 
@@ -366,14 +366,14 @@ class HTTPClient:
                 error_msg = str(e.response.status_code) if isinstance(e, httpx.HTTPStatusError) else str(e)
                 logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": error_type})
                 return None
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 logger.error("GET %s - ERROR: %s", url, e)
                 span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 return None
             finally:

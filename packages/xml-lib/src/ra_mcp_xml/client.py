@@ -11,7 +11,7 @@ import logging
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 from ra_mcp_xml.models import TextLayer
 from ra_mcp_xml.parser import detect_and_parse
 
@@ -20,7 +20,7 @@ logger = logging.getLogger("ra_mcp.alto_client")
 
 _tracer = get_tracer("ra_mcp.alto_client")
 _meter = get_meter("ra_mcp.alto_client")
-_fetch_counter = _meter.create_counter("ra_mcp.alto.fetches", description="ALTO XML fetch outcomes")
+_fetch_counter = _meter.create_counter("ra_mcp.alto.fetches", unit="{fetch}", description="ALTO XML fetch outcomes")
 
 
 class ALTOClient:
@@ -86,7 +86,7 @@ class ALTOClient:
             except Exception as e:
                 logger.warning("Failed to parse ALTO XML from %s: %s", alto_url, e)
                 span.set_status(StatusCode.ERROR, f"XML parse error: {e}")
-                span.record_exception(e)
+                record_span_exception(logger, e)
                 span.set_attribute("alto.result", "parse_error")
                 _fetch_counter.add(1, {"alto.result": "parse_error"})
                 return None

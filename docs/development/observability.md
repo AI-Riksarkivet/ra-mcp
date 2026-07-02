@@ -11,8 +11,13 @@ Telemetry is gated on `RA_MCP_OTEL_ENABLED=true`. When enabled, traces, metrics,
 | `RA_MCP_OTEL_ENABLED` | `false` | Master switch |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | Collector endpoint |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
-| `OTEL_SERVICE_NAME` | `ra-mcp` | Service name |
+| `OTEL_SERVICE_NAME` | `ra-mcp` | Service name (`service.name`) |
+| `ENVIRONMENT` | _(unset)_ | `deployment.environment.name` resource attribute (falls back to `DEPLOYMENT_ENVIRONMENT`) |
 | `RA_MCP_OTEL_LOG_BRIDGE` | `true` | Bridge Python logging to OTel |
+
+The SDK sets `service.name`, `service.version`, and — when `ENVIRONMENT` is
+set — `deployment.environment.name` as resource attributes;
+`OTEL_RESOURCE_ATTRIBUTES` is merged on top.
 
 ## Trace Tree
 
@@ -44,6 +49,27 @@ graph TD
 | CLI commands | `ra_mcp.cli.*` | `cli.search`, `cli.browse` | — |
 
 FastMCP adds automatic spans for all `tools/call` and `resources/read` operations.
+
+Custom metrics all declare a UCUM unit (`s`, `By`, or an annotation such as
+`{request}` / `{fetch}` / `{page}`); metric dimensions are kept low-cardinality
+(method, status, result enums), while per-request identifiers (URLs, PIDs,
+reference codes, keywords, session ids) live on spans only.
+
+## Error recording
+
+Failures set `span.set_status(ERROR, "{ErrorClass}: …")` and emit a structured
+`exception.*` log record via `record_span_exception()` — the OTel Span Event API
+(`record_exception`) is deprecated, and the log record carries the active
+`trace_id`/`span_id` through the log bridge. Retried-then-succeeded requests
+stay `UNSET`.
+
+## Coverage gap
+
+The 13 LanceDB dataset libraries (`*-lib`: diplomatics, sbl, sjomanshus, …) and
+`tora-lib` currently have **no manual spans** around their LanceDB full-text
+queries, and `pdf-mcp` has no instrumentation. Instrumenting these DB
+boundaries (one `CLIENT`/`INTERNAL` span + an outcome counter per query) is the
+main remaining telemetry improvement.
 
 ## Verify Telemetry
 

@@ -10,7 +10,7 @@ import logging
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_tracer
+from ra_mcp_common.telemetry import get_tracer, record_span_exception
 from ra_mcp_search_lib.config import DEFAULT_LIMIT, REQUEST_TIMEOUT, SEARCH_API_BASE_URL
 from ra_mcp_search_lib.models import RecordsResponse
 
@@ -134,8 +134,8 @@ class SearchClient:
                 return response
 
             except Exception as error:
-                span.set_status(StatusCode.ERROR, str(error))
-                span.record_exception(error)
+                span.set_status(StatusCode.ERROR, f"{type(error).__name__}: {error}")
+                record_span_exception(self.logger, error)
                 self.logger.error("✗ Search failed: %s: %s", type(error).__name__, error)
                 raise
 

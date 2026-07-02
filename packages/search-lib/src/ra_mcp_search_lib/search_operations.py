@@ -3,19 +3,23 @@ Search operations that can be used by both CLI and MCP interfaces.
 Handles keyword searching.
 """
 
+import logging
+
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 
 from .models import SearchResult
 from .search_client import SearchClient
 
 
+logger = logging.getLogger("ra_mcp.search_operations")
+
 _tracer = get_tracer("ra_mcp.search_operations")
 _meter = get_meter("ra_mcp.search_operations")
-_search_counter = _meter.create_counter("ra_mcp.search.requests", description="Search operations executed")
-_results_histogram = _meter.create_histogram("ra_mcp.search.results", description="Number of results returned per search")
+_search_counter = _meter.create_counter("ra_mcp.search.requests", unit="{request}", description="Search operations executed")
+_results_histogram = _meter.create_histogram("ra_mcp.search.results", unit="{hit}", description="Number of results returned per search")
 
 
 class SearchOperations:
@@ -101,8 +105,8 @@ class SearchOperations:
                 _results_histogram.record(response.total_hits, {"search.type": search_type})
                 return SearchResult(response=response, transcribed_text=keyword, limit=limit, offset=offset, max_snippets_per_record=max_snippets_per_record)
             except Exception as e:
-                span.set_status(StatusCode.ERROR, str(e))
-                span.record_exception(e)
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
+                record_span_exception(logger, e)
                 _search_counter.add(1, {"search.type": search_type, "search.status": "error"})
                 raise
 
