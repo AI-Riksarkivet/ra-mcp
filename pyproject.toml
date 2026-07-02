@@ -89,7 +89,9 @@ dev = [
 ]
 docs = [
     "zensical>=0.0.23",
-    "mkdocstrings-python>=1.16.0",
+    # NOTE: mkdocstrings autodoc is intentionally not used — zensical 0.0.23's
+    # compat bridge crashes on `:::` blocks and aborts the whole build. The API
+    # pages under docs/api/ are hand-curated instead. See zensical.toml.
 ]
 
 [project.scripts]

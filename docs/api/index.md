@@ -1,6 +1,8 @@
 # API Reference
 
-Auto-generated reference documentation for all public Python APIs in the ra-mcp workspace.
+Curated reference for the public Python APIs in the ra-mcp workspace. Each page
+summarizes the key classes and functions and links to the source; the source
+docstrings (Google style) remain the authoritative signature reference.
 
 ## Packages
 
