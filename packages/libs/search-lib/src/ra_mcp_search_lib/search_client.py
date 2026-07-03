@@ -139,35 +139,6 @@ class SearchClient:
                 self.logger.error("✗ Search failed: %s: %s", type(error).__name__, error)
                 raise
 
-    async def search_transcribed_text(
-        self,
-        transcribed_text: str,
-        limit: int = DEFAULT_LIMIT,
-        offset: int = 0,
-        max_snippets_per_record: int | None = None,
-    ) -> RecordsResponse:
-        """
-        Search for keyword in transcribed materials (convenience method).
-
-        This is a convenience wrapper around the main search() method.
-
-        Args:
-            transcribed_text: Search term or Solr query (API parameter name)
-            limit: Maximum number of records to return
-            offset: Pagination offset (API parameter name)
-            max_snippets_per_record: Client-side snippet limiting per record (not sent to API)
-
-        Returns:
-            RecordsResponse with all API fields populated
-        """
-        return await self.search(
-            transcribed_text=transcribed_text,
-            only_digitised_materials=True,
-            limit=limit,
-            offset=offset,
-            max_snippets_per_record=max_snippets_per_record,
-        )
-
     def _limit_snippets(self, response: RecordsResponse, max_snippets: int) -> None:
         """
         Limit snippets per record (client-side truncation).

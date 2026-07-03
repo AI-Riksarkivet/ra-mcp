@@ -121,27 +121,6 @@ class BrowseOperations:
                 _browse_counter.add(1, {"browse.status": "error"})
                 raise
 
-    async def _resolve_manifest_identifier(self, persistent_identifier: str) -> str:
-        """Resolve IIIF manifest identifier from persistent identifier.
-
-        Attempts to find the appropriate IIIF manifest for a given PID.
-        If the PID points to a collection with manifests, returns the first
-        manifest ID. Otherwise returns the original PID.
-
-        Args:
-            persistent_identifier: Document PID to resolve.
-
-        Returns:
-            IIIF manifest identifier or original PID if no manifest found.
-        """
-        iiif_collection = await self.iiif_client.get_collection(persistent_identifier)
-
-        # Return first manifest ID if available, otherwise use PID
-        if iiif_collection and iiif_collection.manifests:
-            return iiif_collection.manifests[0].id
-
-        return persistent_identifier
-
     async def _fetch_page_contexts(
         self,
         manifest_identifier: str,
