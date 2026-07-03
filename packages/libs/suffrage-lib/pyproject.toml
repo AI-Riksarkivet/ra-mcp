@@ -14,7 +14,7 @@ license = "Apache-2.0"
 dependencies = [
     "ra-mcp-common",
     "lancedb>=0.20,<1",
-    "pyarrow>=18,<20",
+    "pyarrow>=18,<25",
     "pydantic>=2,<3",
 ]
 

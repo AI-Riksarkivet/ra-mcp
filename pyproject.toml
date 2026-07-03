@@ -24,7 +24,7 @@ dependencies = [
     "ra-mcp-wincars-mcp",
     "ra-mcp-sj-mcp",
     "ra-mcp-tora-mcp",
-    "starlette>=0.52.1",
+    "starlette>=1.0.1",
     "opentelemetry-sdk>=1.28.0",
     "opentelemetry-exporter-otlp>=1.28.0",
     "cryptography>=46.0.7",
