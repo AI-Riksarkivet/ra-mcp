@@ -180,7 +180,7 @@ class HTTPClient:
                 duration = time.perf_counter() - start_time
                 logger.error("✗ TIMEOUT after %.3fs on %s", duration, url)
                 logger.error("Timeout limit was %ds", timeout)
-                span.set_status(StatusCode.ERROR, f"Timeout after {timeout}s")
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: timeout after {timeout}s")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": "TimeoutError"})
                 raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
@@ -215,7 +215,7 @@ class HTTPClient:
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 logger.error("✗ Unexpected error after %.3fs: %s: %s", duration, type(e).__name__, e)
-                span.set_status(StatusCode.ERROR, str(e))
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 raise
@@ -307,7 +307,7 @@ class HTTPClient:
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
-                span.set_status(StatusCode.ERROR, str(e))
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 raise
@@ -372,7 +372,7 @@ class HTTPClient:
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 logger.error("GET %s - ERROR: %s", url, e)
-                span.set_status(StatusCode.ERROR, str(e))
+                span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {"error.type": type(e).__name__})
                 return None

@@ -873,13 +873,14 @@ RA_MCP_OTEL_LOG_BRIDGE=true           # Bridge Python logging to OTel (default: 
 
 | Component | Tracer name | Spans | Metrics |
 |-----------|-------------|-------|---------|
-| HTTP client | `ra_mcp.http_client` | `HTTP GET` | request count, error count, duration, response size |
+| HTTP client | `ra_mcp.http_client` | `HTTP GET` | request count, error count, retry count, duration, response size |
 | Search client | `ra_mcp.search.client` | `SearchClient.search` | — |
-| Search ops | `ra_mcp.search_operations` | `SearchOperations.search` | — |
-| Browse ops | `ra_mcp.browse_operations` | `browse_document`, `_fetch_page_contexts` | — |
-| ALTO client | `ra_mcp.alto_client` | `ALTOClient.fetch_content` | — |
-| IIIF client | `ra_mcp.iiif_client` | `IIIFClient.get_collection` | — |
-| OAI-PMH client | `ra_mcp.oai_pmh_client` | `get_record`, `get_metadata`, `extract_manifest_id` | — |
+| Search ops | `ra_mcp.search_operations` | `SearchOperations.search` | request count (`ra_mcp.search.requests`), results per search (`ra_mcp.search.results`) |
+| Browse ops | `ra_mcp.browse_operations` | `BrowseOperations.browse_document`, `BrowseOperations._fetch_page_contexts` | request count (`ra_mcp.browse.requests`), pages per browse (`ra_mcp.browse.pages`), empty pages (`ra_mcp.browse.empty_pages`) |
+| ALTO client | `ra_mcp.alto_client` | `ALTOClient.fetch_content` | fetch count (`ra_mcp.alto.fetches`) |
+| IIIF client | `ra_mcp.iiif_client` | `IIIFClient.get_collection`, `IIIFClient.fetch_manifest` | — |
+| OAI-PMH client | `ra_mcp.oai_pmh_client` | `OAIPMHClient.get_metadata`, `OAIPMHClient.extract_manifest_id` | fetch count (`ra_mcp.oai_pmh.fetches`) |
+| Viewer fetchers | fastmcp tracer (`fetchers.py`) | `fetch_image`, `fetch_thumbnail`, `fetch_text_layer` | — |
 | Search CLI | `ra_mcp.cli.search` | `cli.search` | — |
 | Browse CLI | `ra_mcp.cli.browse` | `cli.browse` | — |
 
