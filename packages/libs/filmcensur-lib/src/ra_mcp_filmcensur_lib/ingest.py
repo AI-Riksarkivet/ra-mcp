@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import FILMREG_TABLE
 from .models import FilmregRecord
 
@@ -51,5 +53,5 @@ def ingest_filmreg(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.ta
     logger.info("Parsed %d Filmreg records", len(records))
 
     table = db.create_table(FILMREG_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table

@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import BOLAG_TABLE, STYRELSE_TABLE
 from .models import AktiebolagRecord, StyrelseRecord
 
@@ -119,7 +121,7 @@ def ingest_aktiebolag(
     logger.info("Parsed %d Aktiebolag records", len(bolag_records))
 
     bolag_table = db.create_table(BOLAG_TABLE, data=bolag_records, mode="overwrite")
-    bolag_table.create_fts_index("searchable_text", replace=True)
+    bolag_table.create_index("searchable_text", config=FTS(), replace=True)
 
     # --- Ingest styrelse table ---
     styrelse_path = Path(styrelse_path)
@@ -143,6 +145,6 @@ def ingest_aktiebolag(
     logger.info("Parsed %d Styrelse records", len(styrelse_records))
 
     styrelse_table = db.create_table(STYRELSE_TABLE, data=styrelse_records, mode="overwrite")
-    styrelse_table.create_fts_index("searchable_text", replace=True)
+    styrelse_table.create_index("searchable_text", config=FTS(), replace=True)
 
     return bolag_table, styrelse_table

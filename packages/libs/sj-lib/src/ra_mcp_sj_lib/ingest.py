@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import FIRA_TABLE, JUDA_TABLE
 from .models import RITNING_FIELDNAMES, JudaRecord, RitningRecord
 
@@ -83,7 +85,7 @@ def ingest_juda(
     logger.info("Parsed %d JUDA records", len(records))
 
     table = db.create_table(JUDA_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
 
 
@@ -170,7 +172,7 @@ def ingest_ritningar(
     logger.info("Total drawing records: %d", len(records))
 
     table = db.create_table(FIRA_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
 
 

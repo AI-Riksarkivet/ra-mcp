@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import LIGGARE_TABLE, MATRIKEL_TABLE
 from .models import LiggareRecord, MatrikelRecord
 
@@ -51,7 +53,7 @@ def ingest_liggare(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.ta
     logger.info("Parsed %d Liggare records", len(records))
 
     table = db.create_table(LIGGARE_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
 
 
@@ -89,5 +91,5 @@ def ingest_matrikel(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.t
     logger.info("Parsed %d Matrikel records", len(records))
 
     table = db.create_table(MATRIKEL_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table

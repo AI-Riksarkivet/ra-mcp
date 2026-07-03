@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import MPO_TABLE, SDHK_TABLE
 from .models import MPORecord, SDHKRecord
 
@@ -82,7 +84,7 @@ def ingest_sdhk(
     logger.info("Parsed %d SDHK records", len(records))
 
     table = db.create_table(SDHK_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
 
 
@@ -121,5 +123,5 @@ def ingest_mpo(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.
     logger.info("Parsed %d MPO records", len(records))
 
     table = db.create_table(MPO_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table

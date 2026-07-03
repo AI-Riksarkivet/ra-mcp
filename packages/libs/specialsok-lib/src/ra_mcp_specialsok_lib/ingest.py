@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
+from lancedb.index import FTS
+
 from .config import FANGRULLOR_TABLE, FLYGVAPEN_TABLE, KURHUSET_TABLE, PRESS_TABLE, VIDEO_TABLE
 from .models import (
     FANGRULLOR_FIELDNAMES,
@@ -78,7 +80,7 @@ def _ingest_simple(
     logger.info("Parsed %d %s records", len(records), table_name)
 
     table = db.create_table(table_name, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
 
 

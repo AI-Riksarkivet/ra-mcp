@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import SBL_TABLE
 from .models import SBLRecord
 
@@ -51,5 +53,5 @@ def ingest_sbl(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.
     logger.info("Parsed %d SBL records", len(records))
 
     table = db.create_table(SBL_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table

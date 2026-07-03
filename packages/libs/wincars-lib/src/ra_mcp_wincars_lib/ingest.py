@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from lancedb.index import FTS
+
 from .config import WINCARS_TABLE
 from .models import WincarsRecord
 
@@ -59,5 +61,5 @@ def ingest_wincars(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.tab
     logger.info("Parsed %d Wincars records from %d files", len(records), len(csv_files))
 
     table = db.create_table(WINCARS_TABLE, data=records, mode="overwrite")
-    table.create_fts_index("searchable_text", replace=True)
+    table.create_index("searchable_text", config=FTS(), replace=True)
     return table
