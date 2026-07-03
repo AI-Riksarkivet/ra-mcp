@@ -24,6 +24,7 @@ members = [
     "ra-mcp-common",
     "ra-mcp-court-lib",
     "ra-mcp-court-mcp",
+    "ra-mcp-dataset-lib",
     "ra-mcp-dds-lib",
     "ra-mcp-dds-mcp",
     "ra-mcp-diplomatics-lib",
@@ -2390,6 +2391,27 @@ dependencies = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.4.2" },
     { name = "ra-mcp-court-lib", editable = "packages/libs/court-lib" },
+]
+
+[[package]]
+name = "ra-mcp-dataset-lib"
+version = "0.1.0"
+source = { editable = "packages/libs/dataset-lib" }
+dependencies = [
+    { name = "lancedb" },
+    { name = "opentelemetry-api" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "ra-mcp-common" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lancedb", specifier = ">=0.20,<1" },
+    { name = "opentelemetry-api", specifier = ">=1.28.0" },
+    { name = "pyarrow", specifier = ">=18,<25" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "ra-mcp-common", editable = "packages/libs/common" },
 ]
 
 [[package]]
