@@ -1,5 +1,5 @@
 ---
-name: python-design-patterns
+name: python-design-pattern
 description: Python design patterns and anti-patterns. Use when designing new components, refactoring, reviewing code for common mistakes, choosing abstractions, or evaluating pull requests for structural issues like tight coupling, leaking internal types, or error handling problems.
 ---
 

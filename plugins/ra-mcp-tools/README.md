@@ -36,7 +36,7 @@ HTR workflow guide. Covers the full pipeline: determine image source, batch all 
 
 **Trigger phrases**: transcribe handwriting, HTR, handwritten document, OCR historical document, digitize manuscript
 
-### `/view_document-guide`
+### `/view-document-guide`
 
 Document viewer guide. Covers the three viewer entry points and how to choose between them: `view_document` (when you have a Riksarkivet reference code), `view_manifest` (when you have a IIIF manifest URL, e.g. from SDHK/MPO search), and `view_document_urls` (when you already have raw image and text-layer XML URLs).
 

@@ -1,6 +1,6 @@
 ---
 name: ra-mcp-apps
-description: "MCP Apps guide: FastMCP 3.1+ server, Svelte 5 view, tool visibility, polling, sizing, fullscreen, view persistence. Use for any MCP App/UI work."
+description: "MCP Apps guide: FastMCP 3.4+ server, Svelte 5 view, tool visibility, polling, sizing, fullscreen, view persistence. Use for any MCP App/UI work."
 ---
 
 # MCP Apps — Quick Reference
@@ -31,11 +31,11 @@ Server (FastMCP) ↔ Host (Claude/ChatGPT) ↔ View (sandboxed iframe). The View
 | `["model"]` | Yes | No | LLM-only triggers |
 | `["app"]` | No | Yes | Pagination, refresh, polling, dangerous actions |
 
-## Server Quick Start (FastMCP 3.1+)
+## Server Quick Start (FastMCP 3.4+)
 
 ```python
 from fastmcp import FastMCP, Context
-from fastmcp.server.apps import AppConfig, ResourceCSP, UI_EXTENSION_ID
+from fastmcp.apps import AppConfig, ResourceCSP, UI_EXTENSION_ID
 from fastmcp.tools import ToolResult
 from mcp import types
 
