@@ -11,7 +11,16 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from ra_mcp_dataset_lib import build_fts_index, lancedb_fts_search
+from ra_mcp_dataset_lib import (
+    any_of,
+    at_least,
+    at_most,
+    build_fts_index,
+    combine,
+    equals,
+    lancedb_fts_search,
+    text_contains,
+)
 
 
 @pytest.fixture
@@ -83,3 +92,45 @@ def test_emits_lancedb_client_span(db, spans):
     matched = [s for s in spans.get_finished_spans() if s.name == "search t"]
     assert matched, "no 'search t' CLIENT span emitted"
     assert matched[0].attributes["db.system.name"] == "lancedb"
+
+
+# --- predicate builders: proven end-to-end against a real table ---------------
+
+
+def test_equals_predicate_pushes_down(db):
+    result = lancedb_fts_search(db, "t", "häst", limit=100, where=equals("gender", "m"))
+    assert result.total_hits == 20
+    assert all(r["gender"] == "m" for r in result.records)
+
+
+def test_range_predicates_bound_the_set(db):
+    # ids 0..39 match 'häst'; keep 10 <= id <= 19 → 10 rows.
+    where = combine(at_least("id", 10), at_most("id", 19))
+    result = lancedb_fts_search(db, "t", "häst", limit=100, where=where)
+    assert result.total_hits == 10
+    assert all(10 <= r["id"] <= 19 for r in result.records)
+
+
+def test_text_contains_is_case_insensitive_substring(db):
+    # searchable_text is "hästar och hästen nummer N"; match the 'nummer' substring
+    # case-insensitively via lower(col) LIKE '%nummer%'.
+    result = lancedb_fts_search(db, "t", "häst", limit=100, where=text_contains("searchable_text", "NUMMER"))
+    assert result.total_hits == 40
+
+
+def test_any_of_ors_predicates(db):
+    where = any_of(equals("id", 3), equals("id", 7))
+    result = lancedb_fts_search(db, "t", "häst", limit=100, where=where)
+    assert {r["id"] for r in result.records} == {3, 7}
+
+
+def test_combine_drops_none_and_returns_none_when_empty():
+    assert combine(None, None) is None
+    assert combine(equals("gender", "m"), None) == "gender = 'm'"
+
+
+def test_text_contains_escapes_quotes_and_wildcards(db):
+    # A value with a single quote and a LIKE wildcard must not error or over-match;
+    # no row contains it, so the (valid) predicate yields zero hits.
+    result = lancedb_fts_search(db, "t", "häst", limit=100, where=text_contains("searchable_text", "o'brien %"))
+    assert result.total_hits == 0

@@ -119,3 +119,70 @@ def lancedb_fts_search(
     _query_counter.add(1, {"db.collection.name": table_name})
 
     return SearchResult(records=page, total_hits=len(matches), keyword=keyword, offset=offset, limit=limit)
+
+
+# --- SQL predicate builders ---------------------------------------------------
+# The dataset libraries express typed filters (a company name, a year range, a
+# gender) as LanceDB ``.where()`` predicates so filtering happens inside the
+# query (pre-filter, before BM25) instead of in a Python loop over a truncated
+# window. These helpers build the SQL fragments in one place with correct
+# quoting, so the escaping isn't re-implemented (and mis-implemented) 13 times.
+
+
+def _sql_str(value: str) -> str:
+    """Quote a Python string as a SQL string literal (single quotes doubled)."""
+    escaped = value.replace("'", "''")
+    return f"'{escaped}'"
+
+
+def _lit(value: str | int) -> str:
+    """Render a scalar as a SQL literal — quoted for str, bare for int."""
+    return str(value) if isinstance(value, int) else _sql_str(value)
+
+
+# Column names are emitted bare, not double-quoted: LanceDB's filter parser reads
+# a double-quoted "col" as a string LITERAL (SQLite-style), not an identifier, so
+# quoting silently matches nothing. The dataset columns are all simple snake_case
+# identifiers, which bare form handles correctly.
+
+
+def text_contains(column: str, value: str) -> str:
+    """Case-insensitive substring predicate: ``lower(col) LIKE '%value%'``.
+
+    LIKE wildcards in ``value`` (``%`` ``_`` ``\\``) are escaped so a literal
+    ``%`` in the filter matches a literal ``%``, not "anything".
+    """
+    needle = value.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"lower({column}) LIKE {_sql_str(f'%{needle}%')} ESCAPE '\\'"
+
+
+def equals(column: str, value: str | int) -> str:
+    """Exact-match predicate: ``col = value``."""
+    return f"{column} = {_lit(value)}"
+
+
+def at_least(column: str, value: str | int) -> str:
+    """Lower-bound predicate: ``col >= value`` (NULLs are excluded, as in SQL)."""
+    return f"{column} >= {_lit(value)}"
+
+
+def at_most(column: str, value: str | int) -> str:
+    """Upper-bound predicate: ``col <= value`` (NULLs are excluded, as in SQL)."""
+    return f"{column} <= {_lit(value)}"
+
+
+def any_of(*predicates: str) -> str:
+    """OR-combine predicates into one parenthesised predicate."""
+    return "(" + " OR ".join(predicates) + ")"
+
+
+def combine(*predicates: str | None) -> str | None:
+    """AND-combine predicates, dropping ``None`` (an unset filter).
+
+    Returns ``None`` when nothing is set, which ``lancedb_fts_search`` treats as
+    "no ``where`` clause".
+    """
+    parts = [p for p in predicates if p]
+    if not parts:
+        return None
+    return " AND ".join(parts)
