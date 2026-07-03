@@ -2259,6 +2259,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2267,6 +2268,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2368,6 +2370,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2376,6 +2379,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2423,6 +2427,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2431,6 +2436,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2457,6 +2463,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2465,6 +2472,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2529,6 +2537,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2537,6 +2546,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2663,6 +2673,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2671,6 +2682,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2697,6 +2709,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2705,6 +2718,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2774,6 +2788,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2782,6 +2797,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2808,6 +2824,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2816,6 +2833,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2842,6 +2860,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2850,6 +2869,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2876,6 +2896,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -2884,6 +2905,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
@@ -2996,6 +3018,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.metadata]
@@ -3004,6 +3027,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=18,<25" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [[package]]
