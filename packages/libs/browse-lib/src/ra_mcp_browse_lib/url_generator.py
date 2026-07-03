@@ -3,12 +3,33 @@ URL generation utilities for Riksarkivet resources.
 """
 
 import logging
+import re
 import urllib.parse
 
 from .config import ALTO_BASE_URL, BILDVISNING_BASE_URL, IIIF_IMAGE_BASE_URL
 
 
 logger = logging.getLogger("ra_mcp.url_generator")
+
+# IIIF Image API URL: {server}/{identifier}/{region}/{size}/{rotation}/{quality}.{fmt}
+# This captures the {size} segment (after /full/) so it can be re-bounded.
+_IIIF_SIZE_RE = re.compile(r"(/full/)[^/]+(/[^/]+/[^/]+)$")
+
+
+def iiif_resize(image_url: str, size: str) -> str:
+    """Re-bound an existing IIIF Image URL to a new ``size`` segment.
+
+    Swaps the IIIF Image API size component (e.g. ``max`` in
+    ``/full/max/0/default.jpg``) for ``size`` — ``"1500,"`` for a 1500px-wide
+    page render, ``"150,"`` for a thumbnail (IIIF Image API 3.0 ``w,`` syntax).
+    Delivering size-bounded images by direct URL (browser-fetched, CSP-allowed)
+    is the MCP Apps sanctioned path; it avoids downloading full-resolution scans
+    server-side and base64-encoding them through the tool-result channel.
+
+    Returns the URL unchanged if it is not a recognisable IIIF Image URL, so
+    non-IIIF sources pass through untouched.
+    """
+    return _IIIF_SIZE_RE.sub(rf"\g<1>{size}\g<2>", image_url, count=1)
 
 
 def remove_arkis_prefix(manifest_id: str) -> str:

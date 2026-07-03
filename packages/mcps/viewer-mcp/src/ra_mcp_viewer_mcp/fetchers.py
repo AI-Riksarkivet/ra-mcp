@@ -1,22 +1,22 @@
 """
-Async HTTP fetchers for document images, thumbnails, and text layer XML.
+Async HTTP fetchers for document text-layer XML.
 
 Uses httpx.AsyncClient with HTTP/2 and connection pooling, and
-py-key-value-aio MemoryStore for TTL-based caching (replacing lru_cache).
-CPU-bound Pillow work is offloaded via asyncio.to_thread.
+py-key-value-aio MemoryStore for TTL-based caching of parsed text layers.
+Page and thumbnail images are delivered as size-bounded IIIF URLs rendered
+directly by the browser (see ``iiif_resize``) — no server-side image download,
+resize, or base64 through the tool-result channel.
 """
 
 import asyncio
-import base64
-import io
 import logging
 from collections.abc import Coroutine
 
 import httpx
 from fastmcp.telemetry import get_tracer
 from key_value.aio.stores.memory import MemoryStore
-from PIL import Image
 
+from ra_mcp_browse_lib.url_generator import iiif_resize
 from ra_mcp_xml.parser import detect_and_parse
 
 
@@ -35,12 +35,7 @@ _http = httpx.AsyncClient(
 
 _cache = MemoryStore(max_entries_per_collection=128)
 
-_COL_IMAGES = "images"
-_COL_THUMBNAILS = "thumbnails"
 _COL_TEXT_LAYERS = "text_layers"
-
-_TTL_IMAGES = 300
-_TTL_THUMBNAILS = 600
 _TTL_TEXT_LAYERS = 300
 
 # Inflight dedup — prevents duplicate HTTP requests for the same URL
@@ -76,60 +71,6 @@ async def fetch_xml_from_url(url: str) -> str:
     return response.text
 
 
-async def fetch_image_as_data_url(url: str) -> str:
-    """Fetch image and return as base64 data URL. Cached + deduped by URL."""
-
-    async def _fetch() -> str:
-        cached = await _cache_get(url, _COL_IMAGES)
-        if cached is not None:
-            return cached["data_url"]
-        with tracer.start_as_current_span("fetch_image", attributes={"url.full": url}):
-            logger.debug("Fetching image: %s", url)
-            resp = await _http.get(url)
-            resp.raise_for_status()
-            content_type = resp.headers.get("content-type", "image/jpeg")
-            b64 = base64.b64encode(resp.content).decode("ascii")
-            logger.info("Image fetched: %d bytes (%s)", len(resp.content), content_type)
-            data_url = f"data:{content_type};base64,{b64}"
-        await _cache.put(key=url, value={"data_url": data_url}, collection=_COL_IMAGES, ttl=_TTL_IMAGES)
-        return data_url
-
-    return await _dedup(f"img:{url}", _fetch())
-
-
-def _resize_thumbnail(raw: bytes, max_width: int) -> tuple[str, int, int]:
-    """CPU-bound thumbnail resize — called via asyncio.to_thread."""
-    img = Image.open(io.BytesIO(raw))
-    ratio = max_width / img.width
-    new_height = int(img.height * ratio)
-    img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
-    if img.mode != "RGB":
-        img = img.convert("RGB")
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=75)
-    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-    return f"data:image/jpeg;base64,{b64}", max_width, new_height
-
-
-async def fetch_thumbnail_as_data_url(url: str, max_width: int = 150) -> str:
-    """Fetch image, resize to thumbnail, return as base64 data URL. Cached + deduped by URL."""
-
-    async def _fetch() -> str:
-        cached = await _cache_get(url, _COL_THUMBNAILS)
-        if cached is not None:
-            return cached["data_url"]
-        with tracer.start_as_current_span("fetch_thumbnail", attributes={"url.full": url, "image.max_width": max_width}):
-            logger.debug("Fetching thumbnail: %s", url)
-            resp = await _http.get(url)
-            resp.raise_for_status()
-            data_url, w, h = await asyncio.to_thread(_resize_thumbnail, resp.content, max_width)
-            logger.info("Thumbnail: %dx%d", w, h)
-        await _cache.put(key=url, value={"data_url": data_url}, collection=_COL_THUMBNAILS, ttl=_TTL_THUMBNAILS)
-        return data_url
-
-    return await _dedup(f"thumb:{url}", _fetch())
-
-
 async def fetch_and_parse_text_layer(url: str) -> dict:
     """Fetch ALTO/PAGE XML and parse into a text layer dict. Cached + deduped by URL."""
 
@@ -152,25 +93,20 @@ async def fetch_and_parse_text_layer(url: str) -> dict:
 
 
 async def build_page_data(index: int, image_url: str, text_layer_url: str) -> tuple[dict, list[str]]:
-    """Fetch image + text layer for a single page in parallel. Returns (page_dict, errors)."""
+    """Build the page payload: parse the text layer and hand back a size-bounded
+    IIIF image URL for the browser to fetch directly.
+
+    The image is NOT downloaded or base64-encoded server-side — ``imageDataUrl``
+    carries a ``/full/1500,/`` IIIF URL (declared in the app's ResourceCSP
+    ``resource_domains``). Returns (page_dict, errors).
+    """
     errors: list[str] = []
 
-    async def _fetch_image() -> str:
+    text_layer = _EMPTY_TEXT_LAYER
+    if text_layer_url:
         try:
-            return await fetch_image_as_data_url(image_url)
-        except Exception as e:
-            logger.error("Image fetch failed for page %d: %s", index, e)
-            errors.append(f"Page {index + 1} image: {e}")
-            return ""
-
-    async def _fetch_text() -> dict:
-        if not text_layer_url:
-            return _EMPTY_TEXT_LAYER
-        try:
-            return await fetch_and_parse_text_layer(text_layer_url)
+            text_layer = await fetch_and_parse_text_layer(text_layer_url)
         except Exception as e:
             logger.error("Text layer fetch failed for page %d: %s", index, e)
-            return _EMPTY_TEXT_LAYER
 
-    image_data, text_layer = await asyncio.gather(_fetch_image(), _fetch_text())
-    return {"index": index, "imageDataUrl": image_data, "textLayer": text_layer}, errors
+    return {"index": index, "imageDataUrl": iiif_resize(image_url, "1500,"), "textLayer": text_layer}, errors

@@ -21,8 +21,7 @@ def _reset_viewer_state():
     _state_mod.latest_view_id = ""
 
 
-FAKE_IMAGE_DATA_URL = "data:image/jpeg;base64,/9j/fakedata"
-FAKE_THUMBNAIL_DATA_URL = "data:image/jpeg;base64,/9j/thumbdata"
+FAKE_IMAGE_URL = "https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/1500,/0/default.jpg"
 
 
 @pytest.fixture()
@@ -66,19 +65,17 @@ def mock_fetchers(alto_text_layer, fake_browse_result):
     with (
         patch("ra_mcp_viewer_mcp.tools.fetch_and_parse_text_layer", new_callable=AsyncMock) as mock_text,
         patch("ra_mcp_viewer_mcp.tools.build_page_data", new_callable=AsyncMock) as mock_page,
-        patch("ra_mcp_viewer_mcp.tools.fetch_thumbnail_as_data_url", new_callable=AsyncMock) as mock_thumb,
         patch("ra_mcp_viewer_mcp.resolve.BrowseOperations") as mock_browse_cls,
     ):
         mock_text.return_value = alto_text_layer
         mock_page.return_value = (
-            {"index": 0, "imageDataUrl": FAKE_IMAGE_DATA_URL, "textLayer": alto_text_layer},
+            {"index": 0, "imageDataUrl": FAKE_IMAGE_URL, "textLayer": alto_text_layer},
             [],
         )
-        mock_thumb.return_value = FAKE_THUMBNAIL_DATA_URL
         mock_browse = AsyncMock()
         mock_browse.browse_document.return_value = fake_browse_result
         mock_browse_cls.return_value = mock_browse
-        yield {"text_layer": mock_text, "page": mock_page, "thumbnail": mock_thumb, "browse": mock_browse}
+        yield {"text_layer": mock_text, "page": mock_page, "browse": mock_browse}
 
 
 # ── view_document ─────────────────────────────────────────────────────
@@ -400,12 +397,15 @@ async def test_load_page_returns_structured_content(mock_fetchers):
 # ── load_thumbnails ──────────────────────────────────────────────────
 
 
-async def test_load_thumbnails_returns_list(mock_fetchers):
+async def test_load_thumbnails_returns_bounded_iiif_urls():
     async with Client(mcp) as client:
         result = await client.call_tool(
             "load_thumbnails",
             {
-                "image_urls": ["https://example.com/t1.jpg", "https://example.com/t2.jpg"],
+                "image_urls": [
+                    "https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/max/0/default.jpg",
+                    "https://lbiiif.riksarkivet.se/arkis!R0001203_00008/full/max/0/default.jpg",
+                ],
                 "page_indices": [0, 1],
             },
         )
@@ -413,9 +413,8 @@ async def test_load_thumbnails_returns_list(mock_fetchers):
     assert not result.is_error
     thumbnails = result.structured_content["thumbnails"]
     assert len(thumbnails) == 2
-    assert thumbnails[0]["index"] == 0
-    assert thumbnails[1]["index"] == 1
-    assert all(t["dataUrl"].startswith("data:image/jpeg;base64,") for t in thumbnails)
+    assert thumbnails[0]["dataUrl"] == "https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/150,/0/default.jpg"
+    assert all(not t["dataUrl"].startswith("data:") for t in thumbnails)
 
 
 # ── Error handling ───────────────────────────────────────────────────

@@ -2931,7 +2931,6 @@ source = { editable = "packages/mcps/viewer-mcp" }
 dependencies = [
     { name = "fastmcp" },
     { name = "httpx", extra = ["http2"] },
-    { name = "pillow" },
     { name = "py-key-value-aio", extra = ["memory"] },
     { name = "ra-mcp-browse-lib" },
     { name = "ra-mcp-iiif-lib" },
@@ -2949,7 +2948,6 @@ dev = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
-    { name = "pillow", specifier = ">=12.1.1" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
     { name = "ra-mcp-browse-lib", editable = "packages/libs/browse-lib" },
     { name = "ra-mcp-iiif-lib", editable = "packages/libs/iiif-lib" },

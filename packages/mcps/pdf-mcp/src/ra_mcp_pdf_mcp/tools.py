@@ -406,6 +406,7 @@ async def search_pdf(
 
 _PDF_DOMAINS = [
     "https://huggingface.co",
+    "https://cdn.jsdelivr.net",  # PDF.js CMAP files (CJK / special-glyph PDFs)
     "https://cas-bridge.xethub-eu.hf.co",
     "https://cas-bridge.xethub.hf.co",
     "https://cdn-lfs.huggingface.co",

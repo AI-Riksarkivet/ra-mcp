@@ -5,13 +5,14 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastmcp import Context
-from fastmcp.apps import UI_EXTENSION_ID, AppConfig
+from fastmcp.apps import UI_EXTENSION_ID, AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
 
+from ra_mcp_browse_lib.url_generator import iiif_resize
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
-from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer, fetch_thumbnail_as_data_url
+from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
 from ra_mcp_viewer_mcp.models import ViewerState
 from ra_mcp_viewer_mcp.resolve import bild_resolve_document, browse_resolve_document, manifest_resolve_document, validate_url_pairs
@@ -22,6 +23,12 @@ logger = logging.getLogger("ra_mcp.viewer.tools")
 
 DIST_DIR = Path(__file__).parent / "dist"
 RESOURCE_URI = "ui://document-viewer/mcp-app.html"
+
+# Origins the sandboxed viewer iframe may load images from (IIIF scans + ALTO).
+# Declaring them lets the browser fetch size-bounded IIIF images directly rather
+# than the server proxying full-resolution scans as base64 (MCP Apps external-URL
+# delivery — see fetchers.build_page_data / load_thumbnails).
+_VIEWER_CSP = ResourceCSP(resource_domains=["https://lbiiif.riksarkivet.se", "https://sok.riksarkivet.se"])
 
 
 @mcp.tool(
@@ -438,39 +445,17 @@ async def load_thumbnails(
     image_urls: Annotated[list[str], "Image URLs for the pages to thumbnail."],
     page_indices: Annotated[list[int], "Zero-based page indices corresponding to image_urls."],
 ) -> ToolResult:
-    """Fetch and resize a batch of page images into thumbnails (concurrent)."""
-    thumbnails: list[dict] = []
-    errors: list[str] = []
-    sem = asyncio.Semaphore(4)
+    """Return size-bounded IIIF thumbnail URLs for the browser to load directly.
 
-    async def _fetch_one(url: str, idx: int) -> dict | None:
-        async with sem:
-            try:
-                data_url = await fetch_thumbnail_as_data_url(url)
-                return {"index": idx, "dataUrl": data_url}
-            except Exception as e:
-                logger.error(f"Thumbnail failed for page {idx}: {e}")
-                return None
+    No server-side download or resize: each thumbnail is a ``/full/150,/`` IIIF
+    URL (allowed by the app's ResourceCSP), so the browser fetches and caches it.
+    ``dataUrl`` is retained as the field name for viewer compatibility.
+    """
+    thumbnails = [{"index": idx, "dataUrl": iiif_resize(url, "150,")} for url, idx in zip(image_urls, page_indices, strict=True)]
 
-    async with asyncio.TaskGroup() as tg:
-        tasks = [tg.create_task(_fetch_one(url, idx)) for url, idx in zip(image_urls, page_indices, strict=True)]
-
-    for task, idx in zip(tasks, page_indices, strict=True):
-        result = task.result()
-        if result:
-            thumbnails.append(result)
-        else:
-            errors.append(f"Page {idx + 1}: failed")
-
-    thumbnails.sort(key=lambda t: t["index"])
-
-    summary = f"Generated {len(thumbnails)} thumbnails."
-    if errors:
-        summary += f" Errors: {'; '.join(errors)}"
-
-    logger.info(f"load_thumbnails: generated {len(thumbnails)} thumbnail(s)")
+    logger.info("load_thumbnails: returned %d thumbnail URL(s)", len(thumbnails))
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
+        content=[types.TextContent(type="text", text=f"Prepared {len(thumbnails)} thumbnail URLs.")],
         structured_content={"thumbnails": thumbnails},
     )
 
