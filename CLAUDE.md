@@ -880,7 +880,7 @@ RA_MCP_OTEL_LOG_BRIDGE=true           # Bridge Python logging to OTel (default: 
 | ALTO client | `ra_mcp.alto_client` | `ALTOClient.fetch_content` | fetch count (`ra_mcp.alto.fetches`) |
 | IIIF client | `ra_mcp.iiif_client` | `IIIFClient.get_collection`, `IIIFClient.fetch_manifest` | — |
 | OAI-PMH client | `ra_mcp.oai_pmh_client` | `OAIPMHClient.get_metadata`, `OAIPMHClient.extract_manifest_id` | fetch count (`ra_mcp.oai_pmh.fetches`) |
-| Viewer fetchers | fastmcp tracer (`fetchers.py`) | `fetch_image`, `fetch_thumbnail`, `fetch_text_layer` | — |
+| Viewer fetchers | fastmcp tracer (`fetchers.py`) | `fetch_text_layer` | — |
 | Search CLI | `ra_mcp.cli.search` | `cli.search` | — |
 | Browse CLI | `ra_mcp.cli.browse` | `cli.browse` | — |
 
