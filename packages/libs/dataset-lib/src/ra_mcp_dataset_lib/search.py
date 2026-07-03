@@ -63,15 +63,21 @@ def get_lancedb(uri: str) -> lancedb.DBConnection:
     return conn
 
 
-def build_fts_index(db: lancedb.DBConnection, table_name: str, column: str = "searchable_text") -> None:
+def build_fts_index(db: lancedb.DBConnection, table_name: str, column: str = "searchable_text") -> lancedb.table.Table:
     """Build (or replace) a Swedish full-text index on ``table_name.column``.
 
     ``FTS(language="Swedish")`` applies Swedish stemming + stop-words so inflected
     queries match (``"häst"`` finds ``"hästar"`` / ``"hästen"``). The default English
     analyzer mis-stems Swedish text and silently misses inflected forms.
+
+    Returns the freshly-opened table handle that carries the new index. A handle
+    opened before the index (e.g. the one ``create_table`` returned during ingest)
+    does not see it and would fail a full-text search, so ingest should return
+    *this* handle rather than its pre-index one.
     """
     table = db.open_table(table_name)
     table.create_index(column, config=FTS(language="Swedish"), replace=True)
+    return table
 
 
 def lancedb_fts_search(

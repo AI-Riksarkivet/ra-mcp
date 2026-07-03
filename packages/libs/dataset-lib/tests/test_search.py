@@ -50,6 +50,17 @@ def spans():
     exporter.clear()
 
 
+def test_build_fts_index_returns_searchable_handle(tmp_path):
+    # The handle build_fts_index returns must carry the index — a handle opened
+    # (or created) before the index does not see it and fails FTS. Ingest returns
+    # this handle, so a direct FTS search on it must work.
+    conn = lancedb.connect(str(tmp_path / "db"))
+    conn.create_table("t", data=[{"id": i, "searchable_text": f"hästen {i}"} for i in range(5)], mode="overwrite")
+    table = build_fts_index(conn, "t")
+    rows = table.search("häst", query_type="fts").limit(10).to_list()
+    assert len(rows) == 5
+
+
 def test_swedish_fts_matches_inflections(db):
     # "häst" (a form absent from the text) matches "hästar"/"hästen" via Swedish
     # stemming — the English default analyzer would miss these.
