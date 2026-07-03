@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import FILMREG_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a Filmcensur search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["FilmcensurSearch", "SearchResult"]
 
 
 class FilmcensurSearch:
@@ -55,33 +48,9 @@ class FilmcensurSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([filmkategori, produktionsland, aaldersgraens])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(FILMREG_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if filmkategori:
-            filmkategori_lower = filmkategori.lower()
-            rows = [r for r in rows if filmkategori_lower in r.get("filmkategori", "").lower()]
-        if produktionsland:
-            produktionsland_lower = produktionsland.lower()
-            rows = [r for r in rows if produktionsland_lower in r.get("produktionsland", "").lower()]
-        if aaldersgraens:
-            aaldersgraens_lower = aaldersgraens.lower()
-            rows = [r for r in rows if aaldersgraens_lower in r.get("aaldersgraens", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("filmkategori", filmkategori) if filmkategori else None,
+            text_contains("produktionsland", produktionsland) if produktionsland else None,
+            text_contains("aaldersgraens", aaldersgraens) if aaldersgraens else None,
         )
+        return lancedb_fts_search(self._db, FILMREG_TABLE, keyword, limit=limit, offset=offset, where=where)

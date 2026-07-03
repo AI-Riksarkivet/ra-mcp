@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import LIGGARE_TABLE, MATRIKEL_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a Sjömanshus search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["SearchResult", "SjomanshusSearch"]
 
 
 class SjomanshusSearch:
@@ -63,48 +56,16 @@ class SjomanshusSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([befattning, fartyg, sjoemanshus, hemmahamn, kapten, redare, destination])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(LIGGARE_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if befattning:
-            befattning_lower = befattning.lower()
-            rows = [r for r in rows if befattning_lower in r.get("befattning_yrke", "").lower()]
-        if fartyg:
-            fartyg_lower = fartyg.lower()
-            rows = [r for r in rows if fartyg_lower in r.get("fartyg", "").lower()]
-        if sjoemanshus:
-            sjoemanshus_lower = sjoemanshus.lower()
-            rows = [r for r in rows if sjoemanshus_lower in r.get("sjoemanshus", "").lower()]
-        if hemmahamn:
-            hemmahamn_lower = hemmahamn.lower()
-            rows = [r for r in rows if hemmahamn_lower in r.get("hemmahamn", "").lower()]
-        if kapten:
-            kapten_lower = kapten.lower()
-            rows = [r for r in rows if kapten_lower in r.get("kapten", "").lower()]
-        if redare:
-            redare_lower = redare.lower()
-            rows = [r for r in rows if redare_lower in r.get("redare", "").lower()]
-        if destination:
-            destination_lower = destination.lower()
-            rows = [r for r in rows if destination_lower in r.get("destination", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("befattning_yrke", befattning) if befattning else None,
+            text_contains("fartyg", fartyg) if fartyg else None,
+            text_contains("sjoemanshus", sjoemanshus) if sjoemanshus else None,
+            text_contains("hemmahamn", hemmahamn) if hemmahamn else None,
+            text_contains("kapten", kapten) if kapten else None,
+            text_contains("redare", redare) if redare else None,
+            text_contains("destination", destination) if destination else None,
         )
+        return lancedb_fts_search(self._db, LIGGARE_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_matrikel(
         self,
@@ -128,27 +89,7 @@ class SjomanshusSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([sjoemanshus])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(MATRIKEL_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if sjoemanshus:
-            sjoemanshus_lower = sjoemanshus.lower()
-            rows = [r for r in rows if sjoemanshus_lower in r.get("sjoemanshus", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("sjoemanshus", sjoemanshus) if sjoemanshus else None,
         )
+        return lancedb_fts_search(self._db, MATRIKEL_TABLE, keyword, limit=limit, offset=offset, where=where)

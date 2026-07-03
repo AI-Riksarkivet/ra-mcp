@@ -13,6 +13,7 @@ requires-python = ">=3.13"
 license = "Apache-2.0"
 dependencies = [
     "ra-mcp-common",
+    "ra-mcp-dataset-lib",
     "lancedb>=0.20,<1",
     "pyarrow>=18,<25",
     "pydantic>=2,<3",
@@ -20,3 +21,4 @@ dependencies = [
 
 [tool.uv.sources]
 ra-mcp-common = { workspace = true }
+ra-mcp-dataset-lib = { workspace = true }

@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from lancedb.index import FTS
+from ra_mcp_dataset_lib import build_fts_index
 
 from .config import ROSENBERG_TABLE
 from .models import RosenbergRecord
@@ -53,5 +53,5 @@ def ingest_rosenberg(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.
     logger.info("Parsed %d Rosenberg records", len(records))
 
     table = db.create_table(ROSENBERG_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, ROSENBERG_TABLE)
     return table

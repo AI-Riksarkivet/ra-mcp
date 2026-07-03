@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import FANGRULLOR_TABLE, FLYGVAPEN_TABLE, KURHUSET_TABLE, PRESS_TABLE, VIDEO_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a Specialsök search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["SearchResult", "SpecialsokSearch"]
 
 
 class SpecialsokSearch:
@@ -28,52 +21,6 @@ class SpecialsokSearch:
 
     def __init__(self, db: lancedb.DBConnection) -> None:
         self._db = db
-
-    def _search_table(
-        self,
-        table_name: str,
-        keyword: str,
-        *,
-        limit: int = 25,
-        offset: int = 0,
-        filters: dict[str, str | None] | None = None,
-    ) -> SearchResult:
-        """Generic FTS search with optional case-insensitive substring filters.
-
-        Args:
-            table_name: Name of the LanceDB table.
-            keyword: Search term (required, non-empty).
-            limit: Maximum number of results.
-            offset: Pagination offset.
-            filters: Dict of field_name -> filter_value (case-insensitive substring).
-
-        Returns:
-            SearchResult with matching records.
-        """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        active_filters = {k: v for k, v in (filters or {}).items() if v}
-        has_filters = bool(active_filters)
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(table_name)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        for field, value in active_filters.items():
-            value_lower = value.lower()
-            rows = [r for r in rows if value_lower in r.get(field, "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
-        )
 
     def search_flygvapen(
         self,
@@ -91,13 +38,8 @@ class SpecialsokSearch:
             offset: Number of results to skip (for pagination).
             fpl_typ: Optional case-insensitive substring filter on aircraft type.
         """
-        return self._search_table(
-            FLYGVAPEN_TABLE,
-            keyword,
-            limit=limit,
-            offset=offset,
-            filters={"fpl_typ": fpl_typ},
-        )
+        where = combine(text_contains("fpl_typ", fpl_typ) if fpl_typ else None)
+        return lancedb_fts_search(self._db, FLYGVAPEN_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_fangrullor(
         self,
@@ -115,13 +57,8 @@ class SpecialsokSearch:
             offset: Number of results to skip (for pagination).
             brott: Optional case-insensitive substring filter on crime type.
         """
-        return self._search_table(
-            FANGRULLOR_TABLE,
-            keyword,
-            limit=limit,
-            offset=offset,
-            filters={"brott": brott},
-        )
+        where = combine(text_contains("brott", brott) if brott else None)
+        return lancedb_fts_search(self._db, FANGRULLOR_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_kurhuset(
         self,
@@ -139,13 +76,8 @@ class SpecialsokSearch:
             offset: Number of results to skip (for pagination).
             sjukdom: Optional case-insensitive substring filter on disease.
         """
-        return self._search_table(
-            KURHUSET_TABLE,
-            keyword,
-            limit=limit,
-            offset=offset,
-            filters={"sjukdom": sjukdom},
-        )
+        where = combine(text_contains("sjukdom", sjukdom) if sjukdom else None)
+        return lancedb_fts_search(self._db, KURHUSET_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_press(
         self,
@@ -163,13 +95,8 @@ class SpecialsokSearch:
             offset: Number of results to skip (for pagination).
             aar: Optional case-insensitive substring filter on year.
         """
-        return self._search_table(
-            PRESS_TABLE,
-            keyword,
-            limit=limit,
-            offset=offset,
-            filters={"aar": aar},
-        )
+        where = combine(text_contains("aar", aar) if aar else None)
+        return lancedb_fts_search(self._db, PRESS_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_video(
         self,
@@ -189,10 +116,8 @@ class SpecialsokSearch:
             laen: Optional case-insensitive substring filter on county.
             kommun: Optional case-insensitive substring filter on municipality.
         """
-        return self._search_table(
-            VIDEO_TABLE,
-            keyword,
-            limit=limit,
-            offset=offset,
-            filters={"laen": laen, "kommun": kommun},
+        where = combine(
+            text_contains("laen", laen) if laen else None,
+            text_contains("kommun", kommun) if kommun else None,
         )
+        return lancedb_fts_search(self._db, VIDEO_TABLE, keyword, limit=limit, offset=offset, where=where)

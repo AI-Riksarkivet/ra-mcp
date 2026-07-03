@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import WINCARS_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a Wincars search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["SearchResult", "WincarsSearch"]
 
 
 class WincarsSearch:
@@ -55,32 +48,9 @@ class WincarsSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([typ, hemvist, fabrikat])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(WINCARS_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if typ:
-            typ_lower = typ.lower()
-            rows = [r for r in rows if typ_lower in r.get("typ", "").lower()]
-        if hemvist:
-            hemvist_lower = hemvist.lower()
-            rows = [r for r in rows if hemvist_lower in r.get("hemvist", "").lower()]
-        if fabrikat:
-            fabrikat_lower = fabrikat.lower()
-            rows = [r for r in rows if fabrikat_lower in r.get("fabrikat", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("typ", typ) if typ else None,
+            text_contains("hemvist", hemvist) if hemvist else None,
+            text_contains("fabrikat", fabrikat) if fabrikat else None,
         )
+        return lancedb_fts_search(self._db, WINCARS_TABLE, keyword, limit=limit, offset=offset, where=where)

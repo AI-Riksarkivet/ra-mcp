@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from lancedb.index import FTS
+from ra_mcp_dataset_lib import build_fts_index
 
 from .config import WINCARS_TABLE
 from .models import WincarsRecord
@@ -61,5 +61,5 @@ def ingest_wincars(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.tab
     logger.info("Parsed %d Wincars records from %d files", len(records), len(csv_files))
 
     table = db.create_table(WINCARS_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, WINCARS_TABLE)
     return table

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, at_least, at_most, combine, equals, lancedb_fts_search, text_contains
 
 from .config import SBL_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from an SBL search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["SBLSearch", "SearchResult"]
 
 
 class SBLSearch:
@@ -65,43 +58,14 @@ class SBLSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([gender, occupation, birth_place, death_place, birth_year_min, birth_year_max, death_year_min, death_year_max])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(SBL_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if gender:
-            rows = [r for r in rows if r.get("gender", "") == gender]
-        if occupation:
-            occupation_lower = occupation.lower()
-            rows = [r for r in rows if occupation_lower in r.get("occupation", "").lower()]
-        if birth_place:
-            birth_place_lower = birth_place.lower()
-            rows = [r for r in rows if birth_place_lower in r.get("birth_place", "").lower()]
-        if death_place:
-            death_place_lower = death_place.lower()
-            rows = [r for r in rows if death_place_lower in r.get("death_place", "").lower()]
-        if birth_year_min is not None:
-            rows = [r for r in rows if r.get("birth_year") is not None and r["birth_year"] >= birth_year_min]
-        if birth_year_max is not None:
-            rows = [r for r in rows if r.get("birth_year") is not None and r["birth_year"] <= birth_year_max]
-        if death_year_min is not None:
-            rows = [r for r in rows if r.get("death_year") is not None and r["death_year"] >= death_year_min]
-        if death_year_max is not None:
-            rows = [r for r in rows if r.get("death_year") is not None and r["death_year"] <= death_year_max]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            equals("gender", gender) if gender else None,
+            text_contains("occupation", occupation) if occupation else None,
+            text_contains("birth_place", birth_place) if birth_place else None,
+            text_contains("death_place", death_place) if death_place else None,
+            at_least("birth_year", birth_year_min) if birth_year_min is not None else None,
+            at_most("birth_year", birth_year_max) if birth_year_max is not None else None,
+            at_least("death_year", death_year_min) if death_year_min is not None else None,
+            at_most("death_year", death_year_max) if death_year_max is not None else None,
         )
+        return lancedb_fts_search(self._db, SBL_TABLE, keyword, limit=limit, offset=offset, where=where)

@@ -53,5 +53,5 @@ def ingest_faltjagare(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb
     logger.info("Parsed %d Fältjägare records", len(records))
 
     table = db.create_table(FALTJAGARE_TABLE, data=records, mode="overwrite")
-    build_fts_index(db, FALTJAGARE_TABLE)
+    table = build_fts_index(db, FALTJAGARE_TABLE)
     return table

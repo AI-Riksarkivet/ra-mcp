@@ -62,12 +62,11 @@ def test_search_result_has_manifest_url(search):
     assert "manifest_url" in result.records[0]
 
 
-def test_search_result_dataclass_fields(search):
+def test_search_result_fields(search):
     result = search.search_sdhk("Kung")
     assert result.keyword == "Kung"
     assert result.offset == 0
     assert result.limit == 25
-    assert result.table_name == "sdhk"
 
 
 def test_search_mpo_result_has_manifest_url(search):

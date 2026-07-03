@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import MPO_TABLE, SDHK_TABLE
 
@@ -13,15 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a diplomatics search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
-    table_name: str
+__all__ = ["DiplomaticsSearch", "SearchResult"]
 
 
 class DiplomaticsSearch:
@@ -56,37 +48,12 @@ class DiplomaticsSearch:
         Raises:
             ValueError: If keyword is empty.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([author, place, language])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(SDHK_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if author:
-            author_lower = author.lower()
-            rows = [r for r in rows if author_lower in r.get("author", "").lower()]
-        if place:
-            place_lower = place.lower()
-            rows = [r for r in rows if place_lower in r.get("place", "").lower()]
-        if language:
-            language_lower = language.lower()
-            rows = [r for r in rows if language_lower in r.get("language", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
-            table_name=SDHK_TABLE,
+        where = combine(
+            text_contains("author", author) if author else None,
+            text_contains("place", place) if place else None,
+            text_contains("language", language) if language else None,
         )
+        return lancedb_fts_search(self._db, SDHK_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_mpo(
         self,
@@ -114,37 +81,12 @@ class DiplomaticsSearch:
         Raises:
             ValueError: If keyword is empty.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([category, institution, script])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(MPO_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if category:
-            category_lower = category.lower()
-            rows = [r for r in rows if category_lower in r.get("category", "").lower()]
-        if institution:
-            institution_lower = institution.lower()
-            rows = [r for r in rows if institution_lower in r.get("institution", "").lower()]
-        if script:
-            script_lower = script.lower()
-            rows = [r for r in rows if script_lower in r.get("script", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
-            table_name=MPO_TABLE,
+        where = combine(
+            text_contains("category", category) if category else None,
+            text_contains("institution", institution) if institution else None,
+            text_contains("script", script) if script else None,
         )
+        return lancedb_fts_search(self._db, MPO_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def get_sdhk_by_id(self, sdhk_id: int) -> dict | None:
         """Look up a single SDHK record by ID.

@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from lancedb.index import FTS
+from ra_mcp_dataset_lib import build_fts_index
 
 from .config import DOMBOKSREGISTER_TABLE, MEDELSTAD_TABLE
 from .models import DomboksregisterRecord, MedelstadRecord
@@ -95,7 +95,7 @@ def ingest_domboksregister(
     logger.info("Parsed %d Domboksregister records", len(records))
 
     table = db.create_table(DOMBOKSREGISTER_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, DOMBOKSREGISTER_TABLE)
     return table
 
 
@@ -145,5 +145,5 @@ def ingest_medelstad(
     logger.info("Parsed %d Medelstad records", len(records))
 
     table = db.create_table(MEDELSTAD_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, MEDELSTAD_TABLE)
     return table

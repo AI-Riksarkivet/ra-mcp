@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, at_least, at_most, combine, lancedb_fts_search, text_contains
 
 from .config import DOMBOKSREGISTER_TABLE, MEDELSTAD_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a court records search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["CourtSearch", "SearchResult"]
 
 
 class CourtSearch:
@@ -59,39 +52,14 @@ class CourtSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([roll, socken, datum_from, datum_till, arende])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(DOMBOKSREGISTER_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if roll:
-            roll_lower = roll.lower()
-            rows = [r for r in rows if roll_lower in r.get("roll", "").lower()]
-        if socken:
-            socken_lower = socken.lower()
-            rows = [r for r in rows if socken_lower in r.get("socken", "").lower()]
-        if datum_from:
-            rows = [r for r in rows if r.get("datum", "") >= datum_from]
-        if datum_till:
-            rows = [r for r in rows if r.get("datum", "") <= datum_till]
-        if arende:
-            arende_lower = arende.lower()
-            rows = [r for r in rows if arende_lower in r.get("arende", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("roll", roll) if roll else None,
+            text_contains("socken", socken) if socken else None,
+            at_least("datum", datum_from) if datum_from else None,
+            at_most("datum", datum_till) if datum_till else None,
+            text_contains("arende", arende) if arende else None,
         )
+        return lancedb_fts_search(self._db, DOMBOKSREGISTER_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_medelstad(
         self,
@@ -121,33 +89,10 @@ class CourtSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([mal_typ, norm_forsamling, datum_from, datum_till])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(MEDELSTAD_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if mal_typ:
-            mal_typ_lower = mal_typ.lower()
-            rows = [r for r in rows if mal_typ_lower in r.get("mal_typ", "").lower()]
-        if norm_forsamling:
-            norm_forsamling_lower = norm_forsamling.lower()
-            rows = [r for r in rows if norm_forsamling_lower in r.get("norm_forsamling", "").lower()]
-        if datum_from:
-            rows = [r for r in rows if r.get("ting_dag", "") >= datum_from]
-        if datum_till:
-            rows = [r for r in rows if r.get("ting_dag", "") <= datum_till]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("mal_typ", mal_typ) if mal_typ else None,
+            text_contains("norm_forsamling", norm_forsamling) if norm_forsamling else None,
+            at_least("ting_dag", datum_from) if datum_from else None,
+            at_most("ting_dag", datum_till) if datum_till else None,
         )
+        return lancedb_fts_search(self._db, MEDELSTAD_TABLE, keyword, limit=limit, offset=offset, where=where)

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import FKPR_TABLE, ROSTRATT_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a suffrage search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["SearchResult", "SuffrageSearch"]
 
 
 class SuffrageSearch:
@@ -53,33 +46,11 @@ class SuffrageSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([lan, ortens_namn])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(ROSTRATT_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if lan:
-            lan_lower = lan.lower()
-            rows = [r for r in rows if lan_lower in r.get("lan", "").lower()]
-        if ortens_namn:
-            ortens_lower = ortens_namn.lower()
-            rows = [r for r in rows if ortens_lower in r.get("ortens_namn", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("lan", lan) if lan else None,
+            text_contains("ortens_namn", ortens_namn) if ortens_namn else None,
         )
+        return lancedb_fts_search(self._db, ROSTRATT_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_fkpr(
         self,
@@ -101,19 +72,4 @@ class SuffrageSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        table = self._db.open_table(FKPR_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(limit + offset).to_list()
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
-        )
+        return lancedb_fts_search(self._db, FKPR_TABLE, keyword, limit=limit, offset=offset)

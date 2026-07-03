@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import BOLAG_TABLE, STYRELSE_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from an Aktiebolag search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["AktiebolagSearch", "SearchResult"]
 
 
 class AktiebolagSearch:
@@ -51,29 +44,10 @@ class AktiebolagSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([styrelsesate])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(BOLAG_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if styrelsesate:
-            styrelsesate_lower = styrelsesate.lower()
-            rows = [r for r in rows if styrelsesate_lower in r.get("styrelsesate", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("styrelsesate", styrelsesate) if styrelsesate else None,
         )
+        return lancedb_fts_search(self._db, BOLAG_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_styrelse(
         self,
@@ -97,26 +71,7 @@ class AktiebolagSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([titel])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(STYRELSE_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if titel:
-            titel_lower = titel.lower()
-            rows = [r for r in rows if titel_lower in r.get("titel", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("titel", titel) if titel else None,
         )
+        return lancedb_fts_search(self._db, STYRELSE_TABLE, keyword, limit=limit, offset=offset, where=where)

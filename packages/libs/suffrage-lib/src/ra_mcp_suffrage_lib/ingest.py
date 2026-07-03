@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from lancedb.index import FTS
+from ra_mcp_dataset_lib import build_fts_index
 
 from .config import FKPR_TABLE, ROSTRATT_TABLE
 from .models import FKPRRecord, RostrattRecord
@@ -61,7 +61,7 @@ def ingest_rostratt(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.ta
     logger.info("Parsed %d Rösträtt records from %d files", len(records), len(csv_files))
 
     table = db.create_table(ROSTRATT_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, ROSTRATT_TABLE)
     return table
 
 
@@ -99,5 +99,5 @@ def ingest_fkpr(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table
     logger.info("Parsed %d FKPR records", len(records))
 
     table = db.create_table(FKPR_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    table = build_fts_index(db, FKPR_TABLE)
     return table

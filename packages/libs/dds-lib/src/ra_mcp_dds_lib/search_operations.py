@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, any_of, at_least, at_most, combine, lancedb_fts_search, text_contains
 
 from .config import DODA_TABLE, FODELSE_TABLE, VIGSEL_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a DDS search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["DDSSearch", "SearchResult"]
 
 
 class DDSSearch:
@@ -59,39 +52,14 @@ class DDSSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([forsamling, lan, kon, datum_from, datum_till])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(FODELSE_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if forsamling:
-            forsamling_lower = forsamling.lower()
-            rows = [r for r in rows if forsamling_lower in r.get("forsamling", "").lower()]
-        if lan:
-            lan_lower = lan.lower()
-            rows = [r for r in rows if lan_lower in r.get("lan", "").lower()]
-        if kon:
-            kon_lower = kon.lower()
-            rows = [r for r in rows if kon_lower in r.get("kon", "").lower()]
-        if datum_from:
-            rows = [r for r in rows if r.get("datum", "") >= datum_from]
-        if datum_till:
-            rows = [r for r in rows if r.get("datum", "") <= datum_till]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("forsamling", forsamling) if forsamling else None,
+            text_contains("lan", lan) if lan else None,
+            text_contains("kon", kon) if kon else None,
+            at_least("datum", datum_from) if datum_from else None,
+            at_most("datum", datum_till) if datum_till else None,
         )
+        return lancedb_fts_search(self._db, FODELSE_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_doda(
         self,
@@ -123,39 +91,14 @@ class DDSSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([forsamling, lan, dodsorsak, datum_from, datum_till])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(DODA_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if forsamling:
-            forsamling_lower = forsamling.lower()
-            rows = [r for r in rows if forsamling_lower in r.get("forsamling", "").lower()]
-        if lan:
-            lan_lower = lan.lower()
-            rows = [r for r in rows if lan_lower in r.get("lan", "").lower()]
-        if dodsorsak:
-            dodsorsak_lower = dodsorsak.lower()
-            rows = [r for r in rows if dodsorsak_lower in r.get("dodsorsak", "").lower() or dodsorsak_lower in r.get("dodsorsak_klassificerat", "").lower()]
-        if datum_from:
-            rows = [r for r in rows if r.get("datum", "") >= datum_from]
-        if datum_till:
-            rows = [r for r in rows if r.get("datum", "") <= datum_till]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("forsamling", forsamling) if forsamling else None,
+            text_contains("lan", lan) if lan else None,
+            any_of(text_contains("dodsorsak", dodsorsak), text_contains("dodsorsak_klassificerat", dodsorsak)) if dodsorsak else None,
+            at_least("datum", datum_from) if datum_from else None,
+            at_most("datum", datum_till) if datum_till else None,
         )
+        return lancedb_fts_search(self._db, DODA_TABLE, keyword, limit=limit, offset=offset, where=where)
 
     def search_vigsel(
         self,
@@ -185,33 +128,10 @@ class DDSSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([forsamling, lan, datum_from, datum_till])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(VIGSEL_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        if forsamling:
-            forsamling_lower = forsamling.lower()
-            rows = [r for r in rows if forsamling_lower in r.get("forsamling", "").lower()]
-        if lan:
-            lan_lower = lan.lower()
-            rows = [r for r in rows if lan_lower in r.get("lan", "").lower()]
-        if datum_from:
-            rows = [r for r in rows if r.get("datum", "") >= datum_from]
-        if datum_till:
-            rows = [r for r in rows if r.get("datum", "") <= datum_till]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("forsamling", forsamling) if forsamling else None,
+            text_contains("lan", lan) if lan else None,
+            at_least("datum", datum_from) if datum_from else None,
+            at_most("datum", datum_till) if datum_till else None,
         )
+        return lancedb_fts_search(self._db, VIGSEL_TABLE, keyword, limit=limit, offset=offset, where=where)
