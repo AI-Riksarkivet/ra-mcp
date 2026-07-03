@@ -13,7 +13,7 @@ Packages are grouped by role into subfolders:
 
 - `packages/libs/` — domain libraries (`*-lib`), plus `common`
 - `packages/mcps/` — FastMCP servers (`*-mcp`) that wrap a domain library as MCP tools/resources
-- `packages/search-cli` / `packages/browse-cli` / `packages/tui` — CLI and terminal-UI front-ends (top level)
+- `packages/cli/` — CLI (`search-cli`, `browse-cli`) and terminal-UI (`tui`) front-ends
 
 ```
 ra-mcp/
@@ -40,9 +40,10 @@ ra-mcp/
 │   │   ├── pdf-mcp/            # ra-mcp-pdf-mcp: Interactive PDF viewer (MCP App UI)
 │   │   ├── label-mcp/          # ra-mcp-label-mcp: Label Studio import (optional)
 │   │   └── <dataset>-mcp/      # 14 dataset MCP servers (one per dataset lib above)
-│   ├── search-cli/             # ra-mcp-search-cli: CLI command for search
-│   ├── browse-cli/             # ra-mcp-browse-cli: CLI command for browse
-│   └── tui/                    # ra-mcp-tui: Interactive terminal browser
+│   └── cli/                    # CLI + TUI front-ends
+│       ├── search-cli/         # ra-mcp-search-cli: CLI command for search
+│       ├── browse-cli/         # ra-mcp-browse-cli: CLI command for browse
+│       └── tui/                # ra-mcp-tui: Interactive terminal browser
 ├── resources/                  # Historical guide markdown files
 ├── pyproject.toml              # Workspace configuration
 └── uv.lock                     # Shared lockfile
@@ -84,14 +85,14 @@ ra-mcp/
 - [formatter.py](packages/mcps/browse-mcp/src/ra_mcp_browse_mcp/formatter.py): Browse result formatting for LLM output
 
 **ra-mcp-search-cli** (module `ra_mcp_search_cli`, depends on search-lib + typer + rich):
-- [app.py](packages/search-cli/src/ra_mcp_search_cli/app.py): Typer sub-app (`search_app`)
-- [search_cmd.py](packages/search-cli/src/ra_mcp_search_cli/search_cmd.py): `ra search` CLI command
-- [formatter.py](packages/search-cli/src/ra_mcp_search_cli/formatter.py): CLI output formatting
+- [app.py](packages/cli/search-cli/src/ra_mcp_search_cli/app.py): Typer sub-app (`search_app`)
+- [search_cmd.py](packages/cli/search-cli/src/ra_mcp_search_cli/search_cmd.py): `ra search` CLI command
+- [formatter.py](packages/cli/search-cli/src/ra_mcp_search_cli/formatter.py): CLI output formatting
 
 **ra-mcp-browse-cli** (module `ra_mcp_browse_cli`, depends on browse-lib + typer + rich):
-- [app.py](packages/browse-cli/src/ra_mcp_browse_cli/app.py): Typer sub-app (`browse_app`)
-- [browse_cmd.py](packages/browse-cli/src/ra_mcp_browse_cli/browse_cmd.py): `ra browse` CLI command
-- [formatter.py](packages/browse-cli/src/ra_mcp_browse_cli/formatter.py): CLI output formatting
+- [app.py](packages/cli/browse-cli/src/ra_mcp_browse_cli/app.py): Typer sub-app (`browse_app`)
+- [browse_cmd.py](packages/cli/browse-cli/src/ra_mcp_browse_cli/browse_cmd.py): `ra browse` CLI command
+- [formatter.py](packages/cli/browse-cli/src/ra_mcp_browse_cli/formatter.py): CLI output formatting
 
 **ra-mcp-tui** (module `ra_mcp_tui`): Textual-based interactive terminal browser (`tui_app`, `ra tui`).
 

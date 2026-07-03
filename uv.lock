@@ -2192,7 +2192,7 @@ requires-dist = [
     { name = "opentelemetry-sdk", specifier = ">=1.28.0" },
     { name = "ra-mcp-aktiebolag-mcp", editable = "packages/mcps/aktiebolag-mcp" },
     { name = "ra-mcp-aktiebolag-mcp", marker = "extra == 'aktiebolag'", editable = "packages/mcps/aktiebolag-mcp" },
-    { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/browse-cli" },
+    { name = "ra-mcp-browse-cli", marker = "extra == 'cli'", editable = "packages/cli/browse-cli" },
     { name = "ra-mcp-browse-mcp", editable = "packages/mcps/browse-mcp" },
     { name = "ra-mcp-court-mcp", editable = "packages/mcps/court-mcp" },
     { name = "ra-mcp-court-mcp", marker = "extra == 'court'", editable = "packages/mcps/court-mcp" },
@@ -2211,7 +2211,7 @@ requires-dist = [
     { name = "ra-mcp-rosenberg-mcp", marker = "extra == 'rosenberg'", editable = "packages/mcps/rosenberg-mcp" },
     { name = "ra-mcp-sbl-mcp", editable = "packages/mcps/sbl-mcp" },
     { name = "ra-mcp-sbl-mcp", marker = "extra == 'sbl'", editable = "packages/mcps/sbl-mcp" },
-    { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/search-cli" },
+    { name = "ra-mcp-search-cli", marker = "extra == 'cli'", editable = "packages/cli/search-cli" },
     { name = "ra-mcp-search-mcp", editable = "packages/mcps/search-mcp" },
     { name = "ra-mcp-sj-mcp", editable = "packages/mcps/sj-mcp" },
     { name = "ra-mcp-sj-mcp", marker = "extra == 'sj'", editable = "packages/mcps/sj-mcp" },
@@ -2223,7 +2223,7 @@ requires-dist = [
     { name = "ra-mcp-suffrage-mcp", marker = "extra == 'suffrage'", editable = "packages/mcps/suffrage-mcp" },
     { name = "ra-mcp-tora-mcp", editable = "packages/mcps/tora-mcp" },
     { name = "ra-mcp-tora-mcp", marker = "extra == 'tora'", editable = "packages/mcps/tora-mcp" },
-    { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/tui" },
+    { name = "ra-mcp-tui", marker = "extra == 'tui'", editable = "packages/cli/tui" },
     { name = "ra-mcp-viewer-mcp", editable = "packages/mcps/viewer-mcp" },
     { name = "ra-mcp-wincars-mcp", editable = "packages/mcps/wincars-mcp" },
     { name = "ra-mcp-wincars-mcp", marker = "extra == 'wincars'", editable = "packages/mcps/wincars-mcp" },
@@ -2238,9 +2238,9 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio", specifier = ">=0.25.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
-    { name = "ra-mcp-browse-cli", editable = "packages/browse-cli" },
-    { name = "ra-mcp-search-cli", editable = "packages/search-cli" },
-    { name = "ra-mcp-tui", editable = "packages/tui" },
+    { name = "ra-mcp-browse-cli", editable = "packages/cli/browse-cli" },
+    { name = "ra-mcp-search-cli", editable = "packages/cli/search-cli" },
+    { name = "ra-mcp-tui", editable = "packages/cli/tui" },
     { name = "respx", specifier = ">=0.22.0" },
     { name = "ruff" },
     { name = "ty" },
@@ -2284,7 +2284,7 @@ requires-dist = [
 [[package]]
 name = "ra-mcp-browse-cli"
 version = "0.3.0"
-source = { editable = "packages/browse-cli" }
+source = { editable = "packages/cli/browse-cli" }
 dependencies = [
     { name = "ra-mcp-browse-lib" },
     { name = "rich" },
@@ -2697,7 +2697,7 @@ requires-dist = [
 [[package]]
 name = "ra-mcp-search-cli"
 version = "0.3.0"
-source = { editable = "packages/search-cli" }
+source = { editable = "packages/cli/search-cli" }
 dependencies = [
     { name = "ra-mcp-search-lib" },
     { name = "rich" },
@@ -2906,7 +2906,7 @@ requires-dist = [
 [[package]]
 name = "ra-mcp-tui"
 version = "0.3.0"
-source = { editable = "packages/tui" }
+source = { editable = "packages/cli/tui" }
 dependencies = [
     { name = "ra-mcp-browse-lib" },
     { name = "ra-mcp-search-lib" },
