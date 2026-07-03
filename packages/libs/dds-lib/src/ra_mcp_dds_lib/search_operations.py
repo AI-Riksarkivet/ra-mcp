@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 from .config import DODA_TABLE, FODELSE_TABLE, VIGSEL_TABLE
 
@@ -12,11 +13,10 @@ if TYPE_CHECKING:
     import lancedb
 
 
-@dataclass
-class SearchResult:
+class SearchResult(BaseModel):
     """Result from a DDS search query."""
 
-    records: list[dict]
+    records: list[dict[str, Any]]
     total_hits: int
     keyword: str
     offset: int
