@@ -50,7 +50,7 @@ Riksarkivet PDF guide reader. Covers searching and reading the archival PDF guid
 
 ### `/feedback-ls`
 
-Label Studio feedback workflow. Covers sending document pages to Label Studio for human annotation via `import_to_label_studio` — both ALTO pre-annotated tasks and image-only blank tasks, with transcription/segmentation feedback choices and optional assignment.
+Label Studio feedback workflow. Covers sending document pages to Label Studio for human annotation via `label_import_to_label_studio` — both ALTO pre-annotated tasks and image-only blank tasks, with transcription/segmentation feedback choices and optional assignment.
 
 **Trigger phrases**: feedback, label studio, annotation, review transcription, quality check, human review, segmentation feedback, transcription feedback
 

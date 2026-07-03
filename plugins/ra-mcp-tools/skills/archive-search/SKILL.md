@@ -1,16 +1,13 @@
 ---
 name: archive-search
 description: >
-  Essential pre-search guide — load BEFORE calling search_transcribed or search_metadata.
-  Use whenever the user wants to search, find, look up, or discover documents, people,
-  places, events, or any information in the Swedish National Archives (Riksarkivet).
-  Covers tool selection (search_transcribed vs search_metadata), search strategy,
-  Solr query syntax, wildcards, fuzzy matching for OCR/HTR errors, old Swedish
-  spelling variants, proximity search, Boolean operators, and pagination workflows.
-  Use when: search, find, look up, discover, query, search archives, search documents,
-  find person, find place, search records, search court records, search church records,
-  search transcriptions, historical research, archival research, Riksarkivet search,
-  trolldom, häxprocesser, bouppteckning, dombok, any archive query.
+  How to query the Riksarkivet search tools — load BEFORE calling
+  search_transcribed or search_metadata. Picks the right tool and builds Solr
+  queries with the fuzzy, wildcard, and old-Swedish-spelling tactics that AI
+  transcription errors demand.
+  Use when the user wants to search, find, or look up documents, people, places,
+  or events in the Swedish National Archives (Riksarkivet) — including terms like
+  trolldom, häxprocess, bouppteckning, or dombok.
 ---
 
 # Archive Search Guide

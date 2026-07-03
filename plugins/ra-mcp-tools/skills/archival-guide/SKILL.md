@@ -1,12 +1,12 @@
 ---
 name: archival-guide
 description: >
-  Guide for understanding Swedish archival record types and administrative history.
-  Maps research topics to the correct Förvaltningshistorik chapters available as MCP resources.
-  Use when: what records exist, which archive, document types, court records, church records,
-  folkbokföring, bouppteckning, dombok, husförhörslängd, mantalslängd, military records,
-  tax records, prison records, parish records, Swedish administrative history,
-  where to find records, what archives contain, understand archival structure.
+  Which Swedish records exist and where — maps a research topic to the right
+  Förvaltningshistorik chapter (served as MCP resources), so you know what record
+  type answers a question and which authority created it.
+  Use when the user asks where to find records about something, what a record type
+  is, or about court, church, tax, military, or population records (folkbokföring,
+  bouppteckning, dombok, husförhörslängd, mantalslängd).
 ---
 
 # Archival Guide — Swedish Record Types and Administrative History

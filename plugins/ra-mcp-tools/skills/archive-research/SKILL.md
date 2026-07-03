@@ -1,16 +1,12 @@
 ---
 name: archive-research
 description: >
-  Essential research guide — load BEFORE browsing, reading, or presenting archival documents.
-  Use whenever the user wants to browse, read, examine, analyze, translate, or interpret
-  documents from the Swedish National Archives (Riksarkivet), or when presenting research
-  findings from archival sources. Covers research integrity, citing archival sources with
-  reference codes, translating old Swedish, cross-tool research workflow (search, browse,
-  synthesize), browsing strategy, result presentation, and coverage awareness.
-  Use when: browse document, read pages, examine records, translate old Swedish,
-  interpret documents, cite sources, present findings, research methodology,
-  archival research, historical research, document analysis, reference codes,
-  court records, church records, dombok, bouppteckning, any archive browsing or research.
+  How to browse, cite, and present archival findings — load AFTER search, when
+  reading documents or reporting results. Covers research-integrity rules (never
+  fabricate reference codes, always cite the exact page), old-Swedish translation,
+  and the browse→synthesize workflow.
+  Use when the user wants to browse or read pages, examine or interpret a
+  document, translate old Swedish, or have findings cited and presented.
 ---
 
 # Archive Research Guide
