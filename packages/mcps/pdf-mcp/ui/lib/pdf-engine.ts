@@ -14,7 +14,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 export { type PDFDocumentProxy, type PDFPageProxy };
 
-const CMAP_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.0.0/cmaps/";
+const CMAP_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@6/cmaps/";
 
 /**
  * Load a PDF from a Uint8Array.
