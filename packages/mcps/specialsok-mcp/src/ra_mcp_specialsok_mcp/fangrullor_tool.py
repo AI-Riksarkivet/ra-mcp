@@ -41,7 +41,7 @@ def register_fangrullor_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search Östersund prison records 1810-1900 — 11,500 inmates with names, ages, crimes, and home parishes."),
     )
-    async def search_fangrullor(
+    def search_fangrullor(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across prison records."),

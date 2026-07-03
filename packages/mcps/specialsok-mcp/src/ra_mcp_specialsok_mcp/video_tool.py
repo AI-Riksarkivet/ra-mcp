@@ -41,7 +41,7 @@ def register_video_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search Swedish video rental stores 1991-1994 — 7,000 stores across Sweden."),
     )
-    async def search_video(
+    def search_video(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across video store records."),

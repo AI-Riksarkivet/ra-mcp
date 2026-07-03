@@ -47,7 +47,7 @@ def register_bolag_tool(mcp) -> None:
             "and board member names."
         ),
     )
-    async def search_bolag(
+    def search_bolag(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across company records."),

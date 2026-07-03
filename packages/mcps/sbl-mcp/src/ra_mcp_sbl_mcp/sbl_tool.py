@@ -53,7 +53,7 @@ def register_sbl_tool(mcp) -> None:
             "s a=samma ar, bl a=bland annat. Expand these naturally when presenting to users."
         ),
     )
-    async def search_sbl(
+    def search_sbl(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across SBL biographical articles."),

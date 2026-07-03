@@ -46,7 +46,7 @@ def register_ritningar_tool(mcp) -> None:
             "Returns station/building name, description, drawing number, date, format, district, and building type."
         ),
     )
-    async def search_ritningar(
+    def search_ritningar(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across FIRA/SIRA railway drawing records."),

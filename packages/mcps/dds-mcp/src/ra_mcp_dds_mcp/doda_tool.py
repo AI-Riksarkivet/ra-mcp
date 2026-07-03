@@ -47,7 +47,7 @@ def register_doda_tool(mcp) -> None:
             "relative information, and archive reference."
         ),
     )
-    async def search_doda(
+    def search_doda(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across death records."),

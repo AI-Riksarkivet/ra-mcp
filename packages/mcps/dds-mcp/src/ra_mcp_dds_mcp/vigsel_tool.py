@@ -47,7 +47,7 @@ def register_vigsel_tool(mcp) -> None:
             "home parishes, and banns dates."
         ),
     )
-    async def search_vigsel(
+    def search_vigsel(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across marriage records."),

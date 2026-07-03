@@ -47,7 +47,7 @@ def register_fodelse_tool(mcp) -> None:
             "birth/baptism date, parish, county, and birth place."
         ),
     )
-    async def search_fodelse(
+    def search_fodelse(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across birth/baptism records."),

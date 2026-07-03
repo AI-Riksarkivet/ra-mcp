@@ -47,7 +47,7 @@ def register_faltjagare_tool(mcp) -> None:
             "and fate (killed/died/deserted)."
         ),
     )
-    async def search_faltjagare(
+    def search_faltjagare(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across soldier records."),

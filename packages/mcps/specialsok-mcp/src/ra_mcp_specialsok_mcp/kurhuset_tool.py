@@ -41,7 +41,7 @@ def register_kurhuset_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search hospital patient records 1817-1866 — 3,000 patients with diagnoses, treatments, and outcomes."),
     )
-    async def search_kurhuset(
+    def search_kurhuset(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across hospital patient records."),

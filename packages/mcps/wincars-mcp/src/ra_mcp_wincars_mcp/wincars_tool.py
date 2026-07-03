@@ -47,7 +47,7 @@ def register_wincars_tool(mcp) -> None:
             "registration/deregistration dates, domicile, and status (active/written off/scrapped)."
         ),
     )
-    async def search_wincars(
+    def search_wincars(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across vehicle registration records."),

@@ -46,7 +46,7 @@ def register_juda_tool(mcp) -> None:
             "Returns property description, county, municipality, owner, and notes."
         ),
     )
-    async def search_juda(
+    def search_juda(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across JUDA railway property records."),

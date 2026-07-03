@@ -47,7 +47,7 @@ def register_domboksregister_tool(mcp) -> None:
             "date, and case type."
         ),
     )
-    async def search_domboksregister(
+    def search_domboksregister(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Domboksregister court records."),

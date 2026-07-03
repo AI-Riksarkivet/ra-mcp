@@ -45,7 +45,7 @@ def register_fkpr_tool(mcp) -> None:
             "Search Gothenburg FKPR suffrage association members 1911-1920 — 1,700 women. Returns name, title/occupation, address, and years of membership."
         ),
     )
-    async def search_fkpr(
+    def search_fkpr(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across FKPR membership records."),

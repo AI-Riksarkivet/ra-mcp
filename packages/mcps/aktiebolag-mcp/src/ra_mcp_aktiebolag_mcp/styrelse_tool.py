@@ -43,7 +43,7 @@ def register_styrelse_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search board members of Swedish companies 1901-1935 — 49,000 board members. Returns member name, title, gender, and company name."),
     )
-    async def search_styrelse(
+    def search_styrelse(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across board member records."),

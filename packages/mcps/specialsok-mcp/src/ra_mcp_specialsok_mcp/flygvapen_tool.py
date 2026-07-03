@@ -41,7 +41,7 @@ def register_flygvapen_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search Swedish military aviation accidents 1912-2007 — 2,400 incidents with aircraft types, crash sites, and summaries."),
     )
-    async def search_flygvapen(
+    def search_flygvapen(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across aviation accident records."),

@@ -47,7 +47,7 @@ def register_filmreg_tool(mcp) -> None:
             "number of cuts, producer, free-text descriptions, and notes."
         ),
     )
-    async def search_filmreg(
+    def search_filmreg(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across film censorship records."),

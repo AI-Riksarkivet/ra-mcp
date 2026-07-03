@@ -49,7 +49,7 @@ def register_mpo_tool(mcp) -> None:
             "Paginate with offset (0, 25, 50, ...)."
         ),
     )
-    async def search_mpo(
+    def search_mpo(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across MPO fragment text."),

@@ -50,7 +50,7 @@ def register_sdhk_tool(mcp) -> None:
             "Paginate with offset (0, 25, 50, ...)."
         ),
     )
-    async def search_sdhk(
+    def search_sdhk(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across SDHK charter text."),

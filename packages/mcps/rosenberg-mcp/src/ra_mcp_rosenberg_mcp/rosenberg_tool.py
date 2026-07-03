@@ -47,7 +47,7 @@ def register_rosenberg_tool(mcp) -> None:
             "Use for looking up historical Swedish places, parishes, and their descriptions."
         ),
     )
-    async def search_rosenberg(
+    def search_rosenberg(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Rosenberg's geographical lexicon."),

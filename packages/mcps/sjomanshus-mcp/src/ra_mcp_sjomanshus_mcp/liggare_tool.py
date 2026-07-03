@@ -47,7 +47,7 @@ def register_liggare_tool(mcp) -> None:
             "Filter by occupation, ship, seamen's house, home port, captain, shipowner, or destination."
         ),
     )
-    async def search_liggare(
+    def search_liggare(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Liggare voyage records."),

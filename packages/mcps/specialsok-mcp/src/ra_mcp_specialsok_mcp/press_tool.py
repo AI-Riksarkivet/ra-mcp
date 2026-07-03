@@ -41,7 +41,7 @@ def register_press_tool(mcp) -> None:
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=("Search Swedish government press conferences 1993-2017 — 5,700 conferences with titles and content descriptions."),
     )
-    async def search_press(
+    def search_press(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across press conference records."),

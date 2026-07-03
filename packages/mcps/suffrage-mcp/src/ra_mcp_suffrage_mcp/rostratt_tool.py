@@ -46,7 +46,7 @@ def register_rostratt_tool(mcp) -> None:
             "Returns signer name, title, occupation, address, town, county, and monetary contributions."
         ),
     )
-    async def search_rostratt(
+    def search_rostratt(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Rösträtt petition records."),

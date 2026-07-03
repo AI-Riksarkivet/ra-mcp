@@ -46,7 +46,7 @@ def register_medelstad_tool(mcp) -> None:
             "Returns person name, title, parish, court date, case type, and full case summary text."
         ),
     )
-    async def search_medelstad(
+    def search_medelstad(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Medelstad court records."),

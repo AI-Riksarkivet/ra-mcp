@@ -46,7 +46,7 @@ def register_matrikel_tool(mcp) -> None:
             "Returns seaman name, birth info, parents, home parish, registration/deregistration dates."
         ),
     )
-    async def search_matrikel(
+    def search_matrikel(
         keyword: Annotated[
             str,
             Field(description="Search term for full-text search across Matrikel registration records."),
