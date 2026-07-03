@@ -13,6 +13,8 @@ import logging
 import os
 from pathlib import Path
 
+from ra_mcp_common.settings import settings
+
 
 logger = logging.getLogger("ra_mcp.datasets")
 
@@ -20,7 +22,7 @@ logger = logging.getLogger("ra_mcp.datasets")
 HF_OWNER = "carpelan"
 
 # Mount point for hf-mount in Docker
-MOUNT_DIR = Path(os.getenv("RA_MCP_DATA_DIR", "/data"))
+MOUNT_DIR = settings.data_dir
 
 
 def _resolve_project_root() -> Path | None:

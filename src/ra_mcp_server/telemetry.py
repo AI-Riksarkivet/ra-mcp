@@ -15,6 +15,8 @@ Environment variables:
 import logging
 import os
 
+from ra_mcp_common.settings import settings
+
 
 _initialized = False
 _providers: list = []
@@ -23,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def _is_enabled() -> bool:
-    return os.getenv("RA_MCP_OTEL_ENABLED", "false").lower() in ("true", "1", "yes")
+    return settings.otel_enabled
 
 
 def init_telemetry() -> None:

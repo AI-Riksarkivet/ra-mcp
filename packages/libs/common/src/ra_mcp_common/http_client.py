@@ -12,12 +12,12 @@ import asyncio
 import contextlib
 import json
 import logging
-import os
 import time
 
 import httpx
 from opentelemetry.trace import SpanKind, StatusCode
 
+from ra_mcp_common.settings import settings
 from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 
 
@@ -133,8 +133,9 @@ class HTTPClient:
             httpx.ConnectError: On network connection error
             json.JSONDecodeError: On invalid JSON response
         """
-        # Allow timeout override from environment (useful for Hugging Face)
-        timeout = int(os.getenv("RA_MCP_TIMEOUT", timeout))
+        # Global timeout override (RA_MCP_TIMEOUT), useful for Hugging Face
+        if settings.timeout is not None:
+            timeout = settings.timeout
 
         # Log request details
         logger.info("GET JSON: %s", url)

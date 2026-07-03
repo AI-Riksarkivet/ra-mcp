@@ -2341,6 +2341,7 @@ source = { editable = "packages/libs/common" }
 dependencies = [
     { name = "httpx" },
     { name = "opentelemetry-api" },
+    { name = "pydantic-settings" },
 ]
 
 [package.optional-dependencies]
@@ -2353,6 +2354,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "httpx", extras = ["http2"], marker = "extra == 'http2'", specifier = ">=0.28.0" },
     { name = "opentelemetry-api", specifier = ">=1.28.0" },
+    { name = "pydantic-settings", specifier = ">=2.10" },
 ]
 provides-extras = ["http2"]
 
