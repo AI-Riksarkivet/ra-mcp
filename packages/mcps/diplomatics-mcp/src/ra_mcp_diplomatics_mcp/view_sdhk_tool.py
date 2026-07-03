@@ -54,7 +54,7 @@ def register_view_sdhk_tool(mcp) -> None:
             "with the charter images and a metadata panel showing author, date, summary, "
             "edition text, and seal descriptions. Only works for digitized charters."
         ),
-        app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
+        app=AppConfig(resource_uri=RESOURCE_URI),  # AppConfig: pydantic populate_by_name
     )
     async def view_sdhk(
         sdhk_id: Annotated[int, Field(description="SDHK charter ID (e.g. 85, 28672).")],

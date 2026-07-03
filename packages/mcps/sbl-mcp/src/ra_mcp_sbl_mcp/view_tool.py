@@ -56,7 +56,7 @@ def register_view_tool(mcp) -> None:
         uri=RESOURCE_URI,
         app=AppConfig(
             csp=ResourceCSP(
-                resource_domains=["https://sok.riksarkivet.se"],  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
+                resource_domains=["https://sok.riksarkivet.se"],  # AppConfig: pydantic populate_by_name
             ),
         ),
     )
@@ -71,7 +71,7 @@ def register_view_tool(mcp) -> None:
         name="view_sbl_article",
         tags={"sbl", "biography", "viewer"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        app=AppConfig(resource_uri=RESOURCE_URI),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
+        app=AppConfig(resource_uri=RESOURCE_URI),  # AppConfig: pydantic populate_by_name
         description=(
             "Display an SBL biographical article in a rich viewer. "
             "Takes an article_id from search_sbl results and shows the full article with portrait, "
@@ -113,7 +113,7 @@ def register_view_tool(mcp) -> None:
         name="load_sbl_article",
         tags={"sbl", "biography", "viewer"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
+        app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # AppConfig: pydantic populate_by_name
         description="Load an SBL article into the viewer (app-only, for cross-reference navigation).",
     )
     async def load_sbl_article(
@@ -156,7 +156,7 @@ def register_view_tool(mcp) -> None:
         name="get_sbl_state",
         tags={"sbl", "biography", "viewer"},
         annotations={"readOnlyHint": True, "openWorldHint": True},
-        app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # ty: ignore[unknown-argument]  # AppConfig: pydantic populate_by_name
+        app=AppConfig(resource_uri=RESOURCE_URI, visibility=["app"]),  # AppConfig: pydantic populate_by_name
         description="Get the current SBL article state for a specific view (app-only, for polling).",
     )
     async def get_sbl_state(
