@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from lancedb.index import FTS
+from ra_mcp_dataset_lib import build_fts_index
 
 from .config import FALTJAGARE_TABLE
 from .models import FaltjagareRecord
@@ -53,5 +53,5 @@ def ingest_faltjagare(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb
     logger.info("Parsed %d Fältjägare records", len(records))
 
     table = db.create_table(FALTJAGARE_TABLE, data=records, mode="overwrite")
-    table.create_index("searchable_text", config=FTS(), replace=True)
+    build_fts_index(db, FALTJAGARE_TABLE)
     return table

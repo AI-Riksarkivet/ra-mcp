@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from ra_mcp_dataset_lib import SearchResult, combine, lancedb_fts_search, text_contains
 
 from .config import FALTJAGARE_TABLE
 
@@ -13,14 +13,7 @@ if TYPE_CHECKING:
     import lancedb
 
 
-class SearchResult(BaseModel):
-    """Result from a Fältjägare search query."""
-
-    records: list[dict[str, Any]]
-    total_hits: int
-    keyword: str
-    offset: int
-    limit: int
+__all__ = ["FaltjagareSearch", "SearchResult"]
 
 
 class FaltjagareSearch:
@@ -55,33 +48,9 @@ class FaltjagareSearch:
         Raises:
             ValueError: If keyword is empty or whitespace.
         """
-        if not keyword or not keyword.strip():
-            raise ValueError("keyword must be non-empty")
-
-        has_filters = any([kompani, region, befattning])
-        fetch_limit = (limit + offset) * 10 if has_filters else limit + offset
-
-        table = self._db.open_table(FALTJAGARE_TABLE)
-        rows = table.search(keyword, query_type="fts").limit(fetch_limit).to_list()
-
-        # Apply post-filters
-        if kompani:
-            kompani_lower = kompani.lower()
-            rows = [r for r in rows if kompani_lower in r.get("kompani", "").lower()]
-        if region:
-            region_lower = region.lower()
-            rows = [r for r in rows if region_lower in r.get("region", "").lower()]
-        if befattning:
-            befattning_lower = befattning.lower()
-            rows = [r for r in rows if befattning_lower in r.get("befattning", "").lower()]
-
-        total_hits = len(rows)
-        page = rows[offset : offset + limit]
-
-        return SearchResult(
-            records=page,
-            total_hits=total_hits,
-            keyword=keyword,
-            offset=offset,
-            limit=limit,
+        where = combine(
+            text_contains("kompani", kompani) if kompani else None,
+            text_contains("region", region) if region else None,
+            text_contains("befattning", befattning) if befattning else None,
         )
+        return lancedb_fts_search(self._db, FALTJAGARE_TABLE, keyword, limit=limit, offset=offset, where=where)
