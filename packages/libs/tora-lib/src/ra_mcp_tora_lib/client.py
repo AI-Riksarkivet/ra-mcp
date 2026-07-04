@@ -7,6 +7,7 @@ import logging
 from urllib.parse import urlparse
 
 import httpx
+from opentelemetry import trace
 from opentelemetry.trace import SpanKind, StatusCode
 
 from ra_mcp_common.telemetry import get_tracer
@@ -139,6 +140,15 @@ class ToraClient:
         county: str | None = None,
     ) -> list[ToraPlace]:
         """Search for settlements by name, optionally filtered by parish/county."""
+        # What place people geocode, and with which filters — behavioural intent on
+        # the active span, so "what are people looking up?" is answerable per query.
+        span = trace.get_current_span()
+        span.set_attribute("geocode.place", name)
+        if parish:
+            span.set_attribute("geocode.parish", parish)
+        if county:
+            span.set_attribute("geocode.county", county)
+
         query = _build_search_query(name, parish, county)
 
         try:

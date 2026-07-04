@@ -11,6 +11,7 @@ from fastmcp import Context
 from fastmcp.apps import UI_EXTENSION_ID, AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
+from opentelemetry import trace
 from pydantic import Field
 
 from ra_mcp_pdf_mcp import pdf_mcp as mcp
@@ -66,6 +67,9 @@ async def display_pdf(
     """Display an interactive PDF viewer."""
     if not url:
         return _error_result("No URL provided.")
+
+    # Which PDF the user opened — behavioural intent on the tool-call span.
+    trace.get_current_span().set_attribute("pdf.url", url)
 
     display_title = title or _extract_title(url)
     view_id = str(uuid4())

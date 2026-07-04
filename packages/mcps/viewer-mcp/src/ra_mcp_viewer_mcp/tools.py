@@ -8,6 +8,7 @@ from fastmcp import Context
 from fastmcp.apps import UI_EXTENSION_ID, AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
+from opentelemetry import trace
 from pydantic import Field
 
 from ra_mcp_browse_lib.url_generator import iiif_resize
@@ -49,6 +50,12 @@ async def view_document(
     max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
 ) -> ToolResult:
     """View document pages with zoomable images and text layer overlays."""
+    # Annotate the FastMCP tool-call span (no new span — see CLAUDE.md) with the
+    # behavioural intent: which document + pages the user chose to open. Lets an
+    # analyst answer "what do people actually view?" from traces.
+    span = trace.get_current_span()
+    span.set_attribute("view.reference_code", reference_code)
+    span.set_attribute("view.pages", pages)
     try:
         resolved = await browse_resolve_document(
             reference_code,
@@ -345,6 +352,8 @@ async def viewer_navigate(
     max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
 ) -> ToolResult:
     """Navigate the existing viewer to new pages."""
+    trace.get_current_span().set_attribute("view.reference_code", reference_code)
+    trace.get_current_span().set_attribute("view.pages", pages)
     try:
         state = await get_active_state()
     except LookupError as e:
