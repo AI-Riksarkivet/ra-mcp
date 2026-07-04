@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Annotated
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_specialsok_lib import SpecialsokSearch
 from ra_mcp_specialsok_lib.config import LANCEDB_URI
 
@@ -65,6 +66,7 @@ def register_press_tool(mcp) -> None:
     ) -> str:
         """Search Swedish government press conference records."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'EU'."
 
         if research_context:
@@ -78,4 +80,5 @@ def register_press_tool(mcp) -> None:
             return format_press_results(result)
         except Exception as exc:
             logger.error("search_press failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Press search failed: {exc!s}")
             return f"Error: Press search failed \u2014 {exc!s}"

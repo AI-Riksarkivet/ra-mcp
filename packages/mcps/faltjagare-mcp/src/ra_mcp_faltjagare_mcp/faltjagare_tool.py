@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_faltjagare_lib import FaltjagareSearch
 from ra_mcp_faltjagare_lib.config import LANCEDB_URI
 
@@ -79,6 +80,7 @@ def register_faltjagare_tool(mcp) -> None:
     ) -> str:
         """Search Jämtland field regiment soldier records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
 
         if research_context:
@@ -100,4 +102,5 @@ def register_faltjagare_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_faltjagare failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Fältjägare search failed \u2014 {exc!s}")
             return f"Error: Fältjägare search failed \u2014 {exc!s}"

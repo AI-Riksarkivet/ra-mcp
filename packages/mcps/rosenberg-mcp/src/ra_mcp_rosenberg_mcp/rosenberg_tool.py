@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_rosenberg_lib import RosenbergSearch
 from ra_mcp_rosenberg_lib.config import LANCEDB_URI
 
@@ -75,6 +76,7 @@ def register_rosenberg_tool(mcp) -> None:
     ) -> str:
         """Search Rosenberg's geographical lexicon using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Stockholm'."
 
         if research_context:
@@ -95,4 +97,5 @@ def register_rosenberg_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_rosenberg failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Rosenberg search failed: {exc!s}")
             return f"Error: Rosenberg search failed \u2014 {exc!s}"

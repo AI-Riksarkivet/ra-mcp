@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_sbl_lib import SBLSearch
 from ra_mcp_sbl_lib.config import LANCEDB_URI
 
@@ -105,6 +106,7 @@ def register_sbl_tool(mcp) -> None:
     ) -> str:
         """Search SBL biographical articles using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Linné'."
 
         if research_context:
@@ -131,4 +133,5 @@ def register_sbl_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_sbl failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"SBL search failed: {exc!s}")
             return f"Error: SBL search failed \u2014 {exc!s}"

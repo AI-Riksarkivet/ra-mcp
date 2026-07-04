@@ -12,6 +12,7 @@ from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_diplomatics_lib import DiplomaticsSearch
 from ra_mcp_diplomatics_lib.config import LANCEDB_URI
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result
@@ -69,21 +70,26 @@ def register_view_sdhk_tool(mcp) -> None:
             row = searcher.get_sdhk_by_id(sdhk_id)
         except Exception as exc:
             logger.error("view_sdhk: DB lookup failed: %s", exc, exc_info=True)
+            mark_span_error(f"Error looking up SDHK {sdhk_id}: {exc}")
             return error_result(f"Error looking up SDHK {sdhk_id}: {exc}")
 
         if row is None:
+            mark_span_error(f"SDHK {sdhk_id} not found", error_type="validation")
             return error_result(f"SDHK {sdhk_id} not found.")
 
         manifest_url = row.get("manifest_url", "")
         if not manifest_url:
+            mark_span_error(f"SDHK {sdhk_id} is not digitized — no images available")
             return error_result(f"SDHK {sdhk_id} is not digitized — no images available. The record metadata is:\n\n{format_sdhk_info(row)}")
 
         try:
             resolved = await manifest_resolve_document(manifest_url, max_pages)
         except (ValueError, LookupError) as exc:
+            mark_span_error(str(exc))
             return error_result(str(exc))
         except Exception as exc:
             logger.error("view_sdhk: manifest resolution failed: %s", exc, exc_info=True)
+            mark_span_error(f"Error resolving manifest: {exc}")
             return error_result(f"Error resolving manifest: {exc}")
 
         document_info = format_sdhk_info(row)

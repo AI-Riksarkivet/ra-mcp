@@ -13,6 +13,7 @@ from pydantic import Field
 
 from ra_mcp_aktiebolag_lib import AktiebolagSearch
 from ra_mcp_aktiebolag_lib.config import LANCEDB_URI
+from ra_mcp_common.telemetry import mark_span_error
 
 from .formatter import format_bolag_results
 
@@ -71,6 +72,7 @@ def register_bolag_tool(mcp) -> None:
     ) -> str:
         """Search Swedish joint-stock company records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Separator'."
 
         if research_context:
@@ -90,4 +92,5 @@ def register_bolag_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_bolag failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Bolag search failed \u2014 {exc!s}")
             return f"Error: Bolag search failed \u2014 {exc!s}"

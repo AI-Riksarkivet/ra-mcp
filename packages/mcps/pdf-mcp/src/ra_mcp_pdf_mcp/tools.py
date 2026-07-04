@@ -14,6 +14,7 @@ from mcp import types
 from opentelemetry import trace
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_pdf_mcp import pdf_mcp as mcp
 from ra_mcp_pdf_mcp.cache import (
     CHUNK_SIZE,
@@ -42,6 +43,10 @@ def _text_result(text: str) -> ToolResult:
 
 
 def _error_result(text: str) -> ToolResult:
+    # Every _error_result call site is a genuine failure (bad/empty input,
+    # PDF-not-loaded precondition, or a caught fetch error), so mark the active
+    # tool-call span ERROR here once instead of at each call site.
+    mark_span_error(text)
     return ToolResult(content=[types.TextContent(type="text", text=f"Error: {text}")])
 
 
@@ -319,6 +324,7 @@ async def search_guides(
     from ra_mcp_pdf_mcp.gallery import GALLERY_ITEMS
 
     if not term or not term.strip():
+        mark_span_error("No search term provided.", error_type="validation")
         return _text_result("No search term provided.")
 
     # Ensure guides are loaded
@@ -329,6 +335,7 @@ async def search_guides(
 
     search_term = term.strip()
     if not ensure_guide_index(blocks_cache):
+        mark_span_error("No guides are loaded yet.")
         return _text_result("No guides are loaded yet.")
 
     all_results: list[str] = []
@@ -395,6 +402,7 @@ async def search_pdf(
 ) -> ToolResult:
     """Search PDF pages using DataLab blocks (exact bbox, structured text)."""
     if not term or not term.strip():
+        mark_span_error("No search term provided.", error_type="validation")
         return ToolResult(
             content=[types.TextContent(type="text", text="No search term provided.")],
             structured_content={"pageMatches": [], "totalMatches": 0},

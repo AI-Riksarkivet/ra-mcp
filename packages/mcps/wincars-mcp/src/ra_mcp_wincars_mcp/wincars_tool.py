@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_wincars_lib import WincarsSearch
 from ra_mcp_wincars_lib.config import LANCEDB_URI
 
@@ -81,6 +82,7 @@ def register_wincars_tool(mcp) -> None:
     ) -> str:
         """Search Norrland vehicle registration records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Volvo'."
 
         if research_context:
@@ -102,4 +104,5 @@ def register_wincars_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_wincars failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Wincars search failed \u2014 {exc!s}")
             return f"Error: Wincars search failed \u2014 {exc!s}"

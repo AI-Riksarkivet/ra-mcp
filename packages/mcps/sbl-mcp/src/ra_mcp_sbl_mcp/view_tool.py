@@ -17,6 +17,7 @@ from fastmcp.tools import ToolResult
 from mcp import types
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_sbl_lib.config import SBL_TABLE
 
 from . import state
@@ -91,6 +92,7 @@ def register_view_tool(mcp) -> None:
         try:
             rec = _fetch_article(article_id)
             if not rec:
+                mark_span_error(f"No SBL article found with id {article_id}", error_type="validation")
                 return ToolResult(
                     content=[types.TextContent(type="text", text=f"No SBL article found with id {article_id}.")],
                 )
@@ -105,6 +107,7 @@ def register_view_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("view_sbl_article failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Failed to load SBL article: {exc!s}")
             return ToolResult(
                 content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article -- {exc!s}")],
             )
@@ -132,6 +135,7 @@ def register_view_tool(mcp) -> None:
         try:
             rec = _fetch_article(article_id)
             if not rec:
+                mark_span_error(f"No SBL article found with id {article_id}", error_type="validation")
                 return ToolResult(
                     content=[types.TextContent(type="text", text=f"No SBL article found with id {article_id}.")],
                 )
@@ -148,6 +152,7 @@ def register_view_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("load_sbl_article failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Failed to load SBL article: {exc!s}")
             return ToolResult(
                 content=[types.TextContent(type="text", text=f"Error: Failed to load SBL article -- {exc!s}")],
             )

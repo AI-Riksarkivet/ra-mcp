@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Annotated
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_specialsok_lib import SpecialsokSearch
 from ra_mcp_specialsok_lib.config import LANCEDB_URI
 
@@ -69,6 +70,7 @@ def register_video_tool(mcp) -> None:
     ) -> str:
         """Search Swedish video rental store records."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Stockholm'."
 
         if research_context:
@@ -82,4 +84,5 @@ def register_video_tool(mcp) -> None:
             return format_video_results(result)
         except Exception as exc:
             logger.error("search_video failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Video search failed: {exc!s}")
             return f"Error: Video search failed \u2014 {exc!s}"

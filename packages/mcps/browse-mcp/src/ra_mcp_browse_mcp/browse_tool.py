@@ -14,6 +14,7 @@ from ra_mcp_browse_lib.browse_operations import BrowseOperations
 from ra_mcp_browse_lib.models import BrowseResult
 from ra_mcp_common.formatting import format_error_message
 from ra_mcp_common.http_client import default_http_client
+from ra_mcp_common.telemetry import mark_span_error
 
 from .formatter import PlainTextFormatter
 
@@ -64,8 +65,10 @@ def register_browse_tool(mcp) -> None:
         """
         # Input validation
         if not reference_code or not reference_code.strip():
+            mark_span_error("reference_code must not be empty", error_type="validation")
             return format_error_message("reference_code must not be empty", error_suggestions=["Provide a document reference code, e.g. 'SE/RA/420422/01'"])
         if not pages or not pages.strip():
+            mark_span_error("pages must not be empty", error_type="validation")
             return format_error_message("pages must not be empty", error_suggestions=["Specify pages like '1-5', '1,3,5', or '7'"])
 
         if research_context:
@@ -119,6 +122,7 @@ def register_browse_tool(mcp) -> None:
 
         except Exception as e:
             logger.error("MCP browse_document failed: %s: %s", type(e).__name__, e, exc_info=True)
+            mark_span_error(f"Browse failed: {e!s}")
             return format_error_message(
                 f"Browse failed: {e!s}",
                 error_suggestions=[

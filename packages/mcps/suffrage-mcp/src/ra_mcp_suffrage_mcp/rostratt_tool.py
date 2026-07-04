@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_suffrage_lib import SuffrageSearch
 from ra_mcp_suffrage_lib.config import LANCEDB_URI
 
@@ -74,6 +75,7 @@ def register_rostratt_tool(mcp) -> None:
     ) -> str:
         """Search Rösträtt women's suffrage petition records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
 
         if research_context:
@@ -94,4 +96,5 @@ def register_rostratt_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_rostratt failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Rösträtt search failed \u2014 {exc!s}")
             return f"Error: Rösträtt search failed \u2014 {exc!s}"

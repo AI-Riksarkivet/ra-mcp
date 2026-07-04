@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_dds_lib import DDSSearch
 from ra_mcp_dds_lib.config import LANCEDB_URI
 
@@ -87,6 +88,7 @@ def register_doda_tool(mcp) -> None:
     ) -> str:
         """Search Swedish death records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
 
         if research_context:
@@ -110,4 +112,5 @@ def register_doda_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_doda failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"D\u00f6da search failed \u2014 {exc!s}")
             return f"Error: D\u00f6da search failed \u2014 {exc!s}"

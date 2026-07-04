@@ -7,6 +7,7 @@ from typing import Annotated
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_tora_lib.client import ToraClient
 
 from .formatter import format_tora_results
@@ -49,6 +50,7 @@ def register_tora_tool(mcp) -> None:
     ) -> str:
         """Search for a historical Swedish place and get its coordinates."""
         if not name or not name.strip():
+            mark_span_error("name must not be empty.", error_type="validation")
             return "Error: name must not be empty."
 
         logger.info("search_tora called with name='%s', parish=%s, county=%s", name, parish, county)
@@ -60,4 +62,5 @@ def register_tora_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_tora failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"TORA search failed — {exc!s}")
             return f"Error: TORA search failed — {exc!s}"

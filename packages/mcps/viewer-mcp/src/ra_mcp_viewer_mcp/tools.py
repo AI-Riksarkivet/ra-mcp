@@ -12,6 +12,7 @@ from opentelemetry import trace
 from pydantic import Field
 
 from ra_mcp_browse_lib.url_generator import iiif_resize
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_viewer_mcp import viewer_mcp as mcp
 from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_layer
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
@@ -68,9 +69,11 @@ async def view_document(
             max_pages,
         )
     except (ValueError, LookupError) as e:
+        mark_span_error(str(e))
         return error_result(str(e))
     except Exception as e:
         logger.error("view_document: failed to resolve document: %s", e)
+        mark_span_error(f"Error resolving document: {e}")
         return error_result(f"Error resolving document: {e}")
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
@@ -124,6 +127,7 @@ async def view_document_urls(
 ) -> ToolResult:
     """View document pages from raw image and text layer URLs."""
     if err := validate_url_pairs(image_urls, text_layer_urls):
+        mark_span_error(err, error_type="validation")
         return error_result(err)
 
     page_numbers = list(range(1, len(image_urls) + 1))
@@ -173,9 +177,11 @@ async def view_manifest(
     try:
         resolved = await manifest_resolve_document(manifest_url, max_pages)
     except (ValueError, LookupError) as e:
+        mark_span_error(str(e))
         return error_result(str(e))
     except Exception as e:
         logger.error("view_manifest: failed to resolve manifest: %s", e)
+        mark_span_error(f"Error resolving manifest: {e}")
         return error_result(f"Error resolving manifest: {e}")
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
@@ -224,6 +230,7 @@ async def view_bild(
     try:
         resolved = bild_resolve_document(bild_ids, highlight_term)
     except ValueError as e:
+        mark_span_error(str(e))
         return error_result(str(e))
 
     has_ui = ctx.client_supports_extension(UI_EXTENSION_ID)
@@ -283,10 +290,12 @@ async def viewer_go_to_page(
     try:
         state = await get_active_state()
     except LookupError as e:
+        mark_span_error(str(e))
         return error_result(str(e))
 
     total = len(state.image_urls)
     if page < 1 or page > total:
+        mark_span_error(f"Page {page} out of range (1-{total}).", error_type="validation")
         return error_result(f"Page {page} out of range (1-{total}).")
 
     state.go_to_page = page - 1  # convert to 0-based index
@@ -308,6 +317,7 @@ async def viewer_reopen() -> ToolResult:
     try:
         state = await get_active_state()
     except LookupError:
+        mark_span_error("No viewer is open. Use view_document or view_document_urls first.")
         return error_result("No viewer is open. Use view_document or view_document_urls first.")
 
     state.request_fullscreen = True
@@ -331,6 +341,7 @@ async def viewer_set_highlight(
     try:
         state = await get_active_state()
     except LookupError:
+        mark_span_error("No document is currently displayed. Use view_document or view_document_urls first.")
         return error_result("No document is currently displayed. Use view_document or view_document_urls first.")
 
     state.highlight_term = highlight_term
@@ -361,6 +372,7 @@ async def viewer_navigate(
     try:
         state = await get_active_state()
     except LookupError as e:
+        mark_span_error(str(e))
         return error_result(str(e))
 
     try:
@@ -371,9 +383,11 @@ async def viewer_navigate(
             max_pages,
         )
     except (ValueError, LookupError) as e:
+        mark_span_error(str(e))
         return error_result(str(e))
     except Exception as e:
         logger.error("viewer_navigate: failed to resolve document: %s", e)
+        mark_span_error(f"Error resolving document: {e}")
         return error_result(f"Error resolving document: {e}")
 
     state.image_urls = resolved.image_urls
@@ -405,11 +419,13 @@ async def viewer_navigate_urls(
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
 ) -> ToolResult:
     if err := validate_url_pairs(image_urls, text_layer_urls):
+        mark_span_error(err, error_type="validation")
         return error_result(err)
 
     try:
         state = await get_active_state()
     except LookupError as e:
+        mark_span_error(str(e))
         return error_result(str(e))
 
     state.image_urls = image_urls
@@ -484,6 +500,7 @@ async def search_all_pages(
 ) -> ToolResult:
     """Search all pages concurrently and return per-page match counts."""
     if not term or not term.strip():
+        mark_span_error("No search term provided.", error_type="validation")
         return ToolResult(
             content=[types.TextContent(type="text", text="No search term provided.")],
             structured_content={"pageMatches": [], "totalMatches": 0},

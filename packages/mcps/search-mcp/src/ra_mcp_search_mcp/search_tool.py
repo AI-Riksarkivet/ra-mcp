@@ -12,6 +12,7 @@ from pydantic import Field
 
 from ra_mcp_common.formatting import page_id_to_number
 from ra_mcp_common.http_client import default_http_client
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_search_lib.search_operations import SearchOperations
 
 from .formatter import PlainTextFormatter
@@ -26,14 +27,19 @@ _VALID_SORT_VALUES = {"relevance", "timeAsc", "timeDesc", "alphaAsc", "alphaDesc
 def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25) -> str | None:
     """Validate common search inputs. Returns an error string or None if valid."""
     if not keyword or not keyword.strip():
+        mark_span_error("keyword must not be empty", error_type="validation")
         return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
     if offset < 0:
+        mark_span_error(f"offset must be >= 0, got {offset}", error_type="validation")
         return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
     if limit < 1:
+        mark_span_error(f"limit must be >= 1, got {limit}", error_type="validation")
         return PlainTextFormatter().format_error_message(f"limit must be >= 1, got {limit}", error_suggestions=["Use limit=25 for default page size"])
     if year_min is not None and year_max is not None and year_min > year_max:
+        mark_span_error(f"year_min ({year_min}) must be <= year_max ({year_max})", error_type="validation")
         return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
     if sort not in _VALID_SORT_VALUES:
+        mark_span_error(f"Invalid sort value '{sort}'", error_type="validation")
         return PlainTextFormatter().format_error_message(
             f"Invalid sort value '{sort}'",
             error_suggestions=[f"Valid values: {', '.join(sorted(_VALID_SORT_VALUES))}"],
@@ -135,6 +141,7 @@ def register_search_tool(mcp) -> None:
 
         except Exception as e:
             logger.error("✗ MCP search_transcribed failed: %s: %s", type(e).__name__, e, exc_info=True)
+            mark_span_error(f"Search failed: {e!s}")
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
                 f"Search failed: {e!s}",
@@ -251,6 +258,7 @@ def register_search_tool(mcp) -> None:
 
         except Exception as e:
             logger.error("✗ MCP search_metadata failed: %s: %s", type(e).__name__, e, exc_info=True)
+            mark_span_error(f"Metadata search failed: {e!s}")
             formatter = PlainTextFormatter()
             return formatter.format_error_message(
                 f"Metadata search failed: {e!s}",

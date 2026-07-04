@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 from pydantic import Field
 
+from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_sjomanshus_lib import SjomanshusSearch
 from ra_mcp_sjomanshus_lib.config import LANCEDB_URI
 
@@ -70,6 +71,7 @@ def register_matrikel_tool(mcp) -> None:
     ) -> str:
         """Search Sjömanshus Matrikel registration records using full-text search."""
         if not keyword or not keyword.strip():
+            mark_span_error("keyword must not be empty", error_type="validation")
             return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
 
         if research_context:
@@ -89,4 +91,5 @@ def register_matrikel_tool(mcp) -> None:
 
         except Exception as exc:
             logger.error("search_matrikel failed: %s: %s", type(exc).__name__, exc, exc_info=True)
+            mark_span_error(f"Matrikel search failed: {exc!s}")
             return f"Error: Matrikel search failed \u2014 {exc!s}"

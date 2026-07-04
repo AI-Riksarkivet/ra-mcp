@@ -9,6 +9,7 @@ from pathlib import Path
 from fastmcp import FastMCP
 
 from ra_mcp_common.formatting import format_error_message
+from ra_mcp_common.telemetry import mark_span_error
 
 
 guide_mcp = FastMCP(
@@ -50,6 +51,7 @@ def get_table_of_contents() -> str:
         return content
 
     except FileNotFoundError:
+        mark_span_error("Table of contents file not found")
         return format_error_message(
             "Table of contents file not found",
             error_suggestions=[
@@ -58,6 +60,7 @@ def get_table_of_contents() -> str:
             ],
         )
     except Exception as e:
+        mark_span_error(f"Failed to load table of contents: {e!s}")
         return format_error_message(
             f"Failed to load table of contents: {e!s}",
             error_suggestions=[
@@ -80,15 +83,18 @@ def get_guide_content(filename: str) -> str:
     """
     try:
         if not _validate_markdown_filename(filename):
+            mark_span_error("Invalid filename format", error_type="validation")
             return _generate_invalid_filename_message()
 
         if not _check_file_exists(filename):
+            mark_span_error(f"Guide section '{filename}' not found")
             return _generate_file_not_found_message(filename)
 
         content = _load_markdown_file(filename)
         return content
 
     except Exception as e:
+        mark_span_error(f"Failed to load guide content '{filename}': {e!s}")
         return format_error_message(
             f"Failed to load guide content '{filename}': {e!s}",
             error_suggestions=[
