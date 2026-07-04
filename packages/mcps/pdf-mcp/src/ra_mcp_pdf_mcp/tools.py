@@ -20,8 +20,8 @@ from ra_mcp_pdf_mcp.cache import (
     read_pdf_range,
     schedule_prefetch,
 )
+from ra_mcp_pdf_mcp.guide_index import ensure_guide_index, search_guide_index
 from ra_mcp_pdf_mcp.models import PdfViewerState
-from ra_mcp_pdf_mcp.search import search_pages
 from ra_mcp_pdf_mcp.state import (
     get_active_state,
     get_state,
@@ -321,6 +321,9 @@ async def search_guides(
         await preload_all_guides()
 
     search_term = term.strip()
+    if not ensure_guide_index(blocks_cache):
+        return _text_result("No guides are loaded yet.")
+
     all_results: list[str] = []
     total = 0
 
@@ -328,7 +331,7 @@ async def search_guides(
         url = item["url"]
         if url not in blocks_cache:
             continue
-        result = search_pages(blocks_cache[url], search_term)
+        result = search_guide_index(search_term, guide_url=url)
         if result.total_matches > 0:
             all_results.append(f"\n**{item['title']}** — {result.total_matches} matches on {len(result.page_matches)} pages:")
             all_results.extend(f"  p.{pm.page_num}: {block.text[:300]}" for pm in result.page_matches[:5] for block in pm.blocks[:2])
@@ -393,7 +396,8 @@ async def search_pdf(
     if url not in blocks_cache:
         return _error_result("PDF not yet loaded. Use display_pdf first.")
 
-    result = search_pages(blocks_cache[url], term.strip())
+    ensure_guide_index(blocks_cache)
+    result = search_guide_index(term.strip(), guide_url=url)
     return ToolResult(
         content=[types.TextContent(type="text", text=result.summary(term.strip()))],
         structured_content=result.to_structured(),

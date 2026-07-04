@@ -59,6 +59,14 @@ class LRUCache[V]:
     def __len__(self) -> int:
         return len(self._store)
 
+    def keys(self) -> list[str]:
+        """Snapshot of the cached keys (does not affect LRU recency)."""
+        return list(self._store)
+
+    def items(self) -> list[tuple[str, V]]:
+        """Snapshot of the cached (key, value) pairs (does not affect LRU recency)."""
+        return list(self._store.items())
+
 
 pdf_cache: LRUCache[bytes] = LRUCache(max_items=MAX_PDF_CACHE_ITEMS, max_bytes=MAX_PDF_CACHE_BYTES)
 blocks_cache: LRUCache[list] = LRUCache(max_items=MAX_BLOCKS_CACHE_ITEMS)  # url → page dicts with structured blocks

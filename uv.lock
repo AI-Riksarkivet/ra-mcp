@@ -2643,6 +2643,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "httpx", extra = ["http2"] },
     { name = "py-key-value-aio", extra = ["memory"] },
+    { name = "ra-mcp-dataset-lib" },
 ]
 
 [package.dev-dependencies]
@@ -2656,6 +2657,7 @@ requires-dist = [
     { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
+    { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
 
 [package.metadata.requires-dev]

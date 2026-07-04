@@ -7,8 +7,12 @@ dependencies = [
     "httpx[http2]>=0.28.0",
     "fastmcp==3.4.2",
     "py-key-value-aio[memory]>=0.4.4",
+    "ra-mcp-dataset-lib",
 ]
 license = "Apache-2.0"
+
+[tool.uv.sources]
+ra-mcp-dataset-lib = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -76,7 +76,10 @@ def build_fts_index(db: lancedb.DBConnection, table_name: str, column: str = "se
     *this* handle rather than its pre-index one.
     """
     table = db.open_table(table_name)
-    table.create_index(column, config=FTS(language="Swedish"), replace=True)
+    # max_token_length is raised from the lancedb default of 40: long Swedish
+    # compound words (common in historical administrative/legal text) would
+    # otherwise exceed it and be dropped entirely, becoming unsearchable.
+    table.create_index(column, config=FTS(language="Swedish", max_token_length=64), replace=True)
     return table
 
 
@@ -112,6 +115,10 @@ def lancedb_fts_search(
     query: Any = table.search(keyword, query_type="fts")
     if where:
         query = query.where(where)
+    # The tables are built once (create_table + create_index) and never appended
+    # to, so there is no unindexed data — fast_search skips the redundant flat
+    # search of unindexed rows with no loss of results.
+    query = query.fast_search()
 
     with _tracer.start_as_current_span(
         f"search {table_name}",
