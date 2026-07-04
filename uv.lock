@@ -2642,6 +2642,7 @@ source = { editable = "packages/mcps/pdf-mcp" }
 dependencies = [
     { name = "fastmcp" },
     { name = "httpx", extra = ["http2"] },
+    { name = "opentelemetry-api" },
     { name = "py-key-value-aio", extra = ["memory"] },
     { name = "ra-mcp-dataset-lib" },
 ]
@@ -2656,6 +2657,7 @@ dev = [
 requires-dist = [
     { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", extras = ["http2"], specifier = ">=0.28.0" },
+    { name = "opentelemetry-api", specifier = ">=1.28.0" },
     { name = "py-key-value-aio", extras = ["memory"], specifier = ">=0.4.4" },
     { name = "ra-mcp-dataset-lib", editable = "packages/libs/dataset-lib" },
 ]
