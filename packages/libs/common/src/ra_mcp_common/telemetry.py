@@ -28,21 +28,29 @@ def get_meter(name: str) -> metrics.Meter:
 
 
 def record_span_exception(logger: logging.Logger, exc: BaseException) -> None:
-    """Record an exception on the active span the OTel-recommended way.
+    """Record an exception on the active span and in a correlated log record.
 
-    The Span Event API (``span.record_exception``) is being deprecated, so
-    instead of attaching a span event we emit a structured log record carrying
-    the ``exception.*`` fields. Emitted inside the active span context, the
-    record automatically carries the current ``trace_id``/``span_id`` (via the
-    OTel logging bridge) so it stays correlated with the failing span.
+    The Span Event API (``span.record_exception``) is being deprecated, so instead
+    of a span event this helper:
 
-    Callers remain responsible for ``span.set_status(StatusCode.ERROR, ...)``;
-    this helper only records the exception detail.
+    1. sets the semantic-convention ``error.type`` attribute on the active span
+       (so trace stores can group/filter by error class) — callers still set
+       ``span.set_status(StatusCode.ERROR, ...)``; and
+    2. emits a structured ERROR log. The exception class + message go in the log
+       *message* (readable with the plain stdlib formatter, not only via the OTLP
+       bridge), ``exc_info`` attaches the stacktrace, and the ``exception.*``
+       extras stay for the bridge. Emitted inside the active span context, the
+       record inherits the current ``trace_id``/``span_id``.
     """
+    exc_type = type(exc).__name__
+    trace.get_current_span().set_attribute("error.type", exc_type)
     logger.error(
-        "exception",
+        "%s: %s",
+        exc_type,
+        exc,
+        exc_info=exc,
         extra={
-            "exception.type": type(exc).__name__,
+            "exception.type": exc_type,
             "exception.message": str(exc),
             "exception.stacktrace": traceback.format_exc(),
         },
