@@ -47,9 +47,13 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # Go dependencies (for Dagger)
+  # Go dependencies (for Dagger). Both .dagger modules carry the grpc critical,
+  # so monitor both — the viewer-mcp one was previously invisible to Dependabot
+  # and would silently drift back into criticals.
   - package-ecosystem: "gomod"
-    directory: "/.dagger"
+    directories:
+      - "/.dagger"
+      - "/packages/mcps/viewer-mcp/.dagger"
     schedule:
       interval: "weekly"
       day: "monday"
