@@ -14,6 +14,7 @@ Environment variables:
 
 import logging
 import os
+import uuid
 
 from ra_mcp_common.settings import settings
 
@@ -54,6 +55,12 @@ def init_telemetry() -> None:
     environment = os.getenv("ENVIRONMENT") or os.getenv("DEPLOYMENT_ENVIRONMENT")
     if environment:
         resource_attrs["deployment.environment.name"] = environment
+    # service.instance.id distinguishes replicas (the chart autoscales to several
+    # pods, which would otherwise share identical resource attributes). Default to
+    # a per-process uuid; a deployment can pin a stable id via
+    # OTEL_RESOURCE_ATTRIBUTES=service.instance.id=$(POD_NAME) (k8s downward API),
+    # which Resource.create merges on top of this default.
+    resource_attrs["service.instance.id"] = str(uuid.uuid4())
     resource = Resource.create(resource_attrs)
 
     protocol = os.getenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")

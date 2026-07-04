@@ -19,7 +19,14 @@ logger = logging.getLogger("ra_mcp.search_operations")
 _tracer = get_tracer("ra_mcp.search_operations")
 _meter = get_meter("ra_mcp.search_operations")
 _search_counter = _meter.create_counter("ra_mcp.search.requests", unit="{request}", description="Search operations executed")
-_results_histogram = _meter.create_histogram("ra_mcp.search.results", unit="{hit}", description="Number of results returned per search")
+_results_histogram = _meter.create_histogram(
+    "ra_mcp.search.results",
+    unit="{hit}",
+    # Records total_hits (whole-corpus matches), not the page length — the more
+    # useful behavioural signal (query breadth / unmet demand when 0). Named
+    # "results" to match ra_mcp.lancedb.results, which also records the total.
+    description="Total matches per search (whole result set, not the returned page)",
+)
 
 
 class SearchOperations:
