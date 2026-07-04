@@ -9,22 +9,29 @@ capped at ``limit + offset``, and window-and-slice pagination that drops rows).
 
 from __future__ import annotations
 
+import logging
 import threading
+import time
 from typing import TYPE_CHECKING, Any
 
 from lancedb.index import FTS
-from opentelemetry.trace import SpanKind
+from opentelemetry.trace import SpanKind, StatusCode
 from pydantic import BaseModel
 
-from ra_mcp_common.telemetry import get_meter, get_tracer
+from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
 
 
 if TYPE_CHECKING:
     import lancedb
 
 
+logger = logging.getLogger("ra_mcp.lancedb")
 _tracer = get_tracer("ra_mcp.lancedb")
-_query_counter = get_meter("ra_mcp.lancedb").create_counter("ra_mcp.lancedb.queries", unit="{query}", description="LanceDB full-text search queries")
+_meter = get_meter("ra_mcp.lancedb")
+# RED metrics for the busiest tool surface (13 datasets + the pdf guide search).
+_query_counter = _meter.create_counter("ra_mcp.lancedb.queries", unit="{query}", description="LanceDB full-text search queries (attempted)")
+_error_counter = _meter.create_counter("ra_mcp.lancedb.errors", unit="{error}", description="LanceDB full-text search failures")
+_query_duration = _meter.create_histogram("ra_mcp.lancedb.query.duration", unit="s", description="LanceDB full-text search duration")
 
 # lancedb 0.34 exposes no count API on an FTS query, so total_hits is a true match
 # count up to this bound — far above any realistic UI page, and vastly better than
@@ -120,16 +127,28 @@ def lancedb_fts_search(
     # search of unindexed rows with no loss of results.
     query = query.fast_search()
 
+    attrs = {"db.collection.name": table_name}
     with _tracer.start_as_current_span(
         f"search {table_name}",
         kind=SpanKind.CLIENT,
         attributes={"db.system.name": "lancedb", "db.collection.name": table_name},
     ) as span:
-        matches = query.limit(MAX_TOTAL_COUNT).to_list()
+        start = time.perf_counter()
+        try:
+            matches = query.limit(MAX_TOTAL_COUNT).to_list()
+        except Exception as e:
+            span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
+            span.set_attribute("error.type", type(e).__name__)
+            record_span_exception(logger, e)
+            _error_counter.add(1, {**attrs, "error.type": type(e).__name__})
+            raise
+        finally:
+            # Count attempts (success + failure) and record latency — so error-rate
+            # and p95/p99 dashboards work, not just a success-only counter.
+            _query_duration.record(time.perf_counter() - start, attrs)
+            _query_counter.add(1, attrs)
         page = matches[offset : offset + limit]
         span.set_attribute("db.response.returned_rows", len(page))
-
-    _query_counter.add(1, {"db.collection.name": table_name})
 
     return SearchResult(records=page, total_hits=len(matches), keyword=keyword, offset=offset, limit=limit)
 
