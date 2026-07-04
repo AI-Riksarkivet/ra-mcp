@@ -18,7 +18,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from opentelemetry.trace import SpanKind, StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_tracer, record_span_exception
+from ra_mcp_common.telemetry import get_tracer, mark_span_error, record_span_exception
 
 
 logger = logging.getLogger("ra_mcp.test.telemetry")
@@ -87,6 +87,39 @@ def test_record_span_exception_emits_structured_exception_log(caplog):
     assert record.__dict__["exception.type"] == "RuntimeError"
     assert record.__dict__["exception.message"] == "kaboom"
     assert "RuntimeError: kaboom" in record.__dict__["exception.stacktrace"]
+
+
+def test_record_span_exception_logs_once_per_exception(spans, caplog):
+    # The same exception unwinding through several layers must log its stacktrace
+    # ONCE (not once per layer), while still marking error.type on each span.
+    tracer = get_tracer("ra_mcp.test")
+    with caplog.at_level(logging.ERROR, logger="ra_mcp.test.telemetry"):
+        try:
+            raise RuntimeError("kaboom")
+        except RuntimeError as exc:
+            with tracer.start_as_current_span("inner"):
+                record_span_exception(logger, exc)  # origin — logs
+            with tracer.start_as_current_span("outer"):
+                record_span_exception(logger, exc)  # pass-through — marks only
+
+    assert sum(1 for r in caplog.records if r.name == "ra_mcp.test.telemetry") == 1
+    finished = {s.name: s for s in spans.get_finished_spans()}
+    assert finished["inner"].attributes["error.type"] == "RuntimeError"
+    assert finished["outer"].attributes["error.type"] == "RuntimeError"
+
+
+def test_mark_span_error_sets_status_and_type_without_logging(spans, caplog):
+    # A handler that returns an error string (never raises) must still turn the
+    # active span red — otherwise the tools/call failure rate reads zero.
+    tracer = get_tracer("ra_mcp.test")
+    with caplog.at_level(logging.ERROR, logger="ra_mcp.test.telemetry"), tracer.start_as_current_span("tool"):
+        mark_span_error("keyword must not be empty", error_type="validation")
+
+    span = spans.get_finished_spans()[0]
+    assert span.status.status_code == StatusCode.ERROR
+    assert span.status.description == "keyword must not be empty"
+    assert span.attributes["error.type"] == "validation"
+    assert not [r for r in caplog.records if r.name == "ra_mcp.test.telemetry"]
 
 
 @pytest.mark.respx(base_url="https://data.example.se")
