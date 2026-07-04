@@ -1,6 +1,31 @@
 # Skills
 
-Skills are loaded from the [ra-mcp-tools plugin](https://github.com/AI-Riksarkivet/ra-mcp/tree/main/plugins/ra-mcp-tools) and provide research methodology guidance. They are auto-discovered from `plugins/*/skills/` directories. There are eight skills.
+Skills are short guides that teach the AI assistant *how* to use the ra-mcp tools well — search strategy, citation rules, the transcription workflow, and so on. They ship as a Claude Code **plugin** called `ra-mcp-tools`, and once installed the assistant uses them automatically whenever they're relevant.
+
+> Skills are **guidance only** — they don't add tools. The tools themselves come from the ra-mcp MCP server (see [Getting Started](../getting-started/index.md)). Skills just make the assistant use those tools well.
+
+## Install the skills (Claude Code)
+
+You need **Claude Code v2.1.143 or newer** — check with `claude --version`, and update with `npm install -g @anthropic-ai/claude-code@latest` if needed. Then paste these three commands, one at a time:
+
+```
+/plugin marketplace add AI-Riksarkivet/ra-mcp
+/plugin install ra-mcp-tools@ra-mcp-plugins
+/reload-plugins
+```
+
+1. **`/plugin marketplace add …`** registers this repository as a plugin source (it reads `.claude-plugin/marketplace.json` automatically). Nothing is installed yet — this just adds the catalogue.
+2. **`/plugin install ra-mcp-tools@ra-mcp-plugins`** installs the skills. When prompted for a scope, choose **User** to have them in every project.
+3. **`/reload-plugins`** activates them without restarting Claude Code.
+
+To confirm, run `/help` and look under **Custom Agents and Skills** — the eight `ra-mcp-tools` skills should be listed.
+
+## How the skills are used
+
+- **Automatically (the normal way):** the assistant loads the right skill on its own based on what you ask — e.g. asking it to search the archives triggers `/archive-search`. You don't have to type anything.
+- **Manually:** you can force a specific one by typing its name, e.g. `/ra-mcp-tools:archive-search`.
+
+## The eight skills
 
 ---
 
