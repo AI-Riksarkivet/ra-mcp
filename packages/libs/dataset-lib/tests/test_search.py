@@ -105,6 +105,17 @@ def test_emits_lancedb_client_span(db, spans):
     assert matched[0].attributes["db.system.name"] == "lancedb"
 
 
+def test_span_captures_behavioural_signals(db, spans):
+    # The span carries what an analyst needs: the search TERM (intent), the FILTER,
+    # and the total hit count (engagement / unmet demand).
+    lancedb_fts_search(db, "t", "häst", limit=5, where="gender = 'm'")
+    span = next(s for s in spans.get_finished_spans() if s.name == "t search" or s.name == "search t")
+    a = span.attributes
+    assert a["db.query.text"] == "häst"
+    assert a["db.query.filter"] == "gender = 'm'"
+    assert a["db.response.total_hits"] == 20  # gender='m' half of the 40 häst rows
+
+
 # --- predicate builders: proven end-to-end against a real table ---------------
 
 

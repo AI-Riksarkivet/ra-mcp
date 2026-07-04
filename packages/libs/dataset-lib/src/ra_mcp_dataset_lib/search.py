@@ -32,6 +32,10 @@ _meter = get_meter("ra_mcp.lancedb")
 _query_counter = _meter.create_counter("ra_mcp.lancedb.queries", unit="{query}", description="LanceDB full-text search queries (attempted)")
 _error_counter = _meter.create_counter("ra_mcp.lancedb.errors", unit="{error}", description="LanceDB full-text search failures")
 _query_duration = _meter.create_histogram("ra_mcp.lancedb.query.duration", unit="s", description="LanceDB full-text search duration")
+# Behavioural signal: total matches per search, by dataset. Its zero bucket is
+# "searches that returned nothing" — what users looked for but the data can't
+# answer (unmet demand). The actual terms live on the span (db.query.text).
+_results_histogram = _meter.create_histogram("ra_mcp.lancedb.results", unit="{hit}", description="Total matches per LanceDB search")
 
 # lancedb 0.34 exposes no count API on an FTS query, so total_hits is a true match
 # count up to this bound — far above any realistic UI page, and vastly better than
@@ -128,18 +132,19 @@ def lancedb_fts_search(
     query = query.fast_search()
 
     attrs = {"db.collection.name": table_name}
-    with _tracer.start_as_current_span(
-        f"search {table_name}",
-        kind=SpanKind.CLIENT,
-        attributes={"db.system.name": "lancedb", "db.collection.name": table_name},
-    ) as span:
+    # The search term + filter go on the span (high-cardinality → span-only), so an
+    # analyst can answer "what are people searching for in each dataset?" and
+    # "which filters do they apply?" — the behavioural intent behind each request.
+    span_attrs = {"db.system.name": "lancedb", "db.collection.name": table_name, "db.query.text": keyword}
+    if where:
+        span_attrs["db.query.filter"] = where
+    with _tracer.start_as_current_span(f"search {table_name}", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
         start = time.perf_counter()
         try:
             matches = query.limit(MAX_TOTAL_COUNT).to_list()
         except Exception as e:
             span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
-            span.set_attribute("error.type", type(e).__name__)
-            record_span_exception(logger, e)
+            record_span_exception(logger, e)  # also sets error.type on the span
             _error_counter.add(1, {**attrs, "error.type": type(e).__name__})
             raise
         finally:
@@ -147,10 +152,15 @@ def lancedb_fts_search(
             # and p95/p99 dashboards work, not just a success-only counter.
             _query_duration.record(time.perf_counter() - start, attrs)
             _query_counter.add(1, attrs)
+        total = len(matches)
         page = matches[offset : offset + limit]
+        # Behavioural signals: total = how well the data answered this search
+        # (0 = unmet demand); returned_rows = the page actually shown.
+        span.set_attribute("db.response.total_hits", total)
         span.set_attribute("db.response.returned_rows", len(page))
+        _results_histogram.record(total, attrs)
 
-    return SearchResult(records=page, total_hits=len(matches), keyword=keyword, offset=offset, limit=limit)
+    return SearchResult(records=page, total_hits=total, keyword=keyword, offset=offset, limit=limit)
 
 
 # --- SQL predicate builders ---------------------------------------------------
