@@ -69,7 +69,10 @@ async def display_pdf(
         return _error_result("No URL provided.")
 
     # Which PDF the user opened — behavioural intent on the tool-call span.
-    trace.get_current_span().set_attribute("pdf.url", url)
+    span = trace.get_current_span()
+    span.set_attribute("pdf.url", url)
+    if ctx is not None and ctx.session_id:
+        span.set_attribute("mcp.session.id", ctx.session_id)
 
     display_title = title or _extract_title(url)
     view_id = str(uuid4())

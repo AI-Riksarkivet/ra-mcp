@@ -56,6 +56,10 @@ async def view_document(
     span = trace.get_current_span()
     span.set_attribute("view.reference_code", reference_code)
     span.set_attribute("view.pages", pages)
+    # Same session key as the search + browse spans, so the research funnel
+    # (search -> browse -> view) can be correlated per session.
+    if ctx.session_id:
+        span.set_attribute("mcp.session.id", ctx.session_id)
     try:
         resolved = await browse_resolve_document(
             reference_code,
