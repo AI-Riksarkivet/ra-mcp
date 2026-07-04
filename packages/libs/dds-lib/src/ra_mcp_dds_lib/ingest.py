@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ra_mcp_dataset_lib import build_fts_index
+from ra_mcp_dataset_lib import build_fts_index, build_scalar_indexes
 
 from .config import DODA_TABLE, FODELSE_TABLE, VIGSEL_TABLE
 from .models import DodaRecord, FodelseRecord, VigselRecord
@@ -60,9 +60,10 @@ def ingest_fodelse(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.tab
 
     logger.info("Parsed %d Födelse records from %d files", len(records), len(csv_files))
 
-    table = db.create_table(FODELSE_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, FODELSE_TABLE)
-    return table
+    db.create_table(FODELSE_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, FODELSE_TABLE)
+    # datum is a range filter -> BTree.
+    return build_scalar_indexes(db, FODELSE_TABLE, btree=["datum"])
 
 
 def ingest_doda(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.table.Table:
@@ -106,9 +107,10 @@ def ingest_doda(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.table.
 
     logger.info("Parsed %d Döda records from %d files", len(records), len(csv_files))
 
-    table = db.create_table(DODA_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, DODA_TABLE)
-    return table
+    db.create_table(DODA_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, DODA_TABLE)
+    # datum is a range filter -> BTree.
+    return build_scalar_indexes(db, DODA_TABLE, btree=["datum"])
 
 
 def ingest_vigsel(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.table.Table:
@@ -152,6 +154,7 @@ def ingest_vigsel(db: lancedb.DBConnection, csv_dir: str | Path) -> lancedb.tabl
 
     logger.info("Parsed %d Vigsel records from %d files", len(records), len(csv_files))
 
-    table = db.create_table(VIGSEL_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, VIGSEL_TABLE)
-    return table
+    db.create_table(VIGSEL_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, VIGSEL_TABLE)
+    # datum is a range filter -> BTree.
+    return build_scalar_indexes(db, VIGSEL_TABLE, btree=["datum"])

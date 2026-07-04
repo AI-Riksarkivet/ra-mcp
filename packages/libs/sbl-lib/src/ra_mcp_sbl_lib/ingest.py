@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ra_mcp_dataset_lib import build_fts_index
+from ra_mcp_dataset_lib import build_fts_index, build_scalar_indexes
 
 from .config import SBL_TABLE
 from .models import SBLRecord
@@ -52,6 +52,8 @@ def ingest_sbl(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.
 
     logger.info("Parsed %d SBL records", len(records))
 
-    table = db.create_table(SBL_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, SBL_TABLE)
-    return table
+    db.create_table(SBL_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, SBL_TABLE)
+    # gender is low-cardinality equality -> Bitmap; birth/death years are range
+    # filters -> BTree. Lets sbl's gender + year-range filters use an index.
+    return build_scalar_indexes(db, SBL_TABLE, btree=["birth_year", "death_year"], bitmap=["gender"])

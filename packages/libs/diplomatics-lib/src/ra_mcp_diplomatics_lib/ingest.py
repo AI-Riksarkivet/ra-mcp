@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ra_mcp_dataset_lib import build_fts_index
+from ra_mcp_dataset_lib import build_fts_index, build_scalar_indexes
 
 from .config import MPO_TABLE, SDHK_TABLE
 from .models import MPORecord, SDHKRecord
@@ -83,9 +83,11 @@ def ingest_sdhk(
 
     logger.info("Parsed %d SDHK records", len(records))
 
-    table = db.create_table(SDHK_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, SDHK_TABLE)
-    return table
+    db.create_table(SDHK_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, SDHK_TABLE)
+    # BTree on id so get_sdhk_by_id is a point lookup, not a full scan of the id
+    # column over remote object storage.
+    return build_scalar_indexes(db, SDHK_TABLE, btree=["id"])
 
 
 def ingest_mpo(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.Table:
@@ -122,6 +124,7 @@ def ingest_mpo(db: lancedb.DBConnection, csv_path: str | Path) -> lancedb.table.
 
     logger.info("Parsed %d MPO records", len(records))
 
-    table = db.create_table(MPO_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, MPO_TABLE)
-    return table
+    db.create_table(MPO_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, MPO_TABLE)
+    # BTree on id so get_mpo_by_id is a point lookup, not a full scan.
+    return build_scalar_indexes(db, MPO_TABLE, btree=["id"])

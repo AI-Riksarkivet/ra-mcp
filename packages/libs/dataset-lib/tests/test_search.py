@@ -16,6 +16,7 @@ from ra_mcp_dataset_lib import (
     at_least,
     at_most,
     build_fts_index,
+    build_scalar_indexes,
     combine,
     equals,
     lancedb_fts_search,
@@ -48,6 +49,25 @@ def spans():
     exporter.clear()
     yield exporter
     exporter.clear()
+
+
+def test_build_scalar_indexes_builds_btree_and_bitmap_and_keeps_fts_correct(tmp_path):
+    # BTree on ordered columns (id/year), Bitmap on the low-cardinality gender —
+    # and a filtered FTS query must still return the right rows with the scalar
+    # indexes present (the ingest path builds FTS then these).
+    conn = lancedb.connect(str(tmp_path / "db"))
+    rows = [{"id": i, "gender": "m" if i % 2 else "f", "year": 1800 + i, "searchable_text": f"hästen {i}"} for i in range(20)]
+    conn.create_table("t", data=rows, mode="overwrite")
+    build_fts_index(conn, "t")
+    table = build_scalar_indexes(conn, "t", btree=["id", "year"], bitmap=["gender"])
+
+    index_types = {ix.name: ix.index_type for ix in table.list_indices()}
+    assert index_types.get("id_idx") == "BTree"
+    assert index_types.get("year_idx") == "BTree"
+    assert index_types.get("gender_idx") == "Bitmap"
+
+    result = lancedb_fts_search(conn, "t", "häst", limit=50, where="gender = 'm'")
+    assert result.records and all(r["gender"] == "m" for r in result.records)
 
 
 def test_build_fts_index_returns_searchable_handle(tmp_path):

@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ra_mcp_dataset_lib import build_fts_index
+from ra_mcp_dataset_lib import build_fts_index, build_scalar_indexes
 
 from .config import DOMBOKSREGISTER_TABLE, MEDELSTAD_TABLE
 from .models import DomboksregisterRecord, MedelstadRecord
@@ -94,9 +94,10 @@ def ingest_domboksregister(
 
     logger.info("Parsed %d Domboksregister records", len(records))
 
-    table = db.create_table(DOMBOKSREGISTER_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, DOMBOKSREGISTER_TABLE)
-    return table
+    db.create_table(DOMBOKSREGISTER_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, DOMBOKSREGISTER_TABLE)
+    # datum is a range filter -> BTree.
+    return build_scalar_indexes(db, DOMBOKSREGISTER_TABLE, btree=["datum"])
 
 
 def ingest_medelstad(
@@ -144,6 +145,7 @@ def ingest_medelstad(
 
     logger.info("Parsed %d Medelstad records", len(records))
 
-    table = db.create_table(MEDELSTAD_TABLE, data=records, mode="overwrite")
-    table = build_fts_index(db, MEDELSTAD_TABLE)
-    return table
+    db.create_table(MEDELSTAD_TABLE, data=records, mode="overwrite")
+    build_fts_index(db, MEDELSTAD_TABLE)
+    # ting_dag is a range filter -> BTree.
+    return build_scalar_indexes(db, MEDELSTAD_TABLE, btree=["ting_dag"])

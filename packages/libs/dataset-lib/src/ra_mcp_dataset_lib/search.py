@@ -12,9 +12,10 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
-from lancedb.index import FTS
+from lancedb.index import FTS, Bitmap, BTree
 from opentelemetry.trace import SpanKind, StatusCode
 from pydantic import BaseModel
 
@@ -91,6 +92,41 @@ def build_fts_index(db: lancedb.DBConnection, table_name: str, column: str = "se
     # compound words (common in historical administrative/legal text) would
     # otherwise exceed it and be dropped entirely, becoming unsearchable.
     table.create_index(column, config=FTS(language="Swedish", max_token_length=64), replace=True)
+    return table
+
+
+def build_scalar_indexes(
+    db: lancedb.DBConnection,
+    table_name: str,
+    *,
+    btree: Sequence[str] = (),
+    bitmap: Sequence[str] = (),
+) -> lancedb.table.Table:
+    """Build scalar indexes on the columns a dataset filters on, so ``.where()``
+    predicate push-down is an index lookup instead of a full scan of the column
+    over (often remote) object storage.
+
+    - ``btree``: ordered columns used in equality or range predicates — ids, years,
+      dates (``id = X``, ``birth_year >= 1850``). A get-by-id or a bounded-range
+      filter becomes a page-level lookup instead of scanning the whole column.
+    - ``bitmap``: low-cardinality categoricals used in equality predicates
+      (``gender = 'm'``), where a per-value bitmap beats a btree.
+
+    Substring filters (:func:`text_contains` → ``lower(col) LIKE '%v%'``) are
+    deliberately left unindexed: a leading-wildcard ``LIKE`` cannot use a
+    BTree/Bitmap and the lancedb 0.34 ``NGRAM`` index (which would suit substring
+    search) is not available in this pin, so those columns gain nothing here.
+
+    Mirrors :func:`build_fts_index` — call it once during ingest, after the table
+    is built, then return this handle. Building an index is an in-place mutation of
+    the on-disk dataset, so this belongs in the ingest/publish path (indexes bake
+    into the next snapshot), never against already-published live data.
+    """
+    table = db.open_table(table_name)
+    for column in btree:
+        table.create_index(column, config=BTree(), replace=True)
+    for column in bitmap:
+        table.create_index(column, config=Bitmap(), replace=True)
     return table
 
 
