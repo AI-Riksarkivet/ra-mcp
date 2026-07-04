@@ -5,6 +5,7 @@ import { LRUCache } from "lru-cache";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { ViewerData, PageData } from "../lib/types";
 import { parsePageResult } from "../lib/utils";
+import { prefetchImage } from "../lib/image-cache";
 import DocumentViewer from "./DocumentViewer.svelte";
 import ThumbnailStrip from "./ThumbnailStrip.svelte";
 
@@ -246,12 +247,18 @@ async function fetchAndRenderPage(index: number) {
   }
 }
 
-/** Prefetch text layer for adjacent pages so navigation feels instant */
+/** Prefetch text layer AND decoded image for adjacent pages so nav feels instant. */
 function prefetchAdjacentPages(index: number) {
   const neighbors = [index - 1, index + 1];
   for (const n of neighbors) {
-    if (n >= 0 && n < totalPages && !pageCache.has(n)) {
-      fetchPageData(n);
+    if (n < 0 || n >= totalPages) continue;
+    const cached = pageCache.get(n);
+    if (cached) {
+      prefetchImage(cached.imageDataUrl);
+    } else {
+      fetchPageData(n).then((page) => {
+        if (page) prefetchImage(page.imageDataUrl);
+      });
     }
   }
 }

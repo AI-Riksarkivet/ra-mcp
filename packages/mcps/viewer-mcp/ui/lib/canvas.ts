@@ -53,6 +53,11 @@ export class CanvasController {
   private lastPointerPos = { x: 0, y: 0, t: 0 };
   private panInertiaId = 0;
 
+  // True during active pan/zoom motion. While interacting, draw() blits only the
+  // image (fast) and skips the overlay repaint; overlays are painted once when
+  // motion settles. Removes per-frame re-stroking of every ALTO polygon.
+  private interacting = false;
+
   // Smooth zoom animation state
   private targetScale = 1;
   private zoomAnimating = false;
@@ -204,10 +209,6 @@ export class CanvasController {
   };
 
   handlePointerMove = (e: PointerEvent): void => {
-    const rect = this.canvas.getBoundingClientRect();
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
-
     if (this.pointerDown) {
       const dx = e.clientX - this.pointerDown.x;
       const dy = e.clientY - this.pointerDown.y;
@@ -224,12 +225,18 @@ export class CanvasController {
       }
       this.lastPointerPos = { x: e.clientX, y: e.clientY, t: now };
 
+      this.interacting = true;
       this.requestDraw();
       return;
     }
 
-    // Hover — delegate to callback
+    // Hover — delegate to callback. getBoundingClientRect() (a forced layout
+    // reflow) is read here only, NOT on the pan-drag hot path above where its
+    // result would be discarded.
     if (this.callbacks.onHoverImage) {
+      const rect = this.canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
       const imgX = (cx - this.transform.x) / this.transform.scale;
       const imgY = (cy - this.transform.y) / this.transform.scale;
       const cursor = this.callbacks.onHoverImage(imgX, imgY, e.clientX, e.clientY);
@@ -244,13 +251,19 @@ export class CanvasController {
     this.canvas.releasePointerCapture(e.pointerId);
 
     if (wasDrag) {
-      // Apply inertia if velocity is meaningful
+      // Apply inertia if velocity is meaningful; otherwise settle now (repaint overlays).
       const speed = Math.sqrt(this.panVelocity.vx ** 2 + this.panVelocity.vy ** 2);
-      if (speed > 0.1) this.applyPanInertia();
+      if (speed > 0.1) {
+        this.applyPanInertia();
+      } else {
+        this.settle();
+      }
       return;
     }
 
-    // Click — delegate to callback
+    // Click — repaint overlays (a sub-threshold move may have suppressed them),
+    // then delegate to callback.
+    this.settle();
     if (this.callbacks.onClickImage) {
       const rect = this.canvas.getBoundingClientRect();
       const cx = e.clientX - rect.left;
@@ -281,6 +294,7 @@ export class CanvasController {
     const factor = Math.exp(delta * ZOOM_SPEED);
     this.targetScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, this.targetScale * factor));
 
+    this.interacting = true;
     if (!this.zoomAnimating) {
       this.zoomAnimating = true;
       this.animateZoom();
@@ -313,10 +327,19 @@ export class CanvasController {
 
     ctx.drawImage(this.image, 0, 0);
 
-    // Let the component draw overlays (polygons, etc.) in image space
-    this.callbacks.onAfterDraw?.(ctx, this.transform);
+    // Let the component draw overlays (polygons, etc.) in image space — but skip
+    // them during active motion; they are repainted once when motion settles.
+    if (!this.interacting) {
+      this.callbacks.onAfterDraw?.(ctx, this.transform);
+    }
 
     ctx.restore();
+  }
+
+  /** End an interaction and repaint once with overlays. */
+  private settle(): void {
+    this.interacting = false;
+    this.draw();
   }
 
   private fitToCanvas(): void {
@@ -343,6 +366,7 @@ export class CanvasController {
       const speed = Math.sqrt(this.panVelocity.vx ** 2 + this.panVelocity.vy ** 2);
       if (speed < 0.02) {
         this.panInertiaId = 0;
+        this.settle();
         return;
       }
 
@@ -363,6 +387,7 @@ export class CanvasController {
 
     // Close enough — snap and stop
     if (Math.abs(diff) < 0.001) {
+      this.interacting = false; // so the final applyZoom draw repaints overlays
       this.applyZoom(this.targetScale);
       this.zoomAnimating = false;
       this.zoomRafId = 0;

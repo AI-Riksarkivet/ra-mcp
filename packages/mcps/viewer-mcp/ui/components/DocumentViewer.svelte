@@ -4,6 +4,7 @@ import type { App } from "@modelcontextprotocol/ext-apps";
 import type { TextLine, PageData, TooltipState } from "../lib/types";
 import { buildPolygonHits, findHitAtImageCoord } from "../lib/geometry";
 import { CanvasController } from "../lib/canvas";
+import { loadDecodedImage } from "../lib/image-cache";
 import { drawPolygonOverlays } from "../lib/overlays";
 import TranscriptionPanel from "./TranscriptionPanel.svelte";
 import CanvasToolbar from "./CanvasToolbar.svelte";
@@ -316,27 +317,22 @@ $effect(() => {
   tooltip = null;
   resetContextState();
 
-  const img = new Image();
   let cancelled = false;
 
-  img.onload = () => {
-    if (cancelled) return;
-    if (controller) {
+  // Decode off the paint path (and reuse a cached decode) so the first drawImage
+  // doesn't stall the main thread — the dominant page-navigation jank.
+  loadDecodedImage(pd.imageDataUrl)
+    .then((img) => {
+      if (cancelled || !controller) return;
       controller.setImage(img);
       scheduleContextUpdate(getContextState());
-    }
-  };
-  img.onerror = () => {
-    if (cancelled) return;
-    console.error("Failed to load page image");
-  };
-  img.src = pd.imageDataUrl;
+    })
+    .catch(() => {
+      if (!cancelled) console.error("Failed to load page image");
+    });
 
   return () => {
     cancelled = true;
-    img.onload = null;
-    img.onerror = null;
-    img.src = "";
   };
 });
 
