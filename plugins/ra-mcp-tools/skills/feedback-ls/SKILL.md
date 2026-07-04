@@ -1,12 +1,11 @@
 ---
 name: feedback-ls
 description: >
-  Guide for sending document pages to Label Studio for human feedback on transcriptions.
-  Use when: feedback, label studio, annotation, review transcription, quality check,
-  send to label studio, import to label studio, human review, correct transcription,
-  segmentation feedback, transcription feedback, ALTO to label studio,
-  review pages, flag pages for review, quality assurance, QA, annotation task,
-  annotate images, label images, send images for annotation.
+  Send document pages to Label Studio for human review — pre-annotated tasks from
+  ALTO XML, or blank image-only tasks to annotate from scratch.
+  Use when the user wants human review, correction, or quality assurance of
+  transcriptions or line/region segmentation, or wants to build annotation tasks
+  from browse results.
 ---
 
 # Label Studio Feedback Workflow
@@ -82,7 +81,7 @@ ALTO XML, then feed those results into this tool.
 
 ### 1. Get page URLs
 
-**From browse results**: Call `browse_browse_document` first (or use results
+**From browse results**: Call `browse_document` first (or use results
 already in the conversation). Each page includes:
 
 - **ALTO XML URL**: `https://sok.riksarkivet.se/dokument/alto/...`
@@ -155,7 +154,7 @@ When using `alto_urls`, all lists are paired by index — `alto_urls[i]`,
 
 ## Extracting URLs from Browse Results
 
-The `browse_browse_document` tool returns per-page links in this format:
+The `browse_document` tool returns per-page links in this format:
 
 ```
 🔗 Links:
@@ -190,4 +189,4 @@ want pre-annotations).
 | `LS_TOKEN` | Label Studio Personal Access Token (JWT PAT) |
 | `LS_PROJECT_ID` | Target project ID |
 
-These are configured in `packages/label-mcp/.env` and loaded automatically.
+These are configured in `packages/mcps/label-mcp/.env` and loaded automatically.

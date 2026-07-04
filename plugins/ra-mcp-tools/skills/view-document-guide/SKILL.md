@@ -1,5 +1,5 @@
 ---
-name: view_document-guide
+name: view-document-guide
 description: Guide for the document viewer tools. Use when the user asks to "view document", "display pages", "show document", "document viewer", "view manifest", or wants to visually inspect document pages. Covers reference-code, manifest, and raw-URL entry points.
 ---
 

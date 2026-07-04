@@ -1,10 +1,12 @@
 # Architecture
 
-ra-mcp is organized as a **uv workspace** with 44 packages under `packages/` plus a root server, each with a single responsibility. Packages follow a naming convention by role:
+ra-mcp is organized as a **uv workspace** with 44 packages under `packages/` plus a root server, each with a single responsibility. Packages are grouped by role into subfolders:
 
-- `*-lib` — domain libraries (Pydantic models, API clients, operations), plus `common`
-- `*-mcp` — FastMCP servers that wrap a domain library as MCP tools/resources
-- `search-cli` / `browse-cli` / `tui` — CLI and terminal-UI front-ends
+- `packages/libs/` — domain libraries (`*-lib`: Pydantic models, API clients, operations), plus `common`
+- `packages/mcps/` — FastMCP servers (`*-mcp`) that wrap a domain library as MCP tools/resources
+- `packages/cli/` — CLI (`search-cli`, `browse-cli`) and terminal-UI (`tui`) front-ends
+
+The workspace targets Python 3.13+ and tracks the current releases of its core dependencies — FastMCP 3.4, LanceDB 0.34, OpenTelemetry 1.43, and Pydantic 2.13 on the Python side, and Vite 8, Svelte 5, and PDF.js 6 for the viewer / PDF MCP App UIs.
 
 ---
 
@@ -116,7 +118,7 @@ Thin wrappers that expose domain logic through different interfaces:
 - **CLI packages** (`*-cli`) register Typer commands with Rich output
 - **TUI** (`ra-mcp-tui`) provides an interactive Textual application
 - **HTR** (`ra-mcp-htr-mcp`) delegates to a remote Gradio Space
-- **Viewer** (`ra-mcp-viewer-mcp`) and **PDF** (`ra-mcp-pdf-mcp`) are MCP Apps serving interactive HTML UIs
+- **Viewer** (`ra-mcp-viewer-mcp`) and **PDF** (`ra-mcp-pdf-mcp`) are MCP Apps serving interactive HTML UIs. Following the MCP Apps spec, the viewer delivers page and thumbnail images as size-bounded IIIF URLs (`/full/1500,/` and `/full/150,/`) that the browser fetches directly — declared in each app's `ResourceCSP` `resource_domains` — rather than proxying full-resolution scans as base64 through the tool-result channel
 
 **Layer 3 — Composition**
 
@@ -174,27 +176,31 @@ The server discovers skills from `plugins/*/skills/` directories at startup usin
 ra-mcp/
 ├── src/ra_mcp_server/          # Root: Server composition, CLI, telemetry
 │   └── server.py               # FastMCP composition + AVAILABLE_MODULES registry
-├── packages/                   # 44 workspace packages
-│   ├── common/                 # Layer 0: HTTPClient, telemetry, formatting, datasets
-│   ├── xml-lib/                # Layer 1: ALTOClient (ALTO XML)
-│   ├── iiif-lib/               # Layer 1: IIIFClient
-│   ├── oai-pmh-lib/            # Layer 1: OAIPMHClient
-│   ├── search-lib/             # Layer 1: Search domain
-│   ├── browse-lib/             # Layer 1: Browse domain (depends on xml/iiif/oai)
-│   ├── search-mcp/             # Layer 2: MCP tools for search
-│   ├── browse-mcp/             # Layer 2: MCP tool for browse
-│   ├── guide-mcp/              # Layer 2: MCP resources for guides
-│   ├── htr-mcp/                # Layer 2: MCP tool for HTR
-│   ├── viewer-mcp/             # Layer 2: MCP App for document viewing
-│   ├── pdf-mcp/                # Layer 2: MCP App for PDF viewing
-│   ├── label-mcp/              # Layer 2: Label Studio import (optional)
-│   ├── search-cli/             # Layer 2: CLI for search
-│   ├── browse-cli/             # Layer 2: CLI for browse
-│   ├── tui/                    # Layer 2: Terminal UI
-│   └── <dataset>-lib/-mcp/     # 14 optional dataset modules (diplomatics, sbl,
-│                               #   sjomanshus, filmcensur, rosenberg, court,
-│                               #   aktiebolag, faltjagare, suffrage, specialsok,
-│                               #   dds, wincars, sj, tora)
+├── packages/                   # 44 workspace packages, grouped by role
+│   ├── libs/                   # domain libraries (*-lib) + common
+│   │   ├── common/             # Layer 0: HTTPClient, telemetry, formatting, datasets
+│   │   ├── xml-lib/            # Layer 1: ALTOClient (ALTO XML)
+│   │   ├── iiif-lib/           # Layer 1: IIIFClient
+│   │   ├── oai-pmh-lib/        # Layer 1: OAIPMHClient
+│   │   ├── search-lib/         # Layer 1: Search domain
+│   │   ├── browse-lib/         # Layer 1: Browse domain (depends on xml/iiif/oai)
+│   │   └── <dataset>-lib/      # 14 optional LanceDB dataset libraries
+│   ├── mcps/                   # FastMCP servers (*-mcp)
+│   │   ├── search-mcp/         # Layer 2: MCP tools for search
+│   │   ├── browse-mcp/         # Layer 2: MCP tool for browse
+│   │   ├── guide-mcp/          # Layer 2: MCP resources for guides
+│   │   ├── htr-mcp/            # Layer 2: MCP tool for HTR
+│   │   ├── viewer-mcp/         # Layer 2: MCP App for document viewing
+│   │   ├── pdf-mcp/            # Layer 2: MCP App for PDF viewing
+│   │   ├── label-mcp/          # Layer 2: Label Studio import (optional)
+│   │   └── <dataset>-mcp/      # 14 optional dataset MCP servers (diplomatics,
+│   │                           #   sbl, sjomanshus, filmcensur, rosenberg, court,
+│   │                           #   aktiebolag, faltjagare, suffrage, specialsok,
+│   │                           #   dds, wincars, sj, tora)
+│   └── cli/                    # CLI + TUI front-ends
+│       ├── search-cli/         # Layer 2: CLI for search
+│       ├── browse-cli/         # Layer 2: CLI for browse
+│       └── tui/                # Layer 2: Terminal UI
 ├── plugins/
 │   └── ra-mcp-tools/          # Claude Code skills plugin (8 skills)
 ├── resources/                  # Historical guide markdown files

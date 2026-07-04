@@ -36,7 +36,7 @@ HTR workflow guide. Covers the full pipeline: determine image source, batch all 
 
 **Trigger phrases**: transcribe handwriting, HTR, handwritten document, OCR historical document, digitize manuscript
 
-### `/view_document-guide`
+### `/view-document-guide`
 
 Document viewer guide. Covers the three viewer entry points and how to choose between them: `view_document` (when you have a Riksarkivet reference code), `view_manifest` (when you have a IIIF manifest URL, e.g. from SDHK/MPO search), and `view_document_urls` (when you already have raw image and text-layer XML URLs).
 
@@ -50,7 +50,7 @@ Riksarkivet PDF guide reader. Covers searching and reading the archival PDF guid
 
 ### `/feedback-ls`
 
-Label Studio feedback workflow. Covers sending document pages to Label Studio for human annotation via `import_to_label_studio` — both ALTO pre-annotated tasks and image-only blank tasks, with transcription/segmentation feedback choices and optional assignment.
+Label Studio feedback workflow. Covers sending document pages to Label Studio for human annotation via `label_import_to_label_studio` — both ALTO pre-annotated tasks and image-only blank tasks, with transcription/segmentation feedback choices and optional assignment.
 
 **Trigger phrases**: feedback, label studio, annotation, review transcription, quality check, human review, segmentation feedback, transcription feedback
 

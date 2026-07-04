@@ -12,6 +12,7 @@ from fastmcp.server.providers.skills import SkillsDirectoryProvider
 from starlette.responses import FileResponse, JSONResponse
 
 from ra_mcp_browse_mcp.tools import browse_mcp
+from ra_mcp_common.settings import settings
 from ra_mcp_guide_mcp.tools import guide_mcp
 from ra_mcp_htr_mcp.tools import htr_mcp
 from ra_mcp_pdf_mcp import pdf_mcp
@@ -242,7 +243,7 @@ except ImportError:
 
 def setup_logging() -> logging.Logger:
     """Configure logging for the MCP server with environment variable support."""
-    log_level = os.getenv("RA_MCP_LOG_LEVEL", "INFO").upper()
+    log_level = settings.log_level.upper()
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
     # Configure root logger
@@ -266,7 +267,7 @@ def setup_logging() -> logging.Logger:
 
     logger = logging.getLogger("ra_mcp.server")
     logger.info("Logging configured at level: %s", log_level)
-    logger.info("Timeout setting: %ss", os.getenv("RA_MCP_TIMEOUT", "60"))
+    logger.info("Timeout setting: %ss", settings.timeout or 60)
     logger.info("API logging: %s", "enabled" if os.getenv("RA_MCP_LOG_API") else "disabled")
 
     return logger

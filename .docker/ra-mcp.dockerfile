@@ -5,10 +5,10 @@ ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 # --- Stage 1: Build viewer-mcp frontend (Svelte/Vite) ---
 FROM node:22-alpine AS frontend-builder
 WORKDIR /app
-COPY packages/viewer-mcp/package*.json ./
+COPY packages/mcps/viewer-mcp/package*.json ./
 RUN npm ci
-COPY packages/viewer-mcp/tsconfig.json packages/viewer-mcp/vite.config.ts packages/viewer-mcp/mcp-app.html ./
-COPY packages/viewer-mcp/ui ./ui
+COPY packages/mcps/viewer-mcp/tsconfig.json packages/mcps/viewer-mcp/vite.config.ts packages/mcps/viewer-mcp/mcp-app.html ./
+COPY packages/mcps/viewer-mcp/ui ./ui
 RUN npm run build
 
 # --- Stage 2: Build Python workspace with uv ---
@@ -26,7 +26,7 @@ COPY README.md LICENSE ./
 
 # Copy built frontend into viewer-mcp package before uv sync
 # vite outputs to src/ra_mcp_viewer_mcp/dist/, so --no-editable will include it in the wheel
-COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
+COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/mcps/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
 
 # Sync workspace packages with diplomatics extra (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
@@ -72,7 +72,7 @@ COPY --from=builder --chown=ra-mcp:ra-mcp /app/.venv /app/.venv
 COPY --from=builder --chown=ra-mcp:ra-mcp /app/src/ ./src/
 COPY --from=builder --chown=ra-mcp:ra-mcp /app/packages/ ./packages/
 COPY --chown=ra-mcp:ra-mcp docs/assets/ ./docs/assets/
-COPY --chown=ra-mcp:ra-mcp packages/guide-mcp/resources/ ./resources/
+COPY --chown=ra-mcp:ra-mcp packages/mcps/guide-mcp/resources/ ./resources/
 COPY --chown=ra-mcp:ra-mcp plugins/ ./plugins/
 
 RUN mkdir -p /app/data /data && chown ra-mcp:ra-mcp /app /app/data /data

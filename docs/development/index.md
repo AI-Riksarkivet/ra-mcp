@@ -59,8 +59,8 @@ npx @modelcontextprotocol/inspector uv run ra serve
 uv run pytest
 
 # Run specific package tests
-uv run pytest packages/search-lib/tests/ -v
-uv run pytest packages/browse-lib/tests/ -v
+uv run pytest packages/libs/search-lib/tests/ -v
+uv run pytest packages/libs/browse-lib/tests/ -v
 
 # Run with coverage
 uv run pytest --cov=ra_mcp_common --cov=ra_mcp_search_lib --cov=ra_mcp_browse_lib --cov-report=html
@@ -120,7 +120,7 @@ Always run `dagger call checks` before committing.
 
 ## Adding a New MCP Tool
 
-1. Create a tool file in the appropriate MCP package (e.g., `packages/search-mcp/src/ra_mcp_search_mcp/`)
+1. Create a tool file in the appropriate MCP package (e.g., `packages/mcps/search-mcp/src/ra_mcp_search_mcp/`)
 2. Define a `register_*_tool(mcp)` function using `@mcp.tool()`
 3. Add parameter documentation via `Annotated[type, Field(description=...)]`
 4. Call the register function from the package's `tools.py`
@@ -128,8 +128,8 @@ Always run `dagger call checks` before committing.
 
 ## Adding a New Module
 
-1. Create domain library: `packages/mymodule-lib/` with models, clients, operations
-2. Create MCP package: `packages/mymodule-mcp/` with tool registration
+1. Create domain library: `packages/libs/mymodule-lib/` with models, clients, operations
+2. Create MCP package: `packages/mcps/mymodule-mcp/` with tool registration
 3. Register in `src/ra_mcp_server/server.py` `AVAILABLE_MODULES` (wrap optional/heavy-dependency modules in `try/except ImportError`, and set `no_namespace=True` to expose tools without a module prefix):
 
 ```python
@@ -154,7 +154,7 @@ AVAILABLE_MODULES = {
 
 ```bash
 # Add to a package
-cd packages/common && uv add package-name
+cd packages/libs/common && uv add package-name
 
 # Add dev dependency (root)
 uv add --dev package-name

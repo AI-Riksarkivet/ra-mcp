@@ -1,10 +1,11 @@
 ---
 name: upload-files
 description: >
-  Upload local files or user attachments to the Gradio server and get back
-  public URLs. Use when: upload image, upload XML, upload attachment,
-  file to URL, host file, upload for HTR, upload for viewer, prepare files
-  for transcription, upload document images.
+  Turn local files or user attachments into public URLs by uploading them to the
+  Gradio server, so tools that require http(s) URLs (htr_transcribe, the viewer)
+  can reach them.
+  Use when you have local images or ALTO/PAGE XML — an attachment or a file path —
+  but a tool needs a URL.
 ---
 
 # Upload Files

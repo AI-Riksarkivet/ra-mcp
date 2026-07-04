@@ -16,7 +16,7 @@ Example mapping for a package called **viewer**:
 
 | Slot | Value |
 |------|-------|
-| Directory | `packages/viewer-mcp/` |
+| Directory | `packages/mcps/viewer-mcp/` |
 | PyPI name | `ra-mcp-viewer-mcp` |
 | Python package | `ra_mcp_viewer_mcp` |
 | FastMCP instance | `viewer_mcp` |
@@ -25,7 +25,7 @@ Example mapping for a package called **viewer**:
 ## Step 1 — Create directory structure
 
 ```
-packages/<name>-mcp/
+packages/mcps/<name>-mcp/
 ├── pyproject.toml
 ├── README.md
 ├── src/ra_mcp_<name>_mcp/
@@ -51,7 +51,7 @@ dependencies = [
     # Domain package (if one exists):
     # "ra-mcp-<name>",
     "ra-mcp-common",
-    "fastmcp>=3.0.0",
+    "fastmcp==3.4.2",
 ]
 license = "Apache-2.0"
 
@@ -232,7 +232,7 @@ uv sync
 uv run ra serve --list-modules
 
 # Run package tests
-uv run pytest packages/<name>-mcp/tests/ -v
+uv run pytest packages/mcps/<name>-mcp/tests/ -v
 
 # Test standalone
 uv run python -m ra_mcp_<name>_mcp.server --port 3001
@@ -243,7 +243,7 @@ npx @modelcontextprotocol/inspector uv run python -m ra_mcp_<name>_mcp.server --
 
 ## Checklist
 
-- [ ] `packages/<name>-mcp/` directory with all files
+- [ ] `packages/mcps/<name>-mcp/` directory with all files
 - [ ] `pyproject.toml` has correct name, deps, and hatch wheel config
 - [ ] `tools.py` exports a `<name>_mcp` FastMCP instance with tools registered
 - [ ] `server.py` provides standalone `--stdio` / `--port` entry point

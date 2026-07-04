@@ -1,10 +1,10 @@
 ---
 name: htr-transcription
 description: >
-  Guide for using HTRflow MCP tools to transcribe handwritten documents.
-  Use when: transcribe handwriting, HTR, handwritten document,
-  OCR historical document, read old handwriting, digitize manuscript,
-  transcribe old letters, recognize handwritten text.
+  Transcribe handwritten historical documents with the HTRflow MCP tools —
+  batch images into one htr_transcribe call and present the interactive viewer.
+  Use when the user wants to transcribe or OCR handwriting, read old handwriting,
+  or digitize a manuscript.
 ---
 
 # HTR Transcription
