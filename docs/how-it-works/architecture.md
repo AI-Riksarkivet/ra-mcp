@@ -1,6 +1,10 @@
 # Architecture
 
-ra-mcp is organized as a **uv workspace** with 44 packages under `packages/` plus a root server, each with a single responsibility. Packages are grouped by role into subfolders:
+> **New here?** Start with the [interactive search & viewers diagram](architecture-diagram.md) —
+> click through the five flows to see the two viewers and four search surfaces before diving into
+> the package reference below.
+
+ra-mcp is organized as a **uv workspace** with 45 packages under `packages/` plus a root server, each with a single responsibility. Packages are grouped by role into subfolders:
 
 - `packages/libs/` — domain libraries (`*-lib`: Pydantic models, API clients, operations), plus `common`
 - `packages/mcps/` — FastMCP servers (`*-mcp`) that wrap a domain library as MCP tools/resources
@@ -40,7 +44,7 @@ The workspace targets Python 3.13+ and tracks the current releases of its core d
 
 ### Dataset packages (Layer 1–2, optional)
 
-Each dataset ships as a `*-lib` (LanceDB-backed query layer) plus a `*-mcp` (MCP tools). All are optional — they load only when `lancedb` is installed.
+Each dataset ships as a `*-lib` (LanceDB-backed query layer) plus a `*-mcp` (MCP tools). All are optional — they load only when `lancedb` is installed. All 13 dataset libraries share **`ra-mcp-dataset-lib`** (the "spine") for their search — one Swedish full-text index builder, connection caching, a `SearchResult` envelope, and a correct instrumented `lancedb_fts_search` (real total, stable pagination, pushed-down `.where()` filters) — instead of each rolling its own. `pdf-mcp`'s guide search reuses the same spine.
 
 | Package pair | Dataset / tools |
 |--------------|-----------------|
@@ -75,7 +79,8 @@ graph TD
   clients["xml / iiif-lib / oai-pmh-lib\nALTO, IIIF, OAI-PMH clients"]
   search["ra-mcp-search-lib\nsearch domain"]
   browse["ra-mcp-browse-lib\nbrowse domain"]
-  datasets["*-lib\n14 LanceDB dataset libraries"]
+  spine["ra-mcp-dataset-lib\nshared LanceDB spine"]
+  datasets["*-lib\n13 LanceDB dataset libraries"]
 
   search_mcp["ra-mcp-search-mcp"]
   browse_mcp["ra-mcp-browse-mcp"]
@@ -88,8 +93,9 @@ graph TD
 
   root["ra-mcp (root)\ncomposes all MCP packages"]
 
-  common --> clients & search & browse & datasets & guide
+  common --> clients & search & browse & spine & guide
   clients --> browse
+  spine --> datasets
   search --> search_mcp & cli
   browse --> browse_mcp & cli
   datasets --> dataset_mcp
@@ -108,7 +114,7 @@ The domain libraries contain pure business logic — Pydantic models, API client
 
 - `ra-mcp-search-lib` and `ra-mcp-browse-lib` cover full-text search and page browsing.
 - The HTTP clients that used to live inside browse are now their own packages: **`ra-mcp-xml`** (`ALTOClient`), **`ra-mcp-iiif-lib`** (`IIIFClient`), and **`ra-mcp-oai-pmh-lib`** (`OAIPMHClient`). `browse-lib` depends on them.
-- Each dataset has a `*-lib` package that queries a local LanceDB table.
+- Each dataset has a `*-lib` package that queries a local LanceDB table, all through the shared `ra-mcp-dataset-lib` spine (Swedish FTS, one `SearchResult`, cached connections, SQL predicate builders).
 
 **Layer 2 — Interface**
 
