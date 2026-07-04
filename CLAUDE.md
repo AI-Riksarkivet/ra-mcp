@@ -8,7 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Architecture
 
-The project is organized as a **uv workspace** with 44 packages under `packages/` plus a root server.
+The project is organized as a **uv workspace** with 45 packages under `packages/` plus a root server.
+This includes `ra-mcp-dataset-lib` (module `ra_mcp_dataset_lib`) — the shared LanceDB "spine"
+(one `SearchResult`, cached connections, a Swedish full-text index builder, an instrumented
+`lancedb_fts_search`, and SQL predicate builders) that the 13 dataset libraries and the pdf-mcp
+guide search all reuse instead of each rolling their own search.
 Packages are grouped by role into subfolders:
 
 - `packages/libs/` — domain libraries (`*-lib`), plus `common`

@@ -34,4 +34,4 @@ File upload guide. Covers uploading local files or user attachments to the Gradi
 
 ## /feedback-ls
 
-Label Studio feedback guide. Covers sending document pages (with ALTO transcriptions) to a Label Studio project for human review, transcription correction, and segmentation/quality feedback via the `import_to_label_studio` tool.
+Label Studio feedback guide. Covers sending document pages (with ALTO transcriptions) to a Label Studio project for human review, transcription correction, and segmentation/quality feedback via the `label_import_to_label_studio` tool.
