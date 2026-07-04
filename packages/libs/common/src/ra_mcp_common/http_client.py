@@ -13,6 +13,7 @@ import contextlib
 import json
 import logging
 import time
+from urllib.parse import urlparse
 
 import httpx
 from opentelemetry.trace import SpanKind, StatusCode
@@ -147,6 +148,9 @@ class HTTPClient:
             logger.debug("Headers: %s", headers)
 
         span_attrs = {"http.request.method": "GET", "url.full": url}
+        # server.address (host) is a bounded, low-cardinality dimension so metrics can
+        # break down per upstream (data./lbiiif./sok./oai-pmh.riksarkivet.se); url.full stays span-only.
+        metric_attrs = {"http.request.method": "GET", "server.address": urlparse(url).hostname or ""}
 
         with self._tracer.start_as_current_span("HTTP GET", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
             start_time = time.perf_counter()
@@ -173,7 +177,7 @@ class HTTPClient:
 
                 span.set_attribute("http.response.status_code", response.status_code)
                 span.set_attribute("http.response.body.size", content_size)
-                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+                self._response_size_histogram.record(content_size, metric_attrs)
 
                 return result
 
@@ -183,7 +187,7 @@ class HTTPClient:
                 logger.error("Timeout limit was %ds", timeout)
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: timeout after {timeout}s")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": "TimeoutError"})
+                self._error_counter.add(1, {**metric_attrs, "error.type": "TimeoutError"})
                 raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
 
             except httpx.HTTPStatusError as e:
@@ -200,7 +204,7 @@ class HTTPClient:
                 span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
                 record_span_exception(logger, e)
                 span.set_attribute("http.response.status_code", e.response.status_code)
-                self._error_counter.add(1, {"error.type": "HTTPStatusError"})
+                self._error_counter.add(1, {**metric_attrs, "error.type": "HTTPStatusError"})
                 raise
 
             except (httpx.ConnectError, json.JSONDecodeError) as e:
@@ -210,7 +214,7 @@ class HTTPClient:
 
                 span.set_status(StatusCode.ERROR, f"{error_type}: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": error_type})
+                self._error_counter.add(1, {**metric_attrs, "error.type": error_type})
                 raise
 
             except Exception as e:
@@ -218,12 +222,12 @@ class HTTPClient:
                 logger.error("✗ Unexpected error after %.3fs: %s: %s", duration, type(e).__name__, e)
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": type(e).__name__})
+                self._error_counter.add(1, {**metric_attrs, "error.type": type(e).__name__})
                 raise
 
             finally:
-                self._request_counter.add(1, {"http.request.method": "GET"})
-                self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
+                self._request_counter.add(1, metric_attrs)
+                self._duration_histogram.record(time.perf_counter() - start_time, metric_attrs)
 
     async def get_xml(
         self,
@@ -256,6 +260,9 @@ class HTTPClient:
             request_headers.update(headers)
 
         span_attrs = {"http.request.method": "GET", "url.full": url}
+        # server.address (host) is a bounded, low-cardinality dimension so metrics can
+        # break down per upstream (data./lbiiif./sok./oai-pmh.riksarkivet.se); url.full stays span-only.
+        metric_attrs = {"http.request.method": "GET", "server.address": urlparse(url).hostname or ""}
 
         with self._tracer.start_as_current_span("HTTP GET", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
             start_time = time.perf_counter()
@@ -272,7 +279,7 @@ class HTTPClient:
 
                 span.set_attribute("http.response.status_code", response.status_code)
                 span.set_attribute("http.response.body.size", content_size)
-                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+                self._response_size_histogram.record(content_size, metric_attrs)
 
                 return content
 
@@ -281,7 +288,7 @@ class HTTPClient:
                 logger.error("GET XML %s - %.3fs - ERROR: TimeoutError", url, duration)
                 span.set_status(StatusCode.ERROR, f"TimeoutError: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": "TimeoutError"})
+                self._error_counter.add(1, {**metric_attrs, "error.type": "TimeoutError"})
                 raise TimeoutError(f"Request timeout: {url}") from e
 
             except httpx.HTTPStatusError as e:
@@ -294,7 +301,7 @@ class HTTPClient:
                 span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
                 record_span_exception(logger, e)
                 span.set_attribute("http.response.status_code", e.response.status_code)
-                self._error_counter.add(1, {"error.type": "HTTPStatusError"})
+                self._error_counter.add(1, {**metric_attrs, "error.type": "HTTPStatusError"})
                 raise
 
             except httpx.ConnectError as e:
@@ -302,7 +309,7 @@ class HTTPClient:
                 logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
                 span.set_status(StatusCode.ERROR, f"ConnectError: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": "ConnectError"})
+                self._error_counter.add(1, {**metric_attrs, "error.type": "ConnectError"})
                 raise
 
             except Exception as e:
@@ -310,12 +317,12 @@ class HTTPClient:
                 logger.error("GET XML %s - %.3fs - ERROR: %s", url, duration, e)
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": type(e).__name__})
+                self._error_counter.add(1, {**metric_attrs, "error.type": type(e).__name__})
                 raise
 
             finally:
-                self._request_counter.add(1, {"http.request.method": "GET"})
-                self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
+                self._request_counter.add(1, metric_attrs)
+                self._duration_histogram.record(time.perf_counter() - start_time, metric_attrs)
 
     async def get_content(self, url: str, timeout: int = 30, headers: dict[str, str] | None = None) -> bytes | None:
         """
@@ -337,6 +344,9 @@ class HTTPClient:
             request_headers.update(headers)
 
         span_attrs = {"http.request.method": "GET", "url.full": url}
+        # server.address (host) is a bounded, low-cardinality dimension so metrics can
+        # break down per upstream (data./lbiiif./sok./oai-pmh.riksarkivet.se); url.full stays span-only.
+        metric_attrs = {"http.request.method": "GET", "server.address": urlparse(url).hostname or ""}
 
         with self._tracer.start_as_current_span("HTTP GET", kind=SpanKind.CLIENT, attributes=span_attrs) as span:
             start_time = time.perf_counter()
@@ -358,7 +368,7 @@ class HTTPClient:
                 logger.info("GET %s - %.3fs - 200 OK", url, duration)
 
                 span.set_attribute("http.response.body.size", content_size)
-                self._response_size_histogram.record(content_size, {"http.request.method": "GET"})
+                self._response_size_histogram.record(content_size, metric_attrs)
                 return content
 
             except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError) as e:
@@ -368,18 +378,18 @@ class HTTPClient:
                 logger.error("GET %s - %.3fs - ERROR: %s", url, duration, error_msg)
                 span.set_status(StatusCode.ERROR, f"{error_type}: {error_msg}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": error_type})
+                self._error_counter.add(1, {**metric_attrs, "error.type": error_type})
                 return None
             except Exception as e:
                 duration = time.perf_counter() - start_time
                 logger.error("GET %s - ERROR: %s", url, e)
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)
-                self._error_counter.add(1, {"error.type": type(e).__name__})
+                self._error_counter.add(1, {**metric_attrs, "error.type": type(e).__name__})
                 return None
             finally:
-                self._request_counter.add(1, {"http.request.method": "GET"})
-                self._duration_histogram.record(time.perf_counter() - start_time, {"http.request.method": "GET"})
+                self._request_counter.add(1, metric_attrs)
+                self._duration_histogram.record(time.perf_counter() - start_time, metric_attrs)
 
     async def aclose(self) -> None:
         """Close the underlying httpx client."""

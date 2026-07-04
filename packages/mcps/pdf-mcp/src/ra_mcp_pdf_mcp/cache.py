@@ -5,11 +5,20 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections import OrderedDict
+from urllib.parse import urlparse
 
 import httpx
+from opentelemetry import trace
+from opentelemetry.trace import SpanKind
 
 
 logger = logging.getLogger("ra_mcp.pdf.cache")
+_tracer = trace.get_tracer("ra_mcp.pdf.cache")
+
+
+def _host(url: str) -> str:
+    return urlparse(url).hostname or ""
+
 
 MAX_PDF_SIZE = 200 * 1024 * 1024  # 200 MB — largest single PDF we'll cache
 MAX_PDF_CACHE_BYTES = 512 * 1024 * 1024  # 512 MB total across all cached PDF bytes
@@ -109,6 +118,13 @@ def schedule_prefetch(url: str) -> None:
 
 
 async def _prefetch(url: str) -> None:
+    # Detached background task (fired from display_pdf), so it lives outside the
+    # tool's SERVER span — give it its own span so failures aren't log-only.
+    with _tracer.start_as_current_span("prefetch pdf", attributes={"server.address": _host(url)}):
+        await _prefetch_inner(url)
+
+
+async def _prefetch_inner(url: str) -> None:
     async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
         if url not in pdf_cache:
             try:
@@ -141,31 +157,36 @@ async def read_pdf_range(url: str, offset: int, length: int) -> tuple[bytes, int
         data = pdf_cache[url]
         return data[offset : offset + length], len(data)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
-        end_byte = offset + length - 1
-        resp = await client.get(url, headers={"Range": f"bytes={offset}-{end_byte}"})
+    with _tracer.start_as_current_span(
+        "fetch pdf range",
+        kind=SpanKind.CLIENT,
+        attributes={"server.address": _host(url), "url.full": url, "http.request.method": "GET"},
+    ):
+        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, read=120.0), follow_redirects=True) as client:
+            end_byte = offset + length - 1
+            resp = await client.get(url, headers={"Range": f"bytes={offset}-{end_byte}"})
 
-        if resp.status_code == 206:
-            content_range = resp.headers.get("Content-Range", "")
-            total = 0
-            if "/" in content_range:
-                size_str = content_range.rsplit("/", 1)[-1]
-                if size_str != "*":
-                    total = int(size_str)
-            return resp.content, total
+            if resp.status_code == 206:
+                content_range = resp.headers.get("Content-Range", "")
+                total = 0
+                if "/" in content_range:
+                    size_str = content_range.rsplit("/", 1)[-1]
+                    if size_str != "*":
+                        total = int(size_str)
+                return resp.content, total
 
-        if resp.status_code == 501:
-            resp = await client.get(url)
+            if resp.status_code == 501:
+                resp = await client.get(url)
+                resp.raise_for_status()
+
+            if resp.status_code == 200:
+                data = resp.content
+                content_length = int(resp.headers.get("Content-Length", len(data)))
+                if content_length > MAX_PDF_SIZE:
+                    msg = f"PDF too large to cache: {content_length} bytes (max {MAX_PDF_SIZE})"
+                    raise ValueError(msg)
+                pdf_cache[url] = data
+                return data[offset : offset + length], len(data)
+
             resp.raise_for_status()
-
-        if resp.status_code == 200:
-            data = resp.content
-            content_length = int(resp.headers.get("Content-Length", len(data)))
-            if content_length > MAX_PDF_SIZE:
-                msg = f"PDF too large to cache: {content_length} bytes (max {MAX_PDF_SIZE})"
-                raise ValueError(msg)
-            pdf_cache[url] = data
-            return data[offset : offset + length], len(data)
-
-        resp.raise_for_status()
-        return b"", 0  # unreachable
+            return b"", 0  # unreachable

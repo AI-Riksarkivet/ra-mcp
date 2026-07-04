@@ -8,6 +8,7 @@ dependencies = [
     "fastmcp==3.4.2",
     "py-key-value-aio[memory]>=0.4.4",
     "ra-mcp-dataset-lib",
+    "opentelemetry-api>=1.28.0",
 ]
 license = "Apache-2.0"
 
