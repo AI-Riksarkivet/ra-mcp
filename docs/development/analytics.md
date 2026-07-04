@@ -28,6 +28,13 @@ Every search records the term on a span:
 
 Query your trace store for these span attributes to see the actual terms, grouped by dataset.
 
+### "What do people open, view, and geocode?"
+Searching is only half of intent — what users then *open* is the other half:
+
+- **Viewer** → `view_document` / `viewer_navigate` spans, attributes **`view.reference_code`** (which archive document) and **`view.pages`**.
+- **PDF viewer** → `display_pdf` span, attribute **`pdf.url`** (which guide/PDF).
+- **Geocoding** → `tora search` spans, attributes **`geocode.place`** (+ `geocode.parish` / `geocode.county`) — which historical places people look up.
+
 ### "Which datasets / features are most used?"
 - **`ra_mcp.lancedb.queries`** counter, by **`db.collection.name`** → per-dataset (and guide) search volume.
 - **`ra_mcp.search.requests`** counter, by `search.type` → live transcribed vs metadata search volume.
@@ -58,9 +65,10 @@ Search spans carry **`mcp.session.id`** (when the client sends it); correlate sp
 | Dataset search (×13) | ✅ span | ✅ by dataset | ✅ results + duration | ✅ span+log+counter |
 | PDF guide search | ✅ span | ✅ | ✅ | ✅ |
 | Live archive search | ✅ span | ✅ by type | ✅ results | ✅ |
-| Browse | (ref code on span) | ✅ | pages / empty pages | ✅ |
-| Viewer / PDF open | tool span | via spanmetrics | — | FastMCP span |
-| Geocoding (tora) | span | — | — | ✅ span+log |
-| HTR | tool span | — | — | ✅ log |
+| Browse | ref code on span | ✅ | pages / empty pages + duration | ✅ |
+| Viewer open | ✅ `view.reference_code` + `view.pages` | via spanmetrics | — | FastMCP span |
+| PDF open | ✅ `pdf.url` | via spanmetrics | — | FastMCP span |
+| Geocoding (tora) | ✅ `geocode.place` (+parish/county) | via spanmetrics | — | ✅ span+log |
+| HTR | tool span | via spanmetrics | — | ✅ log |
 
 > Terms and reference codes are user intent, exposed only in traces (sampled, access-controlled), never in metric labels. Treat your trace/log backend accordingly.
