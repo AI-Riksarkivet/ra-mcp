@@ -4,6 +4,7 @@ Handles document browsing, page fetching, and metadata retrieval.
 """
 
 import logging
+import time
 
 from opentelemetry.trace import StatusCode
 
@@ -25,6 +26,7 @@ _meter = get_meter("ra_mcp.browse_operations")
 _browse_counter = _meter.create_counter("ra_mcp.browse.requests", unit="{request}", description="Browse operations executed")
 _pages_histogram = _meter.create_histogram("ra_mcp.browse.pages", unit="{page}", description="Pages returned per browse request")
 _empty_pages_counter = _meter.create_counter("ra_mcp.browse.empty_pages", unit="{page}", description="Blank pages encountered")
+_browse_duration = _meter.create_histogram("ra_mcp.browse.request.duration", unit="s", description="Browse operation duration (success + error)")
 
 
 class BrowseOperations:
@@ -80,6 +82,7 @@ class BrowseOperations:
                 **({"mcp.session.id": session_id} if session_id else {}),
             },
         ) as span:
+            start = time.perf_counter()
             try:
                 # Fetch OAI-PMH metadata once and derive manifest ID from it
                 oai_metadata = await self.oai_client.get_metadata(reference_code)
@@ -120,6 +123,10 @@ class BrowseOperations:
                 record_span_exception(logger, e)
                 _browse_counter.add(1, {"browse.status": "error"})
                 raise
+            finally:
+                # Record latency for both success and error so browse gets full RED
+                # (rate/errors/duration), matching the search + lancedb surfaces.
+                _browse_duration.record(time.perf_counter() - start)
 
     async def _fetch_page_contexts(
         self,

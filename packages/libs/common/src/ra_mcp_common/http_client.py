@@ -360,7 +360,11 @@ class HTTPClient:
                     logger.info("GET %s - %.3fs - 404 NOT FOUND", url, duration)
                     return None
                 if response.status_code != 200:
+                    # 403/410/non-retried 5xx etc. are genuine errors — mark the span
+                    # and count them, not just a warning that leaves the span green.
                     logger.warning("GET %s - %.3fs - %d", url, duration, response.status_code)
+                    span.set_status(StatusCode.ERROR, f"HTTP {response.status_code}")
+                    self._error_counter.add(1, {**metric_attrs, "error.type": str(response.status_code)})
                     return None
 
                 content = response.content
