@@ -25,6 +25,16 @@ To confirm, run `/help` and look under **Custom Agents and Skills** — the eigh
 - **Automatically (the normal way):** the assistant loads the right skill on its own based on what you ask — e.g. asking it to search the archives triggers `/archive-search`. You don't have to type anything.
 - **Manually:** you can force a specific one by typing its name, e.g. `/ra-mcp-tools:archive-search`.
 
+## On claude.ai and other MCP clients
+
+If you use ra-mcp on **claude.ai** (or any MCP client that isn't Claude Code), you **don't install anything separately** — just [connect the ra-mcp MCP server](../getting-started/index.md#connect-to-claudeai). The server publishes these same skills as **MCP resources**, so the assistant can consult them while it works. The `/plugin` steps above are **only** for Claude Code, where they become auto-invoked Claude Code skills.
+
+| Client | How you get the skills |
+|--------|------------------------|
+| **claude.ai** (web) | Automatic — connect the MCP server; skills arrive as MCP resources. No install. |
+| **Claude Desktop / VS Code / Cursor** | Automatic — same as claude.ai, via the connected MCP server. |
+| **Claude Code (CLI)** | Install the `ra-mcp-tools` plugin (the `/plugin` steps above) for auto-invoked skills. |
+
 ## The eight skills
 
 ---

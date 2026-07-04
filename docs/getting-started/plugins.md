@@ -1,6 +1,9 @@
-# Adding Plugins
+# Adding More MCP Servers
 
-ra-mcp can be combined with other MCP servers to create a richer research environment. A common addition is **HTR transcription** — a server that can transcribe handwritten document images using AI.
+ra-mcp can be combined with other **MCP servers** to create a richer research environment. A common addition is **HTR transcription** — a server that can transcribe handwritten document images using AI.
+
+!!! note "Looking for the ra-mcp *skills*?"
+    The ra-mcp **skills** (research-workflow guides like `/archive-search`) are **not** MCP servers — see [Skills](../tools/skills.md) for how to get them (automatic on claude.ai, `/plugin install` on Claude Code). This page is only about connecting *additional MCP servers*.
 
 ---
 
