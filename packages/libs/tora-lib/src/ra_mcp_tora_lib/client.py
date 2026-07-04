@@ -4,14 +4,19 @@ from __future__ import annotations
 
 import json
 import logging
+from urllib.parse import urlparse
 
 import httpx
+from opentelemetry.trace import SpanKind, StatusCode
+
+from ra_mcp_common.telemetry import get_tracer
 
 from .config import SPARQL_ENDPOINT
 from .models import ToraImage, ToraMapSource, ToraPlace
 
 
 logger = logging.getLogger("ra_mcp.tora.client")
+_tracer = get_tracer("ra_mcp.tora.client")
 
 
 def _build_search_query(name: str, parish: str | None = None, county: str | None = None) -> str:
@@ -53,19 +58,27 @@ async def _sparql_post(query: str) -> dict | None:
     The TORA endpoint only returns JSON for POST requests with
     application/x-www-form-urlencoded encoding.
     """
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(
-            SPARQL_ENDPOINT,
-            data={"query": query},
-            headers={
-                "Accept": "application/sparql-results+json",
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        )
-        if response.status_code != 200:
-            logger.error("TORA SPARQL returned %d", response.status_code)
-            return None
-        return json.loads(response.content)
+    with _tracer.start_as_current_span(
+        "tora sparql",
+        kind=SpanKind.CLIENT,
+        attributes={"server.address": urlparse(SPARQL_ENDPOINT).hostname or "", "db.system.name": "sparql"},
+    ) as span:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                SPARQL_ENDPOINT,
+                data={"query": query},
+                headers={
+                    "Accept": "application/sparql-results+json",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            )
+            if response.status_code != 200:
+                # Mark the span ERROR so a down geocoding endpoint isn't a silent
+                # empty result with no trace/metric signal.
+                span.set_status(StatusCode.ERROR, f"HTTP {response.status_code}")
+                logger.error("TORA SPARQL returned %d", response.status_code)
+                return None
+            return json.loads(response.content)
 
 
 def _build_maps_query(tora_ids: list[str]) -> str:

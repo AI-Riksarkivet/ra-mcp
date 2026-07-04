@@ -105,6 +105,9 @@ async def htr_transcribe(
     try:
         client = _get_client()
     except Exception as e:
+        # Log with the stacktrace before re-raising — ToolError only carries the
+        # message, so without this the original traceback is lost from the logs.
+        logger.error("HTR Space connection failed: %s", e, exc_info=True)
         raise ToolError(f"Failed to connect to HTR Space at {HTR_SPACE_URL}: {e}") from e
 
     try:
@@ -117,6 +120,7 @@ async def htr_transcribe(
             api_name="/htr_transcribe",
         )
     except Exception as e:
+        logger.error("HTR transcription failed: %s", e, exc_info=True)
         raise ToolError(f"HTR transcription failed: {e}") from e
 
     return HtrResult(**result)
