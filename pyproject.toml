@@ -30,7 +30,6 @@ dependencies = [
     "cryptography>=46.0.7",
     "fastmcp==3.4.2",
     "requests>=2.33.0",
-    "nltk>=3.9.4",
 ]
 
 license = "Apache-2.0"
