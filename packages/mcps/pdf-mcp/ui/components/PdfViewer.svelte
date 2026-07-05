@@ -158,10 +158,25 @@ let renderGeneration = 0;
 // The document we've already fit-to-width, so auto-fit runs once per document rather than
 // clamping (and re-triggering) on every render.
 let fittedDoc: PDFDocumentProxy | null = null;
+// Bumped by the ResizeObserver to re-run the render effect (and re-fit) when the host panel
+// or window resizes — otherwise the page keeps its old width and never reflows.
+let resizeTick = $state(0);
+
+// Reflow on container resize: re-fit to the new width and re-render.
+$effect(() => {
+  if (!viewerBodyEl) return;
+  const ro = new ResizeObserver(() => {
+    fittedDoc = null; // allow one re-fit to the new width
+    resizeTick++;
+  });
+  ro.observe(viewerBodyEl);
+  return () => ro.disconnect();
+});
 
 $effect(() => {
   const page = currentPage;
   let s = scale;
+  void resizeTick; // re-run when the container resizes
 
   if (!pdfDocument || !canvasEl || !textLayerEl) return;
 

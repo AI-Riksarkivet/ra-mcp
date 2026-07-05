@@ -101,8 +101,10 @@ let searchMatches = $derived.by(() => {
   const term = searchTerm.toLowerCase();
   return textLines.filter(l => l.transcription.toLowerCase().includes(term));
 });
-let searchMatchPolygons = $derived(searchMatches.length > 0 ? buildPolygonHits(searchMatches) : []);
 let searchMatchIdSet = $derived(new Set(searchMatches.map(l => l.id)));
+// Reuse the already-parsed currentPolygons instead of re-running buildPolygonHits over the
+// matched subset (which re-parses each polygon string on every search keystroke).
+let searchMatchPolygons = $derived(searchMatchIdSet.size > 0 ? currentPolygons.filter(p => searchMatchIdSet.has(p.lineId)) : []);
 
 // Highlight polygon style (uses server-provided color or default)
 let highlightStyle = $derived({

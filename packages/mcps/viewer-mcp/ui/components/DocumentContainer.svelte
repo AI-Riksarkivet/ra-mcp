@@ -44,6 +44,7 @@ let globalSearchDebounce: ReturnType<typeof setTimeout> | null = null;
 let pageCache = new LRUCache<number, PageData>({ max: 10 });
 let inFlight = new Map<number, Promise<PageData | null>>();
 let currentPage = $state.raw<PageData | null>(null);
+let pageError = $state(false);
 let lastRenderedIndex = -1;
 let prevPageUrls: ViewerData["pageUrls"] | null = null;
 
@@ -241,10 +242,17 @@ async function fetchAndRenderPage(index: number) {
     return;
   }
 
+  pageError = false;
   const page = await fetchPageData(index);
-  if (page && currentPageIndex === index) {
+  if (currentPageIndex !== index) return; // navigation superseded this fetch
+  if (page) {
     currentPage = page;
     prefetchAdjacentPages(index);
+  } else {
+    // load_page failed — don't spin forever, and don't leave the previous page's scan under
+    // the new page number. Clear it and surface a retry.
+    currentPage = null;
+    pageError = true;
   }
 }
 
@@ -334,6 +342,11 @@ $effect(() => {
       onGlobalNavigate={handleGlobalNavigate}
       {isNarrow}
     />
+  {:else if pageError}
+    <div class="page-error">
+      <p>Couldn't load this page.</p>
+      <button class="page-retry" onclick={() => fetchAndRenderPage(currentPageIndex)}>Retry</button>
+    </div>
   {:else}
     <div class="page-loading">
       <div class="page-loading-shimmer"></div>
@@ -367,6 +380,26 @@ $effect(() => {
 .thumbnail-wrapper.collapsed {
   width: 0;
   min-width: 0;
+}
+
+.page-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+}
+
+.page-retry {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.35rem 0.9rem;
+  color: var(--color-text-primary, inherit);
+  background: var(--color-background-primary, transparent);
+  border: 1px solid var(--color-border-primary, currentColor);
+  border-radius: var(--border-radius-md, 6px);
 }
 
 .page-loading {
