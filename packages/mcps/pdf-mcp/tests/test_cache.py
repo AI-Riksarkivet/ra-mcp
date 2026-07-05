@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+import ra_mcp_pdf_mcp.cache as _cache_mod
 from ra_mcp_pdf_mcp.cache import (
     MAX_PDF_SIZE,
     LRUCache,
@@ -148,17 +149,9 @@ async def test_read_pdf_range_from_cache_beyond_end():
 
 async def test_read_pdf_range_http_206():
     url = "https://example.com/remote.pdf"
-    mock_response = MagicMock()
-    mock_response.status_code = 206
-    mock_response.content = b"partial-data"
-    mock_response.headers = {"Content-Range": "bytes 0-11/1000"}
+    mock_response = MagicMock(status_code=206, content=b"partial-data", headers={"Content-Range": "bytes 0-11/1000"})
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-
-    with patch("ra_mcp_pdf_mcp.cache.httpx.AsyncClient", return_value=mock_client):
+    with patch.object(_cache_mod._http, "get", AsyncMock(return_value=mock_response)):
         chunk, total = await read_pdf_range(url, 0, 12)
 
     assert chunk == b"partial-data"
@@ -167,17 +160,9 @@ async def test_read_pdf_range_http_206():
 
 async def test_read_pdf_range_http_206_unknown_size():
     url = "https://example.com/remote.pdf"
-    mock_response = MagicMock()
-    mock_response.status_code = 206
-    mock_response.content = b"data"
-    mock_response.headers = {"Content-Range": "bytes 0-3/*"}
+    mock_response = MagicMock(status_code=206, content=b"data", headers={"Content-Range": "bytes 0-3/*"})
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-
-    with patch("ra_mcp_pdf_mcp.cache.httpx.AsyncClient", return_value=mock_client):
+    with patch.object(_cache_mod._http, "get", AsyncMock(return_value=mock_response)):
         chunk, total = await read_pdf_range(url, 0, 4)
 
     assert chunk == b"data"
@@ -191,18 +176,9 @@ async def test_read_pdf_range_http_200_caches():
     url = "https://example.com/full.pdf"
     full_data = b"A" * 500
 
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.content = full_data
-    mock_response.headers = {"Content-Length": str(len(full_data))}
-    mock_response.raise_for_status = MagicMock()
+    mock_response = MagicMock(status_code=200, content=full_data, headers={"Content-Length": str(len(full_data))})
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-
-    with patch("ra_mcp_pdf_mcp.cache.httpx.AsyncClient", return_value=mock_client):
+    with patch.object(_cache_mod._http, "get", AsyncMock(return_value=mock_response)):
         chunk, total = await read_pdf_range(url, 10, 50)
 
     assert chunk == full_data[10:60]
@@ -212,18 +188,9 @@ async def test_read_pdf_range_http_200_caches():
 
 async def test_read_pdf_range_too_large_raises():
     url = "https://example.com/huge.pdf"
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.content = b"x"
-    mock_response.headers = {"Content-Length": str(MAX_PDF_SIZE + 1)}
-    mock_response.raise_for_status = MagicMock()
+    mock_response = MagicMock(status_code=200, content=b"x", headers={"Content-Length": str(MAX_PDF_SIZE + 1)})
 
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(return_value=mock_response)
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-
-    with patch("ra_mcp_pdf_mcp.cache.httpx.AsyncClient", return_value=mock_client), pytest.raises(ValueError, match="too large"):
+    with patch.object(_cache_mod._http, "get", AsyncMock(return_value=mock_response)), pytest.raises(ValueError, match="too large"):
         await read_pdf_range(url, 0, 100)
 
 
@@ -234,22 +201,77 @@ async def test_read_pdf_range_501_falls_back_to_full_get():
     url = "https://example.com/no-range.pdf"
     full_data = b"full-content-here"
 
-    resp_501 = MagicMock()
-    resp_501.status_code = 501
+    resp_501 = MagicMock(status_code=501)
+    resp_200 = MagicMock(status_code=200, content=full_data, headers={"Content-Length": str(len(full_data))})
 
-    resp_200 = MagicMock()
-    resp_200.status_code = 200
-    resp_200.content = full_data
-    resp_200.headers = {"Content-Length": str(len(full_data))}
-    resp_200.raise_for_status = MagicMock()
-
-    mock_client = AsyncMock()
-    mock_client.get = AsyncMock(side_effect=[resp_501, resp_200])
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=None)
-
-    with patch("ra_mcp_pdf_mcp.cache.httpx.AsyncClient", return_value=mock_client):
+    with patch.object(_cache_mod._http, "get", AsyncMock(side_effect=[resp_501, resp_200])):
         chunk, total = await read_pdf_range(url, 0, 5)
 
     assert chunk == b"full-"
     assert total == len(full_data)
+
+
+# ── streaming size guard (_fetch_pdf_bounded) ────────────────────────
+
+
+async def test_fetch_pdf_bounded_rejects_oversized_content_length():
+    # A hostile Content-Length must be rejected BEFORE the body is buffered.
+    resp = MagicMock()
+    resp.headers = {"Content-Length": str(MAX_PDF_SIZE + 1)}
+    resp.raise_for_status = MagicMock()
+
+    async def _no_bytes():
+        yield b""  # pragma: no cover — must not be reached
+        raise AssertionError("body should not be streamed when Content-Length is too large")
+
+    resp.aiter_bytes = _no_bytes
+    stream_cm = MagicMock()
+    stream_cm.__aenter__ = AsyncMock(return_value=resp)
+    stream_cm.__aexit__ = AsyncMock(return_value=None)
+
+    with patch.object(_cache_mod._http, "stream", MagicMock(return_value=stream_cm)):
+        result = await _cache_mod._fetch_pdf_bounded("https://example.com/huge.pdf")
+
+    assert result is None
+
+
+async def test_fetch_pdf_bounded_aborts_mid_stream_when_total_exceeds():
+    # No Content-Length header, but the streamed bytes exceed the cap partway through.
+    resp = MagicMock()
+    resp.headers = {}
+    resp.raise_for_status = MagicMock()
+
+    async def _big_body():
+        # Two chunks whose total exceeds the cap; the second push it over.
+        yield b"x" * (MAX_PDF_SIZE - 1)
+        yield b"xx"
+
+    resp.aiter_bytes = _big_body
+    stream_cm = MagicMock()
+    stream_cm.__aenter__ = AsyncMock(return_value=resp)
+    stream_cm.__aexit__ = AsyncMock(return_value=None)
+
+    with patch.object(_cache_mod._http, "stream", MagicMock(return_value=stream_cm)):
+        result = await _cache_mod._fetch_pdf_bounded("https://example.com/huge.pdf")
+
+    assert result is None
+
+
+async def test_fetch_pdf_bounded_returns_bytes_when_within_limit():
+    resp = MagicMock()
+    resp.headers = {"Content-Length": "6"}
+    resp.raise_for_status = MagicMock()
+
+    async def _body():
+        yield b"abc"
+        yield b"def"
+
+    resp.aiter_bytes = _body
+    stream_cm = MagicMock()
+    stream_cm.__aenter__ = AsyncMock(return_value=resp)
+    stream_cm.__aexit__ = AsyncMock(return_value=None)
+
+    with patch.object(_cache_mod._http, "stream", MagicMock(return_value=stream_cm)):
+        result = await _cache_mod._fetch_pdf_bounded("https://example.com/ok.pdf")
+
+    assert result == b"abcdef"
