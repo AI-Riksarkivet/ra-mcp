@@ -137,6 +137,10 @@ async function fetchChunk(url: string, offset: number): Promise<{
 function startLoadingPdf(url: string, startPage: number) {
   if (loadCancelFn) loadCancelFn();
 
+  // Dispose the previous pdf.js document (worker + decoded pages) before dropping the
+  // reference — the LLM/poll-driven document-switch path otherwise leaks it every switch
+  // (handleGallerySelect/backToGallery already destroy; this path didn't).
+  if (pdfDocument) pdfDocument.destroy();
   pdfDocument = null;
   totalPages = 0;
   currentPage = startPage;
@@ -239,7 +243,12 @@ function startLoadingPdf(url: string, startPage: number) {
 
       streamingMessage = "Rendering...";
       const doc = await loadPdfFromBytes(pdfBytes);
-      if (cancelled) return;
+      if (cancelled) {
+        // A newer load superseded this one while it was decoding — dispose the orphan
+        // instead of leaking its worker/page memory.
+        doc.destroy();
+        return;
+      }
 
       pdfDocument = doc;
       totalPages = doc.numPages;
@@ -367,11 +376,23 @@ onMount(async () => {
   };
 
   instance.onteardown = async () => {
+    // The cleanup returned from an async onMount never runs (Svelte only invokes a
+    // synchronously-returned cleanup), so dispose here instead: stop polling, cancel any
+    // in-flight load, and destroy the pdf.js document (worker + decoded page memory).
     stopPolling();
+    if (loadCancelFn) loadCancelFn();
+    if (pdfDocument) pdfDocument.destroy();
     return {};
   };
 
-  await instance.connect();
+  try {
+    await instance.connect();
+  } catch (err: any) {
+    // Don't leave the UI wedged on an infinite "Connecting..." spinner (with an unhandled
+    // rejection) if the host handshake fails — surface it.
+    error = `Couldn't connect to the host: ${err?.message ?? err}`;
+    return;
+  }
   app = instance;
   hostContext = instance.getHostContext();
   if (window.innerWidth >= 640) {
@@ -431,11 +452,8 @@ onMount(async () => {
     if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
   }
 
-  return () => {
-    stopPolling();
-    if (loadCancelFn) loadCancelFn();
-    if (pdfDocument) { pdfDocument.destroy(); }
-  };
+  // NB: an async onMount can't return a cleanup (Svelte ignores it) — teardown is handled
+  // by instance.onteardown above.
 });
 </script>
 
@@ -448,7 +466,7 @@ onMount(async () => {
   style:padding-bottom={hostContext?.safeAreaInsets?.bottom ? `${hostContext.safeAreaInsets.bottom}px` : undefined}
   style:padding-left={hostContext?.safeAreaInsets?.left ? `${hostContext.safeAreaInsets.left}px` : undefined}
 >
-  {#if !app}
+  {#if !app && !error}
     <div class="loading">
       <div class="spinner"></div>
       <span>Connecting...</span>

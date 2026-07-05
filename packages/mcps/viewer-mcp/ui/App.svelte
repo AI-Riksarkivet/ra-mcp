@@ -141,6 +141,10 @@ onMount(async () => {
   };
 
   instance.onerror = (err) => {
+    // Ignore the benign Svelte-5 TDZ notification the SDK fires before runes init
+    // (matches pdf-mcp) — otherwise a non-fatal error after a document is loaded replaces
+    // the whole viewer with the error state and wipes the session.
+    if (err?.message?.includes("before initialization")) return;
     console.error("App error:", err);
     error = err.message;
   };
@@ -154,10 +158,19 @@ onMount(async () => {
     return {};
   };
 
-  await instance.connect();
+  try {
+    await instance.connect();
+  } catch (err: any) {
+    // Surface a failed handshake instead of wedging on an infinite "Connecting..." spinner.
+    error = `Couldn't connect to the host: ${err?.message ?? err}`;
+    return;
+  }
   app = instance;
   hostContext = instance.getHostContext();
-  instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+  // Match pdf-mcp: don't seize the whole surface on a narrow inline panel.
+  if (window.innerWidth >= 640) {
+    instance.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
+  }
 
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let pollInterval = 2000;
@@ -215,7 +228,7 @@ onMount(async () => {
   style:padding-bottom={hostContext?.safeAreaInsets?.bottom ? `${hostContext.safeAreaInsets.bottom}px` : undefined}
   style:padding-left={hostContext?.safeAreaInsets?.left ? `${hostContext.safeAreaInsets.left}px` : undefined}
 >
-  {#if !app}
+  {#if !app && !error}
     <div class="loading">Connecting...</div>
   {:else if isStreaming && !viewerData}
     <div class="skeleton">
@@ -243,6 +256,9 @@ onMount(async () => {
     <div class="error-state">
       <h2>Error</h2>
       <p>{error}</p>
+      {#if viewerData}
+        <button class="error-dismiss" onclick={() => { error = null; }}>Back to document</button>
+      {/if}
     </div>
   {/if}
 </main>
@@ -335,5 +351,16 @@ onMount(async () => {
 .error-state p {
   margin: var(--spacing-sm, 0.5rem) 0;
   color: var(--color-text-secondary, light-dark(#5c5c5c, #a8a6a3));
+}
+
+.error-dismiss {
+  margin-top: var(--spacing-md, 1rem);
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-text-primary, inherit);
+  background: var(--color-background-primary, transparent);
+  border: 1px solid var(--color-border-primary, currentColor);
+  border-radius: var(--border-radius-md, 6px);
 }
 </style>
