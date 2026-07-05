@@ -32,7 +32,7 @@ def search(
         str,
         typer.Argument(help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"),
     ],
-    limit: Annotated[int, typer.Option("--limit", help="Maximum number of records to fetch from API (pagination size)")] = DEFAULT_LIMIT,
+    limit: Annotated[int, typer.Option("--limit", min=1, help="Maximum number of records to fetch from API (pagination size). Must be >= 1")] = DEFAULT_LIMIT,
     max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of records to display in output")] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
         int | None,
