@@ -86,6 +86,11 @@ let showSearch = $state(false);
 let showHighlights = $state(true);
 let activeMatchIndex = $state(0);
 
+// Page-image load status — the text layer arrives before the scan is decoded, so without
+// this the canvas sits blank (first open) or shows the PREVIOUS page's scan with no feedback.
+let imageLoading = $state(false);
+let imageError = $state(false);
+
 let textLines = $derived(pageData?.textLayer?.textLines ?? []);
 let hasTextLines = $derived(textLines.length > 0);
 let currentPolygons = $derived(textLines.length > 0 ? buildPolygonHits(textLines) : []);
@@ -321,6 +326,8 @@ $effect(() => {
   resetContextState();
 
   let cancelled = false;
+  imageLoading = true;
+  imageError = false;
 
   // Decode off the paint path (and reuse a cached decode) so the first drawImage
   // doesn't stall the main thread — the dominant page-navigation jank.
@@ -330,10 +337,14 @@ $effect(() => {
       // Draw the image in the text layer's ALTO coordinate space so the polygon
       // overlays (native ALTO coords) line up with the downscaled IIIF image.
       controller.setImage(img, pd.textLayer?.pageWidth ?? 0, pd.textLayer?.pageHeight ?? 0);
+      imageLoading = false;
       scheduleContextUpdate(getContextState());
     })
     .catch(() => {
-      if (!cancelled) console.error("Failed to load page image");
+      if (cancelled) return;
+      console.error("Failed to load page image");
+      imageLoading = false;
+      imageError = true;
     });
 
   return () => {
@@ -380,6 +391,15 @@ onDestroy(() => {
       onpointerleave={onPointerLeave}
       onwheel={onWheel}
     ></canvas>
+    {#if imageLoading}
+      <div class="canvas-status" aria-live="polite">
+        <div class="canvas-spinner"></div>
+      </div>
+    {:else if imageError}
+      <div class="canvas-status canvas-status--error" role="alert">
+        <span>Couldn't load this page's image.</span>
+      </div>
+    {/if}
     <div class="top-left-info">
       {#if showNavButtons}
         <button class="nav-btn" disabled={pageIndex <= 0} onclick={onPrevPage} aria-label="Previous page">
@@ -500,6 +520,38 @@ onDestroy(() => {
   background: var(--color-background-secondary, light-dark(#f5f4ed, #201d18));
   overflow: hidden;
   position: relative;
+  border-radius: var(--border-radius-md, 6px);
+}
+
+.canvas-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.canvas-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border-primary, light-dark(#d0cec7, #3a362f));
+  border-top-color: var(--color-accent, #2563eb);
+  border-radius: 50%;
+  animation: canvas-spin 0.8s linear infinite;
+}
+
+@keyframes canvas-spin {
+  to { transform: rotate(360deg); }
+}
+
+.canvas-status--error span {
+  font-size: 0.85rem;
+  color: var(--color-text-danger, #b91c1c);
+  background: var(--color-background-primary, light-dark(#ffffff, #2a2620));
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--color-border-danger, light-dark(#fca5a5, #7f1d1d));
   border-radius: var(--border-radius-md, 6px);
 }
 
