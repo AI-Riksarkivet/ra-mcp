@@ -203,7 +203,7 @@ onDestroy(() => {
     {#if outlineLoading}
       <div class="loading-message">Loading...</div>
     {:else if mode === "outline" && outline}
-      {#each outline as item (item.title)}
+      {#each outline as item, i (i)}
         {@render outlineNode(item, 0)}
       {/each}
     {:else}
@@ -237,7 +237,7 @@ onDestroy(() => {
     {item.title}
   </button>
   {#if item.items.length > 0}
-    {#each item.items as child (child.title)}
+    {#each item.items as child, i (i)}
       {@render outlineNode(child, depth + 1)}
     {/each}
   {/if}
