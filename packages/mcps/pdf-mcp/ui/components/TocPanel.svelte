@@ -77,7 +77,11 @@ $effect(() => {
 // Thumbnail lazy loading
 // ---------------------------------------------------------------------------
 
-const THUMB_HEIGHT = 140;
+// A TOC thumbnail is a 3:4-portrait image on a clamp(180px,25vw,300px) panel plus a
+// label, so its real row height is ~245-405px. Kept just under the minimum real height
+// so the lazy-load window renders slightly ahead of the viewport rather than lagging it
+// (which would leave visible thumbnails blank after a fast scroll).
+const THUMB_HEIGHT = 240;
 const BUFFER = 2;
 
 let scrollTop = $state(0);

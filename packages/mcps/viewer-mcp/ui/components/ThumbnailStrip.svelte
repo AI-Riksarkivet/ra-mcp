@@ -57,16 +57,21 @@ let resizing = $state(false);
 // ---------------------------------------------------------------------------
 
 const ITEM_HEIGHT = 155;
+const ITEM_WIDTH = 62; // horizontal strip item: ~56px inner + gap
 const BUFFER = 5;
 
-let scrollTop = $state(0);
-let containerHeight = $state(0);
+// Virtual-list metrics along the scroll axis — vertical by default, horizontal in the
+// narrow-viewport strip. Driving these off the wrong axis (the old vertical-only code)
+// froze the window at the first ~6 items in horizontal mode.
+let scrollPos = $state(0);
+let viewportExtent = $state(0);
 
-let startIndex = $derived(Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER));
-let endIndex = $derived(Math.min(totalPages, Math.ceil((scrollTop + containerHeight) / ITEM_HEIGHT) + BUFFER));
+let itemExtent = $derived(horizontal ? ITEM_WIDTH : ITEM_HEIGHT);
+let startIndex = $derived(Math.max(0, Math.floor(scrollPos / itemExtent) - BUFFER));
+let endIndex = $derived(Math.min(totalPages, Math.ceil((scrollPos + viewportExtent) / itemExtent) + BUFFER));
 let visibleIndices = $derived(Array.from({ length: endIndex - startIndex }, (_, i) => startIndex + i));
-let topSpacerHeight = $derived(startIndex * ITEM_HEIGHT);
-let bottomSpacerHeight = $derived(Math.max(0, (totalPages - endIndex) * ITEM_HEIGHT));
+let topSpacerExtent = $derived(startIndex * itemExtent);
+let bottomSpacerExtent = $derived(Math.max(0, (totalPages - endIndex) * itemExtent));
 
 // RAF-throttled scroll handler
 let scrollRafId = 0;
@@ -76,8 +81,8 @@ function handleScroll() {
   scrollRafId = requestAnimationFrame(() => {
     scrollRafId = 0;
     if (!containerEl) return;
-    scrollTop = containerEl.scrollTop;
-    containerHeight = containerEl.clientHeight;
+    scrollPos = horizontal ? containerEl.scrollLeft : containerEl.scrollTop;
+    viewportExtent = horizontal ? containerEl.clientWidth : containerEl.clientHeight;
     triggerThumbnailLoads();
   });
 }
@@ -173,14 +178,14 @@ function scheduleBatch() {
 
 $effect(() => {
   const idx = currentPageIndex;
-  if (!containerEl || containerHeight === 0) return;
-  const itemTop = idx * ITEM_HEIGHT;
-  const itemBottom = itemTop + ITEM_HEIGHT;
-  const visTop = containerEl.scrollTop;
-  const visBottom = visTop + containerHeight;
-  if (itemTop < visTop || itemBottom > visBottom) {
-    const target = itemTop - containerHeight / 2 + ITEM_HEIGHT / 2;
-    containerEl.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+  if (!containerEl || viewportExtent === 0) return;
+  const itemStart = idx * itemExtent;
+  const itemEnd = itemStart + itemExtent;
+  const visStart = horizontal ? containerEl.scrollLeft : containerEl.scrollTop;
+  const visEnd = visStart + viewportExtent;
+  if (itemStart < visStart || itemEnd > visEnd) {
+    const target = Math.max(0, itemStart - viewportExtent / 2 + itemExtent / 2);
+    containerEl.scrollTo(horizontal ? { left: target, behavior: "smooth" } : { top: target, behavior: "smooth" });
   }
 });
 
@@ -194,13 +199,13 @@ $effect(() => {
   if (!containerEl) return;
 
   // Set initial values
-  scrollTop = containerEl.scrollTop;
-  containerHeight = containerEl.clientHeight;
+  scrollPos = horizontal ? containerEl.scrollLeft : containerEl.scrollTop;
+  viewportExtent = horizontal ? containerEl.clientWidth : containerEl.clientHeight;
   triggerThumbnailLoads();
 
   resizeObserver = new ResizeObserver(() => {
     if (!containerEl) return;
-    containerHeight = containerEl.clientHeight;
+    viewportExtent = horizontal ? containerEl.clientWidth : containerEl.clientHeight;
   });
   resizeObserver.observe(containerEl);
 
@@ -234,7 +239,7 @@ function getThumbnailUrl(index: number): string | null {
       use:resizeHandle={{ edge: 'right', min: 80, max: 250, onResize: (w) => onWidthChange?.(w), onResizeStart: () => resizing = true, onResizeEnd: () => resizing = false }}
     ></div>
   {/if}
-  <div style:height="{topSpacerHeight}px" style:flex-shrink="0"></div>
+  <div style:width={horizontal ? `${topSpacerExtent}px` : undefined} style:height={horizontal ? undefined : `${topSpacerExtent}px`} style:flex-shrink="0"></div>
   {#each visibleIndices as i (i)}
     {@const thumbUrl = getThumbnailUrl(i)}
     <div
@@ -262,7 +267,7 @@ function getThumbnailUrl(index: number): string | null {
       {/if}
     </div>
   {/each}
-  <div style:height="{bottomSpacerHeight}px" style:flex-shrink="0"></div>
+  <div style:width={horizontal ? `${bottomSpacerExtent}px` : undefined} style:height={horizontal ? undefined : `${bottomSpacerExtent}px`} style:flex-shrink="0"></div>
 </div>
 
 <style>

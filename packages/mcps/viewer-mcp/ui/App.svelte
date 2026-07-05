@@ -175,8 +175,12 @@ onMount(async () => {
       if (!viewId || !pollActive) { schedulePoll(); return; }
       try {
         const prevVersion = lastSeenVersion;
-        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: viewId } });
-        if (!result.isError) {
+        const requestedViewId = viewId;
+        const result = await instance.callServerTool({ name: "get_viewer_state", arguments: { view_id: requestedViewId } });
+        // Ignore a response whose view is no longer active — a new document may have
+        // opened while this poll was in flight, and applying the old view's state (which
+        // can carry a higher per-view version) would revert the viewer to it.
+        if (!result.isError && requestedViewId === viewId) {
           const sc = (result as any).structuredContent as Record<string, unknown> | undefined;
           if (sc) applyViewerState(sc);
         }

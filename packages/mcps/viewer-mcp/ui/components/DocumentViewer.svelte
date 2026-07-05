@@ -315,6 +315,9 @@ $effect(() => {
 
   highlightedLineId = null;
   tooltip = null;
+  // Reset the match cursor for the new page, else the SearchBar shows a stale "N/M" and
+  // the new page's first match isn't focused after cross-page next/prev navigation.
+  activeMatchIndex = 0;
   resetContextState();
 
   let cancelled = false;
