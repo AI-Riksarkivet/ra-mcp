@@ -386,6 +386,80 @@ def _discover_plugin_skills() -> list[Path]:
     return sorted(p for p in plugins_dir.glob("*/skills") if p.is_dir())
 
 
+# Idempotent read tools safe to response-cache: the live search/browse tools and
+# every dataset search. Deliberately EXCLUDES the stateful/App tools (view/display
+# create a fresh view_id, get_*_state is polled for changes, *_go_to_page mutates
+# state, htr runs an external job) — caching any of those would break the apps.
+# Rule (enforced by test_response_cache drift check): readOnlyHint tools whose name
+# contains "search" or is "browse_document". New dataset searches must be added here.
+CACHEABLE_TOOLS = frozenset(
+    {
+        "search_transcribed",
+        "search_metadata",
+        "browse_document",
+        "search_sbl",
+        "aktiebolag_search_bolag",
+        "aktiebolag_search_styrelse",
+        "court_search_domboksregister",
+        "court_search_medelstad",
+        "dds_search_doda",
+        "dds_search_fodelse",
+        "dds_search_vigsel",
+        "diplomatics_search_mpo",
+        "diplomatics_search_sdhk",
+        "faltjagare_search_faltjagare",
+        "filmcensur_search_filmreg",
+        "rosenberg_search_rosenberg",
+        "sj_search_juda",
+        "sj_search_ritningar",
+        "sjomanshus_search_liggare",
+        "sjomanshus_search_matrikel",
+        "specialsok_search_fangrullor",
+        "specialsok_search_flygvapen",
+        "specialsok_search_kurhuset",
+        "specialsok_search_press",
+        "specialsok_search_video",
+        "suffrage_search_fkpr",
+        "suffrage_search_rostratt",
+        "tora_search_tora",
+        "wincars_search_wincars",
+    }
+)
+
+
+def _add_response_cache(server: FastMCP) -> None:
+    """Attach a scoped response cache for the idempotent search/browse tools.
+
+    Off via ``RA_MCP_CACHE_ENABLED=false``. TTL from ``RA_MCP_CACHE_TTL`` (default
+    300s). Storage is in-memory unless ``RA_MCP_CACHE_DIR`` names a directory, in
+    which case a persistent DiskStore is used (survives restarts). Only
+    :data:`CACHEABLE_TOOLS` are cached — every stateful/App tool is untouched.
+    """
+    if os.getenv("RA_MCP_CACHE_ENABLED", "true").strip().lower() in {"false", "0", "no"}:
+        return
+
+    from fastmcp.server.middleware.caching import CallToolSettings, ResponseCachingMiddleware
+
+    ttl = int(os.getenv("RA_MCP_CACHE_TTL", "300"))
+    cache_dir = os.getenv("RA_MCP_CACHE_DIR")
+    if cache_dir:
+        from key_value.aio.stores.disk import DiskStore
+
+        storage = DiskStore(directory=cache_dir)
+    else:
+        from key_value.aio.stores.memory import MemoryStore
+
+        storage = MemoryStore()
+
+    server.add_middleware(
+        ResponseCachingMiddleware(
+            cache_storage=storage,
+            call_tool_settings=CallToolSettings(included_tools=list(CACHEABLE_TOOLS), ttl=ttl),
+        )
+    )
+    logger.info("Response cache enabled (ttl=%ds, store=%s, tools=%d)", ttl, "disk" if cache_dir else "memory", len(CACHEABLE_TOOLS))
+
+
 def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
     """Setup server composition using explicit providers.
 
@@ -427,6 +501,8 @@ def setup_server(server: FastMCP, enabled_modules: list[str]) -> None:
         logger.warning("⚠ No modules were successfully registered!")
     else:
         logger.info("Server composition complete. %d module(s) registered.", len(_mounted_modules))
+
+    _add_response_cache(server)
 
 
 def setup_custom_routes(server: FastMCP) -> None:

@@ -30,6 +30,7 @@ dependencies = [
     "cryptography>=46.0.7",
     "fastmcp==3.4.2",
     "requests>=2.33.0",
+    "py-key-value-aio[disk]>=0.4.4",
 ]
 
 license = "Apache-2.0"
