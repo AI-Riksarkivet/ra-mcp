@@ -22,6 +22,9 @@ let isFullscreen = $derived(hostContext?.displayMode === "fullscreen");
 let canFullscreen = $derived(hostContext?.availableDisplayModes?.includes("fullscreen") ?? false);
 let hasData = $derived(viewerData && viewerData.pageUrls.length > 0);
 let lastSeenVersion = 0;
+// request_fullscreen is a one-shot intent the server never resets; apply it edge-triggered
+// so a later unrelated version bump doesn't re-force fullscreen after the user exited it.
+let lastRequestedFullscreen = false;
 let viewId = "";
 
 function urlsChanged(newImageUrls: string[]): boolean {
@@ -48,9 +51,10 @@ function applyViewerState(sc: Record<string, unknown>) {
   lastSeenVersion = version;
   if (scViewId) viewId = scViewId;
 
-  if (requestFullscreen && app && !isFullscreen) {
+  if (requestFullscreen && !lastRequestedFullscreen && app && !isFullscreen) {
     app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
+  lastRequestedFullscreen = requestFullscreen;
 
   const documentInfo = (sc.document_info as string) ?? "";
 
