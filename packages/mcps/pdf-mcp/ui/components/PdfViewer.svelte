@@ -285,15 +285,23 @@ function startGlobalSearch() {
   })();
 }
 
-// Clear global results when search term changes
+// Reset results when the search term changes, then re-run the cross-page search after a
+// short debounce. Driving the search from the term (rather than only the "All pages"
+// button) is what makes an LLM-initiated pdf_set_search actually highlight/navigate: the
+// poll loop sets searchTerm, which lands here, opens the bar, and runs the search. It also
+// gives the user live search-on-type instead of requiring a button click.
 $effect(() => {
-  searchTerm; // track dependency
+  const term = searchTerm; // track dependency
   globalSearchMatches = [];
   globalSearchLoading = false;
   if (globalSearchCancelFn) {
     globalSearchCancelFn();
     globalSearchCancelFn = null;
   }
+  if (!term.trim()) return;
+  searchOpen = true; // ensure the search UI is visible for an externally-set term
+  const debounce = setTimeout(() => startGlobalSearch(), 300);
+  return () => clearTimeout(debounce);
 });
 
 // Navigate to next/prev page with matches
