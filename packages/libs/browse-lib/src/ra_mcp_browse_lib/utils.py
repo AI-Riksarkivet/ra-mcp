@@ -3,14 +3,19 @@ Page range parsing utilities.
 """
 
 
-def parse_page_range(page_range: str | None, total_pages: int = 1000) -> list[int]:
+def parse_page_range(page_range: str | None, total_pages: int = 10000) -> list[int]:
     """Parse page range string and return list of page numbers.
 
     Args:
         page_range: Optional string specifying pages to include. Accepts comma-separated
                    values with single pages (e.g., "5") or ranges (e.g., "1-5").
                    If None, defaults to first 20 pages.
-        total_pages: Maximum number of pages available (default: 1000).
+        total_pages: Upper bound used only to reject absurd ranges; defaults to 10000,
+                   above any real Riksarkivet volume (large church books / mantalslängder
+                   run to a few thousand pages). Browse callers don't know the true canvas
+                   count, and the actual page count fetched is bounded downstream by
+                   max_pages, so a page number above this cap is silently dropped — keep it
+                   high enough that real documents are never affected.
 
     Returns:
         Sorted list of unique page numbers within valid range.

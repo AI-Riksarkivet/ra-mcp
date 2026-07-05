@@ -45,7 +45,7 @@ def register_browse_tool(mcp: FastMCP) -> None:
         reference_code: Annotated[str, Field(description="Document reference code from search results (e.g. 'SE/RA/420422/01').")],
         pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
         highlight_term: Annotated[str | None, Field(description="Optional keyword to highlight in the transcription.")] = None,
-        max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
+        max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", ge=1, le=20)] = 20,
         dedup: Annotated[bool, Field(description="Session deduplication. True replaces already-shown pages with stubs; False forces full text.")] = True,
         research_context: Annotated[str | None, Field(description="Brief summary of the user's research goal. Used for telemetry only.")] = None,
         ctx: Context | None = None,

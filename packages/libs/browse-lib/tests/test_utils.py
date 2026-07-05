@@ -56,6 +56,13 @@ def test_parse_page_range_out_of_range_ignored():
     assert result == [5]
 
 
+def test_parse_page_range_high_pages_within_default_cap():
+    """Pages in the thousands (large church books) are kept under the default cap,
+    not silently dropped as they were under the old 1000 cap."""
+    assert parse_page_range("1200") == [1200]
+    assert parse_page_range("1100-1102") == [1100, 1101, 1102]
+
+
 @pytest.mark.parametrize(
     "page_range,total,expected",
     [

@@ -48,7 +48,7 @@ async def view_document(
     pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
     ctx: Context,
     highlight_term: Annotated[str | None, Field(description="Optional search term to pre-populate the search bar and highlight matching text lines.")] = None,
-    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
+    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", ge=1, le=20)] = 20,
 ) -> ToolResult:
     """View document pages with zoomable images and text layer overlays."""
     # Annotate the FastMCP tool-call span (no new span — see CLAUDE.md) with the
@@ -168,7 +168,7 @@ async def view_manifest(
     manifest_url: Annotated[str, Field(description="Full IIIF manifest URL (e.g. 'https://lbiiif.riksarkivet.se/sdhk!85/manifest').")],
     ctx: Context,
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
-    max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
+    max_pages: Annotated[int, Field(description="Maximum pages to load.", ge=1, le=20)] = 20,
     document_info: Annotated[
         str | None, Field(description="Optional markdown-formatted document metadata for the info panel. Overrides the manifest label if provided.")
     ] = None,
@@ -364,7 +364,7 @@ async def viewer_navigate(
     reference_code: Annotated[str, Field(description="Document reference code (e.g. 'SE/RA/420422/01').")],
     pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
-    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", le=20)] = 20,
+    max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", ge=1, le=20)] = 20,
 ) -> ToolResult:
     """Navigate the existing viewer to new pages."""
     trace.get_current_span().set_attribute("view.reference_code", reference_code)

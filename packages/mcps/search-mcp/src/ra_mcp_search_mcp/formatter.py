@@ -42,7 +42,7 @@ class PlainTextFormatter:
 
     def _format_document_header(self, lines: list[str], document) -> None:
         """Emit ref_code, institution, date, and title lines for a document."""
-        lines.append(f"📚 Document: {document.metadata.reference_code}")
+        lines.append(f"📚 Document: {document.metadata.reference_code or document.id}")
 
         if document.metadata.archival_institution:
             institution = document.metadata.archival_institution[0].caption
@@ -165,7 +165,10 @@ class PlainTextFormatter:
             if snippet_count > 0 and not has_snippets:
                 continue
 
-            ref_code = document.metadata.reference_code
+            # Match the key the dedup store is written under (_update_seen_search_state /
+            # _extract_unique_documents both use `reference_code or id`); without the
+            # fallback, records with a null reference_code never dedup and print "Document: None".
+            ref_code = document.metadata.reference_code or document.id
 
             # --- Dedup logic ---
             if seen_pages is not None and ref_code in seen_pages:

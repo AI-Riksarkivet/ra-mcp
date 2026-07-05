@@ -325,3 +325,25 @@ def test_format_search_results_shows_only_new_pages_for_seen_document():
     assert "📚 Document: SE/RA/DUP2 (previously shown — new pages only)" in out
     assert "📖 New pages: 10" in out
     assert "Page _00010: **trolldom** new" in out
+
+
+def test_format_search_results_dedups_record_with_null_reference_code_by_id():
+    # A metadata record can have a null reference_code; the dedup store keys such a
+    # record by its id, so the formatter must look it up by `reference_code or id` too —
+    # otherwise it never dedups (and would print "Document: None").
+    rec = SearchRecord(
+        id="ID-NO-REF",
+        objectType="Record",
+        type="Volume",
+        caption="Null-ref Volume",
+        metadata=Metadata(referenceCode=None, date="1669", archivalInstitution=[GenericReference(caption="Riksarkivet")]),
+        transcribedText=TranscribedText(numTotal=1, snippets=[_snippet("trolldom", ["_00005"])]),
+        _links=None,
+    )
+    out = _fmt().format_search_results(
+        _result([rec], keyword="trolldom"),
+        seen_pages={"ID-NO-REF": [5]},
+    )
+    assert "(1 previously shown document(s) omitted)" in out
+    assert "Page _00005:" not in out
+    assert "Document: None" not in out
