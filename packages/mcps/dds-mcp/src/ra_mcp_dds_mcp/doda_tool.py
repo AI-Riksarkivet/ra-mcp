@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_dds_lib import DDSSearch
 from ra_mcp_dds_lib.config import LANCEDB_URI
 
@@ -70,9 +70,8 @@ def register_doda_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search Swedish death records using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
+        if err := require_keyword(keyword, "'Andersson'"):
+            return err
 
         if research_context:
             logger.info("search_doda | context: %s", research_context)

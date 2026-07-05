@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_specialsok_lib import SpecialsokSearch
 from ra_mcp_specialsok_lib.config import LANCEDB_URI
 
@@ -50,9 +50,8 @@ def register_fangrullor_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search Östersund prison records."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'stöld'."
+        if err := require_keyword(keyword, "'stöld'"):
+            return err
 
         if research_context:
             logger.info("search_fangrullor | context: %s", research_context)

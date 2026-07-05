@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_diplomatics_lib import DiplomaticsSearch
 from ra_mcp_diplomatics_lib.config import LANCEDB_URI
 
@@ -65,9 +65,8 @@ def register_sdhk_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search SDHK medieval charter corpus using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'Magnus'."
+        if err := require_keyword(keyword, "'Magnus'"):
+            return err
 
         if research_context:
             logger.info("search_sdhk | context: %s", research_context)

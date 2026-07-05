@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_filmcensur_lib import FilmcensurSearch
 from ra_mcp_filmcensur_lib.config import LANCEDB_URI
 
@@ -62,10 +62,8 @@ def register_filmreg_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search Swedish film censorship records using full-text search."""
-        if not keyword or not keyword.strip():
-            msg = "Error: keyword must not be empty. Provide a search term, e.g. 'Bergman'."
-            mark_span_error(msg, error_type="validation")
-            return msg
+        if err := require_keyword(keyword, "'Bergman'"):
+            return err
 
         if research_context:
             logger.info("search_filmreg | context: %s", research_context)

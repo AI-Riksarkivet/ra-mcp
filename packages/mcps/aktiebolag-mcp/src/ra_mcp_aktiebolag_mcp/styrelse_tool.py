@@ -10,7 +10,7 @@ from pydantic import Field
 from ra_mcp_aktiebolag_lib import AktiebolagSearch
 from ra_mcp_aktiebolag_lib.config import LANCEDB_URI
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 
 from .formatter import format_styrelse_results
 
@@ -50,9 +50,8 @@ def register_styrelse_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search board members of Swedish companies using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'Wallenberg'."
+        if err := require_keyword(keyword, "'Wallenberg'"):
+            return err
 
         if research_context:
             logger.info("search_styrelse | context: %s", research_context)

@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_sjomanshus_lib import SjomanshusSearch
 from ra_mcp_sjomanshus_lib.config import LANCEDB_URI
 
@@ -78,9 +78,8 @@ def register_liggare_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search Sjömanshus Liggare voyage records using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'Andersson'."
+        if err := require_keyword(keyword, "'Andersson'"):
+            return err
 
         if research_context:
             logger.info("search_liggare | context: %s", research_context)

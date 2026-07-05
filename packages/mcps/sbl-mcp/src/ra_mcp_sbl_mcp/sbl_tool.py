@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_sbl_lib import SBLSearch
 from ra_mcp_sbl_lib.config import LANCEDB_URI
 
@@ -88,9 +88,8 @@ def register_sbl_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search SBL biographical articles using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'Linné'."
+        if err := require_keyword(keyword, "'Linné'"):
+            return err
 
         if research_context:
             logger.info("search_sbl | context: %s", research_context)

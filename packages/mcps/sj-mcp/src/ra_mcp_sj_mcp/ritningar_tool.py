@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_dataset_lib import get_lancedb, require_keyword
 from ra_mcp_sj_lib import SJSearch
 from ra_mcp_sj_lib.config import LANCEDB_URI
 
@@ -53,9 +53,8 @@ def register_ritningar_tool(mcp) -> None:
         ] = None,
     ) -> str:
         """Search FIRA/SIRA railway technical drawings using full-text search."""
-        if not keyword or not keyword.strip():
-            mark_span_error("keyword must not be empty", error_type="validation")
-            return "Error: keyword must not be empty. Provide a search term, e.g. 'GÖTEBORG'."
+        if err := require_keyword(keyword, "'GÖTEBORG'"):
+            return err
 
         if research_context:
             logger.info("search_ritningar | context: %s", research_context)
