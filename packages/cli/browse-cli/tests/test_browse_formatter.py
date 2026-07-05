@@ -3,20 +3,10 @@
 import pytest
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
 from ra_mcp_browse_cli.formatter import RichConsoleFormatter
 from ra_mcp_browse_lib.models import BrowseResult, PageContext
 from ra_mcp_oai_pmh_lib import OAIPMHMetadata
-from ra_mcp_search_lib.models import (
-    Metadata,
-    PageInfo,
-    RecordsResponse,
-    SearchRecord,
-    SearchResult,
-    Snippet,
-    TranscribedText,
-)
 
 
 REFERENCE_CODE = "SE/RA/310187/1"
@@ -70,71 +60,6 @@ def _make_browse_result(
     )
 
 
-def _make_search_result(
-    num_records: int = 1,
-    keyword: str = "trolldom",
-    total_hits: int = 10,
-    offset: int = 0,
-) -> SearchResult:
-    items = [
-        SearchRecord(
-            id=f"SE/RA/TEST/{i}",
-            objectType="Record",
-            type="Volume",
-            caption=f"Test Record {i}",
-            metadata=Metadata(referenceCode=f"SE/RA/TEST/{i}"),
-            transcribedText=TranscribedText(
-                numTotal=2,
-                snippets=[Snippet(text=f"snippet with {keyword}", score=0.9, pages=[PageInfo(id=f"_{j:05d}")]) for j in range(1, 3)],
-            ),
-        )
-        for i in range(num_records)
-    ]
-    response = RecordsResponse(totalHits=total_hits, items=items, hits=num_records, offset=offset)
-    return SearchResult(response=response, transcribed_text=keyword, limit=50, offset=offset)
-
-
-# ── format_text ──────────────────────────────────────────────────────────
-
-
-@pytest.mark.parametrize(
-    "text,style,expected",
-    [
-        pytest.param("hello", "bold", "[bold]hello[/bold]", id="with-style"),
-        pytest.param("plain", "", "plain", id="no-style"),
-    ],
-)
-def test_format_text(text, style, expected):
-    assert _make_formatter().format_text(text, style) == expected
-
-
-# ── format_table ─────────────────────────────────────────────────────────
-
-
-def test_format_table_returns_table():
-    table = _make_formatter().format_table(["A", "B"], [["1", "2"]], "Title")
-    assert isinstance(table, Table)
-
-
-def test_format_table_no_title():
-    table = _make_formatter().format_table(["Col"], [["val"]])
-    assert isinstance(table, Table)
-
-
-# ── format_panel ─────────────────────────────────────────────────────────
-
-
-def test_format_panel_returns_panel():
-    panel = _make_formatter().format_panel("content", "title", "blue")
-    assert isinstance(panel, Panel)
-
-
-def test_format_panel_defaults():
-    panel = _make_formatter().format_panel("content")
-    assert isinstance(panel, Panel)
-    assert panel.border_style == "green"
-
-
 # ── highlight_search_keyword ─────────────────────────────────────────────
 
 
@@ -176,126 +101,6 @@ def test_highlight_api_markers_take_precedence():
     result = _make_formatter().highlight_search_keyword("**word** and more", "more")
     assert "[bold yellow underline]word[/bold yellow underline]" in result
     assert "[bold yellow underline]more[/bold yellow underline]" not in result
-
-
-# ── format_page_context_panel ────────────────────────────────────────────
-
-
-def test_format_page_context_panel_returns_panel():
-    ctx = _make_page_context(5, "page five text")
-    panel = _make_formatter().format_page_context_panel(ctx)
-    assert isinstance(panel, Panel)
-
-
-def test_format_page_context_panel_with_highlight():
-    ctx = _make_page_context(1, "text with keyword here")
-    panel = _make_formatter().format_page_context_panel(ctx, highlight_term="keyword")
-    assert isinstance(panel, Panel)
-
-
-# ── format_search_results ───────────────────────────────────────────────
-
-
-def test_format_search_results_returns_table():
-    result = _make_search_result(num_records=2)
-    table = _make_formatter().format_search_results(result)
-    assert isinstance(table, Table)
-
-
-def test_format_search_results_empty():
-    result = _make_search_result(num_records=0, total_hits=0)
-    msg = _make_formatter().format_search_results(result)
-    assert isinstance(msg, str)
-    assert "trolldom" in msg
-
-
-def test_format_search_results_respects_max_display():
-    result = _make_search_result(num_records=5, total_hits=5)
-    table = _make_formatter().format_search_results(result, max_display=2)
-    assert isinstance(table, Table)
-    assert table.row_count == 2
-
-
-# ── format_search_summary_stats ─────────────────────────────────────────
-
-
-def test_format_search_summary_stats_basic():
-    lines = _make_formatter().format_search_summary_stats(snippet_count=10, records_count=5, total_hits=5, offset=0)
-    assert any("10" in line for line in lines)
-    assert any("5" in line for line in lines)
-
-
-def test_format_search_summary_stats_with_pagination():
-    lines = _make_formatter().format_search_summary_stats(snippet_count=10, records_count=5, total_hits=100, offset=50)
-    assert any("100" in line for line in lines)
-    assert any("50" in line for line in lines)
-
-
-def test_format_search_summary_stats_no_extra_when_all_shown():
-    lines = _make_formatter().format_search_summary_stats(snippet_count=3, records_count=3, total_hits=3, offset=0)
-    assert len(lines) == 1
-
-
-# ── format_browse_example ────────────────────────────────────────────────
-
-
-def test_format_browse_example_with_snippets():
-    result = _make_search_result(num_records=1)
-    lines = _make_formatter().format_browse_example(result.items, "trolldom")
-    assert len(lines) == 2
-    assert "ra browse" in lines[1]
-    assert "trolldom" in lines[1]
-
-
-def test_format_browse_example_empty_documents():
-    lines = _make_formatter().format_browse_example([], "test")
-    assert lines == []
-
-
-def test_format_browse_example_no_snippets():
-    doc = SearchRecord(
-        id="SE/RA/1",
-        objectType="Record",
-        metadata=Metadata(referenceCode="SE/RA/1"),
-    )
-    lines = _make_formatter().format_browse_example([doc], "test")
-    assert lines == []
-
-
-# ── format_remaining_documents ───────────────────────────────────────────
-
-
-@pytest.mark.parametrize(
-    "total,displayed,expect_message",
-    [
-        pytest.param(30, 20, True, id="more-remaining"),
-        pytest.param(10, 20, False, id="all-shown"),
-        pytest.param(5, 5, False, id="exact-match"),
-    ],
-)
-def test_format_remaining_documents(total, displayed, expect_message):
-    msg = _make_formatter().format_remaining_documents(total, displayed)
-    if expect_message:
-        assert "10 more" in msg
-    else:
-        assert msg == ""
-
-
-# ── format_no_results_message ────────────────────────────────────────────
-
-
-def test_no_results_message_at_offset_zero():
-    result = _make_search_result(num_records=0, total_hits=0, offset=0)
-    msg = _make_formatter().format_no_results_message(result)
-    assert "No results found" in msg
-    assert "trolldom" in msg
-
-
-def test_no_results_message_at_offset_positive():
-    result = _make_search_result(num_records=0, total_hits=50, offset=50)
-    msg = _make_formatter().format_no_results_message(result)
-    assert "No more results" in msg
-    assert "50" in msg
 
 
 # ── format_browse_results ───────────────────────────────────────────────
