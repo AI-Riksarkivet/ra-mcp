@@ -9,6 +9,7 @@ from typing import cast
 from fastmcp import FastMCP
 from fastmcp.server.providers import FastMCPProvider
 from fastmcp.server.providers.skills import SkillsDirectoryProvider
+from mcp.types import Icon
 from starlette.responses import FileResponse, JSONResponse
 
 from ra_mcp_browse_mcp.tools import browse_mcp
@@ -364,6 +365,13 @@ def create_server(enabled_modules: list[str]) -> FastMCP:
     return FastMCP(
         name="riksarkivet-mcp",
         instructions=build_instructions(enabled_modules),
+        website_url="https://github.com/AI-Riksarkivet/ra-mcp",
+        icons=[
+            Icon(
+                src="https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/docs/assets/logo-rm-bg.png",
+                mimeType="image/png",
+            ),
+        ],
     )
 
 

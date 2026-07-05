@@ -40,3 +40,11 @@ async def test_viewer_and_pdf_ui_resources_serve(server):
         result = await client.read_resource("ui://pdf-viewer/mcp-app.html")
         text = result[0].text
         assert "<" in text and len(text) > 1000
+
+
+def test_server_exposes_brand_icon_and_website(server):
+    # Client apps show the server icon + website to help users identify it.
+    assert server.website_url == "https://github.com/AI-Riksarkivet/ra-mcp"
+    assert server.icons, "no server icon set"
+    assert str(server.icons[0].src).endswith("logo-rm-bg.png")
+    assert server.icons[0].mimeType == "image/png"
