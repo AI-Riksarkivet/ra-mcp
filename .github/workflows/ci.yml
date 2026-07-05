@@ -30,3 +30,22 @@ jobs:
           args: test
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           version: "latest"
+
+  ui-tests:
+    name: UI logic tests (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Tag ref (not SHA-pinned) so it always resolves; dependabot pins it like the others.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The MCP App UIs' pure logic (geometry/coordinate transforms, parsers) is unit-tested
+      # with vitest — no browser needed. Gates merges alongside the Python suite.
+      - name: viewer-mcp vitest
+        working-directory: packages/mcps/viewer-mcp
+        run: |
+          npm ci
+          npm test
