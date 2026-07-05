@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Annotated
-
-
-if TYPE_CHECKING:
-    import lancedb
+from typing import Annotated
 
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
+from ra_mcp_dataset_lib import get_lancedb
 from ra_mcp_sjomanshus_lib import SjomanshusSearch
 from ra_mcp_sjomanshus_lib.config import LANCEDB_URI
 
@@ -19,20 +16,6 @@ from .formatter import format_matrikel_results
 
 
 logger = logging.getLogger("ra_mcp.sjomanshus.matrikel_tool")
-
-# Lazy-init LanceDB connection
-_db = None
-
-
-def _get_db() -> lancedb.DBConnection:
-    """Return a cached LanceDB connection, opening it on first use."""
-    global _db
-    if _db is None:
-        import lancedb
-
-        logger.info("Opening LanceDB at %s", LANCEDB_URI)
-        _db = lancedb.connect(LANCEDB_URI)
-    return _db
 
 
 def register_matrikel_tool(mcp) -> None:
@@ -79,7 +62,7 @@ def register_matrikel_tool(mcp) -> None:
         logger.info("search_matrikel called with keyword='%s', offset=%d, limit=%d", keyword, offset, limit)
 
         try:
-            db = _get_db()
+            db = get_lancedb(LANCEDB_URI)
             searcher = SjomanshusSearch(db)
             result = searcher.search_matrikel(
                 keyword,

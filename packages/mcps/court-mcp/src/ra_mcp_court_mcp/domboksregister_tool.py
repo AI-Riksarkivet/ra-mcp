@@ -3,36 +3,19 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Annotated
-
-
-if TYPE_CHECKING:
-    import lancedb
+from typing import Annotated
 
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_court_lib import CourtSearch
 from ra_mcp_court_lib.config import LANCEDB_URI
+from ra_mcp_dataset_lib import get_lancedb
 
 from .formatter import format_domboksregister_results
 
 
 logger = logging.getLogger("ra_mcp.court.domboksregister_tool")
-
-# Lazy-init LanceDB connection
-_db = None
-
-
-def _get_db() -> lancedb.DBConnection:
-    """Return a cached LanceDB connection, opening it on first use."""
-    global _db
-    if _db is None:
-        import lancedb
-
-        logger.info("Opening LanceDB at %s", LANCEDB_URI)
-        _db = lancedb.connect(LANCEDB_URI)
-    return _db
 
 
 def register_domboksregister_tool(mcp) -> None:
@@ -96,7 +79,7 @@ def register_domboksregister_tool(mcp) -> None:
         logger.info("search_domboksregister called with keyword='%s', offset=%d, limit=%d", keyword, offset, limit)
 
         try:
-            db = _get_db()
+            db = get_lancedb(LANCEDB_URI)
             searcher = CourtSearch(db)
             result = searcher.search_domboksregister(
                 keyword,

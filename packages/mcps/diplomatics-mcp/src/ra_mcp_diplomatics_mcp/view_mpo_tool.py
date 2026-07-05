@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 from uuid import uuid4
 
 from fastmcp import Context
@@ -13,6 +13,7 @@ from mcp import types
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
+from ra_mcp_dataset_lib import get_lancedb
 from ra_mcp_diplomatics_lib import DiplomaticsSearch
 from ra_mcp_diplomatics_lib.config import LANCEDB_URI
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result
@@ -24,22 +25,7 @@ from ra_mcp_viewer_mcp.tools import RESOURCE_URI
 from .formatter import format_mpo_info
 
 
-if TYPE_CHECKING:
-    import lancedb
-
-
 logger = logging.getLogger("ra_mcp.diplomatics.view_mpo")
-
-_db = None
-
-
-def _get_db() -> lancedb.DBConnection:
-    global _db
-    if _db is None:
-        import lancedb
-
-        _db = lancedb.connect(LANCEDB_URI)
-    return _db
 
 
 def register_view_mpo_tool(mcp) -> None:
@@ -65,7 +51,7 @@ def register_view_mpo_tool(mcp) -> None:
     ) -> ToolResult:
         """Look up MPO record and open in viewer with full metadata."""
         try:
-            db = _get_db()
+            db = get_lancedb(LANCEDB_URI)
             searcher = DiplomaticsSearch(db)
             row = searcher.get_mpo_by_id(mpo_id)
         except Exception as exc:

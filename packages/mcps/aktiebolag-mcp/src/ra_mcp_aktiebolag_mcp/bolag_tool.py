@@ -3,36 +3,19 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Annotated
-
-
-if TYPE_CHECKING:
-    import lancedb
+from typing import Annotated
 
 from pydantic import Field
 
 from ra_mcp_aktiebolag_lib import AktiebolagSearch
 from ra_mcp_aktiebolag_lib.config import LANCEDB_URI
 from ra_mcp_common.telemetry import mark_span_error
+from ra_mcp_dataset_lib import get_lancedb
 
 from .formatter import format_bolag_results
 
 
 logger = logging.getLogger("ra_mcp.aktiebolag.bolag_tool")
-
-# Lazy-init LanceDB connection
-_db = None
-
-
-def _get_db() -> lancedb.DBConnection:
-    """Return a cached LanceDB connection, opening it on first use."""
-    global _db
-    if _db is None:
-        import lancedb
-
-        logger.info("Opening LanceDB at %s", LANCEDB_URI)
-        _db = lancedb.connect(LANCEDB_URI)
-    return _db
 
 
 def register_bolag_tool(mcp) -> None:
@@ -80,7 +63,7 @@ def register_bolag_tool(mcp) -> None:
         logger.info("search_bolag called with keyword='%s', offset=%d, limit=%d", keyword, offset, limit)
 
         try:
-            db = _get_db()
+            db = get_lancedb(LANCEDB_URI)
             searcher = AktiebolagSearch(db)
             result = searcher.search_bolag(
                 keyword,

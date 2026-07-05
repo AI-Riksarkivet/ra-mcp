@@ -18,10 +18,10 @@ from mcp import types
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_sbl_lib.config import SBL_TABLE
+from ra_mcp_dataset_lib import get_lancedb
+from ra_mcp_sbl_lib.config import LANCEDB_URI, SBL_TABLE
 
 from . import state
-from .sbl_tool import _get_db
 
 
 logger = logging.getLogger("ra_mcp.sbl.view_tool")
@@ -32,7 +32,7 @@ RESOURCE_URI = "ui://sbl-article-viewer/mcp-app.html"
 
 def _fetch_article(article_id: int) -> dict | None:
     """Fetch an SBL article by ID from LanceDB. Returns the row dict or None."""
-    db = _get_db()
+    db = get_lancedb(LANCEDB_URI)
     table = db.open_table(SBL_TABLE)
     rows = table.search().where(f"article_id = {article_id}").limit(1).to_list()
     return rows[0] if rows else None
