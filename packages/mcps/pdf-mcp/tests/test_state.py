@@ -81,3 +81,21 @@ async def test_active_view_is_isolated_per_session(monkeypatch):
     assert (await get_active_state()).view_id == "view-A"
     current["session"] = "B"
     assert (await get_active_state()).view_id == "view-B"
+
+
+async def test_get_active_state_raises_and_prunes_after_state_expiry(monkeypatch):
+    # If the view's stored state expired (TTL) while the session pointer lingers,
+    # get_active_state must NOT resurrect a blank default (a mutation would persist it and
+    # report false success) — it must prune the pointer and raise.
+    monkeypatch.setattr(_state_mod, "_session_key", lambda: "sess-exp")
+    await put_state(PdfViewerState(view_id="view-x", url="https://x.pdf", title="X"))
+    assert _state_mod._latest_view_by_session["sess-exp"] == "view-x"
+
+    async def _expired_get(**_kwargs):
+        return None
+
+    monkeypatch.setattr(_state_mod._store, "get", _expired_get)
+
+    with pytest.raises(LookupError, match="No PDF viewer is open"):
+        await get_active_state()
+    assert "sess-exp" not in _state_mod._latest_view_by_session  # dangling pointer pruned

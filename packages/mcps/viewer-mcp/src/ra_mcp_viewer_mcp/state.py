@@ -38,10 +38,19 @@ async def get_state(view_id: str) -> ViewerState:
 
 async def get_active_state() -> ViewerState:
     """Get the current session's viewer state. Raises LookupError if no viewer is open."""
-    view_id = _latest_view_by_session.get(_session_key(), "")
+    session = _session_key()
+    view_id = _latest_view_by_session.get(session, "")
     if not view_id:
         raise LookupError("No viewer is open.")
-    return await get_state(view_id)
+    data = await _store.get(key=view_id, collection=_COL)
+    if not data:
+        # The view's stored state expired (TTL) or was evicted. Don't resurrect a blank
+        # default here — a mutation tool would persist it and report false success. Drop
+        # the now-dangling session pointer (also keeps this dict from accumulating) and
+        # signal that no viewer is open.
+        _latest_view_by_session.pop(session, None)
+        raise LookupError("No viewer is open.")
+    return ViewerState.model_validate(data)
 
 
 async def put_state(state: ViewerState) -> dict:
