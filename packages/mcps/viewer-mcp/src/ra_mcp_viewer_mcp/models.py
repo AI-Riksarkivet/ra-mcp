@@ -1,5 +1,3 @@
-from typing import NamedTuple
-
 from pydantic import BaseModel
 
 from ra_mcp_xml.models import TextLayer, TextLine  # Single source of truth
@@ -9,7 +7,7 @@ from ra_mcp_xml.models import TextLayer, TextLine  # Single source of truth
 __all__ = ["ResolvedDocument", "TextLayer", "TextLine", "ViewerState"]
 
 
-class ResolvedDocument(NamedTuple):
+class ResolvedDocument(BaseModel):
     """Result of resolving a reference code to page URLs."""
 
     image_urls: list[str]

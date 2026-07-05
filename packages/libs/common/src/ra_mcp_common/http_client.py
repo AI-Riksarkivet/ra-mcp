@@ -161,8 +161,15 @@ class HTTPClient:
                 logger.debug("Connection established, status: %d", response.status_code)
 
                 if response.status_code != 200:
-                    logger.error("Unexpected status code: %d", response.status_code)
-                    raise Exception(f"HTTP {response.status_code}")
+                    # Raise the specific httpx type so it lands in the HTTPStatusError handler
+                    # below (body logging + status-code attribute + error.type=HTTPStatusError)
+                    # rather than the generic "unexpected error" fall-through, and so callers
+                    # get a catchable type instead of a bare Exception.
+                    raise httpx.HTTPStatusError(
+                        f"HTTP {response.status_code} for {url}",
+                        request=response.request,
+                        response=response,
+                    )
 
                 logger.debug("Reading response content...")
                 content = response.content
@@ -192,12 +199,8 @@ class HTTPClient:
 
             except httpx.HTTPStatusError as e:
                 duration = time.perf_counter() - start_time
-                error_body = ""
-                try:
-                    error_body = e.response.text[:500]
-                    logger.error("Error response body: %s", error_body)
-                except Exception:
-                    pass
+                with contextlib.suppress(Exception):
+                    logger.error("Error response body: %s", e.response.text[:500])
 
                 logger.error("✗ GET JSON %s - %.3fs - HTTPStatusError: %s", url, duration, e.response.status_code)
 
@@ -270,7 +273,13 @@ class HTTPClient:
             try:
                 response = await self._execute_with_retry("GET", url, params=params, headers=request_headers, timeout=float(timeout))
                 if response.status_code != 200:
-                    raise Exception(f"HTTP {response.status_code}")
+                    # Specific httpx type → routes to the HTTPStatusError handler below
+                    # (proper telemetry) and stays catchable for callers.
+                    raise httpx.HTTPStatusError(
+                        f"HTTP {response.status_code} for {url}",
+                        request=response.request,
+                        response=response,
+                    )
 
                 content = response.content
                 content_size = len(content)
@@ -293,9 +302,10 @@ class HTTPClient:
 
             except httpx.HTTPStatusError as e:
                 duration = time.perf_counter() - start_time
-                error_body = ""
-                with contextlib.suppress(Exception):
+                try:
                     error_body = f" - Body: {e.response.text[:500]}"
+                except Exception:
+                    error_body = ""
                 logger.error("GET XML %s - %.3fs - ERROR: %s%s", url, duration, e.response.status_code, error_body)
 
                 span.set_status(StatusCode.ERROR, f"HTTPStatusError: {e.response.status_code}")
@@ -385,7 +395,6 @@ class HTTPClient:
                 self._error_counter.add(1, {**metric_attrs, "error.type": error_type})
                 return None
             except Exception as e:
-                duration = time.perf_counter() - start_time
                 logger.error("GET %s - ERROR: %s", url, e)
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: {e}")
                 record_span_exception(logger, e)

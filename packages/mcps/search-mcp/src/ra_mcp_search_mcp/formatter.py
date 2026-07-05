@@ -8,6 +8,12 @@ from ra_mcp_common.formatting import format_error_message, highlight_keyword_mar
 class PlainTextFormatter:
     """Formatter that produces plain text without any Rich markup."""
 
+    #: Number of documents the most recent format_search_results() call scanned before
+    #: hitting the display limit. The caller reads this to bound the dedup state update.
+    #: Declared here so a read before the first format_search_results() call yields 0
+    #: instead of AttributeError.
+    items_scanned: int = 0
+
     def highlight_search_keyword(self, text_content: str, search_keyword: str) -> str:
         """Highlight search keywords using markdown-style bold."""
         return highlight_keyword_markdown(text_content, search_keyword)
