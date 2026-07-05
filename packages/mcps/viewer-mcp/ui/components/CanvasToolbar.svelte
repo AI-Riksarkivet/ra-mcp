@@ -53,6 +53,7 @@ let showPopover = $state(false);
       class="toolbar-btn"
       onclick={onToggleSearch}
       title="Search text (Ctrl+F)"
+      aria-label="Search text"
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
@@ -67,6 +68,7 @@ let showPopover = $state(false);
       class:active={showTranscription}
       onclick={onToggleTranscription}
       title={showTranscription ? "Hide transcription" : "Show transcription"}
+      aria-label={showTranscription ? "Hide transcription" : "Show transcription"}
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -80,6 +82,7 @@ let showPopover = $state(false);
       class:active={showThumbnails}
       onclick={onToggleThumbnails}
       title={showThumbnails ? "Hide pages" : "Show pages"}
+      aria-label={showThumbnails ? "Hide pages" : "Show pages"}
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="4" height="5" rx="0.5" stroke="currentColor" stroke-width="1.3"/>
@@ -93,6 +96,7 @@ let showPopover = $state(false);
     class="toolbar-btn"
     onclick={onResetView}
     title="Reset view"
+    aria-label="Reset view"
   >
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
       <path d="M1 8a7 7 0 0 1 13-3.5M15 8a7 7 0 0 1-13 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -107,6 +111,7 @@ let showPopover = $state(false);
       class:active={showPopover}
       onclick={() => showPopover = !showPopover}
       title="Overlay style"
+      aria-label="Overlay style"
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <path d="M12.5 1.5l2 2-9 9L2 14l1.5-3.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -132,6 +137,7 @@ let showPopover = $state(false);
       class="toolbar-btn"
       onclick={onToggleFullscreen}
       title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen"}
+      aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
     >
       {#if isFullscreen}
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

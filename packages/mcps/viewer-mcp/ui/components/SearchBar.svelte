@@ -44,13 +44,14 @@ onMount(() => {
       bind:this={inputEl}
       type="text"
       placeholder="Search text..."
+      aria-label="Search text on page"
       value={searchTerm}
       oninput={(e) => onSearchTermChange((e.target as HTMLInputElement).value)}
       onkeydown={handleKeydown}
     />
   </div>
   {#if searchTerm}
-    <span class="match-info">
+    <span class="match-info" role="status" aria-live="polite">
       {#if matchCount > 0}
         {activeMatchIndex + 1}/{matchCount}
       {:else}
@@ -62,14 +63,14 @@ onMount(() => {
         <span class="global-total" title="Total matches across all pages">&middot; {globalTotalMatches} total</span>
       {/if}
     </span>
-    <button class="search-btn" onclick={onPrevMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Previous (Shift+Enter)">
+    <button class="search-btn" onclick={onPrevMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Previous (Shift+Enter)" aria-label="Previous match">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8 7L5 3L2 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="search-btn" onclick={onNextMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Next (Enter)">
+    <button class="search-btn" onclick={onNextMatch} disabled={matchCount === 0 && globalTotalMatches === 0} title="Next (Enter)" aria-label="Next match">
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3L5 7L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   {/if}
-  <button class="search-btn close-btn" onclick={onClose} title="Close (Escape)">
+  <button class="search-btn close-btn" onclick={onClose} title="Close (Escape)" aria-label="Close search">
     <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2L8 8M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
   </button>
 </div>
