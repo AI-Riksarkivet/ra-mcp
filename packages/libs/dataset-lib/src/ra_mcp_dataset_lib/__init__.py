@@ -10,8 +10,10 @@ from ra_mcp_dataset_lib.search import (
     build_scalar_indexes,
     combine,
     equals,
+    format_results,
     get_lancedb,
     lancedb_fts_search,
+    require_keyword,
     text_contains,
 )
 
@@ -26,7 +28,9 @@ __all__ = [
     "build_scalar_indexes",
     "combine",
     "equals",
+    "format_results",
     "get_lancedb",
     "lancedb_fts_search",
+    "require_keyword",
     "text_contains",
 ]

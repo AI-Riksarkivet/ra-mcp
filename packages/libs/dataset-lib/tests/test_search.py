@@ -12,6 +12,7 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from ra_mcp_dataset_lib import (
+    SearchResult,
     any_of,
     at_least,
     at_most,
@@ -19,7 +20,9 @@ from ra_mcp_dataset_lib import (
     build_scalar_indexes,
     combine,
     equals,
+    format_results,
     lancedb_fts_search,
+    require_keyword,
     text_contains,
 )
 
@@ -176,3 +179,58 @@ def test_text_contains_escapes_quotes_and_wildcards(db):
     # no row contains it, so the (valid) predicate yields zero hits.
     result = lancedb_fts_search(db, "t", "häst", limit=100, where=text_contains("searchable_text", "o'brien %"))
     assert result.total_hits == 0
+
+
+# --- shared handler / formatter scaffold --------------------------------------
+
+
+@pytest.mark.parametrize(
+    "keyword,expect_error",
+    [
+        pytest.param("Wallenberg", False, id="valid"),
+        pytest.param("", True, id="empty"),
+        pytest.param("   ", True, id="blank"),
+    ],
+)
+def test_require_keyword(keyword, expect_error):
+    err = require_keyword(keyword, "'Wallenberg'")
+    if expect_error:
+        assert err is not None
+        assert "keyword must not be empty" in err
+        assert "'Wallenberg'" in err  # the dataset-specific example is included
+    else:
+        assert err is None
+
+
+def _render(rec: dict, lines: list[str]) -> None:
+    lines.append(f"- {rec['name']}")
+
+
+def test_format_results_no_results_at_offset_zero():
+    result = SearchResult(records=[], total_hits=0, keyword="zzz", offset=0, limit=25)
+    out = format_results(result, label="SBL", render_record=_render)
+    assert out == "No SBL results found for 'zzz'."
+
+
+def test_format_results_no_more_past_end():
+    result = SearchResult(records=[], total_hits=40, keyword="häst", offset=50, limit=25)
+    out = format_results(result, label="SBL", render_record=_render)
+    assert out == "No more SBL results for 'häst' at offset 50. Total found: 40"
+
+
+def test_format_results_header_records_and_footer():
+    records = [{"name": "Alice"}, {"name": "Bob"}]
+    result = SearchResult(records=records, total_hits=40, keyword="häst", offset=0, limit=2)
+    out = format_results(result, label="Board member", render_record=_render)
+    lines = out.split("\n")
+    assert lines[0] == "Board member search results for 'häst': showing 2 of 40 records (offset 0)"
+    assert "- Alice" in lines and "- Bob" in lines
+    # offset(0) + limit(2) = 2 < 40 → footer present pointing at the next page
+    assert lines[-1] == "More results available. Use offset=2 to see the next page."
+
+
+def test_format_results_no_footer_when_all_shown():
+    records = [{"name": "Alice"}]
+    result = SearchResult(records=records, total_hits=1, keyword="häst", offset=0, limit=25)
+    out = format_results(result, label="SBL", render_record=_render)
+    assert "More results available" not in out

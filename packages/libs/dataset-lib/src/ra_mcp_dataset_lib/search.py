@@ -12,14 +12,14 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any
 
 from lancedb.index import FTS, Bitmap, BTree
 from opentelemetry.trace import SpanKind, StatusCode
 from pydantic import BaseModel
 
-from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
+from ra_mcp_common.telemetry import get_meter, get_tracer, mark_span_error, record_span_exception
 
 
 if TYPE_CHECKING:
@@ -264,3 +264,59 @@ def combine(*predicates: str | None) -> str | None:
     if not parts:
         return None
     return " AND ".join(parts)
+
+
+# --- shared MCP-handler / formatter scaffold ----------------------------------
+# Every dataset MCP wraps lancedb_fts_search in the same shape: guard an empty
+# keyword, then render the SearchResult page with an identical envelope (no-results
+# / paginated-past-end messages, a "showing N of M records (offset K)" header, a
+# "More results ... offset=" footer). Only the per-dataset label and per-record
+# rendering differ. These own the shared parts so the ~20 dataset formatters and
+# their keyword guards stop being copy-paste.
+
+
+def require_keyword(keyword: str, example: str) -> str | None:
+    """Validate a search keyword; return an error string (and mark the span ERROR)
+    when it is empty/blank, else ``None``.
+
+    Usage in a handler: ``if err := require_keyword(keyword, "'Wallenberg'"): return err``.
+    ``example`` is a dataset-specific sample term shown in the message.
+    """
+    if not keyword or not keyword.strip():
+        mark_span_error("keyword must not be empty", error_type="validation")
+        return f"Error: keyword must not be empty. Provide a search term, e.g. {example}."
+    return None
+
+
+def format_results(
+    result: SearchResult,
+    *,
+    label: str,
+    render_record: Callable[[dict[str, Any], list[str]], None],
+) -> str:
+    """Render a dataset :class:`SearchResult` page as the standard plain-text block.
+
+    Owns the envelope shared by every dataset formatter — the no-results and
+    paginated-past-end messages, the ``"{label} search results ... showing N of M
+    records (offset K)"`` header, and the ``"More results ... offset="`` footer.
+    ``label`` names the dataset in those messages (e.g. ``"SBL"``, ``"Board
+    member"``); ``render_record(rec, lines)`` appends one record's lines and is the
+    only genuinely per-dataset part.
+    """
+    if not result.records:
+        if result.offset > 0:
+            return f"No more {label} results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
+        return f"No {label} results found for '{result.keyword}'."
+
+    lines: list[str] = [
+        f"{label} search results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} records (offset {result.offset})",
+        "",
+    ]
+    for rec in result.records:
+        render_record(rec, lines)
+
+    next_offset = result.offset + result.limit
+    if next_offset < result.total_hits:
+        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
+
+    return "\n".join(lines)
