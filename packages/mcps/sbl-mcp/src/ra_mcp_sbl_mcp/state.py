@@ -6,15 +6,12 @@ import uuid
 
 
 _views: dict[str, dict] = {}
-_latest_view_id: str = ""
 
 
 def create_view(article: dict) -> tuple[str, dict]:
     """Create a new view with a unique ID, store the article, return (view_id, article)."""
     view_id = uuid.uuid4().hex[:12]
     _views[view_id] = article
-    global _latest_view_id
-    _latest_view_id = view_id
     return view_id, article
 
 

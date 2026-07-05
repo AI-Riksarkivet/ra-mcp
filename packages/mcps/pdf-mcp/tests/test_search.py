@@ -2,7 +2,7 @@
 
 import pytest
 
-from ra_mcp_pdf_mcp.search import _count_occurrences, html_to_text, search_pages
+from ra_mcp_pdf_mcp.search import _count_occurrences, html_to_text
 
 
 # ── html_to_text ─────────────────────────────────────────────────────
@@ -39,79 +39,3 @@ def test_html_to_text(html, expected):
 )
 def test_count_occurrences(text, term, expected):
     assert _count_occurrences(text, term) == expected
-
-
-# ── search_pages ─────────────────────────────────────────────────────
-
-
-def test_search_pages_finds_term(sample_pages):
-    result = search_pages(sample_pages, "Stockholm")
-    assert result.total_matches >= 1
-    page_nums = [pm.page_num for pm in result.page_matches]
-    assert 1 in page_nums
-
-
-def test_search_pages_case_insensitive(sample_pages):
-    lower = search_pages(sample_pages, "stockholm")
-    upper = search_pages(sample_pages, "STOCKHOLM")
-    assert lower.total_matches == upper.total_matches
-    assert lower.total_matches > 0
-
-
-def test_search_pages_no_match(sample_pages):
-    result = search_pages(sample_pages, "xyznonexistent")
-    assert result.total_matches == 0
-    assert result.page_matches == []
-
-
-def test_search_pages_multiple_pages(sample_pages):
-    result = search_pages(sample_pages, "Stockholm")
-    page_indices = [pm.page_index for pm in result.page_matches]
-    assert 0 in page_indices
-    assert 2 in page_indices
-
-
-def test_search_pages_counts_multiple_occurrences_in_block(sample_pages):
-    result = search_pages(sample_pages, "Stockholm")
-    page_2 = next(pm for pm in result.page_matches if pm.page_index == 2)
-    assert page_2.match_count == 3
-
-
-def test_search_pages_strips_html_before_matching(sample_pages):
-    result = search_pages(sample_pages, "beslut")
-    assert result.total_matches == 1
-    block = result.page_matches[0].blocks[0]
-    assert "<b>" not in block.text
-
-
-def test_search_pages_skips_empty_html(sample_pages):
-    result = search_pages(sample_pages, "Figure")
-    assert result.total_matches == 0
-
-
-def test_search_pages_truncates_block_text():
-    long_text = "x" * 500
-    pages = [
-        {
-            "page": 0,
-            "bbox": [0, 0, 595, 842],
-            "children": [
-                {"html": f"<p>{long_text}</p>", "bbox": [0, 0, 100, 50], "block_type": "Text"},
-            ],
-        }
-    ]
-    result = search_pages(pages, "x")
-    assert len(result.page_matches[0].blocks[0].text) <= 300
-
-
-def test_search_pages_empty_input():
-    result = search_pages([], "term")
-    assert result.total_matches == 0
-    assert result.page_matches == []
-
-
-def test_search_pages_preserves_bbox(sample_pages):
-    result = search_pages(sample_pages, "Kungliga")
-    block = result.page_matches[0].blocks[0]
-    assert block.bbox == [72, 100, 400, 130]
-    assert block.block_type == "SectionHeader"

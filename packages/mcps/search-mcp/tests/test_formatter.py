@@ -1,12 +1,10 @@
 """Tests for the PlainTextFormatter in ra-mcp-search-mcp.
 
-The formatter is a set of pure, synchronous functions that turn search/browse
+The formatter is a set of pure, synchronous functions that turn search
 records into plain-text markdown for LLM consumption. These tests build realistic
-SearchResult/SearchRecord pydantic models (from ra_mcp_search_lib.models) and
-duck-typed browse objects, then assert on concrete substrings in the output.
+SearchResult/SearchRecord pydantic models (from ra_mcp_search_lib.models),
+then assert on concrete substrings in the output.
 """
-
-from types import SimpleNamespace
 
 from ra_mcp_search_lib.models import (
     DocumentLinks,
@@ -86,64 +84,6 @@ def _result(
 
 def _fmt() -> PlainTextFormatter:
     return PlainTextFormatter()
-
-
-# --------------------------------------------------------------------------- #
-# format_text
-# --------------------------------------------------------------------------- #
-
-
-def test_format_text_returns_content_unchanged():
-    out = _fmt().format_text("hello **world**", style_name="bold")
-    assert out == "hello **world**"
-
-
-def test_format_text_empty_string():
-    assert _fmt().format_text("") == ""
-
-
-# --------------------------------------------------------------------------- #
-# format_table
-# --------------------------------------------------------------------------- #
-
-
-def test_format_table_aligns_columns_and_adds_separator():
-    out = _fmt().format_table(["Name", "N"], [["Stockholm", "1"], ["Mora", "42"]])
-    lines = out.splitlines()
-    # header pads the short column so values line up under it
-    assert lines[0] == "Name      | N "
-    # a dedicated separator line made entirely of dashes
-    assert any(line and set(line) == {"-"} for line in lines)
-    assert "Stockholm" in out
-    assert "Mora" in out
-
-
-def test_format_table_with_title():
-    out = _fmt().format_table(["A"], [["1"]], table_title="My Table")
-    assert out.startswith("My Table\n")
-    assert "A" in out
-    assert "1" in out
-
-
-def test_format_table_single_row():
-    out = _fmt().format_table(["Col"], [["only"]])
-    assert "Col" in out
-    assert "only" in out
-
-
-# --------------------------------------------------------------------------- #
-# format_panel
-# --------------------------------------------------------------------------- #
-
-
-def test_format_panel_with_title_has_blank_line_between():
-    out = _fmt().format_panel("body text", panel_title="Heading")
-    assert out == "Heading\n\nbody text"
-
-
-def test_format_panel_without_title_is_just_content():
-    out = _fmt().format_panel("body text")
-    assert out == "body text"
 
 
 # --------------------------------------------------------------------------- #
@@ -385,93 +325,3 @@ def test_format_search_results_shows_only_new_pages_for_seen_document():
     assert "📚 Document: SE/RA/DUP2 (previously shown — new pages only)" in out
     assert "📖 New pages: 10" in out
     assert "Page _00010: **trolldom** new" in out
-
-
-# --------------------------------------------------------------------------- #
-# format_browse_results
-# --------------------------------------------------------------------------- #
-
-
-def _page_context(
-    page_number: int = 7,
-    page_id: str = "_00007",
-    full_text: str = "handwritten transcription text",
-    alto_url: str = "https://sok.riksarkivet.se/dokument/alto/x_00007",
-    image_url: str = "https://lbiiif.riksarkivet.se/image/x/full/max/0/default.jpg",
-    bildvisning_url: str = "https://sok.riksarkivet.se/bildvisning/x_00007",
-) -> SimpleNamespace:
-    return SimpleNamespace(
-        page_number=page_number,
-        page_id=page_id,
-        full_text=full_text,
-        alto_url=alto_url,
-        image_url=image_url,
-        bildvisning_url=bildvisning_url,
-    )
-
-
-def _browse_result(
-    contexts: list[SimpleNamespace],
-    reference_code: str = "SE/RA/310187/1",
-    oai_metadata: SimpleNamespace | None = None,
-) -> SimpleNamespace:
-    return SimpleNamespace(
-        contexts=contexts,
-        reference_code=reference_code,
-        oai_metadata=oai_metadata,
-    )
-
-
-def test_format_browse_results_no_contexts():
-    out = _fmt().format_browse_results(_browse_result([], reference_code="SE/RA/EMPTY"))
-    assert out == "No page contexts found for SE/RA/EMPTY"
-
-
-def test_format_browse_results_single_page_minimal():
-    out = _fmt().format_browse_results(_browse_result([_page_context(page_number=7)]))
-    assert "📚 Document: SE/RA/310187/1" in out
-    assert "📖 Pages loaded: 1" in out
-    assert "📄 Page 7" in out
-    assert "handwritten transcription text" in out
-    assert "📝 ALTO XML: https://sok.riksarkivet.se/dokument/alto/x_00007" in out
-    assert "🖼️  Image:" in out
-    assert "👁️  Bildvisning:" in out
-
-
-def test_format_browse_results_highlights_term_in_text():
-    ctx = _page_context(full_text="a mention of Stockholm here")
-    out = _fmt().format_browse_results(_browse_result([ctx]), highlight_term="Stockholm")
-    assert "a mention of **Stockholm** here" in out
-
-
-def test_format_browse_results_with_oai_metadata():
-    oai = SimpleNamespace(
-        title="Domboksprotokoll",
-        repository="Landsarkivet i Uppsala",
-        unitid="SE/RA/OTHER/9",
-        nad_link="https://sok.riksarkivet.se/nad/12345",
-    )
-    out = _fmt().format_browse_results(_browse_result([_page_context()], reference_code="SE/RA/310187/1", oai_metadata=oai))
-    assert "📋 Title: Domboksprotokoll" in out
-    assert "🏛️  Repository: Landsarkivet i Uppsala" in out
-    assert "🔖 Unit ID: SE/RA/OTHER/9" in out
-    assert "🔗 NAD Link: https://sok.riksarkivet.se/nad/12345" in out
-
-
-def test_format_browse_results_omits_empty_oai_and_missing_image_links():
-    # "(No title)" title and a unitid equal to the reference_code are both suppressed;
-    # a page with no image/bildvisning URL only shows the ALTO link.
-    oai = SimpleNamespace(
-        title="(No title)",
-        repository="",
-        unitid="SE/RA/310187/1",
-        nad_link="",
-    )
-    ctx = _page_context(image_url="", bildvisning_url="")
-    out = _fmt().format_browse_results(_browse_result([ctx], reference_code="SE/RA/310187/1", oai_metadata=oai))
-    assert "📋 Title:" not in out
-    assert "🔖 Unit ID:" not in out
-    assert "🏛️  Repository:" not in out
-    assert "📝 ALTO XML:" in out
-    assert "🖼️  Image:" not in out
-    assert "👁️  Bildvisning:" not in out

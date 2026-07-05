@@ -24,14 +24,11 @@ def format_error_message(error_message: str, error_suggestions: list[str] | None
 def page_id_to_number(page_id: str) -> int:
     """Extract the numeric page number from a page ID like '_00066' or '_H0000459_00005'.
 
-    Splits by underscore and takes the last non-empty part, stripping leading zeros.
+    Splits by underscore and takes the last part, stripping leading zeros.
     """
-    parts = page_id.split("_")
-    if parts:
-        last_part = parts[-1]
-        trimmed = last_part.lstrip("0") or "0"
-        return int(trimmed)
-    return int(page_id)
+    last_part = page_id.split("_")[-1]
+    trimmed = last_part.lstrip("0") or "0"
+    return int(trimmed)
 
 
 def iiif_manifest_to_bildvisaren(iiif_manifest_url: str) -> str:
