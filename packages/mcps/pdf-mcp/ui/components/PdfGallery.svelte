@@ -4,10 +4,12 @@
   interface Props {
     items: GalleryItem[];
     loading: boolean;
+    error?: string | null;
     onSelect: (item: GalleryItem) => void;
+    onRetry?: () => void;
   }
 
-  let { items, loading, onSelect }: Props = $props();
+  let { items, loading, error = null, onSelect, onRetry }: Props = $props();
 </script>
 
 <div class="gallery">
@@ -20,6 +22,13 @@
     <div class="gallery-loading">
       <div class="spinner"></div>
       <span>Loading library...</span>
+    </div>
+  {:else if error}
+    <div class="gallery-empty">
+      <p>{error}</p>
+      {#if onRetry}
+        <button class="gallery-retry" onclick={onRetry}>Retry</button>
+      {/if}
     </div>
   {:else if items.length === 0}
     <div class="gallery-empty">No documents available</div>
@@ -203,8 +212,22 @@
   }
 
   .gallery-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
     text-align: center;
     padding: 3rem;
     color: var(--color-text-secondary);
+  }
+
+  .gallery-retry {
+    font: inherit;
+    cursor: pointer;
+    padding: 0.35rem 0.9rem;
+    color: var(--color-text-primary);
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-md, 6px);
   }
 </style>

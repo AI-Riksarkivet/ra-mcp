@@ -66,6 +66,26 @@ def test_guide_url_filter_isolates_a_single_guide():
     assert res_b.page_matches[0].blocks[0].bbox == [2, 2, 3, 3]
 
 
+def test_search_guides_grouped_returns_per_guide_in_one_query():
+    gi._indexed = None
+    cache = _cache(
+        {
+            "g://a": [_page(0, [_block("kungens kansli", [0, 0, 1, 1])])],
+            "g://b": [_page(0, [_block("kungens hov", [2, 2, 3, 3])])],
+            "g://c": [_page(0, [_block("bönder och jordbruk", [6, 6, 7, 7])])],
+        }
+    )
+    gi.ensure_guide_index(cache)
+    grouped = gi.search_guides_grouped("kung")
+    # Both "kung" guides appear keyed by url; the unrelated guide is absent (no records).
+    assert grouped["g://a"].total_matches >= 1
+    assert grouped["g://b"].total_matches >= 1
+    assert "g://c" not in grouped
+    # Grouping keeps each guide's own bbox — no cross-contamination between guides.
+    assert grouped["g://a"].page_matches[0].blocks[0].bbox == [0, 0, 1, 1]
+    assert grouped["g://b"].page_matches[0].blocks[0].bbox == [2, 2, 3, 3]
+
+
 def test_no_match_returns_empty():
     gi._indexed = None
     cache = _cache({"g://y": [_page(0, [_block("bönder och jordbruk", [0, 0, 1, 1])])]})

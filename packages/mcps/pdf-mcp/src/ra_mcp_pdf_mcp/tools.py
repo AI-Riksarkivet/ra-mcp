@@ -22,7 +22,7 @@ from ra_mcp_pdf_mcp.cache import (
     read_pdf_range,
     schedule_prefetch,
 )
-from ra_mcp_pdf_mcp.guide_index import ensure_guide_index, search_guide_index
+from ra_mcp_pdf_mcp.guide_index import ensure_guide_index, search_guide_index, search_guides_grouped
 from ra_mcp_pdf_mcp.models import PdfViewerState
 from ra_mcp_pdf_mcp.state import (
     get_active_state,
@@ -343,12 +343,11 @@ async def search_guides(
     all_results: list[str] = []
     total = 0
 
+    # One FTS query over all guides (was one query per guide); present in gallery order.
+    grouped = search_guides_grouped(search_term)
     for item in GALLERY_ITEMS:
-        url = item["url"]
-        if url not in blocks_cache:
-            continue
-        result = search_guide_index(search_term, guide_url=url)
-        if result.total_matches > 0:
+        result = grouped.get(item["url"])
+        if result and result.total_matches > 0:
             all_results.append(f"\n**{item['title']}** — {result.total_matches} matches on {len(result.page_matches)} pages:")
             all_results.extend(f"  p.{pm.page_num}: {block.text[:300]}" for pm in result.page_matches[:5] for block in pm.blocks[:2])
             total += result.total_matches

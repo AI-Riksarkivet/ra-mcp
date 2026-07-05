@@ -53,6 +53,13 @@ export class CanvasController {
   private contentWidth = 0;
   private contentHeight = 0;
 
+  // Whether the image has been fit to a valid (non-zero) canvas size yet. The first valid
+  // layout fits; later resizes reflow (preserve zoom/pan) instead of re-fitting.
+  private fitted = false;
+  // The image-space point currently at the viewport centre, tracked each draw so a resize
+  // can keep the user looking at the same place at the same zoom.
+  private centerImg = { x: 0, y: 0 };
+
   // Pointer state for pan + click detection
   private pointerDown: { x: number; y: number; tx: number; ty: number } | null = null;
   private dragged = false;
@@ -94,7 +101,12 @@ export class CanvasController {
     this.callbacks = callbacks;
 
     this.resizeObserver = new ResizeObserver(() => {
-      if (this.image) {
+      if (!this.image) return;
+      // First valid layout: fit. Subsequent resizes: reflow, preserving the user's zoom/pan
+      // (re-fitting here was what snapped the view back to full-page on panel toggles/resize).
+      if (this.fitted) {
+        this.reflow();
+      } else {
         this.fitToCanvas();
         this.draw();
       }
@@ -128,7 +140,22 @@ export class CanvasController {
     this.image = img;
     this.contentWidth = contentWidth > 0 ? contentWidth : img.naturalWidth;
     this.contentHeight = contentHeight > 0 ? contentHeight : img.naturalHeight;
+    this.fitted = false; // a new page fits fresh
     this.fitToCanvas();
+    this.draw();
+  }
+
+  /** Reflow after a container resize / layout change: keep the current zoom and re-centre on
+   *  the point that was at the viewport centre, instead of snapping back to full-page fit. */
+  reflow(): void {
+    if (!this.image || !this.canvas) return;
+    const cw = this.canvas.clientWidth;
+    const ch = this.canvas.clientHeight;
+    if (cw === 0 || ch === 0) return;
+    this.cancelMotion();
+    this.transform.x = cw / 2 - this.centerImg.x * this.transform.scale;
+    this.transform.y = ch / 2 - this.centerImg.y * this.transform.scale;
+    this.targetScale = this.transform.scale;
     this.draw();
   }
 
@@ -345,6 +372,15 @@ export class CanvasController {
       this.canvas.height = h * dpr;
     }
 
+    // Remember the image-space point at the viewport centre so a subsequent resize can keep
+    // it centred (preserving the user's zoom/pan) instead of re-fitting.
+    if (w > 0 && h > 0 && this.transform.scale > 0) {
+      this.centerImg = {
+        x: (w / 2 - this.transform.x) / this.transform.scale,
+        y: (h / 2 - this.transform.y) / this.transform.scale,
+      };
+    }
+
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
@@ -374,6 +410,7 @@ export class CanvasController {
     const cw = this.canvas.clientWidth;
     const ch = this.canvas.clientHeight;
     if (cw === 0 || ch === 0) return;
+    this.fitted = true; // fit happened at a valid size — later resizes reflow instead
     const padding = 8;
     const scaleX = (cw - padding * 2) / this.contentWidth;
     const scaleY = (ch - padding * 2) / this.contentHeight;

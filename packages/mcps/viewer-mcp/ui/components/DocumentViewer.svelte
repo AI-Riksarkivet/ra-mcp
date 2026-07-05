@@ -303,10 +303,11 @@ function getContextState() {
 // ---------------------------------------------------------------------------
 
 $effect(() => {
-  // Re-fit canvas after fullscreen/panel layout changes
+  // Reflow (not re-fit) the canvas after fullscreen/panel layout changes so the user's
+  // zoom/pan is preserved instead of snapping back to full-page.
   void isFullscreen;
   void showPanel;
-  requestAnimationFrame(() => controller?.resetView());
+  requestAnimationFrame(() => controller?.reflow());
 });
 
 $effect(() => {

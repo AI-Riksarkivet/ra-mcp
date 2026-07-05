@@ -30,6 +30,23 @@ let isStreaming = $state(false);
 let streamingMessage = $state("");
 let galleryItems = $state<GalleryItem[]>([]);
 let galleryLoading = $state(false);
+let galleryError = $state<string | null>(null);
+
+async function loadGallery() {
+  if (!app) return;
+  galleryLoading = true;
+  galleryError = null;
+  try {
+    const galleryResult = await app.callServerTool({ name: "list_pdfs", arguments: {} });
+    const gsc = (galleryResult as any).structuredContent;
+    galleryItems = gsc?.items ?? [];
+  } catch (e: any) {
+    // Distinguish a failed list_pdfs from a genuinely empty library (was silently swallowed).
+    galleryError = `Couldn't load the library: ${e?.message ?? e}`;
+  } finally {
+    galleryLoading = false;
+  }
+}
 let pdfDocument = $state.raw<PDFDocumentProxy | null>(null);
 let currentPage = $state(1);
 let totalPages = $state(0);
@@ -404,16 +421,7 @@ onMount(async () => {
   }
 
   // Fetch gallery items for the initial view
-  galleryLoading = true;
-  try {
-    const galleryResult = await instance.callServerTool({
-      name: "list_pdfs",
-      arguments: {},
-    });
-    const gsc = (galleryResult as any).structuredContent;
-    if (gsc?.items) galleryItems = gsc.items;
-  } catch { /* gallery fetch failure is non-fatal */ }
-  galleryLoading = false;
+  await loadGallery();
 
   // Polling for server-initiated state changes
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -515,7 +523,9 @@ onMount(async () => {
     <PdfGallery
       items={galleryItems}
       loading={galleryLoading}
+      error={galleryError}
       onSelect={handleGallerySelect}
+      onRetry={loadGallery}
     />
   {/if}
 </main>
