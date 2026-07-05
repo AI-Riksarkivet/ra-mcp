@@ -219,7 +219,13 @@ class PlainTextFormatter:
         if browse_result.contexts or not browse_result.oai_metadata:
             return False
 
-        lines.append("⚠️ This material is not digitised or transcribed - no page images or text available.")
+        # A manifest means the material IS digitised — empty contexts then mean the
+        # requested page(s) don't exist / the range is inverted, not "not digitised".
+        if browse_result.manifest_id:
+            lines.append(f"⚠️ No pages found for the requested page(s) '{browse_result.pages_requested}'.")
+            lines.append("This material IS digitised — check the page number(s) exist and that any range is not inverted (use e.g. 1-10, not 10-1).")
+        else:
+            lines.append("⚠️ This material is not digitised or transcribed - no page images or text available.")
         lines.append("Showing metadata only:")
         lines.append("")
 

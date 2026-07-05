@@ -498,6 +498,19 @@ def test_format_browse_results_non_digitised_metadata_only():
     assert "📄 Page" not in out
 
 
+def test_format_browse_results_digitised_but_pages_not_found():
+    # manifest_id set (digitised) + no contexts = the requested page(s) don't
+    # exist — must not claim the material isn't digitised (issue #118).
+    fmt = PlainTextFormatter()
+    metadata = OAIPMHMetadata(identifier=REF_CODE, title="Digitised volume", repository="Riksarkivet")
+    result = BrowseResult(contexts=[], reference_code=REF_CODE, pages_requested="999", manifest_id="R0002497", oai_metadata=metadata)
+    out = fmt.format_browse_results(result)
+
+    assert "No pages found for the requested page(s) '999'" in out
+    assert "IS digitised" in out
+    assert "not digitised or transcribed" not in out
+
+
 def test_format_browse_results_non_digitised_skips_placeholder_title():
     fmt = PlainTextFormatter()
     # "(No title)" placeholder should be suppressed.

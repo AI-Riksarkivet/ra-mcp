@@ -40,9 +40,18 @@ class RichConsoleFormatter:
         )
 
     def _format_non_digitised_panel(self, browse_result: BrowseResult) -> list[Any]:
-        """Format metadata panel for non-digitised materials."""
+        """Format metadata panel for non-digitised material, or for a digitised
+        volume whose requested page(s) weren't found."""
         output: list[Any] = []
-        output.append("[yellow]⚠️  This material is not digitised or transcribed - no page images or text available.[/yellow]")
+        # A manifest means the material IS digitised — empty contexts then mean the
+        # requested page(s) don't exist / the range is inverted, not "not digitised".
+        if browse_result.manifest_id:
+            output.append(f"[yellow]⚠️  No pages found for the requested page(s) '{browse_result.pages_requested}'.[/yellow]")
+            output.append(
+                "[dim]This material IS digitised — check the page number(s) exist and that any range is not inverted (use e.g. 1-10, not 10-1).[/dim]"
+            )
+        else:
+            output.append("[yellow]⚠️  This material is not digitised or transcribed - no page images or text available.[/yellow]")
         output.append("[dim]Showing metadata only:[/dim]\n")
 
         metadata = browse_result.oai_metadata
@@ -81,9 +90,10 @@ class RichConsoleFormatter:
         if metadata.datestamp:
             metadata_parts.append(f"[dim]🕒 Last Updated:[/dim] {metadata.datestamp}")
 
+        panel_title = "[yellow]Page(s) Not Found[/yellow]" if browse_result.manifest_id else "[yellow]Non-Digitised Material[/yellow]"
         panel = Panel(
             "\n".join(metadata_parts),
-            title="[yellow]Non-Digitised Material[/yellow]",
+            title=panel_title,
             border_style="yellow",
         )
         output.append(panel)

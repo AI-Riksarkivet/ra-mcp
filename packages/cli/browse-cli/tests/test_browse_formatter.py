@@ -202,6 +202,23 @@ def test_format_non_digitised_no_metadata():
     assert output == []
 
 
+def test_digitised_but_pages_not_found_does_not_claim_not_digitised():
+    # manifest_id set (material IS digitised) + empty contexts = the requested
+    # page(s) don't exist — must not read as "not digitised" (issue #118).
+    browse = BrowseResult(
+        contexts=[],
+        reference_code=REFERENCE_CODE,
+        pages_requested="999",
+        manifest_id=MANIFEST_ID,
+        oai_metadata=_make_metadata(),
+    )
+    output = _make_formatter().format_browse_results(browse)
+    joined = " ".join(str(item) for item in output)
+    assert "No pages found" in joined
+    assert "999" in joined
+    assert "not digitised" not in joined.lower()
+
+
 # ── _format_group_metadata ──────────────────────────────────────────────
 
 
