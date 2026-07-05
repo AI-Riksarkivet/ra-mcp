@@ -7,11 +7,12 @@ which delegates to a remote Gradio Space via gradio_client.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from typing import Annotated, Literal
 
-from fastmcp import FastMCP
+from fastmcp import Context, FastMCP
 from fastmcp.exceptions import ToolError
 from gradio_client import Client
 from pydantic import BaseModel, Field
@@ -79,6 +80,7 @@ htr_mcp = FastMCP(
 )
 async def htr_transcribe(
     image_urls: Annotated[list[str], Field(description="Image URLs to process (http/https URLs)")],
+    ctx: Context,
     language: Annotated[
         Literal["swedish", "norwegian", "english", "medieval"],
         Field(description="Document language"),
@@ -102,6 +104,7 @@ async def htr_transcribe(
     recognition. Returns URLs to an interactive viewer, per-page JSON
     transcriptions, and an archival export file.
     """
+    await ctx.report_progress(progress=0, total=3)
     try:
         client = _get_client()
     except Exception as e:
@@ -110,8 +113,13 @@ async def htr_transcribe(
         logger.error("HTR Space connection failed: %s", e, exc_info=True)
         raise ToolError(f"Failed to connect to HTR Space at {HTR_SPACE_URL}: {e}") from e
 
+    await ctx.report_progress(progress=1, total=3)
+    await ctx.info(f"Transcribing {len(image_urls)} image(s) via the HTR Space — this can take a while...")
     try:
-        result = client.predict(
+        # gradio_client.predict is a blocking call that can run for minutes; run it
+        # off the event loop so the server stays responsive (and can flush progress).
+        result = await asyncio.to_thread(
+            client.predict,
             image_urls=image_urls,
             language=language,
             layout=layout,
@@ -123,4 +131,5 @@ async def htr_transcribe(
         logger.error("HTR transcription failed: %s", e, exc_info=True)
         raise ToolError(f"HTR transcription failed: {e}") from e
 
+    await ctx.report_progress(progress=3, total=3)
     return HtrResult(**result)

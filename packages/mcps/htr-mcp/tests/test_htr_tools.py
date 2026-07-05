@@ -111,3 +111,29 @@ async def test_htr_transcribe_predict_error_raises_tool_error():
                     "htr_transcribe",
                     {"image_urls": ["https://example.com/image.jpg"]},
                 )
+
+
+@pytest.mark.anyio
+async def test_htr_transcribe_reports_progress():
+    """The long-running transcription reports progress from start to completion."""
+    mock_result = {
+        "viewer_url": "https://example.com/viewer",
+        "pages_url": "https://example.com/pages.json",
+        "export_url": "https://example.com/export.xml",
+        "export_format": "alto_xml",
+    }
+    mock_client = MagicMock()
+    mock_client.predict.return_value = mock_result
+
+    events: list[tuple[float, float | None]] = []
+
+    async def on_progress(progress: float, total: float | None, message: str | None) -> None:
+        events.append((progress, total))
+
+    with patch("ra_mcp_htr_mcp.tools._get_client", return_value=mock_client):
+        async with Client(htr_mcp, progress_handler=on_progress) as client:
+            await client.call_tool("htr_transcribe", {"image_urls": ["https://example.com/image.jpg"]})
+
+    assert events, "no progress reported"
+    assert events[0] == (0, 3)  # starts at 0
+    assert events[-1] == (3, 3)  # ends at 100%
