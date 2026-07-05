@@ -106,7 +106,10 @@ async def htr_transcribe(
     """
     await ctx.report_progress(progress=0, total=3)
     try:
-        client = _get_client()
+        # Constructing the Gradio client does blocking HTTP I/O (space-state + config)
+        # and, for a sleeping/building Space, a time.sleep poll loop — offload it like
+        # the predict() call below so the event loop (and progress flushing) stays live.
+        client = await asyncio.to_thread(_get_client)
     except Exception as e:
         # Log with the stacktrace before re-raising — ToolError only carries the
         # message, so without this the original traceback is lost from the logs.
