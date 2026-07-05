@@ -253,7 +253,13 @@ class RichConsoleFormatter:
         else:
             records_display = str(records_count)
 
-        lines.append(f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_display}[/bold] volumes")
+        # A metadata/catalog search matches records but has no page-level
+        # transcriptions, so snippet_count is 0. Saying "Found 0 page hits" then
+        # reads like a failed search — make it clear the records were found.
+        if snippet_count > 0:
+            lines.append(f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_display}[/bold] volumes")
+        else:
+            lines.append(f"\n[bold green]✓[/bold green] Found [bold]{records_display}[/bold] volumes matching metadata [dim](no transcribed page hits in this search mode)[/dim]")
 
         if total_hits > records_count:
             lines.append(f"[dim]   (Total {total_hits} hits available, showing from offset {offset})[/dim]")

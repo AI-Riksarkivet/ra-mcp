@@ -346,6 +346,16 @@ def test_summary_stats_no_plus_when_below_max():
     assert not any("+" in line for line in lines)
 
 
+def test_summary_stats_metadata_search_reads_as_success_not_zero_hits():
+    # A metadata/catalog search matches records but has no page transcriptions
+    # (snippet_count=0). It must not read as "Found 0 page hits" (looks like failure).
+    lines = _make_formatter().format_search_summary_stats(snippet_count=0, records_count=8, total_hits=8431, offset=0)
+    joined = " ".join(lines)
+    assert "0 page hits" not in joined
+    assert "volumes matching metadata" in joined
+    assert "8431" in joined  # the total is still surfaced
+
+
 # ── format_browse_example ────────────────────────────────────────────────
 
 
