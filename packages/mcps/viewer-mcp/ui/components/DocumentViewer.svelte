@@ -383,7 +383,6 @@ onDestroy(() => {
 });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:window onkeydown={handleViewerKeydown} />
 
 <div class="viewer-wrapper" bind:this={wrapperEl}>

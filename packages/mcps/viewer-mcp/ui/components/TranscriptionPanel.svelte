@@ -30,16 +30,39 @@ let hasText = $derived(textLines.length > 0);
 let userTabChoice = $state<Tab | null>(null);
 let activeTab = $derived(userTabChoice ?? (hasText ? "transcription" : hasInfo ? "info" : "transcription"));
 
-/** Minimal markdown → HTML for server-generated metadata (bold, headings, paragraphs). */
-function renderMarkdown(md: string): string {
-  return md
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/^## (.+)$/gm, "<h3>$1</h3>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\n{2,}/g, "</p><p>")
-    .replace(/^/, "<p>").replace(/$/, "</p>")
-    .replace(/<p><h3>/g, "<h3>").replace(/<\/h3><\/p>/g, "</h3>");
+// Parse the server-generated metadata markdown (## headings, **bold**, paragraphs) into a
+// structured block model rendered with plain template elements + a snippet — so the text is
+// auto-escaped by Svelte and no {@html} sink exists (defense-in-depth against XSS from
+// untrusted archive metadata).
+type Segment = { text: string; bold: boolean };
+type Block = { kind: "h3" | "p"; segments: Segment[] };
+
+function parseInline(text: string): Segment[] {
+  const segments: Segment[] = [];
+  const re = /\*\*(.+?)\*\*/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) segments.push({ text: text.slice(last, m.index), bold: false });
+    segments.push({ text: m[1], bold: true });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) segments.push({ text: text.slice(last), bold: false });
+  return segments;
 }
+
+function parseMarkdown(md: string): Block[] {
+  const blocks: Block[] = [];
+  for (const raw of md.split(/\n{2,}/)) {
+    const text = raw.trim();
+    if (!text) continue;
+    if (text.startsWith("## ")) blocks.push({ kind: "h3", segments: parseInline(text.slice(3)) });
+    else blocks.push({ kind: "p", segments: parseInline(text) });
+  }
+  return blocks;
+}
+
+let infoBlocks = $derived(documentInfo ? parseMarkdown(documentInfo) : []);
 
 let lineEls: HTMLButtonElement[] = [];
 let containerEl = $state<HTMLDivElement>(undefined!);
@@ -107,8 +130,12 @@ $effect(() => {
     </div>
   {:else}
     <div class="panel-info">
-      {#if documentInfo}
-        <div class="info-content">{@html renderMarkdown(documentInfo)}</div>
+      {#if infoBlocks.length > 0}
+        <div class="info-content">
+          {#each infoBlocks as block, i (i)}
+            {#if block.kind === "h3"}<h3>{@render inline(block.segments)}</h3>{:else}<p>{@render inline(block.segments)}</p>{/if}
+          {/each}
+        </div>
       {/if}
       {#if bildvisningUrl}
         <a class="bildvisning-link" href={bildvisningUrl} target="_blank" rel="noopener">Open in Riksarkivet viewer</a>
@@ -119,6 +146,8 @@ $effect(() => {
     </div>
   {/if}
 </div>
+
+{#snippet inline(segments: Segment[])}{#each segments as seg, i (i)}{#if seg.bold}<strong>{seg.text}</strong>{:else}{seg.text}{/if}{/each}{/snippet}
 
 <style>
 /* ------------------------------------------------------------------ */
