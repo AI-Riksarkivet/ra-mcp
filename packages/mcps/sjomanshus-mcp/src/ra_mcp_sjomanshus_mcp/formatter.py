@@ -2,21 +2,23 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_sjomanshus_lib.search_operations import SearchResult
 
 
-def _format_name(rec: dict) -> str:
+def _format_name(rec: dict[str, Any]) -> str:
     """Build full name from foernamn, efternamn1, efternamn2."""
     return " ".join(p for p in [rec.get("foernamn", ""), rec.get("efternamn1", ""), rec.get("efternamn2", "")] if p)
 
 
-def _format_born(rec: dict) -> str:
+def _format_born(rec: dict[str, Any]) -> str:
     """Format birth date and parish."""
     parts = [p for p in [rec.get("foedelsedat", ""), rec.get("foedelsefoers", "")] if p]
     return ", ".join(parts) if parts else ""
 
 
-def _format_sjomanshus(rec: dict) -> str:
+def _format_sjomanshus(rec: dict[str, Any]) -> str:
     """Format seamen's house and registration number."""
     sh = rec.get("sjoemanshus", "")
     nr = rec.get("inskrivnr", "")
@@ -28,7 +30,7 @@ def _format_sjomanshus(rec: dict) -> str:
     return ", ".join(parts) if parts else ""
 
 
-def _format_archive(rec: dict) -> str:
+def _format_archive(rec: dict[str, Any]) -> str:
     """Format archive reference."""
     arkiv = rec.get("arkiv", "")
     arkivnr = rec.get("arkivnr", "")
@@ -47,7 +49,7 @@ def _format_place_date(place: str, date: str) -> str:
     return place or date
 
 
-def _format_ship(rec: dict) -> str:
+def _format_ship(rec: dict[str, Any]) -> str:
     """Format ship info: name (type), home port."""
     fartyg = rec.get("fartyg", "")
     typ = rec.get("typ", "")
@@ -66,7 +68,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
         lines.append(f"{label}: {value}")
 
 
-def _format_liggare_record(rec: dict, lines: list[str]) -> None:
+def _format_liggare_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Liggare record into lines."""
     lines.append(f"--- Liggare {rec.get('id', '?')} ---")
     _append_if(lines, "Name", _format_name(rec))
@@ -123,7 +125,7 @@ def format_liggare_results(result: SearchResult) -> str:
     return "\n".join(lines)
 
 
-def _format_matrikel_record(rec: dict, lines: list[str]) -> None:
+def _format_matrikel_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Matrikel record into lines."""
     lines.append(f"--- Matrikel {rec.get('id', '?')} ---")
     _append_if(lines, "Name", _format_name(rec))

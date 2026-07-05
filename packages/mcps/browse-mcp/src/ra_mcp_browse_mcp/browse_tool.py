@@ -7,7 +7,7 @@ Provides the browse_document tool for viewing full page transcriptions.
 import logging
 from typing import Annotated
 
-from fastmcp import Context
+from fastmcp import Context, FastMCP
 from pydantic import Field
 
 from ra_mcp_browse_lib.browse_operations import BrowseOperations
@@ -22,7 +22,7 @@ from .formatter import PlainTextFormatter
 logger = logging.getLogger("ra_mcp.browse.tool")
 
 
-def register_browse_tool(mcp) -> None:
+def register_browse_tool(mcp: FastMCP) -> None:
     """Register the browse tool with the MCP server."""
 
     @mcp.tool(

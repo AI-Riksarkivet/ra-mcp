@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_dataset_lib import format_results
 from ra_mcp_sbl_lib.search_operations import SearchResult
 
@@ -24,7 +26,7 @@ def _format_date(year: int | None, month: int | None, day: int | None, prefix: s
     return date_str
 
 
-def _format_sbl_record(rec: dict, lines: list[str]) -> None:
+def _format_sbl_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single SBL record into lines."""
     given_name = rec.get("given_name", "")
     surname = rec.get("surname", "")

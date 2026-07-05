@@ -6,7 +6,7 @@ import logging
 from typing import Annotated
 from uuid import uuid4
 
-from fastmcp import Context
+from fastmcp import Context, FastMCP
 from fastmcp.apps import UI_EXTENSION_ID, AppConfig
 from fastmcp.tools import ToolResult
 from mcp import types
@@ -28,7 +28,7 @@ from .formatter import format_mpo_info
 logger = logging.getLogger("ra_mcp.diplomatics.view_mpo")
 
 
-def register_view_mpo_tool(mcp) -> None:
+def register_view_mpo_tool(mcp: FastMCP) -> None:
     """Register the view_mpo MCP tool."""
 
     @mcp.tool(

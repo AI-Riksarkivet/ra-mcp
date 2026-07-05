@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_court_lib.search_operations import SearchResult
 from ra_mcp_dataset_lib import format_results
 
@@ -24,7 +26,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _format_domboksregister_record(rec: dict, lines: list[str]) -> None:
+def _format_domboksregister_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Domboksregister record into lines."""
     lines.append(f"--- Domboksregister {rec.get('id', '?')} ---")
 
@@ -55,7 +57,7 @@ def format_domboksregister_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_medelstad_record(rec: dict, lines: list[str]) -> None:
+def _format_medelstad_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Medelstad record into lines."""
     lines.append(f"--- Medelstad {rec.get('lopnr', '?')} ---")
 

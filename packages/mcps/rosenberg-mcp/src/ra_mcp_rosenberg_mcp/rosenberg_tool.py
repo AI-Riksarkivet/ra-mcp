@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -18,7 +19,7 @@ from .formatter import format_rosenberg_results
 logger = logging.getLogger("ra_mcp.rosenberg.rosenberg_tool")
 
 
-def register_rosenberg_tool(mcp) -> None:
+def register_rosenberg_tool(mcp: FastMCP) -> None:
     """Register the search_rosenberg MCP tool with the given FastMCP server."""
 
     @mcp.tool(

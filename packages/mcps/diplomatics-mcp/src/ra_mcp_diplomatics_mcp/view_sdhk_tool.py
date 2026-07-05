@@ -6,7 +6,7 @@ import logging
 from typing import Annotated
 from uuid import uuid4
 
-from fastmcp import Context
+from fastmcp import Context, FastMCP
 from fastmcp.apps import UI_EXTENSION_ID, AppConfig
 from fastmcp.tools import ToolResult
 from mcp import types
@@ -28,7 +28,7 @@ from .formatter import format_sdhk_info
 logger = logging.getLogger("ra_mcp.diplomatics.view_sdhk")
 
 
-def register_view_sdhk_tool(mcp) -> None:
+def register_view_sdhk_tool(mcp: FastMCP) -> None:
     """Register the view_sdhk MCP tool."""
 
     @mcp.tool(

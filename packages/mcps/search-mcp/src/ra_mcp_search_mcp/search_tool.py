@@ -7,7 +7,7 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 import logging
 from typing import Annotated
 
-from fastmcp import Context
+from fastmcp import Context, FastMCP
 from pydantic import Field
 
 from ra_mcp_common.formatting import page_id_to_number
@@ -47,7 +47,7 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
     return None
 
 
-def register_search_tool(mcp) -> None:
+def register_search_tool(mcp: FastMCP) -> None:
     """Register the search tools with the MCP server."""
 
     @mcp.tool(

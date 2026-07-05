@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_dds_lib.search_operations import SearchResult
 
 
@@ -23,7 +25,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _format_fodelse_record(rec: dict, lines: list[str]) -> None:
+def _format_fodelse_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Födelse record into lines."""
     lines.append(f"--- F\u00f6delse {rec.get('postid', '?')} ---")
 
@@ -92,7 +94,7 @@ def format_fodelse_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_doda_record(rec: dict, lines: list[str]) -> None:
+def _format_doda_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Döda record into lines."""
     lines.append(f"--- D\u00f6da {rec.get('postid', '?')} ---")
 
@@ -170,7 +172,7 @@ def format_doda_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_vigsel_record(rec: dict, lines: list[str]) -> None:
+def _format_vigsel_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Vigsel record into lines."""
     lines.append(f"--- Vigsel {rec.get('postid', '?')} ---")
 

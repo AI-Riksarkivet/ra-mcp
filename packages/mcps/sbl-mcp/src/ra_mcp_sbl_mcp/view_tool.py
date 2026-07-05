@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
+from fastmcp import FastMCP
 from fastmcp.apps import AppConfig, ResourceCSP
 from fastmcp.tools import ToolResult
 from mcp import types
@@ -50,7 +51,7 @@ def _article_summary(rec: dict) -> str:
     return summary
 
 
-def register_view_tool(mcp) -> None:
+def register_view_tool(mcp: FastMCP) -> None:
     """Register the view/load/state tools and UI resource."""
 
     @mcp.resource(

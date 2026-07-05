@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -18,7 +19,7 @@ from .formatter import format_wincars_results
 logger = logging.getLogger("ra_mcp.wincars.wincars_tool")
 
 
-def register_wincars_tool(mcp) -> None:
+def register_wincars_tool(mcp: FastMCP) -> None:
     """Register the search_wincars MCP tool with the given FastMCP server."""
 
     @mcp.tool(

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_wincars_lib.models import _TYP_DISPLAY
 from ra_mcp_wincars_lib.search_operations import SearchResult
 
@@ -18,7 +20,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
         lines.append(f"{label}: {value}")
 
 
-def _format_wincars_record(rec: dict, lines: list[str]) -> None:
+def _format_wincars_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Wincars record into lines."""
     nreg = rec.get("nreg", "?")
     lines.append(f"--- {nreg} ---")

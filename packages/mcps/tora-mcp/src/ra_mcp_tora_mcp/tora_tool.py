@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -16,7 +17,7 @@ from .formatter import format_tora_results
 logger = logging.getLogger("ra_mcp.tora.tora_tool")
 
 
-def register_tora_tool(mcp) -> None:
+def register_tora_tool(mcp: FastMCP) -> None:
     """Register the search_tora MCP tool."""
 
     @mcp.tool(

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_aktiebolag_lib import AktiebolagSearch
@@ -18,7 +19,7 @@ from .formatter import format_styrelse_results
 logger = logging.getLogger("ra_mcp.aktiebolag.styrelse_tool")
 
 
-def register_styrelse_tool(mcp) -> None:
+def register_styrelse_tool(mcp: FastMCP) -> None:
     """Register the search_styrelse MCP tool with the given FastMCP server."""
 
     @mcp.tool(

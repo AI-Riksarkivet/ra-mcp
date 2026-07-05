@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -18,7 +19,7 @@ from .formatter import format_flygvapen_results
 logger = logging.getLogger("ra_mcp.specialsok.flygvapen_tool")
 
 
-def register_flygvapen_tool(mcp) -> None:
+def register_flygvapen_tool(mcp: FastMCP) -> None:
     """Register the search_flygvapen MCP tool."""
 
     @mcp.tool(

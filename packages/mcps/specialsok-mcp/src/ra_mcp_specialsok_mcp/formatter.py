@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_specialsok_lib.search_operations import SearchResult
 
 
@@ -43,7 +45,7 @@ def _format_footer(result: SearchResult, lines: list[str]) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _format_flygvapen_record(rec: dict, lines: list[str]) -> None:
+def _format_flygvapen_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Flygvapenhaverier record."""
     lines.append("--- Flygvapenhaveri ---")
     _append_if(lines, "Date", rec.get("datum", ""))
@@ -80,7 +82,7 @@ def format_flygvapen_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_fangrullor_record(rec: dict, lines: list[str]) -> None:
+def _format_fangrullor_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Fångrullor record."""
     lines.append("--- Fångrulle ---")
     name_parts = [rec.get("fornamn", ""), rec.get("efternamn", "")]
@@ -111,7 +113,7 @@ def format_fangrullor_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_kurhuset_record(rec: dict, lines: list[str]) -> None:
+def _format_kurhuset_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Kurhuset record."""
     lines.append("--- Kurhuset patient ---")
     name_parts = [rec.get("fornamn", ""), rec.get("efternamn", "")]
@@ -157,7 +159,7 @@ def format_kurhuset_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_press_record(rec: dict, lines: list[str]) -> None:
+def _format_press_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Presskonferens record."""
     lines.append("--- Presskonferens ---")
     _append_if(lines, "Date", rec.get("datum", ""))
@@ -191,7 +193,7 @@ def format_press_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_video_record(rec: dict, lines: list[str]) -> None:
+def _format_video_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Videobutik record."""
     lines.append("--- Videobutik ---")
     _append_if(lines, "Store", rec.get("butiksnamn", ""))

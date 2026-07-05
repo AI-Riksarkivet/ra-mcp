@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -18,7 +19,7 @@ from .formatter import format_filmreg_results
 logger = logging.getLogger("ra_mcp.filmcensur.filmreg_tool")
 
 
-def register_filmreg_tool(mcp) -> None:
+def register_filmreg_tool(mcp: FastMCP) -> None:
     """Register the search_filmreg MCP tool with the given FastMCP server."""
 
     @mcp.tool(

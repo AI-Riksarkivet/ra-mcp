@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_suffrage_lib.search_operations import SearchResult
 
 
@@ -11,7 +13,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
         lines.append(f"{label}: {value}")
 
 
-def _format_contribution(rec: dict) -> str:
+def _format_contribution(rec: dict[str, Any]) -> str:
     """Format monetary contribution from kr and öre."""
     kr = rec.get("bidrag_kr", "")
     ore = rec.get("bidrag_ore", "")
@@ -24,7 +26,7 @@ def _format_contribution(rec: dict) -> str:
     return ""
 
 
-def _format_rostratt_record(rec: dict, lines: list[str]) -> None:
+def _format_rostratt_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Rösträtt record into lines."""
     fornamn = rec.get("fornamn", "")
     efternamn = rec.get("efternamn", "")
@@ -78,7 +80,7 @@ def format_rostratt_results(result: SearchResult) -> str:
     return "\n".join(lines)
 
 
-def _format_fkpr_record(rec: dict, lines: list[str]) -> None:
+def _format_fkpr_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single FKPR record into lines."""
     foernamn = rec.get("foernamn", "")
     efternamn = rec.get("efternamn", "")

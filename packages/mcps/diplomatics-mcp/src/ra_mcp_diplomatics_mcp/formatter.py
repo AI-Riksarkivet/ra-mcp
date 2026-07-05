@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_diplomatics_lib.search_operations import SearchResult
 
 
@@ -159,7 +161,7 @@ def format_mpo_results(result: SearchResult) -> str:
     return "\n".join(lines)
 
 
-def format_sdhk_info(row: dict) -> str:
+def format_sdhk_info(row: dict[str, Any]) -> str:
     """Format an SDHK record as markdown for the viewer info panel."""
     sdhk_id = row.get("id", "?")
     lines: list[str] = [f"## SDHK {sdhk_id}"]
@@ -202,7 +204,7 @@ def format_sdhk_info(row: dict) -> str:
     return "\n".join(lines)
 
 
-def format_mpo_info(row: dict) -> str:
+def format_mpo_info(row: dict[str, Any]) -> str:
     """Format an MPO record as markdown for the viewer info panel."""
     mpo_id = row.get("id", "?")
     lines: list[str] = [f"## MPO {mpo_id}"]

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_aktiebolag_lib.search_operations import SearchResult
 from ra_mcp_dataset_lib import format_results
 
@@ -24,7 +26,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _format_bolag_record(rec: dict, lines: list[str]) -> None:
+def _format_bolag_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Aktiebolag company record into lines."""
     namn = rec.get("bolagets_namn", "?")
     argang = rec.get("argang", "")
@@ -62,7 +64,7 @@ def format_bolag_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_styrelse_record(rec: dict, lines: list[str]) -> None:
+def _format_styrelse_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single board member record into lines."""
     styrelsemed = rec.get("styrelsemed", "")
     fornamn = rec.get("fornamn", "")

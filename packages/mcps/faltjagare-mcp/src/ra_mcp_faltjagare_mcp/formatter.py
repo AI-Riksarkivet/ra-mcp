@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_dataset_lib import format_results
 from ra_mcp_faltjagare_lib.search_operations import SearchResult
 
@@ -12,7 +14,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
         lines.append(f"{label}: {value}")
 
 
-def _format_faltjagare_record(rec: dict, lines: list[str]) -> None:
+def _format_faltjagare_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Fältjägare record into lines."""
     soldatnamn = rec.get("soldatnamn", "")
     foernamn = rec.get("foernamn", "")

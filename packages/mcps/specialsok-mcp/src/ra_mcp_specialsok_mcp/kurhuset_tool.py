@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
@@ -18,7 +19,7 @@ from .formatter import format_kurhuset_results
 logger = logging.getLogger("ra_mcp.specialsok.kurhuset_tool")
 
 
-def register_kurhuset_tool(mcp) -> None:
+def register_kurhuset_tool(mcp: FastMCP) -> None:
     """Register the search_kurhuset MCP tool."""
 
     @mcp.tool(

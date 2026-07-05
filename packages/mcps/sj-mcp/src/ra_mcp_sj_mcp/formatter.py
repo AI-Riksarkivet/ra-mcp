@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from ra_mcp_dataset_lib import format_results
 from ra_mcp_sj_lib.search_operations import SearchResult
 
@@ -24,7 +26,7 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _format_juda_record(rec: dict, lines: list[str]) -> None:
+def _format_juda_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single JUDA property record into lines."""
     lines.append(f"--- JUDA {rec.get('fbidnr', '?')} ---")
     _append_if(lines, "Property", rec.get("fbtext", ""))
@@ -49,7 +51,7 @@ def format_juda_results(result: SearchResult) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _format_ritning_record(rec: dict, lines: list[str]) -> None:
+def _format_ritning_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single drawing record into lines."""
     bnum = rec.get("bnum", "?")
     blad = rec.get("blad", "")

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Annotated
 
 import httpx
-from fastmcp import Context
+from fastmcp import Context, FastMCP
 from fastmcp.exceptions import ToolError
 from pydantic import Field
 
@@ -39,7 +39,7 @@ def _build_image_only_tasks(image_urls: list[str]) -> list[dict]:
     return [{"data": {"ocr": url}} for url in image_urls]
 
 
-def register_label_tool(mcp) -> None:
+def register_label_tool(mcp: FastMCP) -> None:
     """Register the label tool with the MCP server."""
 
     @mcp.tool(
