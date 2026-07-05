@@ -68,6 +68,11 @@ class LRUCache[V]:
     def __len__(self) -> int:
         return len(self._store)
 
+    def clear(self) -> None:
+        """Drop all entries and reset the byte total."""
+        self._store.clear()
+        self._bytes = 0
+
     def keys(self) -> list[str]:
         """Snapshot of the cached keys (does not affect LRU recency)."""
         return list(self._store)
