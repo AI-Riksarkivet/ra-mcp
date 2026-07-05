@@ -26,8 +26,8 @@ from ra_mcp_pdf_mcp.guide_index import ensure_guide_index, search_guide_index
 from ra_mcp_pdf_mcp.models import PdfViewerState
 from ra_mcp_pdf_mcp.state import (
     get_active_state,
-    get_state,
     put_state,
+    read_and_consume,
 )
 
 
@@ -161,7 +161,9 @@ async def read_pdf_bytes(
 async def get_pdf_state(
     view_id: Annotated[str, Field(description="View ID from the initial tool result.")],
 ) -> ToolResult:
-    state = await get_state(view_id)
+    # read_and_consume clears one-shot commands (go_to_page/request_fullscreen) so the
+    # client applies them exactly once and a later unrelated mutation can't re-fire them.
+    state = await read_and_consume(view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=f"PDF state v{state.version}")],
         structured_content=state.model_dump(),

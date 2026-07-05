@@ -18,7 +18,7 @@ from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_lay
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
 from ra_mcp_viewer_mcp.models import ViewerState
 from ra_mcp_viewer_mcp.resolve import bild_resolve_document, browse_resolve_document, manifest_resolve_document, validate_url_pairs
-from ra_mcp_viewer_mcp.state import get_active_state, get_state, put_state
+from ra_mcp_viewer_mcp.state import get_active_state, put_state, read_and_consume
 
 
 logger = logging.getLogger("ra_mcp.viewer.tools")
@@ -269,7 +269,9 @@ async def view_bild(
 async def get_viewer_state(
     view_id: Annotated[str, Field(description="View ID from the initial tool result.")],
 ) -> ToolResult:
-    state = await get_state(view_id)
+    # read_and_consume clears one-shot commands (go_to_page/request_fullscreen) so the
+    # client applies them exactly once and a later unrelated mutation can't re-fire them.
+    state = await read_and_consume(view_id)
     return ToolResult(
         content=[types.TextContent(type="text", text=f"Viewer state v{state.version}")],
         structured_content=state.model_dump(),

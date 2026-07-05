@@ -99,3 +99,45 @@ async def test_get_active_state_raises_and_prunes_after_state_expiry(monkeypatch
     with pytest.raises(LookupError, match="No PDF viewer is open"):
         await get_active_state()
     assert "sess-exp" not in _state_mod._latest_view_by_session  # dangling pointer pruned
+
+
+async def test_read_and_consume_delivers_then_clears_one_shot_commands():
+    # go_to_page / request_fullscreen are one-shot commands: read_and_consume delivers them
+    # once (so the client applies them), then clears them in the store WITHOUT bumping the
+    # version, so a later unrelated mutation can't re-fire them. search_term is level state
+    # and must survive.
+    await put_state(
+        PdfViewerState(view_id="v1", url="https://x.pdf", go_to_page=4, request_fullscreen=True, search_term="trolldom")
+    )
+    version = (await get_state("v1")).version
+
+    snap = await _state_mod.read_and_consume("v1")
+    assert snap.go_to_page == 4  # delivered
+    assert snap.request_fullscreen is True
+    assert snap.version == version  # no bump
+
+    after = await get_state("v1")
+    assert after.go_to_page == -1  # consumed
+    assert after.request_fullscreen is False
+    assert after.search_term == "trolldom"  # level state preserved
+    assert after.version == version  # still no bump — won't re-trigger the poll
+
+    # A second read is now a no-op for the commands (idempotent).
+    assert (await _state_mod.read_and_consume("v1")).go_to_page == -1
+
+
+async def test_read_and_consume_returns_default_without_writing_on_miss(monkeypatch):
+    # No stored state (expired/never-opened) — return a blank default and do NOT write.
+    async def _empty_get(**_kwargs):
+        return None
+
+    writes: list = []
+
+    async def _spy_put(**kwargs):
+        writes.append(kwargs)
+
+    monkeypatch.setattr(_state_mod._store, "get", _empty_get)
+    monkeypatch.setattr(_state_mod._store, "put", _spy_put)
+    state = await _state_mod.read_and_consume("gone")
+    assert state.version == 0
+    assert writes == []  # no store write on a miss

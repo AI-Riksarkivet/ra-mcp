@@ -38,6 +38,29 @@ async def get_state(view_id: str) -> PdfViewerState:
     return PdfViewerState(view_id=view_id)
 
 
+async def read_and_consume(view_id: str) -> PdfViewerState:
+    """Return the state for the polling client, clearing the one-shot command fields
+    (go_to_page, request_fullscreen) in the store so they apply exactly once.
+
+    search_term is deliberately NOT consumed — it is level state (the active search), not
+    a one-shot command. Without consuming go_to_page/request_fullscreen, a later unrelated
+    mutation re-emits the still-set value and re-navigates / re-forces fullscreen. The clear
+    does not bump the version; the returned snapshot still carries the values for this
+    delivery, and re-issuing the command re-sets the field + bumps the version.
+    """
+    data = await _store.get(key=view_id, collection=_COL)
+    if not data:
+        return PdfViewerState(view_id=view_id)
+    state = PdfViewerState.model_validate(data)
+    if state.go_to_page != -1 or state.request_fullscreen:
+        snapshot = state.model_copy()
+        state.go_to_page = -1
+        state.request_fullscreen = False
+        await _store.put(key=view_id, value=state.model_dump(), collection=_COL, ttl=_TTL)
+        return snapshot
+    return state
+
+
 async def get_active_state() -> PdfViewerState:
     """Get the current session's viewer state. Raises LookupError if no viewer is open."""
     session = _session_key()

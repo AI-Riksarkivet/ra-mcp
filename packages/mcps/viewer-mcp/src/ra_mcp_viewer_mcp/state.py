@@ -36,6 +36,29 @@ async def get_state(view_id: str) -> ViewerState:
     return ViewerState(view_id=view_id)
 
 
+async def read_and_consume(view_id: str) -> ViewerState:
+    """Return the state for the polling client, clearing the one-shot command fields
+    (go_to_page, request_fullscreen) in the store so they apply exactly once.
+
+    These are imperative commands embedded in polled state: without consuming them, a later
+    unrelated mutation re-emits the still-set value and re-navigates / re-forces fullscreen.
+    The clear does NOT bump the version (so it can't re-trigger a poll), and the returned
+    snapshot still carries the command values for this one delivery. Re-issuing the command
+    re-sets the field and bumps the version, so it fires again.
+    """
+    data = await _store.get(key=view_id, collection=_COL)
+    if not data:
+        return ViewerState(view_id=view_id)
+    state = ViewerState.model_validate(data)
+    if state.go_to_page != -1 or state.request_fullscreen:
+        snapshot = state.model_copy()
+        state.go_to_page = -1
+        state.request_fullscreen = False
+        await _store.put(key=view_id, value=state.model_dump(), collection=_COL, ttl=_TTL)
+        return snapshot
+    return state
+
+
 async def get_active_state() -> ViewerState:
     """Get the current session's viewer state. Raises LookupError if no viewer is open."""
     session = _session_key()

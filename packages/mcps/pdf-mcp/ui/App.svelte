@@ -41,12 +41,6 @@ let canFullscreen = $derived(hostContext?.availableDisplayModes?.includes("fulls
 let hasData = $derived(viewerData !== null && viewerData.url.length > 0);
 
 let lastSeenVersion = 0;
-// go_to_page / request_fullscreen are one-shot intents the server never resets, so they
-// must be applied edge-triggered (only when the value changes) — otherwise every later
-// unrelated version bump re-applies the stale value, yanking the reader's page or
-// re-forcing fullscreen after they exited it.
-let lastAppliedGoToPage = -1;
-let lastRequestedFullscreen = false;
 let viewId = $state("");
 
 function applyViewerState(sc: Record<string, unknown>) {
@@ -64,20 +58,20 @@ function applyViewerState(sc: Record<string, unknown>) {
   lastSeenVersion = version;
   if (scViewId) viewId = scViewId;
 
-  if (requestFullscreen && !lastRequestedFullscreen && app && !isFullscreen && window.innerWidth >= 640) {
+  if (requestFullscreen && app && !isFullscreen && window.innerWidth >= 640) {
     app.requestDisplayMode({ mode: "fullscreen" }).catch(() => {});
   }
-  lastRequestedFullscreen = requestFullscreen;
 
   const scSearchTerm = (sc.search_term as string) ?? "";
   const scGoToPage = (sc.go_to_page as number) ?? -1;
 
-  // If same URL, just update navigation/search state
+  // If same URL, just update navigation/search state. go_to_page is a one-shot command the
+  // server consumes on read (cleared after one delivery), so applying it whenever set is
+  // correct and idempotent — no stale re-application on later unrelated version bumps.
   if (viewerData && viewerData.url === url) {
-    if (scGoToPage >= 0 && scGoToPage !== lastAppliedGoToPage) {
+    if (scGoToPage >= 0) {
       currentPage = scGoToPage + 1; // 0-based → 1-based
     }
-    lastAppliedGoToPage = scGoToPage;
     if (scSearchTerm && scSearchTerm !== searchTerm) {
       searchTerm = scSearchTerm;
     }
@@ -92,8 +86,6 @@ function applyViewerState(sc: Record<string, unknown>) {
     currentPage: scCurrentPage,
     totalPages: 0,
   };
-  // New document — reset the go_to_page baseline so a later navigation on it still fires.
-  lastAppliedGoToPage = scGoToPage;
 
   // Defer loading to next microtask — avoids TDZ errors when
   // $state writes happen synchronously inside MCP notification handlers.

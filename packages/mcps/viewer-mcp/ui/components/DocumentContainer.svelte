@@ -46,10 +46,6 @@ let inFlight = new Map<number, Promise<PageData | null>>();
 let currentPage = $state.raw<PageData | null>(null);
 let lastRenderedIndex = -1;
 let prevPageUrls: ViewerData["pageUrls"] | null = null;
-// go_to_page is a one-shot intent the server never resets, so apply it edge-triggered
-// (only when the value changes). Otherwise an unrelated poll update (e.g. a highlight
-// change) or a document switch re-applies the stale index and yanks the page.
-let lastAppliedGoToPage = -1;
 
 // ---------------------------------------------------------------------------
 // React to data prop changes (new document or highlight update from poll)
@@ -72,9 +68,6 @@ $effect(() => {
     pageMatchCounts.clear();
     globalTotalMatches = 0;
     globalSearchTerm = "";
-    // Adopt the new document's go_to_page as the baseline so a stale value carried over
-    // from the previous document doesn't jump us off page 1.
-    lastAppliedGoToPage = data.goToPage;
   }
 
   // Trigger cross-page search when highlight term changes
@@ -82,12 +75,11 @@ $effect(() => {
     handleGlobalSearch(data.highlightTerm);
   }
 
-  // Jump to requested page — only when it actually changed, so an unrelated poll update
-  // (a highlight change re-emitting the same go_to_page) doesn't re-yank the user's page.
-  if (data.goToPage >= 0 && data.goToPage < data.pageUrls.length && data.goToPage !== lastAppliedGoToPage) {
+  // Jump to requested page. go_to_page is a one-shot command the server consumes on read
+  // (cleared after one delivery), so applying it whenever set is correct and idempotent.
+  if (data.goToPage >= 0 && data.goToPage < data.pageUrls.length) {
     currentPageIndex = data.goToPage;
   }
-  lastAppliedGoToPage = data.goToPage;
 });
 
 // ---------------------------------------------------------------------------
