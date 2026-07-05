@@ -41,6 +41,9 @@ let canFullscreen = $derived(hostContext?.availableDisplayModes?.includes("fulls
 let hasData = $derived(viewerData !== null && viewerData.url.length > 0);
 
 let lastSeenVersion = 0;
+// The last search_term the server sent, so an LLM-initiated change — including a CLEAR
+// (empty string) — propagates once, without a same-value poll clobbering the user's typing.
+let lastServerSearchTerm = "";
 let viewId = $state("");
 
 function applyViewerState(sc: Record<string, unknown>) {
@@ -72,8 +75,9 @@ function applyViewerState(sc: Record<string, unknown>) {
     if (scGoToPage >= 0) {
       currentPage = scGoToPage + 1; // 0-based → 1-based
     }
-    if (scSearchTerm && scSearchTerm !== searchTerm) {
-      searchTerm = scSearchTerm;
+    if (scSearchTerm !== lastServerSearchTerm) {
+      searchTerm = scSearchTerm; // apply the server's value, including "" to clear highlights
+      lastServerSearchTerm = scSearchTerm;
     }
     return;
   }

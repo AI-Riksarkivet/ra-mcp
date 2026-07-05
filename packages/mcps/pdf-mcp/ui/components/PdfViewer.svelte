@@ -145,6 +145,9 @@ let searchMatchLabel = $derived.by(() => {
 
 let currentPageProxy = $state<PDFPageProxy | null>(null);
 let renderGeneration = 0;
+// The document we've already fit-to-width, so auto-fit runs once per document rather than
+// clamping (and re-triggering) on every render.
+let fittedDoc: PDFDocumentProxy | null = null;
 
 $effect(() => {
   const page = currentPage;
@@ -162,16 +165,20 @@ $effect(() => {
 
       currentPageProxy = pageProxy;
 
-      // Auto-fit: clamp scale so page fits container width
-      if (viewerBodyEl) {
+      // Fit-to-width ONCE per newly-loaded document — set the initial scale to fit the
+      // container. This is a default, NOT a per-render hard cap: explicit zoom can exceed
+      // fit-width (the .canvas-container scrolls via overflow:auto), and we don't write
+      // `scale` back on every render (which both clamped zoom to a no-op and forced a
+      // redundant second getPage+render+text-layer pass).
+      if (pdfDocument !== fittedDoc && viewerBodyEl && viewerBodyEl.clientWidth > 32) {
         const naturalViewport = pageProxy.getViewport({ scale: 1 });
-        const availableWidth = viewerBodyEl.clientWidth - 32;
-        if (availableWidth > 0) {
-          const maxScale = availableWidth / naturalViewport.width;
-          if (s > maxScale) {
-            s = maxScale;
-          }
+        const fit = (viewerBodyEl.clientWidth - 32) / naturalViewport.width;
+        fittedDoc = pdfDocument;
+        if (Math.abs(fit - scale) > 0.001) {
+          scale = fit; // one intentional re-run to render at the fitted scale
+          return;
         }
+        s = fit;
       }
 
       await renderPage(pageProxy, canvasEl, s);
@@ -184,9 +191,6 @@ $effect(() => {
       const viewport = pageProxy.getViewport({ scale: s });
       highlightWidth = viewport.width;
       highlightHeight = viewport.height;
-
-      // Update scale state to match what was actually rendered (for zoom label)
-      if (s !== scale) scale = s;
     } catch (err) {
       if (gen === renderGeneration) {
         console.error("[PdfViewer] render error:", err);
