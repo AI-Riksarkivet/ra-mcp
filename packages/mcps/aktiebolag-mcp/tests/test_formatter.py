@@ -61,12 +61,12 @@ def _result(records: list[dict], *, total_hits=None, keyword="kullager", offset=
 
 def test_format_bolag_results_empty_offset_zero():
     out = format_bolag_results(_result([], total_hits=0, keyword="trolldom"))
-    assert out == "No company results found for 'trolldom'."
+    assert out == "No Company results found for 'trolldom'."
 
 
 def test_format_bolag_results_empty_with_offset_reports_total():
     out = format_bolag_results(_result([], total_hits=42, keyword="trolldom", offset=25))
-    assert "No more company results for 'trolldom' at offset 25" in out
+    assert "No more Company results for 'trolldom' at offset 25" in out
     assert "Total found: 42" in out
 
 
@@ -141,12 +141,12 @@ def test_format_bolag_results_no_pagination_hint_on_last_page():
 
 def test_format_styrelse_results_empty_offset_zero():
     out = format_styrelse_results(_result([], total_hits=0, keyword="wingquist"))
-    assert out == "No board member results found for 'wingquist'."
+    assert out == "No Board member results found for 'wingquist'."
 
 
 def test_format_styrelse_results_empty_with_offset_reports_total():
     out = format_styrelse_results(_result([], total_hits=7, keyword="wingquist", offset=25))
-    assert "No more board member results for 'wingquist' at offset 25" in out
+    assert "No more Board member results for 'wingquist' at offset 25" in out
     assert "Total found: 7" in out
 
 

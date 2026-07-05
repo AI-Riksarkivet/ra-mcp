@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ra_mcp_dataset_lib import format_results
 from ra_mcp_sj_lib.search_operations import SearchResult
 
 
@@ -40,23 +41,7 @@ def _format_juda_record(rec: dict, lines: list[str]) -> None:
 
 def format_juda_results(result: SearchResult) -> str:
     """Format JUDA search results as plain text for MCP/LLM consumption."""
-    if not result.records:
-        if result.offset > 0:
-            return f"No more JUDA results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
-        return f"No JUDA results found for '{result.keyword}'."
-
-    lines: list[str] = []
-    lines.append(f"JUDA search results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} records (offset {result.offset})")
-    lines.append("")
-
-    for rec in result.records:
-        _format_juda_record(rec, lines)
-
-    next_offset = result.offset + result.limit
-    if next_offset < result.total_hits:
-        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
-
-    return "\n".join(lines)
+    return format_results(result, label="JUDA", render_record=_format_juda_record)
 
 
 # ---------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ra_mcp_aktiebolag_lib.search_operations import SearchResult
+from ra_mcp_dataset_lib import format_results
 
 
 def _truncate(text: str, max_len: int) -> str:
@@ -53,23 +54,7 @@ def _format_bolag_record(rec: dict, lines: list[str]) -> None:
 
 def format_bolag_results(result: SearchResult) -> str:
     """Format Aktiebolag company search results as plain text for MCP/LLM consumption."""
-    if not result.records:
-        if result.offset > 0:
-            return f"No more company results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
-        return f"No company results found for '{result.keyword}'."
-
-    lines: list[str] = []
-    lines.append(f"Company search results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} records (offset {result.offset})")
-    lines.append("")
-
-    for rec in result.records:
-        _format_bolag_record(rec, lines)
-
-    next_offset = result.offset + result.limit
-    if next_offset < result.total_hits:
-        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
-
-    return "\n".join(lines)
+    return format_results(result, label="Company", render_record=_format_bolag_record)
 
 
 # ---------------------------------------------------------------------------
@@ -93,20 +78,4 @@ def _format_styrelse_record(rec: dict, lines: list[str]) -> None:
 
 def format_styrelse_results(result: SearchResult) -> str:
     """Format board member search results as plain text for MCP/LLM consumption."""
-    if not result.records:
-        if result.offset > 0:
-            return f"No more board member results for '{result.keyword}' at offset {result.offset}. Total found: {result.total_hits}"
-        return f"No board member results found for '{result.keyword}'."
-
-    lines: list[str] = []
-    lines.append(f"Board member search results for '{result.keyword}': showing {len(result.records)} of {result.total_hits} records (offset {result.offset})")
-    lines.append("")
-
-    for rec in result.records:
-        _format_styrelse_record(rec, lines)
-
-    next_offset = result.offset + result.limit
-    if next_offset < result.total_hits:
-        lines.append(f"More results available. Use offset={next_offset} to see the next page.")
-
-    return "\n".join(lines)
+    return format_results(result, label="Board member", render_record=_format_styrelse_record)
