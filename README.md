@@ -49,6 +49,14 @@ claude mcp add --transport http ra-mcp https://riksarkivet-ra-mcp.hf.space/mcp
 }
 ```
 
+**Claude.ai (web & desktop) — no install:** it's a *remote* server, so add it as a custom connector by URL. Settings → **Connectors** → **Add custom connector** → paste `https://riksarkivet-ra-mcp.hf.space/mcp` → **Add**. The ra-mcp tools then appear in new chats. (Requires a plan with custom connectors: Pro, Max, Team, or Enterprise.)
+
+**ChatGPT (Pro/Business/Enterprise):** Settings → **Connectors** (or enable **Developer mode**) → add a connector pointing at the same URL. See OpenAI's connector docs for the current flow.
+
+> The interactive **document / PDF viewers** are MCP App UIs — they render inline only in clients that support MCP UI resources (e.g. Claude). Other clients still get all the text/search/browse tools; they just won't embed the viewer.
+>
+> The `.claude/` skills and the `plugins/ra-mcp-tools` plugin are **Claude Code** add-ons (`/install-plugin AI-Riksarkivet/ra-mcp plugins/ra-mcp-tools`). They aren't used by claude.ai or ChatGPT, which call the MCP tools directly.
+
 ## Quick Start (CLI)
 
 The `ra` command imports the search, browse, and TUI sub-apps unconditionally, so install the `cli` and `tui` extras to get a working CLI:
