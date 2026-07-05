@@ -33,6 +33,13 @@ export function resizeHandle(
   }
 
   function onPointerMove(e: PointerEvent) {
+    // If the button was released without a pointerup/cancel reaching us (e.g. the UA took
+    // over the gesture), bail so a stale drag doesn't resize on plain hover.
+    if (dragging && e.buttons === 0) {
+      dragging = false;
+      current.onResizeEnd?.();
+      return;
+    }
     if (!dragging) return;
     const delta =
       current.edge === "right"
@@ -52,6 +59,9 @@ export function resizeHandle(
   element.addEventListener("pointerdown", onPointerDown);
   element.addEventListener("pointermove", onPointerMove);
   element.addEventListener("pointerup", onPointerUp);
+  // pointercancel fires when the UA takes over the gesture (touch/pen) — treat it like an
+  // up so `dragging` can't latch true and resize on subsequent hovers.
+  element.addEventListener("pointercancel", onPointerUp);
 
   return {
     update(newOpts) {
@@ -61,6 +71,7 @@ export function resizeHandle(
       element.removeEventListener("pointerdown", onPointerDown);
       element.removeEventListener("pointermove", onPointerMove);
       element.removeEventListener("pointerup", onPointerUp);
+      element.removeEventListener("pointercancel", onPointerUp);
     },
   };
 }

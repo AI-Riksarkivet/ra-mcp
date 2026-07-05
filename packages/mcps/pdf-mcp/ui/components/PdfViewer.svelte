@@ -58,7 +58,17 @@ let viewerBodyEl = $state<HTMLDivElement>(undefined!);
 // ---------------------------------------------------------------------------
 
 let searchOpen = $state(false);
-let tocOpen = $state(true);
+let searchInputEl = $state<HTMLInputElement>();
+
+// Focus the search field whenever the bar opens (via Ctrl+F, the toolbar button, or an
+// LLM-initiated pdf_set_search) so the user can type immediately instead of having their
+// keystrokes swallowed by the viewer's keydown handler.
+$effect(() => {
+  if (searchOpen && searchInputEl) searchInputEl.focus();
+});
+// Start the TOC sidebar collapsed on a narrow host (e.g. an inline side panel) — as a
+// fixed ~180-300px left column it otherwise crushes the page. The user can still toggle it.
+let tocOpen = $state(typeof window !== "undefined" && window.innerWidth >= 640);
 let searchMatchCount = $state(0);
 let searchCurrentMatch = $state(0);
 let searchRects = $state<DOMRect[]>([]);
@@ -397,6 +407,9 @@ function goToPageInput(e: Event) {
   const input = e.target as HTMLInputElement;
   const val = Math.max(1, Math.min(totalPages, parseInt(input.value, 10) || 1));
   currentPage = val;
+  // Force the field back to the clamped value even when the clamp didn't change currentPage
+  // (e.g. typing 999 on the last page) — otherwise the input keeps showing the invalid text.
+  input.value = String(val);
 }
 
 // ---------------------------------------------------------------------------
@@ -538,6 +551,7 @@ function handleKeydown(e: KeyboardEvent) {
           <div class="search-input-wrapper">
             <svg class="search-icon" width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <input
+              bind:this={searchInputEl}
               bind:value={searchTerm}
               type="text"
               placeholder="Search..."

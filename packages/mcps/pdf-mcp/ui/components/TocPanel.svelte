@@ -77,21 +77,29 @@ $effect(() => {
 // Thumbnail lazy loading
 // ---------------------------------------------------------------------------
 
-// A TOC thumbnail is a 3:4-portrait image on a clamp(180px,25vw,300px) panel plus a
-// label, so its real row height is ~245-405px. Kept just under the minimum real height
-// so the lazy-load window renders slightly ahead of the viewport rather than lagging it
-// (which would leave visible thumbnails blank after a fast scroll).
-const THUMB_HEIGHT = 240;
+// A TOC thumbnail's real row height is ~245-405px depending on panel width (3:4-portrait
+// image on a clamp(180px,25vw,300px) panel + label). A fixed constant therefore drifts on
+// wide panels and leaves visible thumbnails blank. All totalPages buttons are in the DOM,
+// so we measure the exact average row height from scrollHeight/totalPages; this fallback
+// only applies until the first measurement.
+const THUMB_HEIGHT_FALLBACK = 240;
 const BUFFER = 2;
 
 let scrollTop = $state(0);
 let containerHeight = $state(0);
+let rowHeight = $state(THUMB_HEIGHT_FALLBACK);
 
-let visibleStart = $derived(Math.max(1, Math.floor(scrollTop / THUMB_HEIGHT) + 1 - BUFFER));
-let visibleEnd = $derived(Math.min(totalPages, Math.ceil((scrollTop + containerHeight) / THUMB_HEIGHT) + BUFFER));
+let visibleStart = $derived(Math.max(1, Math.floor(scrollTop / rowHeight) + 1 - BUFFER));
+let visibleEnd = $derived(Math.min(totalPages, Math.ceil((scrollTop + containerHeight) / rowHeight) + BUFFER));
 
 // RAF-throttled scroll handler
 let scrollRafId = 0;
+
+function measureRowHeight() {
+  if (!scrollContainer || mode !== "thumbnails" || totalPages <= 0) return;
+  const h = scrollContainer.scrollHeight / totalPages;
+  if (h > 0) rowHeight = h;
+}
 
 function handleScroll() {
   if (scrollRafId) return;
@@ -100,6 +108,7 @@ function handleScroll() {
     if (!scrollContainer) return;
     scrollTop = scrollContainer.scrollTop;
     containerHeight = scrollContainer.clientHeight;
+    measureRowHeight();
   });
 }
 
@@ -138,10 +147,12 @@ $effect(() => {
 
   scrollTop = scrollContainer.scrollTop;
   containerHeight = scrollContainer.clientHeight;
+  measureRowHeight();
 
   resizeObserver = new ResizeObserver(() => {
     if (!scrollContainer) return;
     containerHeight = scrollContainer.clientHeight;
+    measureRowHeight();
   });
   resizeObserver.observe(scrollContainer);
 
