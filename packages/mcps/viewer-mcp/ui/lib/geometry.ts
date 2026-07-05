@@ -8,6 +8,9 @@ import type { TextLine } from "./types";
 export interface PolygonHit {
   lineId: string;
   points: number[];
+  /** Axis-aligned bounds [minX, minY, maxX, maxY] derived from `points` — used to cheaply
+   *  reject a point before the O(vertices) ray-cast on the hover hot path. */
+  bbox: [number, number, number, number];
   line: TextLine;
 }
 
@@ -41,9 +44,27 @@ export function findHitAtImageCoord(
   polygons: PolygonHit[],
 ): PolygonHit | null {
   for (const p of polygons) {
+    // Bounding-box reject first: this runs on every hover mousemove over a page with
+    // hundreds of lines, and the AABB test (4 comparisons) rejects almost all of them
+    // without paying for the ray-cast.
+    const [minX, minY, maxX, maxY] = p.bbox;
+    if (imgX < minX || imgX > maxX || imgY < minY || imgY > maxY) continue;
     if (pointInPolygon(imgX, imgY, p.points)) return p;
   }
   return null;
+}
+
+/** Compute axis-aligned bounds [minX, minY, maxX, maxY] from flat [x,y,...] points. */
+function pointsBBox(points: number[]): [number, number, number, number] {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < points.length; i += 2) {
+    const x = points[i], y = points[i + 1];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return [minX, minY, maxX, maxY];
 }
 
 /** Build PolygonHit array from ALTO text lines (filters lines with <6 polygon points) */
@@ -52,7 +73,7 @@ export function buildPolygonHits(textLines: TextLine[]): PolygonHit[] {
   for (const line of textLines) {
     const points = parsePolygonPoints(line.polygon);
     if (points.length >= 6) {
-      hits.push({ lineId: line.id, points, line });
+      hits.push({ lineId: line.id, points, bbox: pointsBBox(points), line });
     }
   }
   return hits;
