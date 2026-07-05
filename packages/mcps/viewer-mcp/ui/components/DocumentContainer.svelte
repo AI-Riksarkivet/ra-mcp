@@ -283,9 +283,8 @@ $effect(() => {
 });
 </script>
 
-<svelte:window bind:innerWidth />
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="split-layout" class:narrow={isNarrow} tabindex="-1" onkeydown={handleKeydown}>
+<svelte:window bind:innerWidth onkeydown={handleKeydown} />
+<div class="split-layout" class:narrow={isNarrow} tabindex="-1">
   {#if hasThumbnails && isNarrow && showThumbnails}
     <ThumbnailStrip
       {app}

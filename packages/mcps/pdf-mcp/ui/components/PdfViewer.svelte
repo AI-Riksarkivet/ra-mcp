@@ -476,8 +476,9 @@ function handleKeydown(e: KeyboardEvent) {
 
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="viewer" bind:this={containerEl} onkeydown={handleKeydown} tabindex="-1">
+<svelte:window onkeydown={handleKeydown} />
+
+<div class="viewer" bind:this={containerEl} tabindex="-1">
   <div class="viewer-layout">
     {#if tocOpen}
       <TocPanel

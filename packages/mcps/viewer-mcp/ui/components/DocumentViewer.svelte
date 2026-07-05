@@ -264,6 +264,8 @@ function handleCloseSearch() {
 }
 
 function handleViewerKeydown(e: KeyboardEvent) {
+  const tag = (e.target as HTMLElement)?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
   if ((e.ctrlKey || e.metaKey) && e.key === "f") {
     if (hasTextLines) {
       e.preventDefault();
@@ -379,7 +381,9 @@ onDestroy(() => {
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="viewer-wrapper" bind:this={wrapperEl} onkeydown={handleViewerKeydown}>
+<svelte:window onkeydown={handleViewerKeydown} />
+
+<div class="viewer-wrapper" bind:this={wrapperEl}>
   <!-- Canvas -->
   <div class="canvas-container" class:panel-open={showPanel && !isNarrow} style:--panel-width="{panelWidth}px" bind:this={containerEl}>
     <canvas
