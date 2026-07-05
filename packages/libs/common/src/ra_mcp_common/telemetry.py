@@ -76,6 +76,19 @@ def record_span_exception(logger: logging.Logger, exc: BaseException) -> None:
     )
 
 
+def mark_exception_logged(exc: BaseException) -> None:
+    """Mark ``exc`` as already logged so :func:`record_span_exception` won't re-emit
+    its stacktrace.
+
+    Use when an inner layer records an exception and then wraps it in a *new*
+    exception before re-raising (e.g. httpx.TimeoutException -> TimeoutError):
+    ``raise NewError(...) from exc`` only sets ``__cause__``, so the wrapper would
+    otherwise look unseen and get its stacktrace logged a second time as it unwinds.
+    """
+    with contextlib.suppress(AttributeError, TypeError):
+        object.__setattr__(exc, _LOGGED_MARKER, True)
+
+
 def mark_span_error(message: str, error_type: str = "handled_error") -> None:
     """Mark the active span ERROR when a tool returns an error *string* rather
     than raising.

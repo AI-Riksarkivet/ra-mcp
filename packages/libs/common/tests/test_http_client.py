@@ -370,7 +370,9 @@ async def test_retry_exhausted_raises(respx_mock):
 
     client = HTTPClient(max_retries=2, backoff_base=0.0)
     try:
-        with pytest.raises(Exception, match="HTTP 503"):
+        # A persistent retryable status must surface as httpx.HTTPStatusError (the
+        # documented type + the same class as a direct non-200), not a bare Exception.
+        with pytest.raises(httpx.HTTPStatusError, match="HTTP 503"):
             await client.get_json("https://api.example.com/down")
     finally:
         await client.aclose()

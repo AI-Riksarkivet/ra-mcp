@@ -18,7 +18,7 @@ from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanE
 from opentelemetry.trace import SpanKind, StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
-from ra_mcp_common.telemetry import get_tracer, mark_span_error, record_span_exception
+from ra_mcp_common.telemetry import get_tracer, mark_exception_logged, mark_span_error, record_span_exception
 
 
 logger = logging.getLogger("ra_mcp.test.telemetry")
@@ -106,6 +106,26 @@ def test_record_span_exception_logs_once_per_exception(spans, caplog):
     finished = {s.name: s for s in spans.get_finished_spans()}
     assert finished["inner"].attributes["error.type"] == "RuntimeError"
     assert finished["outer"].attributes["error.type"] == "RuntimeError"
+
+
+def test_mark_exception_logged_suppresses_relog_of_wrapper(spans, caplog):
+    # When an inner layer records an exception and then wraps it in a NEW exception
+    # before re-raising (httpx timeout -> TimeoutError), marking the wrapper keeps the
+    # outer layers from logging the same failure a second time.
+    tracer = get_tracer("ra_mcp.test")
+    with caplog.at_level(logging.ERROR, logger="ra_mcp.test.telemetry"):
+        try:
+            raise ValueError("inner timeout")
+        except ValueError as exc:
+            with tracer.start_as_current_span("inner"):
+                record_span_exception(logger, exc)  # origin — logs once
+            wrapper = TimeoutError("Request timeout")
+            mark_exception_logged(wrapper)
+            with tracer.start_as_current_span("outer"):
+                record_span_exception(logger, wrapper)  # pre-marked — marks span only
+
+    assert sum(1 for r in caplog.records if r.name == "ra_mcp.test.telemetry") == 1
+    assert spans.get_finished_spans()[-1].attributes["error.type"] == "TimeoutError"
 
 
 def test_mark_span_error_sets_status_and_type_without_logging(spans, caplog):

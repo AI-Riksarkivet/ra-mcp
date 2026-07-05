@@ -19,7 +19,7 @@ import httpx
 from opentelemetry.trace import SpanKind, StatusCode
 
 from ra_mcp_common.settings import settings
-from ra_mcp_common.telemetry import get_meter, get_tracer, record_span_exception
+from ra_mcp_common.telemetry import get_meter, get_tracer, mark_exception_logged, record_span_exception
 
 
 logger = logging.getLogger("ra_mcp.http_client")
@@ -87,7 +87,14 @@ class HTTPClient:
                     logger.warning("Retryable status %d from %s, attempt %d/%d, waiting %.1fs", response.status_code, url, attempt + 1, self.max_retries, wait)
                     self._retry_counter.add(1, {"retry.reason": str(response.status_code)})
                     await asyncio.sleep(wait)
-                    last_exception = Exception(f"HTTP {response.status_code}")
+                    # Same specific type as the direct non-200 path (get_json/get_xml) so
+                    # exhausting retries on a persistent 5xx/429 lands in the HTTPStatusError
+                    # handler with the right telemetry class, not the generic "unexpected error".
+                    last_exception = httpx.HTTPStatusError(
+                        f"HTTP {response.status_code} for {url}",
+                        request=response.request,
+                        response=response,
+                    )
                     continue
                 return response
             except httpx.HTTPStatusError as e:
@@ -195,7 +202,11 @@ class HTTPClient:
                 span.set_status(StatusCode.ERROR, f"{type(e).__name__}: timeout after {timeout}s")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {**metric_attrs, "error.type": "TimeoutError"})
-                raise TimeoutError(f"Request timeout after {timeout}s: {url}") from e
+                timeout_err = TimeoutError(f"Request timeout after {timeout}s: {url}")
+                # e is already recorded above; carry the marker onto the wrapper so the
+                # outer layers (search_client/operations) don't log the same timeout twice.
+                mark_exception_logged(timeout_err)
+                raise timeout_err from e
 
             except httpx.HTTPStatusError as e:
                 duration = time.perf_counter() - start_time
@@ -298,7 +309,9 @@ class HTTPClient:
                 span.set_status(StatusCode.ERROR, f"TimeoutError: {e}")
                 record_span_exception(logger, e)
                 self._error_counter.add(1, {**metric_attrs, "error.type": "TimeoutError"})
-                raise TimeoutError(f"Request timeout: {url}") from e
+                timeout_err = TimeoutError(f"Request timeout: {url}")
+                mark_exception_logged(timeout_err)
+                raise timeout_err from e
 
             except httpx.HTTPStatusError as e:
                 duration = time.perf_counter() - start_time
