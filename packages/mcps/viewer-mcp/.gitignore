@@ -4,6 +4,11 @@ node_modules/
 # Build output
 dist/
 
+# Playwright e2e artifacts
+test-results/
+playwright-report/
+e2e/_e2e_host.html
+
 # Python
 __pycache__/
 *.py[cod]

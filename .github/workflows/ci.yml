@@ -49,3 +49,14 @@ jobs:
         run: |
           npm ci
           npm test
+
+      # Build both App UIs, then render them in headless chromium under a mock MCP host to
+      # catch bundle/mount/handshake regressions (see viewer-mcp/e2e/apps.spec.ts).
+      - name: Build App UIs
+        run: make build-ui
+
+      - name: Playwright App-render e2e
+        working-directory: packages/mcps/viewer-mcp
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
