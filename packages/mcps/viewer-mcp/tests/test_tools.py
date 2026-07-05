@@ -16,9 +16,9 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 @pytest.fixture(autouse=True)
 def _reset_viewer_state():
-    _state_mod.latest_view_id = ""
+    _state_mod._latest_view_by_session.clear()
     yield
-    _state_mod.latest_view_id = ""
+    _state_mod._latest_view_by_session.clear()
 
 
 FAKE_IMAGE_URL = "https://lbiiif.riksarkivet.se/arkis!R0001203_00007/full/1500,/0/default.jpg"
@@ -282,6 +282,27 @@ async def test_viewer_navigate_urls_updates_pages(mock_fetchers):
         state = await client.call_tool("get_viewer_state", {"view_id": view_id})
     assert state.structured_content["version"] == 2
     assert len(state.structured_content["image_urls"]) == 2
+
+
+async def test_viewer_navigate_urls_resets_stale_bildvisning(mock_fetchers):
+    # view_document populates bildvisning_urls + document_info; navigating to raw URLs
+    # must clear them so the previous document's viewer links / info don't map onto the
+    # new pages.
+    async with Client(mcp) as client:
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
+        await client.call_tool(
+            "viewer_navigate_urls",
+            {
+                "image_urls": ["https://example.com/p3.jpg", "https://example.com/p4.jpg"],
+                "text_layer_urls": ["https://example.com/p3.xml", ""],
+            },
+        )
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+
+    sc = state.structured_content
+    assert sc["bildvisning_urls"] == ["", ""]  # not the old document's bildvisning URL
+    assert sc["document_info"] == ""
 
 
 # ── view_document_urls ────────────────────────────────────────────────

@@ -60,6 +60,23 @@ async def test_fetch_text_layer_parses_alto(respx_mock, alto_xml_text):
     assert respx_mock.calls.call_count == 1
 
 
+@respx.mock(assert_all_called=False)
+async def test_concurrent_same_url_dedups_to_one_request(respx_mock, alto_xml_text):
+    url = "https://example.com/alto-concurrent.xml"
+    respx_mock.get(url).mock(return_value=httpx.Response(200, text=alto_xml_text, headers={"content-type": "application/xml"}))
+
+    # Two concurrent fetches for the same URL take the in-flight dedup path; both must
+    # receive the parsed result from a single HTTP request (and the loser must not leak
+    # an un-awaited coroutine — _dedup now takes a factory, not a live coroutine).
+    r1, r2 = await asyncio.gather(
+        fetch_and_parse_text_layer(url),
+        fetch_and_parse_text_layer(url),
+    )
+    assert r1 == r2
+    assert r1["pageWidth"] == 1511
+    assert respx_mock.calls.call_count == 1
+
+
 async def test_cache_ttl_expiry():
     """MemoryStore respects TTL — entry disappears after expiry."""
     store = MemoryStore(max_entries_per_collection=10)

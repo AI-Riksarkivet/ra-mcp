@@ -10,7 +10,7 @@ resize, or base64 through the tool-result channel.
 
 import asyncio
 import logging
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 
 import httpx
 from fastmcp.telemetry import get_tracer
@@ -42,11 +42,16 @@ _TTL_TEXT_LAYERS = 300
 _inflight: dict[str, asyncio.Task] = {}
 
 
-async def _dedup[T](key: str, coro: Coroutine[object, object, T]) -> T:
-    """If a fetch for `key` is already in flight, await it instead of starting a new one."""
+async def _dedup[T](key: str, factory: Callable[[], Coroutine[object, object, T]]) -> T:
+    """If a fetch for `key` is already in flight, await it instead of starting a new one.
+
+    Takes a coroutine *factory* rather than a coroutine so nothing is created on the
+    in-flight-hit path — passing an already-instantiated coroutine would leak it (never
+    awaited/closed) whenever a fetch for the same key was already running.
+    """
     if key in _inflight:
         return await _inflight[key]
-    task = asyncio.ensure_future(coro)
+    task = asyncio.ensure_future(factory())
     _inflight[key] = task
     try:
         return await task
@@ -89,7 +94,7 @@ async def fetch_and_parse_text_layer(url: str) -> dict:
         await _cache.put(key=url, value=result, collection=_COL_TEXT_LAYERS, ttl=_TTL_TEXT_LAYERS)
         return result
 
-    return await _dedup(f"text:{url}", _fetch())
+    return await _dedup(f"text:{url}", _fetch)
 
 
 async def build_page_data(index: int, image_url: str, text_layer_url: str) -> tuple[dict, list[str]]:

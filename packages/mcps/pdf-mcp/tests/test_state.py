@@ -26,7 +26,8 @@ async def test_put_state_increments_version():
 async def test_put_state_sets_latest_view_id():
     state = PdfViewerState(view_id="view-abc", url="https://example.com/b.pdf")
     await put_state(state)
-    assert _state_mod.latest_view_id == "view-abc"
+    # No request context in tests -> the "" (stdio/no-session) bucket.
+    assert _state_mod._latest_view_by_session[""] == "view-abc"
 
 
 async def test_get_active_state_raises_when_no_viewer():
@@ -62,4 +63,21 @@ async def test_multiple_views_are_independent():
     retrieved_b = await get_state("view-b")
     assert retrieved_a.title == "A"
     assert retrieved_b.title == "B"
-    assert _state_mod.latest_view_id == "view-b"
+    assert _state_mod._latest_view_by_session[""] == "view-b"
+
+
+async def test_active_view_is_isolated_per_session(monkeypatch):
+    # Two concurrent sessions must not share the "active view" pointer: session B opening
+    # a viewer must not redirect session A's no-view_id mutation tools to B's document.
+    current = {"session": "A"}
+    monkeypatch.setattr(_state_mod, "_session_key", lambda: current["session"])
+
+    current["session"] = "A"
+    await put_state(PdfViewerState(view_id="view-A", url="https://a.pdf", title="A"))
+    current["session"] = "B"
+    await put_state(PdfViewerState(view_id="view-B", url="https://b.pdf", title="B"))
+
+    current["session"] = "A"
+    assert (await get_active_state()).view_id == "view-A"
+    current["session"] = "B"
+    assert (await get_active_state()).view_id == "view-B"

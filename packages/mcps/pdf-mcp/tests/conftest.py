@@ -9,11 +9,11 @@ import ra_mcp_pdf_mcp.state as _state_mod
 @pytest.fixture(autouse=True)
 def _reset_state():
     """Reset module-level state between tests."""
-    _state_mod.latest_view_id = ""
+    _state_mod._latest_view_by_session.clear()
     _cache_mod.pdf_cache.clear()
     _cache_mod.blocks_cache.clear()
     yield
-    _state_mod.latest_view_id = ""
+    _state_mod._latest_view_by_session.clear()
     _cache_mod.pdf_cache.clear()
     _cache_mod.blocks_cache.clear()
 

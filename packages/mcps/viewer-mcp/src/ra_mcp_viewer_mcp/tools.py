@@ -431,6 +431,12 @@ async def viewer_navigate_urls(
     state.image_urls = image_urls
     state.text_layer_urls = text_layer_urls
     state.page_numbers = list(range(1, len(image_urls) + 1))
+    # Reset the parallel/derived fields that don't apply to raw-URL navigation. Without
+    # this they keep the previously-viewed document's values, so the UI would map the old
+    # document's bildvisning links (and info panel) onto these new pages. Mirrors how
+    # viewer_navigate overwrites every field it owns.
+    state.bildvisning_urls = [""] * len(image_urls)
+    state.document_info = ""
     state.highlight_term = highlight_term or ""
     state.reference_code = ""
     await put_state(state)
