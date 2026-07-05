@@ -46,6 +46,13 @@ export class CanvasController {
   private callbacks: CanvasCallbacks;
   private image: HTMLImageElement | null = null;
 
+  // The coordinate space overlays/hit-testing use — the ALTO page dimensions, which
+  // differ from the (downscaled 1500px) IIIF image. The image is drawn stretched to
+  // this size so image-space == overlay-space; falls back to the image's own size when
+  // there is no text layer.
+  private contentWidth = 0;
+  private contentHeight = 0;
+
   // Pointer state for pan + click detection
   private pointerDown: { x: number; y: number; tx: number; ty: number } | null = null;
   private dragged = false;
@@ -111,8 +118,16 @@ export class CanvasController {
   // Public API
   // -------------------------------------------------------------------------
 
-  setImage(img: HTMLImageElement): void {
+  /**
+   * Set the page image. `contentWidth`/`contentHeight` are the ALTO page dimensions
+   * (the coordinate space of the polygon overlays and hit-testing); pass 0 to use the
+   * image's own pixel size. The image is drawn stretched to that content size so the
+   * overlays — which are in native ALTO coordinates — line up with the scan.
+   */
+  setImage(img: HTMLImageElement, contentWidth = 0, contentHeight = 0): void {
     this.image = img;
+    this.contentWidth = contentWidth > 0 ? contentWidth : img.naturalWidth;
+    this.contentHeight = contentHeight > 0 ? contentHeight : img.naturalHeight;
     this.fitToCanvas();
     this.draw();
   }
@@ -325,7 +340,7 @@ export class CanvasController {
     ctx.translate(this.transform.x, this.transform.y);
     ctx.scale(this.transform.scale, this.transform.scale);
 
-    ctx.drawImage(this.image, 0, 0);
+    ctx.drawImage(this.image, 0, 0, this.contentWidth, this.contentHeight);
 
     // Let the component draw overlays (polygons, etc.) in image space — but skip
     // them during active motion; they are repainted once when motion settles.
@@ -348,12 +363,12 @@ export class CanvasController {
     const ch = this.canvas.clientHeight;
     if (cw === 0 || ch === 0) return;
     const padding = 8;
-    const scaleX = (cw - padding * 2) / this.image.naturalWidth;
-    const scaleY = (ch - padding * 2) / this.image.naturalHeight;
+    const scaleX = (cw - padding * 2) / this.contentWidth;
+    const scaleY = (ch - padding * 2) / this.contentHeight;
     // Allow scaling UP to fill the canvas, not just down
     this.transform.scale = Math.min(scaleX, scaleY);
-    this.transform.x = (cw - this.image.naturalWidth * this.transform.scale) / 2;
-    this.transform.y = (ch - this.image.naturalHeight * this.transform.scale) / 2;
+    this.transform.x = (cw - this.contentWidth * this.transform.scale) / 2;
+    this.transform.y = (ch - this.contentHeight * this.transform.scale) / 2;
     // Sync smooth zoom target so next scroll starts from fitted scale
     this.targetScale = this.transform.scale;
   }

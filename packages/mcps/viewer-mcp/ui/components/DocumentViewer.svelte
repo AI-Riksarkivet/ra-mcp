@@ -324,7 +324,9 @@ $effect(() => {
   loadDecodedImage(pd.imageDataUrl)
     .then((img) => {
       if (cancelled || !controller) return;
-      controller.setImage(img);
+      // Draw the image in the text layer's ALTO coordinate space so the polygon
+      // overlays (native ALTO coords) line up with the downscaled IIIF image.
+      controller.setImage(img, pd.textLayer?.pageWidth ?? 0, pd.textLayer?.pageHeight ?? 0);
       scheduleContextUpdate(getContextState());
     })
     .catch(() => {
