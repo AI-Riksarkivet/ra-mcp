@@ -8,6 +8,7 @@ dependencies = [
     "fastmcp==3.4.2",
     "httpx>=0.28.0",
     "label-studio-sdk>=2.0.17",
+    "python-dotenv>=1.0.0",
     "ra-mcp-common",
 ]
 license = "Apache-2.0"

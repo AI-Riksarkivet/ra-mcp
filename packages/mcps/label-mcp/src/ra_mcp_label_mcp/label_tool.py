@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Annotated
 
 import httpx
+from dotenv import load_dotenv
 from fastmcp import Context, FastMCP
 from fastmcp.exceptions import ToolError
 from pydantic import Field
@@ -24,14 +25,9 @@ from ra_mcp_label_mcp.ls_client import assign_tasks, import_tasks
 logger = logging.getLogger("ra_mcp.label.tool")
 
 
-# Auto-load .env from the package directory
-_env_file = Path(__file__).resolve().parent.parent.parent / ".env"
-if _env_file.is_file():
-    for line in _env_file.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, _, value = line.partition("=")
-            os.environ.setdefault(key.strip(), value.strip())
+# Auto-load .env from the repo root if present (standard loader, not a hand-rolled
+# parser). override=False keeps any already-set process env winning, as before.
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env", override=False)
 
 
 def _build_image_only_tasks(image_urls: list[str]) -> list[dict]:

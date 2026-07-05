@@ -126,6 +126,11 @@ def to_label_studio_task(
 
     pw = parsed["page_width"]
     ph = parsed["page_height"]
+    if pw <= 0 or ph <= 0:
+        # page_width/height come from _int(WIDTH/HEIGHT) which defaults to 0 when the
+        # attribute is missing — dividing by that would crash. Fail with a clear error.
+        msg = f"ALTO page has invalid dimensions (WIDTH={pw}, HEIGHT={ph}); cannot compute Label Studio coordinates."
+        raise ValueError(msg)
     results: list[dict] = []
 
     for tl in parsed["textlines"]:

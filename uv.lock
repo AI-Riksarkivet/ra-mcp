@@ -2636,6 +2636,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },
     { name = "label-studio-sdk" },
+    { name = "python-dotenv" },
     { name = "ra-mcp-common" },
 ]
 
@@ -2644,6 +2645,7 @@ requires-dist = [
     { name = "fastmcp", specifier = "==3.4.2" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "label-studio-sdk", specifier = ">=2.0.17" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
 ]
 

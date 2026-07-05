@@ -321,6 +321,15 @@ def test_to_label_studio_task_default_image_url():
     assert task["data"]["ocr"] == "/data/local-files/?d=test.jpg"
 
 
+def test_to_label_studio_task_raises_on_zero_page_dimensions():
+    # WIDTH/HEIGHT default to 0 when missing from the ALTO — coordinate scaling would
+    # divide by zero, so fail loudly with a clear message instead.
+    parsed = _make_parsed()
+    parsed["page_width"] = 0
+    with pytest.raises(ValueError, match="invalid dimensions"):
+        to_label_studio_task(parsed, image_url="https://img.test/1.jpg")
+
+
 def test_to_label_studio_task_vectorlabels_structure():
     parsed = _make_parsed()
     task = to_label_studio_task(parsed, image_url="https://img.test/1.jpg")
