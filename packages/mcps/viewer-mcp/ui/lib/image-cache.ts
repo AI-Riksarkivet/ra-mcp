@@ -9,6 +9,7 @@
  */
 
 const cache = new Map<string, HTMLImageElement>();
+const inflight = new Map<string, Promise<HTMLImageElement>>();
 const MAX_ENTRIES = 8;
 
 /** Fetch + decode an image (or return the cached decoded one), LRU-bounded. */
@@ -20,16 +21,29 @@ export async function loadDecodedImage(url: string): Promise<HTMLImageElement> {
     return hit;
   }
 
-  const img = new Image();
-  img.src = url;
-  await img.decode();
+  // Dedup concurrent loads of the same URL — the cache only holds COMPLETED decodes, so a
+  // prefetch racing a navigation would otherwise decode the same multi-MB JPEG twice on the
+  // main thread (the exact jank this module exists to avoid).
+  const pending = inflight.get(url);
+  if (pending) return pending;
 
-  cache.set(url, img);
-  if (cache.size > MAX_ENTRIES) {
-    const oldest = cache.keys().next().value;
-    if (oldest !== undefined) cache.delete(oldest);
+  const load = (async () => {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    cache.set(url, img);
+    if (cache.size > MAX_ENTRIES) {
+      const oldest = cache.keys().next().value;
+      if (oldest !== undefined) cache.delete(oldest);
+    }
+    return img;
+  })();
+  inflight.set(url, load);
+  try {
+    return await load;
+  } finally {
+    inflight.delete(url);
   }
-  return img;
 }
 
 /** Warm the cache for a URL in the background; failures are ignored. */

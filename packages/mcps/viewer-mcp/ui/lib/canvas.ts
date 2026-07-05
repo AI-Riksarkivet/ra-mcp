@@ -143,8 +143,24 @@ export class CanvasController {
            screenY >= margin && screenY <= ch - margin;
   }
 
+  /** Stop any in-progress pan-inertia / smooth-zoom animation so a programmatic move
+   *  (centerOn/zoomToRect/resetView) isn't immediately overwritten by the next RAF step. */
+  private cancelMotion(): void {
+    if (this.panInertiaId) {
+      cancelAnimationFrame(this.panInertiaId);
+      this.panInertiaId = 0;
+    }
+    this.panVelocity = { vx: 0, vy: 0 };
+    if (this.zoomRafId) {
+      cancelAnimationFrame(this.zoomRafId);
+      this.zoomRafId = 0;
+    }
+    this.zoomAnimating = false;
+  }
+
   /** Reset the view to fit the image in the canvas. */
   resetView(): void {
+    this.cancelMotion();
     this.fitToCanvas();
     this.draw();
   }
@@ -152,6 +168,7 @@ export class CanvasController {
   /** Pan so that the given image-space point is centered on the canvas. */
   centerOn(imgX: number, imgY: number): void {
     if (!this.canvas) return;
+    this.cancelMotion();
     const cw = this.canvas.clientWidth;
     const ch = this.canvas.clientHeight;
     this.transform.x = cw / 2 - imgX * this.transform.scale;
@@ -163,6 +180,7 @@ export class CanvasController {
   /** Zoom and pan so the given image-space rectangle fills the viewport with padding. */
   zoomToRect(x: number, y: number, w: number, h: number, padding = 40): void {
     if (!this.canvas) return;
+    this.cancelMotion();
     const cw = this.canvas.clientWidth;
     const ch = this.canvas.clientHeight;
     const scaleX = (cw - padding * 2) / w;
@@ -245,15 +263,13 @@ export class CanvasController {
       return;
     }
 
-    // Hover — delegate to callback. getBoundingClientRect() (a forced layout
-    // reflow) is read here only, NOT on the pan-drag hot path above where its
-    // result would be discarded.
+    // Hover — delegate to callback. e.offsetX/Y are already canvas-relative (the handler
+    // is bound to the canvas, which has no border/padding/transform), so we avoid the
+    // forced layout reflow that getBoundingClientRect() triggers on every hover move —
+    // and the tooltip's per-move style updates would otherwise dirty layout each time.
     if (this.callbacks.onHoverImage) {
-      const rect = this.canvas.getBoundingClientRect();
-      const cx = e.clientX - rect.left;
-      const cy = e.clientY - rect.top;
-      const imgX = (cx - this.transform.x) / this.transform.scale;
-      const imgY = (cy - this.transform.y) / this.transform.scale;
+      const imgX = (e.offsetX - this.transform.x) / this.transform.scale;
+      const imgY = (e.offsetY - this.transform.y) / this.transform.scale;
       const cursor = this.callbacks.onHoverImage(imgX, imgY, e.clientX, e.clientY);
       this.canvas.style.cursor = cursor ?? "grab";
     }
@@ -280,11 +296,8 @@ export class CanvasController {
     // then delegate to callback.
     this.settle();
     if (this.callbacks.onClickImage) {
-      const rect = this.canvas.getBoundingClientRect();
-      const cx = e.clientX - rect.left;
-      const cy = e.clientY - rect.top;
-      const imgX = (cx - this.transform.x) / this.transform.scale;
-      const imgY = (cy - this.transform.y) / this.transform.scale;
+      const imgX = (e.offsetX - this.transform.x) / this.transform.scale;
+      const imgY = (e.offsetY - this.transform.y) / this.transform.scale;
       this.callbacks.onClickImage(imgX, imgY);
     }
   };
@@ -295,9 +308,8 @@ export class CanvasController {
 
   handleWheel = (e: WheelEvent): void => {
     e.preventDefault();
-    const rect = this.canvas.getBoundingClientRect();
-    this.zoomCenterX = e.clientX - rect.left;
-    this.zoomCenterY = e.clientY - rect.top;
+    this.zoomCenterX = e.offsetX;
+    this.zoomCenterY = e.offsetY;
 
     // Normalize deltaY across input devices:
     // - Mouse wheel: deltaMode=0 (pixels), large values (~100)
