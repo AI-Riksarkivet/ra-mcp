@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 # Vehicle type display mapping
-_TYP_DISPLAY: dict[str, str] = {
+TYP_DISPLAY: dict[str, str] = {
     "PB": "Personbil",
     "MC": "Motorcykel",
     "LB": "Lastbil",
@@ -89,4 +89,4 @@ class WincarsRecord(BaseModel):
     @property
     def typ_display(self) -> str:
         """Human-readable vehicle type name."""
-        return _TYP_DISPLAY.get(self.typ, self.typ)
+        return TYP_DISPLAY.get(self.typ, self.typ)

@@ -72,6 +72,12 @@ def truncate_text(text: str, max_length: int, add_ellipsis: bool = True) -> str:
     return text[:max_length]
 
 
+def append_if(lines: list[str], label: str, value: str) -> None:
+    """Append ``'{label}: {value}'`` to ``lines`` only when ``value`` is truthy."""
+    if value:
+        lines.append(f"{label}: {value}")
+
+
 def format_example_browse_command(reference_code: str, page_numbers: list[str], search_term: str = "") -> str:
     """Format an example browse command for display."""
     if len(page_numbers) == 0:

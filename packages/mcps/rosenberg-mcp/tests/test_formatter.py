@@ -138,7 +138,7 @@ def test_single_record_hundred_only_harad():
 def test_single_record_industries_line():
     result = _make_result([STOCKHOLM])
     out = format_rosenberg_results(result)
-    # _INDUSTRY_DISPLAY ordering places Gästgifveri before Såg.
+    # INDUSTRY_DISPLAY ordering places Gästgifveri before Såg.
     assert "Industries: Gästgifveri, Såg" in out
 
 

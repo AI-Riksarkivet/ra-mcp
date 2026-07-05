@@ -2,12 +2,8 @@
 
 from __future__ import annotations
 
+from ra_mcp_common.formatting import append_if
 from ra_mcp_tora_lib.models import ToraPlace
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 def _format_place(place: ToraPlace, lines: list[str]) -> None:
@@ -16,12 +12,12 @@ def _format_place(place: ToraPlace, lines: list[str]) -> None:
     accuracy_note = f" ({place.accuracy} accuracy)" if place.accuracy else ""
     lines.append(f"Coordinates: {place.lat}, {place.lon}{accuracy_note}")
 
-    _append_if(lines, "Parish", place.parish)
-    _append_if(lines, "Municipality", place.municipality)
-    _append_if(lines, "County", place.county)
-    _append_if(lines, "Province", place.province)
+    append_if(lines, "Parish", place.parish)
+    append_if(lines, "Municipality", place.municipality)
+    append_if(lines, "County", place.county)
+    append_if(lines, "Province", place.province)
     lines.append(f"TORA: {place.tora_url}")
-    _append_if(lines, "Wikidata", place.wikidata_url)
+    append_if(lines, "Wikidata", place.wikidata_url)
 
     if place.map_sources:
         max_shown = 3

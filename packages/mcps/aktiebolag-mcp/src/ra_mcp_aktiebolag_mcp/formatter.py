@@ -5,20 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from ra_mcp_aktiebolag_lib.search_operations import SearchResult
+from ra_mcp_common.formatting import append_if, truncate_text
 from ra_mcp_dataset_lib import format_results
-
-
-def _truncate(text: str, max_len: int) -> str:
-    """Truncate text to max_len characters, adding ellipsis if needed."""
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 3] + "..."
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 # ---------------------------------------------------------------------------
@@ -33,15 +21,15 @@ def _format_bolag_record(rec: dict[str, Any], lines: list[str]) -> None:
     header = f"--- {namn} ({argang}) ---" if argang else f"--- {namn} ---"
     lines.append(header)
 
-    _append_if(lines, "Former name", rec.get("aldre_namn", ""))
-    _append_if(lines, "Address", rec.get("postadress", ""))
-    _append_if(lines, "Seat", rec.get("styrelsesate", ""))
+    append_if(lines, "Former name", rec.get("aldre_namn", ""))
+    append_if(lines, "Address", rec.get("postadress", ""))
+    append_if(lines, "Seat", rec.get("styrelsesate", ""))
 
     andamal = rec.get("bolagets_andamal", "")
     if andamal:
-        lines.append(f"Purpose: {_truncate(andamal, 200)}")
+        lines.append(f"Purpose: {truncate_text(andamal, 200)}")
 
-    _append_if(lines, "Director", rec.get("verkstall_dir", ""))
+    append_if(lines, "Director", rec.get("verkstall_dir", ""))
 
     aktiekapital = rec.get("aktiekapital", "")
     if aktiekapital:
@@ -49,7 +37,7 @@ def _format_bolag_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     styrelsemedlemmar = rec.get("styrelsemedlemmar", "")
     if styrelsemedlemmar:
-        lines.append(f"Board: {_truncate(styrelsemedlemmar, 200)}")
+        lines.append(f"Board: {truncate_text(styrelsemedlemmar, 200)}")
 
     lines.append("")
 
@@ -71,9 +59,9 @@ def _format_styrelse_record(rec: dict[str, Any], lines: list[str]) -> None:
     name = f"{styrelsemed} {fornamn}".strip() if styrelsemed or fornamn else "?"
     lines.append(f"--- {name} ---")
 
-    _append_if(lines, "Title", rec.get("titel", ""))
-    _append_if(lines, "Gender", rec.get("kon", ""))
-    _append_if(lines, "Company", rec.get("bolagets_namn", ""))
+    append_if(lines, "Title", rec.get("titel", ""))
+    append_if(lines, "Gender", rec.get("kon", ""))
+    append_if(lines, "Company", rec.get("bolagets_namn", ""))
 
     lines.append("")
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if
 from ra_mcp_sjomanshus_lib.search_operations import SearchResult
 
 
@@ -62,31 +63,25 @@ def _format_ship(rec: dict[str, Any]) -> str:
     return ", ".join(parts) if parts else ""
 
 
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
-
-
 def _format_liggare_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Liggare record into lines."""
     lines.append(f"--- Liggare {rec.get('id', '?')} ---")
-    _append_if(lines, "Name", _format_name(rec))
-    _append_if(lines, "Rank", rec.get("befattning_yrke", ""))
-    _append_if(lines, "Born", _format_born(rec))
-    _append_if(lines, "Home", rec.get("hemfoers", ""))
-    _append_if(lines, "Ship", _format_ship(rec))
+    append_if(lines, "Name", _format_name(rec))
+    append_if(lines, "Rank", rec.get("befattning_yrke", ""))
+    append_if(lines, "Born", _format_born(rec))
+    append_if(lines, "Home", rec.get("hemfoers", ""))
+    append_if(lines, "Ship", _format_ship(rec))
 
     voyage_from = _format_place_date(rec.get("paamoenstort", ""), rec.get("paamoenstdat", ""))
     voyage_to = _format_place_date(rec.get("avmoenstort", ""), rec.get("avmoenstdat", ""))
     if voyage_from or voyage_to:
         lines.append(f"Voyage: {voyage_from} \u2192 {voyage_to}")
 
-    _append_if(lines, "Destination", rec.get("destination", ""))
-    _append_if(lines, "Captain", rec.get("kapten", ""))
-    _append_if(lines, "Owner", rec.get("redare", ""))
-    _append_if(lines, "Seamen's house", _format_sjomanshus(rec))
-    _append_if(lines, "Archive", _format_archive(rec))
+    append_if(lines, "Destination", rec.get("destination", ""))
+    append_if(lines, "Captain", rec.get("kapten", ""))
+    append_if(lines, "Owner", rec.get("redare", ""))
+    append_if(lines, "Seamen's house", _format_sjomanshus(rec))
+    append_if(lines, "Archive", _format_archive(rec))
 
     volym = rec.get("volym", "")
     sida = rec.get("sida", "")
@@ -128,13 +123,13 @@ def format_liggare_results(result: SearchResult) -> str:
 def _format_matrikel_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Matrikel record into lines."""
     lines.append(f"--- Matrikel {rec.get('id', '?')} ---")
-    _append_if(lines, "Name", _format_name(rec))
-    _append_if(lines, "Born", _format_born(rec))
-    _append_if(lines, "Home", rec.get("hemfoers", ""))
-    _append_if(lines, "Father", rec.get("far", ""))
-    _append_if(lines, "Mother", rec.get("mor", ""))
-    _append_if(lines, "Seamen's house", _format_sjomanshus(rec))
-    _append_if(lines, "Registered", rec.get("inskrivdat", ""))
+    append_if(lines, "Name", _format_name(rec))
+    append_if(lines, "Born", _format_born(rec))
+    append_if(lines, "Home", rec.get("hemfoers", ""))
+    append_if(lines, "Father", rec.get("far", ""))
+    append_if(lines, "Mother", rec.get("mor", ""))
+    append_if(lines, "Seamen's house", _format_sjomanshus(rec))
+    append_if(lines, "Registered", rec.get("inskrivdat", ""))
 
     avfoerdort = rec.get("avfoerdort", "")
     avfoerddat = rec.get("avfoerddat", "")
@@ -148,7 +143,7 @@ def _format_matrikel_record(rec: dict[str, Any], lines: list[str]) -> None:
             dereg_parts.append(f"Reason: {orsak}")
         lines.append(f"Deregistered: {', '.join(dereg_parts)}")
 
-    _append_if(lines, "Archive", _format_archive(rec))
+    append_if(lines, "Archive", _format_archive(rec))
 
     volym = rec.get("volym", "")
     sida = rec.get("sida", "")

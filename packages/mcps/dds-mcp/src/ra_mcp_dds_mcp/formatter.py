@@ -4,20 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if, truncate_text
 from ra_mcp_dds_lib.search_operations import SearchResult
-
-
-def _truncate(text: str, max_len: int) -> str:
-    """Truncate text to max_len characters, adding ellipsis if needed."""
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 3] + "..."
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 # ---------------------------------------------------------------------------
@@ -34,7 +22,7 @@ def _format_fodelse_record(rec: dict[str, Any], lines: list[str]) -> None:
     if name:
         lines.append(f"Name: {name} ({kon})" if kon else f"Name: {name}")
 
-    _append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
 
     forsamling = rec.get("forsamling", "")
     lan = rec.get("lan", "")
@@ -53,14 +41,14 @@ def _format_fodelse_record(rec: dict[str, Any], lines: list[str]) -> None:
     if mor_name:
         lines.append(f"Mother: {mor_name}")
 
-    _append_if(lines, "Birth place", rec.get("fodelseort", ""))
+    append_if(lines, "Birth place", rec.get("fodelseort", ""))
 
-    _append_if(lines, "Ref", rec.get("referenskod", ""))
-    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
+    append_if(lines, "Ref", rec.get("referenskod", ""))
+    append_if(lines, "Bild ID", rec.get("bild_id", ""))
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 150)}")
+        lines.append(f"Note: {truncate_text(anm, 150)}")
 
     lines.append("")
 
@@ -100,17 +88,17 @@ def _format_doda_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     name_parts = [rec.get("fornamn", ""), rec.get("efternamn", "")]
     name = " ".join(p for p in name_parts if p)
-    _append_if(lines, "Name", name)
-    _append_if(lines, "Occupation", rec.get("yrke", ""))
-    _append_if(lines, "Date", rec.get("datum", ""))
-    _append_if(lines, "Age", rec.get("alder", ""))
+    append_if(lines, "Name", name)
+    append_if(lines, "Occupation", rec.get("yrke", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Age", rec.get("alder", ""))
 
     forsamling = rec.get("forsamling", "")
     lan = rec.get("lan", "")
     if forsamling or lan:
         lines.append(f"Parish: {forsamling}, {lan}" if forsamling and lan else f"Parish: {forsamling or lan}")
 
-    _append_if(lines, "Home", rec.get("hemort", ""))
+    append_if(lines, "Home", rec.get("hemort", ""))
 
     dodsorsak = rec.get("dodsorsak", "")
     dodsorsak_klass = rec.get("dodsorsak_klassificerat", "")
@@ -120,8 +108,8 @@ def _format_doda_record(rec: dict[str, Any], lines: list[str]) -> None:
         else:
             lines.append(f"Cause of death: {dodsorsak or dodsorsak_klass}")
 
-    _append_if(lines, "Ref", rec.get("referenskod", ""))
-    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
+    append_if(lines, "Ref", rec.get("referenskod", ""))
+    append_if(lines, "Bild ID", rec.get("bild_id", ""))
 
     # Relative
     anhorig_parts = [rec.get("anhorig_fornamn", ""), rec.get("anhorig_efternamn", "")]
@@ -138,7 +126,7 @@ def _format_doda_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 150)}")
+        lines.append(f"Note: {truncate_text(anm, 150)}")
 
     lines.append("")
 
@@ -176,15 +164,15 @@ def _format_vigsel_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Vigsel record into lines."""
     lines.append(f"--- Vigsel {rec.get('postid', '?')} ---")
 
-    _append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
 
     forsamling = rec.get("forsamling", "")
     lan = rec.get("lan", "")
     if forsamling or lan:
         lines.append(f"Parish: {forsamling}, {lan}" if forsamling and lan else f"Parish: {forsamling or lan}")
 
-    _append_if(lines, "Ref", rec.get("referenskod", ""))
-    _append_if(lines, "Bild ID", rec.get("bild_id", ""))
+    append_if(lines, "Ref", rec.get("referenskod", ""))
+    append_if(lines, "Bild ID", rec.get("bild_id", ""))
 
     # Groom
     bg_parts = [rec.get("brudgum_fornamn", ""), rec.get("brudgum_efternamn", "")]
@@ -220,7 +208,7 @@ def _format_vigsel_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     anm = rec.get("anm", "")
     if anm:
-        lines.append(f"Note: {_truncate(anm, 150)}")
+        lines.append(f"Note: {truncate_text(anm, 150)}")
 
     lines.append("")
 

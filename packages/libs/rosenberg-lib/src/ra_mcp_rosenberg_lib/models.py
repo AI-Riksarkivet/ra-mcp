@@ -27,7 +27,7 @@ _INDUSTRY_CSV_MAP: dict[str, str] = {
 }
 
 # Human-readable Swedish names for each industry flag
-_INDUSTRY_DISPLAY: dict[str, str] = {
+INDUSTRY_DISPLAY: dict[str, str] = {
     "kalkbranning": "Kalkbränning",
     "tandstikor": "Tändstikor",
     "fyr": "Fyr",
@@ -129,7 +129,7 @@ class RosenbergRecord(BaseModel):
     def industries(self) -> list[str]:
         """Return human-readable names of industries flagged with '1'."""
         result = []
-        for field_name, display_name in _INDUSTRY_DISPLAY.items():
+        for field_name, display_name in INDUSTRY_DISPLAY.items():
             if getattr(self, field_name) == "1":
                 result.append(display_name)
         return result

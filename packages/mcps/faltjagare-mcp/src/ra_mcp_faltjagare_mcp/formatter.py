@@ -4,14 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if
 from ra_mcp_dataset_lib import format_results
 from ra_mcp_faltjagare_lib.search_operations import SearchResult
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 def _format_faltjagare_record(rec: dict[str, Any], lines: list[str]) -> None:
@@ -24,8 +19,8 @@ def _format_faltjagare_record(rec: dict[str, Any], lines: list[str]) -> None:
     name_extra = f" ({' '.join(name_parts)})" if name_parts else ""
     lines.append(f"--- {soldatnamn}{name_extra} ---")
 
-    _append_if(lines, "Rank", rec.get("befattning", ""))
-    _append_if(lines, "Company", rec.get("kompani", ""))
+    append_if(lines, "Rank", rec.get("befattning", ""))
+    append_if(lines, "Company", rec.get("kompani", ""))
 
     rotens_socken = rec.get("rotens_socken", "")
     region = rec.get("region", "")
@@ -59,8 +54,8 @@ def _format_faltjagare_record(rec: dict[str, Any], lines: list[str]) -> None:
     elif doedsort:
         lines.append(f"Died: {doedsort}")
 
-    _append_if(lines, "Killed", rec.get("platsen_stupade", ""))
-    _append_if(lines, "Info", rec.get("oevrig_information", ""))
+    append_if(lines, "Killed", rec.get("platsen_stupade", ""))
+    append_if(lines, "Info", rec.get("oevrig_information", ""))
 
     lines.append("")
 

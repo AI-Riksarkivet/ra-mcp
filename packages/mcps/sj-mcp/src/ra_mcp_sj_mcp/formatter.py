@@ -4,21 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if, truncate_text
 from ra_mcp_dataset_lib import format_results
 from ra_mcp_sj_lib.search_operations import SearchResult
-
-
-def _truncate(text: str, max_len: int) -> str:
-    """Truncate text to max_len characters, adding ellipsis if needed."""
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 3] + "..."
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 # ---------------------------------------------------------------------------
@@ -29,14 +17,14 @@ def _append_if(lines: list[str], label: str, value: str) -> None:
 def _format_juda_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single JUDA property record into lines."""
     lines.append(f"--- JUDA {rec.get('fbidnr', '?')} ---")
-    _append_if(lines, "Property", rec.get("fbtext", ""))
-    _append_if(lines, "County", rec.get("fblan", ""))
-    _append_if(lines, "Municipality", rec.get("fbkom", ""))
-    _append_if(lines, "Owner", rec.get("fbagrkod2", ""))
+    append_if(lines, "Property", rec.get("fbtext", ""))
+    append_if(lines, "County", rec.get("fblan", ""))
+    append_if(lines, "Municipality", rec.get("fbkom", ""))
+    append_if(lines, "Owner", rec.get("fbagrkod2", ""))
 
     fbanm = rec.get("fbanm", "")
     if fbanm:
-        lines.append(f"Notes: {_truncate(fbanm, 150)}")
+        lines.append(f"Notes: {truncate_text(fbanm, 150)}")
 
     lines.append("")
 
@@ -57,14 +45,14 @@ def _format_ritning_record(rec: dict[str, Any], lines: list[str]) -> None:
     blad = rec.get("blad", "")
     header = f"--- Ritning {bnum}/{blad} ---" if blad else f"--- Ritning {bnum} ---"
     lines.append(header)
-    _append_if(lines, "Station", rec.get("ben1", ""))
-    _append_if(lines, "Description", rec.get("ben", ""))
-    _append_if(lines, "Drawing", rec.get("ritn", ""))
-    _append_if(lines, "Date", rec.get("datm", ""))
-    _append_if(lines, "Format", rec.get("form2", ""))
-    _append_if(lines, "Type", rec.get("rtyp2", ""))
-    _append_if(lines, "District", rec.get("dkod", ""))
-    _append_if(lines, "Building type", rec.get("sakg", ""))
+    append_if(lines, "Station", rec.get("ben1", ""))
+    append_if(lines, "Description", rec.get("ben", ""))
+    append_if(lines, "Drawing", rec.get("ritn", ""))
+    append_if(lines, "Date", rec.get("datm", ""))
+    append_if(lines, "Format", rec.get("form2", ""))
+    append_if(lines, "Type", rec.get("rtyp2", ""))
+    append_if(lines, "District", rec.get("dkod", ""))
+    append_if(lines, "Building type", rec.get("sakg", ""))
     lines.append("")
 
 

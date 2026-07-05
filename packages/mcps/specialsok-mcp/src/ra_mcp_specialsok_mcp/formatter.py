@@ -4,20 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if, truncate_text
 from ra_mcp_specialsok_lib.search_operations import SearchResult
-
-
-def _truncate(text: str, max_len: int) -> str:
-    """Truncate text to max_len characters, adding ellipsis if needed."""
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 3] + "..."
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 def _format_header(dataset: str, result: SearchResult) -> list[str]:
@@ -48,19 +36,19 @@ def _format_footer(result: SearchResult, lines: list[str]) -> None:
 def _format_flygvapen_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Flygvapenhaverier record."""
     lines.append("--- Flygvapenhaveri ---")
-    _append_if(lines, "Date", rec.get("datum", ""))
-    _append_if(lines, "Aircraft", rec.get("fpl_typ", ""))
-    _append_if(lines, "Aircraft no", rec.get("fpl_nr", ""))
-    _append_if(lines, "Unit", rec.get("forband_klartext", ""))
-    _append_if(lines, "Engine", rec.get("motor_typ", ""))
-    _append_if(lines, "Crash site", rec.get("havplats", ""))
-    _append_if(lines, "Crew", rec.get("bes_ant", ""))
-    _append_if(lines, "Casualties", rec.get("ant_omk", ""))
-    _append_if(lines, "Classification", rec.get("klassning", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Aircraft", rec.get("fpl_typ", ""))
+    append_if(lines, "Aircraft no", rec.get("fpl_nr", ""))
+    append_if(lines, "Unit", rec.get("forband_klartext", ""))
+    append_if(lines, "Engine", rec.get("motor_typ", ""))
+    append_if(lines, "Crash site", rec.get("havplats", ""))
+    append_if(lines, "Crew", rec.get("bes_ant", ""))
+    append_if(lines, "Casualties", rec.get("ant_omk", ""))
+    append_if(lines, "Classification", rec.get("klassning", ""))
 
     sammanfattning = rec.get("sammanfattning", "")
     if sammanfattning:
-        lines.append(f"Summary: {_truncate(sammanfattning, 200)}")
+        lines.append(f"Summary: {truncate_text(sammanfattning, 200)}")
 
     lines.append("")
 
@@ -87,12 +75,12 @@ def _format_fangrullor_record(rec: dict[str, Any], lines: list[str]) -> None:
     lines.append("--- Fångrulle ---")
     name_parts = [rec.get("fornamn", ""), rec.get("efternamn", "")]
     name = " ".join(p for p in name_parts if p)
-    _append_if(lines, "Name", name)
-    _append_if(lines, "Age", rec.get("alder", ""))
-    _append_if(lines, "Home parish", rec.get("hemort", ""))
-    _append_if(lines, "Crime", rec.get("brott", ""))
-    _append_if(lines, "Year", rec.get("ar", ""))
-    _append_if(lines, "Number", rec.get("nummer", ""))
+    append_if(lines, "Name", name)
+    append_if(lines, "Age", rec.get("alder", ""))
+    append_if(lines, "Home parish", rec.get("hemort", ""))
+    append_if(lines, "Crime", rec.get("brott", ""))
+    append_if(lines, "Year", rec.get("ar", ""))
+    append_if(lines, "Number", rec.get("nummer", ""))
     lines.append("")
 
 
@@ -118,27 +106,27 @@ def _format_kurhuset_record(rec: dict[str, Any], lines: list[str]) -> None:
     lines.append("--- Kurhuset patient ---")
     name_parts = [rec.get("fornamn", ""), rec.get("efternamn", "")]
     name = " ".join(p for p in name_parts if p)
-    _append_if(lines, "Name", name)
-    _append_if(lines, "Age", rec.get("alder", ""))
-    _append_if(lines, "Title", rec.get("titel", ""))
-    _append_if(lines, "Family", rec.get("familj", ""))
-    _append_if(lines, "Home (village)", rec.get("hemort_by", ""))
-    _append_if(lines, "Home (parish)", rec.get("hemort_socken", ""))
-    _append_if(lines, "Admitted", rec.get("inskrivningsdatum", ""))
-    _append_if(lines, "Discharged", rec.get("utskrivningsdatum", ""))
-    _append_if(lines, "Outcome", rec.get("utskrivningsstatus", ""))
-    _append_if(lines, "Days", rec.get("vardtid", ""))
-    _append_if(lines, "Disease", rec.get("sjukdom", ""))
+    append_if(lines, "Name", name)
+    append_if(lines, "Age", rec.get("alder", ""))
+    append_if(lines, "Title", rec.get("titel", ""))
+    append_if(lines, "Family", rec.get("familj", ""))
+    append_if(lines, "Home (village)", rec.get("hemort_by", ""))
+    append_if(lines, "Home (parish)", rec.get("hemort_socken", ""))
+    append_if(lines, "Admitted", rec.get("inskrivningsdatum", ""))
+    append_if(lines, "Discharged", rec.get("utskrivningsdatum", ""))
+    append_if(lines, "Outcome", rec.get("utskrivningsstatus", ""))
+    append_if(lines, "Days", rec.get("vardtid", ""))
+    append_if(lines, "Disease", rec.get("sjukdom", ""))
 
     beskrivning = rec.get("sjukdomsbeskrivning", "")
     if beskrivning:
-        lines.append(f"Description: {_truncate(beskrivning, 200)}")
+        lines.append(f"Description: {truncate_text(beskrivning, 200)}")
 
     behandling = rec.get("sjukdomsbehandling", "")
     if behandling:
-        lines.append(f"Treatment: {_truncate(behandling, 200)}")
+        lines.append(f"Treatment: {truncate_text(behandling, 200)}")
 
-    _append_if(lines, "Note", rec.get("anmarkning", ""))
+    append_if(lines, "Note", rec.get("anmarkning", ""))
     lines.append("")
 
 
@@ -162,17 +150,17 @@ def format_kurhuset_results(result: SearchResult) -> str:
 def _format_press_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Presskonferens record."""
     lines.append("--- Presskonferens ---")
-    _append_if(lines, "Date", rec.get("datum", ""))
-    _append_if(lines, "Year", rec.get("aar", ""))
-    _append_if(lines, "Title", rec.get("titel", ""))
-    _append_if(lines, "Archive", rec.get("arkivbildare", ""))
-    _append_if(lines, "RA nr", rec.get("v_ra_nr", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Year", rec.get("aar", ""))
+    append_if(lines, "Title", rec.get("titel", ""))
+    append_if(lines, "Archive", rec.get("arkivbildare", ""))
+    append_if(lines, "RA nr", rec.get("v_ra_nr", ""))
 
     innehaall = rec.get("innehaall", "")
     if innehaall:
-        lines.append(f"Content: {_truncate(innehaall, 200)}")
+        lines.append(f"Content: {truncate_text(innehaall, 200)}")
 
-    _append_if(lines, "Note", rec.get("anmaerkning", ""))
+    append_if(lines, "Note", rec.get("anmaerkning", ""))
     lines.append("")
 
 
@@ -196,15 +184,15 @@ def format_press_results(result: SearchResult) -> str:
 def _format_video_record(rec: dict[str, Any], lines: list[str]) -> None:
     """Format a single Videobutik record."""
     lines.append("--- Videobutik ---")
-    _append_if(lines, "Store", rec.get("butiksnamn", ""))
-    _append_if(lines, "Company", rec.get("firmanamn", ""))
-    _append_if(lines, "Address", rec.get("besoeksadress", ""))
-    _append_if(lines, "City", rec.get("ort", ""))
-    _append_if(lines, "Municipality", rec.get("kommun", ""))
-    _append_if(lines, "County", rec.get("laen", ""))
-    _append_if(lines, "Region", rec.get("landsdel", ""))
-    _append_if(lines, "Active", rec.get("aktiv", ""))
-    _append_if(lines, "Reg nr", rec.get("reg_nr", ""))
+    append_if(lines, "Store", rec.get("butiksnamn", ""))
+    append_if(lines, "Company", rec.get("firmanamn", ""))
+    append_if(lines, "Address", rec.get("besoeksadress", ""))
+    append_if(lines, "City", rec.get("ort", ""))
+    append_if(lines, "Municipality", rec.get("kommun", ""))
+    append_if(lines, "County", rec.get("laen", ""))
+    append_if(lines, "Region", rec.get("landsdel", ""))
+    append_if(lines, "Active", rec.get("aktiv", ""))
+    append_if(lines, "Reg nr", rec.get("reg_nr", ""))
     lines.append("")
 
 

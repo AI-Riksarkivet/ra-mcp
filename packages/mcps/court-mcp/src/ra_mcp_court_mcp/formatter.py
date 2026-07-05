@@ -4,21 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if, truncate_text
 from ra_mcp_court_lib.search_operations import SearchResult
 from ra_mcp_dataset_lib import format_results
-
-
-def _truncate(text: str, max_len: int) -> str:
-    """Truncate text to max_len characters, adding ellipsis if needed."""
-    if len(text) <= max_len:
-        return text
-    return text[: max_len - 3] + "..."
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 # ---------------------------------------------------------------------------
@@ -32,17 +20,17 @@ def _format_domboksregister_record(rec: dict[str, Any], lines: list[str]) -> Non
 
     name_parts = [rec.get("fnamn", ""), rec.get("enamn", "")]
     name = " ".join(p for p in name_parts if p)
-    _append_if(lines, "Name", name)
-    _append_if(lines, "Title", rec.get("titel", ""))
-    _append_if(lines, "Role", rec.get("roll", ""))
-    _append_if(lines, "Parish", rec.get("socken", ""))
-    _append_if(lines, "Place", rec.get("plats", ""))
-    _append_if(lines, "Date", rec.get("datum", ""))
-    _append_if(lines, "Case", rec.get("arende", ""))
+    append_if(lines, "Name", name)
+    append_if(lines, "Title", rec.get("titel", ""))
+    append_if(lines, "Role", rec.get("roll", ""))
+    append_if(lines, "Parish", rec.get("socken", ""))
+    append_if(lines, "Place", rec.get("plats", ""))
+    append_if(lines, "Date", rec.get("datum", ""))
+    append_if(lines, "Case", rec.get("arende", ""))
 
     anteckning = rec.get("anteckning", "")
     if anteckning:
-        lines.append(f"Note: {_truncate(anteckning, 150)}")
+        lines.append(f"Note: {truncate_text(anteckning, 150)}")
 
     lines.append("")
 
@@ -63,10 +51,10 @@ def _format_medelstad_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     name_parts = [rec.get("norm_fornamn", ""), rec.get("norm_efternamn", "")]
     name = " ".join(p for p in name_parts if p)
-    _append_if(lines, "Name", name)
-    _append_if(lines, "Title", rec.get("norm_titel", ""))
-    _append_if(lines, "Parish", rec.get("norm_forsamling", ""))
-    _append_if(lines, "Place", rec.get("norm_plats", ""))
+    append_if(lines, "Name", name)
+    append_if(lines, "Title", rec.get("norm_titel", ""))
+    append_if(lines, "Parish", rec.get("norm_forsamling", ""))
+    append_if(lines, "Place", rec.get("norm_plats", ""))
 
     ting_dag = rec.get("ting_dag", "")
     ting_typ = rec.get("ting_typ", "")
@@ -82,7 +70,7 @@ def _format_medelstad_record(rec: dict[str, Any], lines: list[str]) -> None:
 
     mal_referat = rec.get("mal_referat", "")
     if mal_referat:
-        lines.append(f"Summary: {_truncate(mal_referat, 200)}")
+        lines.append(f"Summary: {truncate_text(mal_referat, 200)}")
 
     lines.append("")
 

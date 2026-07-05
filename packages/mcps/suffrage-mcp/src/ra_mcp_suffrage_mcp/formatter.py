@@ -4,13 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ra_mcp_common.formatting import append_if
 from ra_mcp_suffrage_lib.search_operations import SearchResult
-
-
-def _append_if(lines: list[str], label: str, value: str) -> None:
-    """Append 'Label: value' to lines if value is truthy."""
-    if value:
-        lines.append(f"{label}: {value}")
 
 
 def _format_contribution(rec: dict[str, Any]) -> str:
@@ -32,9 +27,9 @@ def _format_rostratt_record(rec: dict[str, Any], lines: list[str]) -> None:
     efternamn = rec.get("efternamn", "")
     name = " ".join(p for p in [fornamn, efternamn] if p)
     lines.append(f"--- {name} ---")
-    _append_if(lines, "Title", rec.get("titel", ""))
-    _append_if(lines, "Occupation", rec.get("yrke", ""))
-    _append_if(lines, "Address", rec.get("adress", ""))
+    append_if(lines, "Title", rec.get("titel", ""))
+    append_if(lines, "Occupation", rec.get("yrke", ""))
+    append_if(lines, "Address", rec.get("adress", ""))
 
     ortens_namn = rec.get("ortens_namn", "")
     lan = rec.get("lan", "")
@@ -43,9 +38,9 @@ def _format_rostratt_record(rec: dict[str, Any], lines: list[str]) -> None:
         lines.append(f"Town: {', '.join(town_parts)}")
 
     contribution = _format_contribution(rec)
-    _append_if(lines, "Contribution", contribution)
-    _append_if(lines, "Birth info", rec.get("fodelseuppgift", ""))
-    _append_if(lines, "Notes", rec.get("ovriga_anteckningar", ""))
+    append_if(lines, "Contribution", contribution)
+    append_if(lines, "Birth info", rec.get("fodelseuppgift", ""))
+    append_if(lines, "Notes", rec.get("ovriga_anteckningar", ""))
 
     bild_id = rec.get("bild_id", "")
     if bild_id:
@@ -86,14 +81,14 @@ def _format_fkpr_record(rec: dict[str, Any], lines: list[str]) -> None:
     efternamn = rec.get("efternamn", "")
     name = " ".join(p for p in [foernamn, efternamn] if p)
     lines.append(f"--- {name} ---")
-    _append_if(lines, "Title", rec.get("titel_yrke", ""))
-    _append_if(lines, "Address", rec.get("adress", ""))
+    append_if(lines, "Title", rec.get("titel_yrke", ""))
+    append_if(lines, "Address", rec.get("adress", ""))
 
     years = rec.get("membership_years", [])
     if years:
         lines.append(f"Member: {', '.join(str(y) for y in years)}")
 
-    _append_if(lines, "Notes", rec.get("anteckningar", ""))
+    append_if(lines, "Notes", rec.get("anteckningar", ""))
 
     bild_id = rec.get("bild_id", "")
     if bild_id:
