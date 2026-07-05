@@ -99,10 +99,30 @@ async def <tool_name>(param1: str) -> str:
 For larger packages, split tool registration into a separate `<name>_tool.py`
 with a `register_<name>_tool(mcp)` function and call it from `tools.py`.
 
+### Dataset (LanceDB-backed) MCPs — use the spine, don't reinvent
+
+If this is a LanceDB dataset MCP, depend on `ra-mcp-dataset-lib` and use the
+shared spine (`ra_mcp_dataset_lib`) instead of hand-rolling per-package clones:
+
+- `get_lancedb(LANCEDB_URI)` for the connection (thread-safe, process-cached) —
+  **not** a local `_db`/`_get_db()`.
+- `require_keyword(keyword, "'Example'")` for the empty-keyword guard.
+- `lancedb_fts_search(...)` + the predicate builders (`equals` / `at_least` /
+  `at_most` / `text_contains` / `combine`) for the query.
+- `format_results(result, label="<Label>", render_record=_format_<x>_record)`
+  for output — only the per-record `_format_<x>_record` renderer is per-dataset.
+- `build_fts_index` / `build_scalar_indexes` in the ingest path (never against
+  live published data).
+
+A handler then reduces to: `if err := require_keyword(...): return err`, build
+filters, `lancedb_fts_search`, `format_results`, `except` → `mark_span_error`.
+
 ## Step 4 — `server.py`
 
-Standalone entry point for running the package in isolation (dev/testing).
-No custom log format — OTel handles that when enabled.
+Standalone entry point for running the package in isolation (dev/testing). The
+argparse `--stdio` / `--port` + transport branch is shared — use
+`run_dev_server` from `ra_mcp_common.dev_server` (OTel handles logging when
+enabled). Pick a default port not already taken by another package.
 
 ```python
 """Standalone server for ra-<name>-mcp.
@@ -111,31 +131,13 @@ No custom log format — OTel handles that when enabled.
     python -m ra_mcp_<name>_mcp.server --stdio
 """
 
-import argparse
-import logging
-import os
+from ra_mcp_common.dev_server import run_dev_server
 
 from .tools import <name>_mcp
 
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
-
-
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Riksarkivet <Name> MCP Server")
-    parser.add_argument("--stdio", action="store_true", help="Run with stdio transport (default is HTTP)")
-    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "3001")), help="Port for HTTP server (default: 3001)")
-    args = parser.parse_args()
-
-    if args.stdio:
-        <name>_mcp.run(transport="stdio")
-    else:
-        logger.info("MCP Server listening on http://localhost:%d/mcp", args.port)
-        <name>_mcp.run(transport="streamable-http", host="0.0.0.0", port=args.port, path="/mcp")
+    run_dev_server(<name>_mcp, description="<Name> MCP Server", default_port=30XX)
 
 
 if __name__ == "__main__":

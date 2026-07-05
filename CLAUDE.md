@@ -10,9 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The project is organized as a **uv workspace** with 45 packages under `packages/` plus a root server.
 This includes `ra-mcp-dataset-lib` (module `ra_mcp_dataset_lib`) — the shared LanceDB "spine"
-(one `SearchResult`, cached connections, a Swedish full-text index builder, an instrumented
-`lancedb_fts_search`, and SQL predicate builders) that the 13 dataset libraries and the pdf-mcp
-guide search all reuse instead of each rolling their own search.
+(one `SearchResult`; `get_lancedb` cached/thread-safe connections; `build_fts_index` +
+`build_scalar_indexes`; an instrumented `lancedb_fts_search`; SQL predicate builders; and the
+shared MCP-handler scaffold `require_keyword` + `format_results`) that the 13 dataset libraries
+and the pdf-mcp guide search all reuse instead of each rolling their own search. Cross-cutting
+MCP helpers live in `ra-mcp-common`: `run_dev_server` (the standalone dev entrypoint),
+`mark_span_error` + `record_span_exception` (telemetry), and the `HTTPClient`.
 Packages are grouped by role into subfolders:
 
 - `packages/libs/` — domain libraries (`*-lib`), plus `common`
