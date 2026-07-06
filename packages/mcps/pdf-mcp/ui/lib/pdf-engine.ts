@@ -29,6 +29,15 @@ export async function loadPdfFromBytes(data: Uint8Array): Promise<PDFDocumentPro
   return loadingTask.promise;
 }
 
+/**
+ * Tear down a loaded document. pdfjs-dist v6's `PDFDocumentProxy` has no `destroy()`
+ * (calling it threw "destroy is not a function", crashing gallery selection / back-to-library
+ * / PDF switching) — destroy goes through its `loadingTask`.
+ */
+export function destroyPdf(doc: PDFDocumentProxy | null | undefined): void {
+  doc?.loadingTask?.destroy()?.catch(() => {});
+}
+
 
 
 /**

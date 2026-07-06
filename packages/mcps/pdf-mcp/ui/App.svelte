@@ -12,7 +12,7 @@ import PdfViewer from "./components/PdfViewer.svelte";
 import PdfGallery from "./components/PdfGallery.svelte";
 import type { PdfViewerData, GalleryItem } from "./lib/types";
 import type { PDFDocumentProxy } from "./lib/pdf-engine";
-import { loadPdfFromBytes } from "./lib/pdf-engine";
+import { loadPdfFromBytes, destroyPdf } from "./lib/pdf-engine";
 import { ZOOM } from "./lib/constants";
 
 function base64ToUint8Array(base64: string): Uint8Array {
@@ -161,7 +161,7 @@ function startLoadingPdf(url: string, startPage: number) {
   // Dispose the previous pdf.js document (worker + decoded pages) before dropping the
   // reference — the LLM/poll-driven document-switch path otherwise leaks it every switch
   // (handleGallerySelect/backToGallery already destroy; this path didn't).
-  if (pdfDocument) pdfDocument.destroy();
+  if (pdfDocument) destroyPdf(pdfDocument);
   pdfDocument = null;
   totalPages = 0;
   currentPage = startPage;
@@ -267,7 +267,7 @@ function startLoadingPdf(url: string, startPage: number) {
       if (cancelled) {
         // A newer load superseded this one while it was decoding — dispose the orphan
         // instead of leaking its worker/page memory.
-        doc.destroy();
+        destroyPdf(doc);
         return;
       }
 
@@ -288,7 +288,7 @@ async function handleGallerySelect(item: GalleryItem) {
 
   // Clean up any previous PDF state first
   if (loadCancelFn) loadCancelFn();
-  if (pdfDocument) { pdfDocument.destroy(); }
+  if (pdfDocument) { destroyPdf(pdfDocument); }
   pdfDocument = null;
   totalPages = 0;
   currentPage = 1;
@@ -322,7 +322,7 @@ async function handleGallerySelect(item: GalleryItem) {
 function backToGallery() {
   if (loadCancelFn) loadCancelFn();
   viewerData = null;
-  if (pdfDocument) { pdfDocument.destroy(); }
+  if (pdfDocument) { destroyPdf(pdfDocument); }
   pdfDocument = null;
   totalPages = 0;
   currentPage = 1;
@@ -402,7 +402,7 @@ onMount(async () => {
     // in-flight load, and destroy the pdf.js document (worker + decoded page memory).
     stopPolling();
     if (loadCancelFn) loadCancelFn();
-    if (pdfDocument) pdfDocument.destroy();
+    if (pdfDocument) destroyPdf(pdfDocument);
     return {};
   };
 
