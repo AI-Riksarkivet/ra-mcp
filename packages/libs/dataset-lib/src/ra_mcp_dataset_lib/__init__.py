@@ -14,6 +14,7 @@ from ra_mcp_dataset_lib.search import (
     get_lancedb,
     lancedb_fts_search,
     require_keyword,
+    require_ordered_range,
     text_contains,
 )
 
@@ -32,5 +33,6 @@ __all__ = [
     "get_lancedb",
     "lancedb_fts_search",
     "require_keyword",
+    "require_ordered_range",
     "text_contains",
 ]

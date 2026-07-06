@@ -9,6 +9,7 @@ __version__ = "0.3.0"
 from .models import RecordsResponse, SearchRecord, SearchResult
 from .search_client import SearchClient
 from .search_operations import SearchOperations
+from .validation import validate_search_query
 
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "SearchOperations",
     "SearchRecord",
     "SearchResult",
+    "validate_search_query",
 ]

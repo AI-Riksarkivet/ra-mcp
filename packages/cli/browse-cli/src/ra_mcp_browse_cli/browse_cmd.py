@@ -38,7 +38,7 @@ def browse(
         typer.Option(help='Page specification: single ("5"), range ("1-10"), or list ("5,7,9"). Shorthand for --pages'),
     ] = None,
     search_term: Annotated[str | None, typer.Option("--search-term", help="Highlight keyword in transcribed text (case-insensitive)")] = None,
-    max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of pages to display in output")] = 20,
+    max_display: Annotated[int, typer.Option("--max-display", min=1, max=20, help="Maximum number of pages to display in output (1-20)")] = 20,
     log: Annotated[bool, typer.Option("--log", help="Enable detailed API request/response logging to ra_mcp_api.log file")] = False,
     show_links: Annotated[
         bool,

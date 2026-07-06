@@ -45,6 +45,12 @@ def test_parse_page_range_invalid_raises():
         parse_page_range("abc")
 
 
+def test_parse_page_range_inverted_range_raises():
+    """An inverted range like '5-1' must error clearly, not silently return []."""
+    with pytest.raises(ValueError, match=r"start \(5\) must be less than or equal to end \(1\)"):
+        parse_page_range("5-1")
+
+
 def test_parse_page_range_empty_string_default():
     result = parse_page_range("", total_pages=5)
     assert result == [1, 2, 3, 4, 5]

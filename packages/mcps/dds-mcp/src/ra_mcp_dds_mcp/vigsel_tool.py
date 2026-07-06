@@ -9,7 +9,7 @@ from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb, require_keyword
+from ra_mcp_dataset_lib import get_lancedb, require_keyword, require_ordered_range
 from ra_mcp_dds_lib import DDSSearch
 from ra_mcp_dds_lib.config import LANCEDB_URI
 
@@ -68,6 +68,8 @@ def register_vigsel_tool(mcp: FastMCP) -> None:
     ) -> str:
         """Search Swedish marriage records using full-text search."""
         if err := require_keyword(keyword, "'Andersson'"):
+            return err
+        if err := require_ordered_range(datum_from, datum_till, "date"):
             return err
 
         if research_context:

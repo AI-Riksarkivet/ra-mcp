@@ -11,7 +11,7 @@ from pydantic import Field
 from ra_mcp_common.telemetry import mark_span_error
 from ra_mcp_court_lib import CourtSearch
 from ra_mcp_court_lib.config import LANCEDB_URI
-from ra_mcp_dataset_lib import get_lancedb, require_keyword
+from ra_mcp_dataset_lib import get_lancedb, require_keyword, require_ordered_range
 
 from .formatter import format_domboksregister_results
 
@@ -72,6 +72,8 @@ def register_domboksregister_tool(mcp: FastMCP) -> None:
     ) -> str:
         """Search Domboksregister court records using full-text search."""
         if err := require_keyword(keyword, "'Andersson'"):
+            return err
+        if err := require_ordered_range(datum_from, datum_till, "date"):
             return err
 
         if research_context:

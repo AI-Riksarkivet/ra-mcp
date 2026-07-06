@@ -11,8 +11,9 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from ra_mcp_common.http_client import get_http_client
 from ra_mcp_common.telemetry import get_tracer
-from ra_mcp_search_lib.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY
+from ra_mcp_search_lib.config import DEFAULT_LIMIT, DEFAULT_MAX_DISPLAY, MAX_LIMIT
 from ra_mcp_search_lib.search_operations import SearchOperations
+from ra_mcp_search_lib.validation import validate_search_query
 
 from .formatter import RichConsoleFormatter
 
@@ -32,12 +33,16 @@ def search(
         str,
         typer.Argument(help="Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity (~N), and more"),
     ],
-    limit: Annotated[int, typer.Option("--limit", min=1, help="Maximum number of records to fetch from API (pagination size). Must be >= 1")] = DEFAULT_LIMIT,
-    max_display: Annotated[int, typer.Option("--max-display", help="Maximum number of records to display in output")] = DEFAULT_MAX_DISPLAY,
+    limit: Annotated[
+        int,
+        typer.Option("--limit", min=1, max=MAX_LIMIT, help=f"Records to fetch from API per request (pagination size). 1 to {MAX_LIMIT}; paginate for more."),
+    ] = DEFAULT_LIMIT,
+    max_display: Annotated[int, typer.Option("--max-display", min=1, help="Maximum number of records to display in output (>= 1)")] = DEFAULT_MAX_DISPLAY,
     max_snippets_per_record: Annotated[
         int | None,
         typer.Option(
             "--max-hits-per-vol",
+            min=1,
             help="Limit hits per volume (useful for broad searches across many volumes). Default: 3 hits per volume",
         ),
     ] = 3,
@@ -80,6 +85,12 @@ def search(
 
     with _tracer.start_as_current_span("cli.search", attributes={"search.keyword": keyword}):
         try:
+            query_error = validate_search_query(keyword)
+            if query_error:
+                console.print(f"[red]Invalid query: {query_error}[/red]")
+                console.print("[dim]See 'ra search --help' for query syntax examples.[/dim]")
+                raise typer.Exit(code=1)
+
             if not only_digitised and transcribed_only:
                 console.print("[yellow]Note: --transcribed-text requires --only-digitised-materials[/yellow]")
                 console.print("[yellow]   Automatically switching to --text when --include-all-materials is used.[/yellow]\n")
@@ -137,4 +148,9 @@ def search(
             raise
         except Exception as error:
             console.print(f"[red]Search failed: {error}[/red]")
+            if "400" in str(error):
+                console.print(
+                    "[dim]A 400 means the API rejected the request — usually the query syntax or a parameter "
+                    "(e.g. --limit too large). Try a simpler query or a smaller --limit.[/dim]"
+                )
             raise typer.Exit(code=1) from error

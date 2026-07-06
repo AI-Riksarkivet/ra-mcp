@@ -9,7 +9,7 @@ from fastmcp import FastMCP
 from pydantic import Field
 
 from ra_mcp_common.telemetry import mark_span_error
-from ra_mcp_dataset_lib import get_lancedb, require_keyword
+from ra_mcp_dataset_lib import get_lancedb, require_keyword, require_ordered_range
 from ra_mcp_sbl_lib import SBLSearch
 from ra_mcp_sbl_lib.config import LANCEDB_URI
 
@@ -90,6 +90,10 @@ def register_sbl_tool(mcp: FastMCP) -> None:
     ) -> str:
         """Search SBL biographical articles using full-text search."""
         if err := require_keyword(keyword, "'Linné'"):
+            return err
+        if err := require_ordered_range(birth_year_min, birth_year_max, "birth year"):
+            return err
+        if err := require_ordered_range(death_year_min, death_year_max, "death year"):
             return err
 
         if research_context:

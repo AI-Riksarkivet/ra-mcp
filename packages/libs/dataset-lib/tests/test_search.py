@@ -23,6 +23,7 @@ from ra_mcp_dataset_lib import (
     format_results,
     lancedb_fts_search,
     require_keyword,
+    require_ordered_range,
     text_contains,
 )
 
@@ -119,6 +120,34 @@ def test_filtered_deep_page_pushes_predicate_down(db):
 def test_empty_keyword_raises(db):
     with pytest.raises(ValueError, match="non-empty"):
         lancedb_fts_search(db, "t", "   ", limit=10)
+
+
+def test_negative_offset_raises(db):
+    # A negative offset would slice matches[-N:] and silently return the wrong page
+    # while total_hits stays nonzero — guard it centrally so every dataset inherits it.
+    with pytest.raises(ValueError, match="offset must be >= 0"):
+        lancedb_fts_search(db, "t", "häst", limit=10, offset=-5)
+
+
+def test_limit_below_one_raises(db):
+    # limit=0 -> empty page (misleading "no results"); limit<0 -> broken pagination footer.
+    with pytest.raises(ValueError, match="limit must be >= 1"):
+        lancedb_fts_search(db, "t", "häst", limit=0)
+
+
+def test_require_ordered_range_flags_inverted():
+    err = require_ordered_range(1900, 1800, "birth year")
+    assert err is not None and "inverted" in err
+
+
+def test_require_ordered_range_allows_ordered_and_unset():
+    assert require_ordered_range(1800, 1900, "birth year") is None
+    assert require_ordered_range(1900, 1900, "birth year") is None  # equal is valid
+    assert require_ordered_range(None, 1900, "birth year") is None  # one-sided is valid
+    assert require_ordered_range(None, None, "birth year") is None
+    # ISO date strings compare correctly too
+    assert require_ordered_range("1855-12-31", "1855-01-01", "date") is not None
+    assert require_ordered_range("1855-01-01", "1855-12-31", "date") is None
 
 
 def test_emits_lancedb_client_span(db, spans):

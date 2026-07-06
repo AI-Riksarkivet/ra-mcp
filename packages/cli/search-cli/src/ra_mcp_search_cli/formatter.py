@@ -259,7 +259,9 @@ class RichConsoleFormatter:
         if snippet_count > 0:
             lines.append(f"\n[bold green]✓[/bold green] Found [bold]{snippet_count}[/bold] page hits across [bold]{records_display}[/bold] volumes")
         else:
-            lines.append(f"\n[bold green]✓[/bold green] Found [bold]{records_display}[/bold] volumes matching metadata [dim](no transcribed page hits in this search mode)[/dim]")
+            lines.append(
+                f"\n[bold green]✓[/bold green] Found [bold]{records_display}[/bold] volumes matching metadata [dim](no transcribed page hits in this search mode)[/dim]"
+            )
 
         if total_hits > records_count:
             lines.append(f"[dim]   (Total {total_hits} hits available, showing from offset {offset})[/dim]")

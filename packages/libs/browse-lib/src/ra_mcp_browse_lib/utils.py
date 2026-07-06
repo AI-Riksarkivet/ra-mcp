@@ -21,7 +21,8 @@ def parse_page_range(page_range: str | None, total_pages: int = 10000) -> list[i
         Sorted list of unique page numbers within valid range.
 
     Raises:
-        ValueError: If page_range contains no valid page numbers.
+        ValueError: If page_range contains no valid page numbers, or if a range is
+            inverted (start greater than end, e.g. "5-1").
 
     Examples:
         >>> parse_page_range("1-3,5", 10)
@@ -36,6 +37,7 @@ def parse_page_range(page_range: str | None, total_pages: int = 10000) -> list[i
 
     pages = []
     invalid_parts = []
+    inverted_parts: list[tuple[str, int, int]] = []
     parts = page_range.split(",")
 
     for part in parts:
@@ -50,6 +52,10 @@ def parse_page_range(page_range: str | None, total_pages: int = 10000) -> list[i
                 if start < 1 or end < 1:
                     invalid_parts.append(part)
                     continue
+                if start > end:
+                    # Recorded, not raised here — the surrounding except would catch it.
+                    inverted_parts.append((part, start, end))
+                    continue
                 pages.extend(range(start, min(end + 1, total_pages + 1)))
             else:
                 page_num = int(part.strip())
@@ -59,6 +65,10 @@ def parse_page_range(page_range: str | None, total_pages: int = 10000) -> list[i
                     invalid_parts.append(part)
         except ValueError:
             invalid_parts.append(part)
+
+    if inverted_parts:
+        part, start, end = inverted_parts[0]
+        raise ValueError(f"Invalid page range '{part}': start ({start}) must be less than or equal to end ({end}). Use e.g. '1-5', not '5-1'.")
 
     if not pages and invalid_parts:
         raise ValueError(f"Invalid page specification: {', '.join(invalid_parts)}. Use numbers like '1-5' or '1,3,5'.")

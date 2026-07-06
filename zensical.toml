@@ -22,6 +22,7 @@ nav = [
   { "How it Works" = [
     {"MCP & Tools" = "how-it-works/index.md"},
     {"Data Sources" = "how-it-works/data-sources.md"},
+    {"Search Tips" = "how-it-works/search-tips.md"},
     {"Architecture" = "how-it-works/architecture.md"},
   ]},
   { "Tools & Skills" = [

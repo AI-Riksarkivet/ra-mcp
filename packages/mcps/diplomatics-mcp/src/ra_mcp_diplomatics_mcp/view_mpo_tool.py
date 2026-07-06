@@ -47,7 +47,7 @@ def register_view_mpo_tool(mcp: FastMCP) -> None:
         mpo_id: Annotated[int, Field(description="MPO fragment ID (e.g. 1, 42).")],
         ctx: Context,
         highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
-        max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
+        max_pages: Annotated[int, Field(description="Maximum pages to load.", ge=1, le=20)] = 20,
     ) -> ToolResult:
         """Look up MPO record and open in viewer with full metadata."""
         try:

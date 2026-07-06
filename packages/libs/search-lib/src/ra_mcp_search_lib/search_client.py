@@ -121,8 +121,11 @@ class SearchClient:
                 # Parse entire API response with Pydantic
                 response = RecordsResponse(**response_data)  # fields provided via **kwargs
 
-                # Apply client-side snippet limiting if requested
-                if max_snippets_per_record:
+                # Apply client-side snippet limiting if requested. Explicit None
+                # check (not truthiness): None means "unlimited", any set positive
+                # value means "limit" — a 0 should never have reached here (callers
+                # bound it to >= 1), and treating 0 as "unlimited" would be wrong.
+                if max_snippets_per_record is not None:
                     self._limit_snippets(response, max_snippets_per_record)
 
                 self.logger.info(

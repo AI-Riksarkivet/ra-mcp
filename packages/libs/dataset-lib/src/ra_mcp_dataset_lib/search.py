@@ -13,7 +13,7 @@ import logging
 import threading
 import time
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from lancedb.index import FTS, Bitmap, BTree
 from opentelemetry.trace import SpanKind, StatusCode
@@ -157,6 +157,14 @@ def lancedb_fts_search(
     """
     if not keyword or not keyword.strip():
         raise ValueError("keyword must be non-empty")
+    # Guard paging centrally so every dataset tool inherits it: without this a
+    # negative offset or limit < 1 slices matches[] into an empty/partial window
+    # while total_hits stays nonzero, so the formatter misreports "no results" or
+    # emits a broken "offset=-N" pagination footer.
+    if offset < 0:
+        raise ValueError(f"offset must be >= 0 (got {offset})")
+    if limit < 1:
+        raise ValueError(f"limit must be >= 1 (got {limit})")
 
     table = db.open_table(table_name)
     query: Any = table.search(keyword, query_type="fts")
@@ -285,6 +293,28 @@ def require_keyword(keyword: str, example: str) -> str | None:
     if not keyword or not keyword.strip():
         mark_span_error("keyword must not be empty", error_type="validation")
         return f"Error: keyword must not be empty. Provide a search term, e.g. {example}."
+    return None
+
+
+_RangeBound = TypeVar("_RangeBound", int, str)
+
+
+def require_ordered_range(low: _RangeBound | None, high: _RangeBound | None, label: str) -> str | None:
+    """Validate an optional ``[low, high]`` filter range; return an error string
+    (and mark the span ERROR) when it is inverted, else ``None``.
+
+    Both bounds set with ``low > high`` builds an unsatisfiable ``>= low AND <= high``
+    predicate, which silently returns "no results" instead of flagging the swapped
+    inputs. Works for years (int) and ISO date strings (which compare correctly
+    lexicographically). ``None`` for either bound means "unbounded on that side".
+
+    Usage in a handler: ``if err := require_ordered_range(year_min, year_max, "birth year"): return err``.
+    """
+    # Constrained TypeVar (int|str): `>` is valid for each constraint, but ty's
+    # constrained-TypeVar handling is incomplete, so suppress its false positive.
+    if low is not None and high is not None and low > high:  # ty: ignore[unsupported-operator]
+        mark_span_error(f"{label} range inverted: {low} > {high}", error_type="validation")
+        return f"Error: {label} range is inverted — from/min ({low}) must be <= to/max ({high}). Swap the bounds."
     return None
 
 

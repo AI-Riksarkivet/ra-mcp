@@ -47,7 +47,7 @@ def register_view_sdhk_tool(mcp: FastMCP) -> None:
         sdhk_id: Annotated[int, Field(description="SDHK charter ID (e.g. 85, 28672).")],
         ctx: Context,
         highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
-        max_pages: Annotated[int, Field(description="Maximum pages to load.", le=20)] = 20,
+        max_pages: Annotated[int, Field(description="Maximum pages to load.", ge=1, le=20)] = 20,
     ) -> ToolResult:
         """Look up SDHK record and open in viewer with full metadata."""
         try:

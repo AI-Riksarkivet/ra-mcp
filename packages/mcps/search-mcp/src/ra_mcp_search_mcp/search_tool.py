@@ -13,7 +13,9 @@ from pydantic import Field
 from ra_mcp_common.formatting import page_id_to_number
 from ra_mcp_common.http_client import default_http_client
 from ra_mcp_common.telemetry import mark_span_error
+from ra_mcp_search_lib.config import MAX_LIMIT
 from ra_mcp_search_lib.search_operations import SearchOperations
+from ra_mcp_search_lib.validation import validate_search_query
 
 from .formatter import PlainTextFormatter
 
@@ -29,12 +31,25 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
     if not keyword or not keyword.strip():
         mark_span_error("keyword must not be empty", error_type="validation")
         return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
+    query_error = validate_search_query(keyword)
+    if query_error:
+        mark_span_error(query_error, error_type="validation")
+        return PlainTextFormatter().format_error_message(
+            query_error,
+            error_suggestions=["Group Boolean logic with matching parentheses, e.g. (Stockholm OR Göteborg), and pair every quote."],
+        )
     if offset < 0:
         mark_span_error(f"offset must be >= 0, got {offset}", error_type="validation")
         return PlainTextFormatter().format_error_message(f"offset must be >= 0, got {offset}", error_suggestions=["Use offset=0 for the first page of results"])
     if limit < 1:
         mark_span_error(f"limit must be >= 1, got {limit}", error_type="validation")
         return PlainTextFormatter().format_error_message(f"limit must be >= 1, got {limit}", error_suggestions=["Use limit=25 for default page size"])
+    if limit > MAX_LIMIT:
+        mark_span_error(f"limit must be <= {MAX_LIMIT}, got {limit}", error_type="validation")
+        return PlainTextFormatter().format_error_message(
+            f"limit must be <= {MAX_LIMIT}, got {limit}",
+            error_suggestions=[f"Use a smaller limit (max {MAX_LIMIT}) and paginate with offset for more results"],
+        )
     if year_min is not None and year_max is not None and year_min > year_max:
         mark_span_error(f"year_min ({year_min}) must be <= year_max ({year_max})", error_type="validation")
         return PlainTextFormatter().format_error_message(f"year_min ({year_min}) must be <= year_max ({year_max})")
@@ -71,8 +86,8 @@ def register_search_tool(mcp: FastMCP) -> None:
         ],
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
         limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,
-        max_snippets_per_record: Annotated[int, Field(description="Maximum matching pages shown per document.")] = 3,
-        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.")] = 15000,
+        max_snippets_per_record: Annotated[int, Field(description="Maximum matching pages shown per document.", ge=1)] = 3,
+        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.", ge=1000)] = 15000,
         sort: Annotated[str, Field(description="Sort order: 'relevance', 'timeAsc', 'timeDesc', 'alphaAsc', 'alphaDesc'.")] = "relevance",
         year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
         year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
@@ -174,7 +189,7 @@ def register_search_tool(mcp: FastMCP) -> None:
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
         only_digitised: Annotated[bool, Field(description="True = digitised materials only. False = all 2M+ records including non-digitised.")] = True,
         limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,
-        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.")] = 15000,
+        max_response_tokens: Annotated[int, Field(description="Maximum tokens in response.", ge=1000)] = 15000,
         sort: Annotated[str, Field(description="Sort order: 'relevance', 'timeAsc', 'timeDesc', 'alphaAsc', 'alphaDesc'.")] = "relevance",
         year_min: Annotated[int | None, Field(description="Start year filter (e.g. 1700).")] = None,
         year_max: Annotated[int | None, Field(description="End year filter (e.g. 1750).")] = None,
