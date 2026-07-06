@@ -1,11 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { pathToFileURL, fileURLToPath } from "node:url";
-import fs from "node:fs";
-import path from "node:path";
-
-// This project is ESM ("type": "module"), where the CommonJS `__dirname` global
-// does not exist — derive it from import.meta.url instead.
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { APPS, appUrl, hostUrl } from "./hosts";
 
 /**
  * Runtime harness for the MCP App UIs.
@@ -14,60 +8,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * `ui/initialize` JSON-RPC handshake with its host (window.parent) and gets ALL its data
  * from tool calls — so loaded standalone they render nothing. We therefore load the built
  * dist inside an iframe on a mock-host page (written next to the dist so the iframe is
- * same-origin) whose script answers the ext-apps protocol.
+ * same-origin) whose script answers the ext-apps protocol. The mock host and its files live
+ * in hosts.ts; the files are created once per run via globalSetup (see playwright.config.ts)
+ * so parallel workers never race on them.
  *
  * The mock host reads two page globals so tests can drive it:
  *   window.__toolResponses  : { [toolName]: CallToolResult }  answers to tools/call
  *   window.__pushToolResult(result)                            host→app ui/notifications/tool-result
  */
-
-const APPS = [
-  { name: "viewer", dist: path.resolve(__dirname, "../src/ra_mcp_viewer_mcp/dist") },
-  { name: "pdf", dist: path.resolve(__dirname, "../../pdf-mcp/src/ra_mcp_pdf_mcp/dist") },
-];
-
-const HOST_HTML = `<!doctype html><html><body style="margin:0">
-<iframe id="app" src="mcp-app.html" style="width:900px;height:640px;border:0"></iframe>
-<script>
-  window.__toolResponses = window.__toolResponses || {};
-  const iframe = document.getElementById("app");
-  const reply = (id, result) => iframe.contentWindow.postMessage({ jsonrpc: "2.0", id, result }, "*");
-  window.__pushToolResult = (result) =>
-    iframe.contentWindow.postMessage({ jsonrpc: "2.0", method: "ui/notifications/tool-result", params: result }, "*");
-  window.addEventListener("message", (e) => {
-    const m = e.data;
-    if (!m || m.jsonrpc !== "2.0" || typeof m.id === "undefined" || !m.method) return;
-    if (m.method === "ui/initialize") {
-      reply(m.id, {
-        protocolVersion: m.params.protocolVersion,
-        hostInfo: { name: "MockHost", version: "1.0.0" },
-        hostCapabilities: {},
-        hostContext: { displayMode: "inline", availableDisplayModes: ["inline", "fullscreen"] },
-      });
-    } else if (m.method === "ui/request-display-mode") {
-      reply(m.id, { displayMode: m.params?.mode ?? "inline" });
-    } else if (m.method === "tools/call") {
-      reply(m.id, window.__toolResponses[m.params?.name] ?? { content: [], structuredContent: {} });
-    } else {
-      reply(m.id, {}); // ack everything else so nothing hangs
-    }
-  });
-</script></body></html>`;
-
-const appUrl = (dist: string) => pathToFileURL(path.join(dist, "mcp-app.html")).href;
-const hostUrl = (dist: string) => pathToFileURL(path.join(dist, "_e2e_host.html")).href;
-
-test.beforeAll(() => {
-  for (const app of APPS) {
-    const appFile = path.join(app.dist, "mcp-app.html");
-    if (!fs.existsSync(appFile)) throw new Error(`${app.name} dist not built (${appFile}) — run \`make build-ui\` first`);
-    fs.writeFileSync(path.join(app.dist, "_e2e_host.html"), HOST_HTML);
-  }
-});
-
-test.afterAll(() => {
-  for (const app of APPS) fs.rmSync(path.join(app.dist, "_e2e_host.html"), { force: true });
-});
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];

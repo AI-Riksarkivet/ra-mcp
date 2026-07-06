@@ -7,6 +7,10 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   reporter: "list",
+  // Write/remove the shared mock-host files once for the whole run (not per
+  // worker), so parallel workers can't race on them (see e2e/hosts.ts).
+  globalSetup: "./e2e/global-setup.ts",
+  globalTeardown: "./e2e/global-teardown.ts",
   use: { ...devices["Desktop Chrome"] },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
