@@ -58,7 +58,8 @@ ifndef VERSION
 endif
 	@echo "Releasing v$(VERSION)..."
 	sed -i 's/^version = ".*"/version = "$(VERSION)"/' pyproject.toml
-	git add pyproject.toml
+	uv lock              # keep uv.lock's root version in sync, else the tag ships a stale lock
+	git add pyproject.toml uv.lock
 	git commit -m "chore: bump version to $(VERSION)"
 	git tag "v$(VERSION)"
 	git push && git push --tags

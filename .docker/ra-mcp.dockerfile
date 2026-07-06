@@ -2,13 +2,26 @@ ARG BASE_IMAGE=python:3.13-slim
 ARG BUILDER_IMAGE=${BASE_IMAGE}
 ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
-# --- Stage 1: Build viewer-mcp frontend (Svelte/Vite) ---
+# --- Stage 1: Build BOTH MCP App frontends (Svelte/Vite): viewer + pdf ---
+# Both must be built here — each vite build emits src/<pkg>/dist/mcp-app.html, which the
+# wheel picks up (tool.hatch.build artifacts). Omitting either makes that App's ui:// resource
+# 500 at runtime (FileNotFoundError). Keep this in lockstep with `make build-ui`.
 FROM node:22-alpine AS frontend-builder
-WORKDIR /app
+
+# viewer-mcp UI -> /viewer/src/ra_mcp_viewer_mcp/dist
+WORKDIR /viewer
 COPY packages/mcps/viewer-mcp/package*.json ./
 RUN npm ci
 COPY packages/mcps/viewer-mcp/tsconfig.json packages/mcps/viewer-mcp/vite.config.ts packages/mcps/viewer-mcp/mcp-app.html ./
 COPY packages/mcps/viewer-mcp/ui ./ui
+RUN npm run build
+
+# pdf-mcp UI -> /pdf/src/ra_mcp_pdf_mcp/dist
+WORKDIR /pdf
+COPY packages/mcps/pdf-mcp/package*.json ./
+RUN npm ci
+COPY packages/mcps/pdf-mcp/tsconfig.json packages/mcps/pdf-mcp/vite.config.ts packages/mcps/pdf-mcp/mcp-app.html ./
+COPY packages/mcps/pdf-mcp/ui ./ui
 RUN npm run build
 
 # --- Stage 2: Build Python workspace with uv ---
@@ -24,9 +37,10 @@ COPY packages/ ./packages/
 COPY src/ ./src/
 COPY README.md LICENSE ./
 
-# Copy built frontend into viewer-mcp package before uv sync
-# vite outputs to src/ra_mcp_viewer_mcp/dist/, so --no-editable will include it in the wheel
-COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./packages/mcps/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
+# Copy BOTH built frontends into their packages before uv sync, so --no-editable includes
+# each dist/mcp-app.html in the wheel (viewer AND pdf — the pdf one was previously missing).
+COPY --from=frontend-builder /viewer/src/ra_mcp_viewer_mcp/dist/ ./packages/mcps/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
+COPY --from=frontend-builder /pdf/src/ra_mcp_pdf_mcp/dist/ ./packages/mcps/pdf-mcp/src/ra_mcp_pdf_mcp/dist/
 
 # Sync workspace packages with diplomatics extra (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
