@@ -1,7 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
-import { pathToFileURL } from "node:url";
+import { pathToFileURL, fileURLToPath } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
+
+// This project is ESM ("type": "module"), where the CommonJS `__dirname` global
+// does not exist — derive it from import.meta.url instead.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Runtime harness for the MCP App UIs.

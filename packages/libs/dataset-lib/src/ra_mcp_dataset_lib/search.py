@@ -13,7 +13,7 @@ import logging
 import threading
 import time
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from lancedb.index import FTS, Bitmap, BTree
 from opentelemetry.trace import SpanKind, StatusCode
@@ -296,10 +296,7 @@ def require_keyword(keyword: str, example: str) -> str | None:
     return None
 
 
-_RangeBound = TypeVar("_RangeBound", int, str)
-
-
-def require_ordered_range(low: _RangeBound | None, high: _RangeBound | None, label: str) -> str | None:
+def require_ordered_range[T: (int, str)](low: T | None, high: T | None, label: str) -> str | None:
     """Validate an optional ``[low, high]`` filter range; return an error string
     (and mark the span ERROR) when it is inverted, else ``None``.
 
@@ -310,9 +307,7 @@ def require_ordered_range(low: _RangeBound | None, high: _RangeBound | None, lab
 
     Usage in a handler: ``if err := require_ordered_range(year_min, year_max, "birth year"): return err``.
     """
-    # Constrained TypeVar (int|str): `>` is valid for each constraint, but ty's
-    # constrained-TypeVar handling is incomplete, so suppress its false positive.
-    if low is not None and high is not None and low > high:  # ty: ignore[unsupported-operator]
+    if low is not None and high is not None and low > high:
         mark_span_error(f"{label} range inverted: {low} > {high}", error_type="validation")
         return f"Error: {label} range is inverted — from/min ({low}) must be <= to/max ({high}). Swap the bounds."
     return None
