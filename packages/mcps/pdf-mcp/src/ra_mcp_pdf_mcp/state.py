@@ -78,6 +78,32 @@ async def get_active_state() -> PdfViewerState:
     return PdfViewerState.model_validate(data)
 
 
+async def require_state(view_id: str) -> PdfViewerState:
+    """Load a view by its explicit id, raising LookupError if it is not in the store.
+
+    Unlike get_state (which returns a blank default for an unknown id), this never
+    invents an empty state — so a mutation tool handed a stale/unknown view_id fails
+    loudly instead of persisting a blank state and reporting false success.
+    """
+    data = await _store.get(key=view_id, collection=_COL)
+    if not data:
+        raise LookupError("No PDF viewer is open.")
+    return PdfViewerState.model_validate(data)
+
+
+async def resolve_state(view_id: str | None) -> PdfViewerState:
+    """Resolve the target view for a mutation tool.
+
+    Prefer an explicit view_id (display_pdf returns it): this works regardless of session,
+    so navigate/highlight survive a transport that does not keep a stable MCP session_id
+    across tool calls — the root cause of "No viewer open" on the control tools. Fall back
+    to the per-session active-view pointer only when no view_id is given (e.g. stdio).
+    """
+    if view_id:
+        return await require_state(view_id)
+    return await get_active_state()
+
+
 async def put_state(state: PdfViewerState) -> dict:
     """Bump version, persist, and track as this session's latest. Returns dict for structuredContent."""
     state.version += 1

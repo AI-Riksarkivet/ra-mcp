@@ -30,6 +30,27 @@ async def test_put_state_sets_latest_view_id():
     assert _state_mod._latest_view_by_session[""] == "view-abc"
 
 
+async def test_resolve_state_prefers_view_id_over_session_pointer():
+    """With the per-session pointer gone (the deployed transport does not keep a stable
+    session_id across tool calls), get_active_state() fails but an explicit view_id still
+    resolves — the fix for "No viewer open" on pdf_go_to_page / pdf_set_search."""
+    from ra_mcp_pdf_mcp.state import require_state, resolve_state
+
+    await put_state(PdfViewerState(view_id="vid-xyz", url="https://example.com/a.pdf"))
+    _state_mod._latest_view_by_session.clear()
+
+    with pytest.raises(LookupError):
+        await get_active_state()  # old path — reproduces the bug
+    with pytest.raises(LookupError):
+        await resolve_state(None)  # no view_id → same failure
+
+    got = await resolve_state("vid-xyz")  # explicit view_id → works regardless of session
+    assert got.view_id == "vid-xyz"
+
+    with pytest.raises(LookupError):
+        await require_state("no-such-view")  # unknown id raises, never a blank default
+
+
 async def test_get_active_state_raises_when_no_viewer():
     with pytest.raises(LookupError, match="No PDF viewer is open"):
         await get_active_state()
@@ -106,9 +127,7 @@ async def test_read_and_consume_delivers_then_clears_one_shot_commands():
     # once (so the client applies them), then clears them in the store WITHOUT bumping the
     # version, so a later unrelated mutation can't re-fire them. search_term is level state
     # and must survive.
-    await put_state(
-        PdfViewerState(view_id="v1", url="https://x.pdf", go_to_page=4, request_fullscreen=True, search_term="trolldom")
-    )
+    await put_state(PdfViewerState(view_id="v1", url="https://x.pdf", go_to_page=4, request_fullscreen=True, search_term="trolldom"))
     version = (await get_state("v1")).version
 
     snap = await _state_mod.read_and_consume("v1")

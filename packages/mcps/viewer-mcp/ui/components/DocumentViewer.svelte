@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
+import { onDestroy } from "svelte";
 import type { App } from "@modelcontextprotocol/ext-apps";
 import type { TextLine, PageData, TooltipState } from "../lib/types";
 import { buildPolygonHits, findHitAtImageCoord } from "../lib/geometry";
@@ -118,7 +118,7 @@ let canvasEl = $state<HTMLCanvasElement>(undefined!);
 let containerEl = $state<HTMLDivElement>(undefined!);
 let wrapperEl = $state<HTMLDivElement>(undefined!);
 
-let controller: CanvasController;
+let controller: CanvasController | undefined;
 
 let prevHighlightTerm = "";
 $effect(() => {
@@ -323,6 +323,20 @@ $effect(() => {
 $effect(() => {
   const pd = pageData;
 
+  // Gate on the bound canvas refs: bind:this populates these $state refs during mount, so
+  // reading them synchronously here makes this effect re-run once they exist. Creating the
+  // controller here — instead of in onMount — guarantees it exists before the async decode
+  // resolves, so the first page's scan is never dropped with the loading spinner left stuck
+  // (the `!controller` check inside .then() below never worked: async reads aren't tracked
+  // and, worse, silently bailed leaving imageLoading=true forever).
+  if (!canvasEl || !containerEl || !wrapperEl) return;
+  controller ??= new CanvasController(canvasEl, containerEl, wrapperEl, {
+    onAfterDraw: drawOverlays,
+    onClickImage: handleClick,
+    onHoverImage: handleHover,
+    onPointerLeave: handlePointerLeave,
+  });
+
   highlightedLineId = null;
   tooltip = null;
   // Reset the match cursor for the new page, else the SearchBar shows a stale "N/M" and
@@ -338,10 +352,10 @@ $effect(() => {
   // doesn't stall the main thread — the dominant page-navigation jank.
   loadDecodedImage(pd.imageDataUrl)
     .then((img) => {
-      if (cancelled || !controller) return;
+      if (cancelled) return;
       // Draw the image in the text layer's ALTO coordinate space so the polygon
       // overlays (native ALTO coords) line up with the downscaled IIIF image.
-      controller.setImage(img, pd.textLayer?.pageWidth ?? 0, pd.textLayer?.pageHeight ?? 0);
+      controller!.setImage(img, pd.textLayer?.pageWidth ?? 0, pd.textLayer?.pageHeight ?? 0);
       imageLoading = false;
       scheduleContextUpdate(getContextState());
     })
@@ -367,15 +381,6 @@ function onPointerMove(e: PointerEvent) { controller?.handlePointerMove(e); }
 function onPointerUp(e: PointerEvent) { controller?.handlePointerUp(e); }
 function onPointerLeave() { controller?.handlePointerLeave(); }
 function onWheel(e: WheelEvent) { controller?.handleWheel(e); }
-
-onMount(() => {
-  controller = new CanvasController(canvasEl, containerEl, wrapperEl, {
-    onAfterDraw: drawOverlays,
-    onClickImage: handleClick,
-    onHoverImage: handleHover,
-    onPointerLeave: handlePointerLeave,
-  });
-});
 
 onDestroy(() => {
   controller?.destroy();

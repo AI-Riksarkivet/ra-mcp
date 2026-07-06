@@ -25,9 +25,9 @@ from ra_mcp_pdf_mcp.cache import (
 from ra_mcp_pdf_mcp.guide_index import ensure_guide_index, search_guide_index, search_guides_grouped
 from ra_mcp_pdf_mcp.models import PdfViewerState
 from ra_mcp_pdf_mcp.state import (
-    get_active_state,
     put_state,
     read_and_consume,
+    resolve_state,
 )
 
 
@@ -97,7 +97,7 @@ async def display_pdf(
         f"Displaying PDF: {display_title}",
         f"view_uuid: {view_id}",
         "",
-        "Use pdf_set_search to highlight text, pdf_go_to_page to navigate, search_pdf to search all pages.",
+        "Pass this view_uuid to pdf_set_search (highlight) and pdf_go_to_page (navigate) to control this viewer; use search_pdf to search all pages.",
     ]
     if not has_ui:
         summary_parts.insert(1, f"URL: {url}")
@@ -276,9 +276,12 @@ async def read_pdf_page(
 )
 async def pdf_set_search(
     search_term: Annotated[str, Field(description="Search term to highlight. Use empty string to clear.")],
+    view_id: Annotated[
+        str | None, Field(description="view_uuid from the display_pdf result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError:
         return _error_result("No viewer open. Call display_pdf first.")
 
@@ -295,9 +298,12 @@ async def pdf_set_search(
 )
 async def pdf_go_to_page(
     page: Annotated[int, Field(description="Page number (1-based).")],
+    view_id: Annotated[
+        str | None, Field(description="view_uuid from the display_pdf result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError:
         return _error_result("No viewer open. Call display_pdf first.")
 

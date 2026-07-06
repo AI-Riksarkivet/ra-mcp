@@ -18,7 +18,7 @@ from ra_mcp_viewer_mcp.fetchers import build_page_data, fetch_and_parse_text_lay
 from ra_mcp_viewer_mcp.formatter import build_summary, error_result, text_result
 from ra_mcp_viewer_mcp.models import ViewerState
 from ra_mcp_viewer_mcp.resolve import bild_resolve_document, browse_resolve_document, manifest_resolve_document, validate_url_pairs
-from ra_mcp_viewer_mcp.state import get_active_state, put_state, read_and_consume
+from ra_mcp_viewer_mcp.state import put_state, read_and_consume, resolve_state
 
 
 logger = logging.getLogger("ra_mcp.viewer.tools")
@@ -100,7 +100,12 @@ async def view_document(
 
     logger.info("view_document: %s pages=%s, resolved %d page(s), view_id=%s", reference_code, pages, len(resolved.image_urls), view_id)
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
+        content=[
+            types.TextContent(
+                type="text",
+                text=f"{summary}\n\nview_id: {view_id}\n(pass this view_id to viewer_go_to_page / viewer_set_highlight / viewer_navigate to control this viewer)",
+            )
+        ],
         structured_content=sc,
     )
 
@@ -150,7 +155,12 @@ async def view_document_urls(
 
     logger.info("view_document_urls: displaying %d page(s), view_id=%s", len(image_urls), view_id)
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
+        content=[
+            types.TextContent(
+                type="text",
+                text=f"{summary}\n\nview_id: {view_id}\n(pass this view_id to viewer_go_to_page / viewer_set_highlight / viewer_navigate to control this viewer)",
+            )
+        ],
         structured_content=sc,
     )
 
@@ -206,7 +216,12 @@ async def view_manifest(
 
     logger.info("view_manifest: %s, resolved %d page(s), view_id=%s", manifest_url, len(resolved.image_urls), view_id)
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
+        content=[
+            types.TextContent(
+                type="text",
+                text=f"{summary}\n\nview_id: {view_id}\n(pass this view_id to viewer_go_to_page / viewer_set_highlight / viewer_navigate to control this viewer)",
+            )
+        ],
         structured_content=sc,
     )
 
@@ -256,7 +271,12 @@ async def view_bild(
 
     logger.info("view_bild: %s, resolved %d page(s), view_id=%s", bild_ids, len(resolved.image_urls), view_id)
     return ToolResult(
-        content=[types.TextContent(type="text", text=summary)],
+        content=[
+            types.TextContent(
+                type="text",
+                text=f"{summary}\n\nview_id: {view_id}\n(pass this view_id to viewer_go_to_page / viewer_set_highlight / viewer_navigate to control this viewer)",
+            )
+        ],
         structured_content=sc,
     )
 
@@ -288,9 +308,12 @@ async def get_viewer_state(
 )
 async def viewer_go_to_page(
     page: Annotated[int, Field(description="Page number to navigate to (1-based).")],
+    view_id: Annotated[
+        str | None, Field(description="view_id from the view_document result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError as e:
         mark_span_error(str(e))
         return error_result(str(e))
@@ -315,9 +338,13 @@ async def viewer_go_to_page(
         "or says 'show the viewer' / 'open the document again'."
     ),
 )
-async def viewer_reopen() -> ToolResult:
+async def viewer_reopen(
+    view_id: Annotated[
+        str | None, Field(description="view_id from the view_document result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
+) -> ToolResult:
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError:
         mark_span_error("No viewer is open. Use view_document or view_document_urls first.")
         return error_result("No viewer is open. Use view_document or view_document_urls first.")
@@ -339,9 +366,12 @@ async def viewer_reopen() -> ToolResult:
 )
 async def viewer_set_highlight(
     highlight_term: Annotated[str, Field(description="Search term to highlight in the viewer. Use empty string to clear highlights.")],
+    view_id: Annotated[
+        str | None, Field(description="view_id from the view_document result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError:
         mark_span_error("No document is currently displayed. Use view_document or view_document_urls first.")
         return error_result("No document is currently displayed. Use view_document or view_document_urls first.")
@@ -367,12 +397,15 @@ async def viewer_navigate(
     pages: Annotated[str, Field(description="Page specification: single ('5'), range ('1-10'), or comma-separated ('5,7,9').")],
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
     max_pages: Annotated[int, Field(description="Maximum pages to retrieve.", ge=1, le=20)] = 20,
+    view_id: Annotated[
+        str | None, Field(description="view_id from the view_document result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     """Navigate the existing viewer to new pages."""
     trace.get_current_span().set_attribute("view.reference_code", reference_code)
     trace.get_current_span().set_attribute("view.pages", pages)
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError as e:
         mark_span_error(str(e))
         return error_result(str(e))
@@ -419,13 +452,16 @@ async def viewer_navigate_urls(
         list[str], Field(description="List of text layer XML URLs paired 1:1 with image_urls. Use empty string for pages without transcription.")
     ],
     highlight_term: Annotated[str | None, Field(description="Optional search term to highlight.")] = None,
+    view_id: Annotated[
+        str | None, Field(description="view_id from the view_document result. Pass it so the correct viewer is targeted (works across sessions).")
+    ] = None,
 ) -> ToolResult:
     if err := validate_url_pairs(image_urls, text_layer_urls):
         mark_span_error(err, error_type="validation")
         return error_result(err)
 
     try:
-        state = await get_active_state()
+        state = await resolve_state(view_id)
     except LookupError as e:
         mark_span_error(str(e))
         return error_result(str(e))

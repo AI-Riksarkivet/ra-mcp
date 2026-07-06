@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 
 from fastmcp import Client
 
+import ra_mcp_pdf_mcp.state as _state_mod
 from ra_mcp_pdf_mcp import pdf_mcp as mcp
 from ra_mcp_pdf_mcp.cache import blocks_cache, pdf_cache
 
@@ -127,6 +128,28 @@ async def test_pdf_set_search_clear():
             result = await client.call_tool("pdf_set_search", {"search_term": ""})
 
     assert "Cleared" in result.content[0].text
+
+
+async def test_pdf_mutation_with_view_id_survives_session_loss():
+    """The deployed transport does not keep a stable session_id across tool calls, so the
+    per-session pointer isn't found on the mutation call — pdf_go_to_page returned "No viewer
+    open". Passing the display_pdf view_uuid must target the viewer regardless of session."""
+    with patch("ra_mcp_pdf_mcp.tools.schedule_prefetch"):
+        async with Client(mcp) as client:
+            doc = await client.call_tool("display_pdf", {"url": SAMPLE_URL})
+            view_id = doc.structured_content["view_id"]
+            assert f"view_uuid: {view_id}" in doc.content[0].text  # surfaced for the model
+
+            _state_mod._latest_view_by_session.clear()  # transport loses the pointer
+
+            no_id = await client.call_tool("pdf_go_to_page", {"page": 3})
+            assert "no viewer" in no_id.content[0].text.lower()  # reproduces the bug
+
+            ok = await client.call_tool("pdf_go_to_page", {"page": 3, "view_id": view_id})
+            assert not ok.is_error and "Navigated" in ok.content[0].text  # the fix
+
+            state = await client.call_tool("get_pdf_state", {"view_id": view_id})
+            assert state.structured_content["go_to_page"] == 2  # page 3 → 0-based
 
 
 # ── pdf_go_to_page ───────────────────────────────────────────────────

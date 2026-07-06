@@ -305,6 +305,70 @@ async def test_viewer_navigate_urls_resets_stale_bildvisning(mock_fetchers):
     assert sc["document_info"] == ""
 
 
+# ── view_id survives session-pointer loss (the "No viewer open" regression) ──
+#
+# The deployed transport does NOT keep a stable MCP session_id across separate tool
+# calls, so the per-session "active view" pointer set by view_document isn't found by a
+# later mutation call — every control tool returned "No viewer is open". These tests
+# reproduce that by clearing the pointer mid-flight, and prove the explicit view_id path
+# targets the view regardless of session. (The other tests here can't catch it: they
+# open+mutate in one in-process Client session, where the pointer is stable.)
+
+
+async def test_resolve_state_prefers_view_id_over_session_pointer():
+    """State-level proof: with the session pointer gone, get_active_state() fails but an
+    explicit view_id still resolves; an unknown id raises instead of inventing a blank state."""
+    from ra_mcp_viewer_mcp.models import ViewerState
+    from ra_mcp_viewer_mcp.state import get_active_state, put_state, require_state, resolve_state
+
+    await put_state(ViewerState(view_id="vid-abc", image_urls=["u"]))
+    _state_mod._latest_view_by_session.clear()  # simulate the transport losing the session pointer
+
+    with pytest.raises(LookupError):
+        await get_active_state()  # the old path — reproduces "No viewer is open"
+    with pytest.raises(LookupError):
+        await resolve_state(None)  # no view_id → same failure
+
+    got = await resolve_state("vid-abc")  # explicit view_id → works regardless of session
+    assert got.view_id == "vid-abc"
+
+    with pytest.raises(LookupError):
+        await require_state("no-such-view")  # unknown id raises, never a blank default
+
+
+async def test_mutation_with_view_id_survives_session_loss(mock_fetchers):
+    """Tool-level: after the session pointer is lost, viewer_go_to_page fails WITHOUT a
+    view_id (the bug) but succeeds WITH one (the fix)."""
+    async with Client(mcp) as client:
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
+        assert f"view_id: {view_id}" in doc.content[0].text  # surfaced so the model can pass it back
+
+        _state_mod._latest_view_by_session.clear()  # deployed transport: pointer not shared across calls
+
+        no_id = await client.call_tool("viewer_go_to_page", {"page": 1})
+        assert "no viewer" in no_id.content[0].text.lower()  # reproduces the reported bug
+
+        ok = await client.call_tool("viewer_go_to_page", {"page": 1, "view_id": view_id})
+        assert not ok.is_error and "Navigated" in ok.content[0].text  # the fix
+
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+        assert state.structured_content["go_to_page"] == 0  # page 1 → 0-based index
+
+
+async def test_set_highlight_with_view_id_survives_session_loss(mock_fetchers):
+    async with Client(mcp) as client:
+        doc = await client.call_tool("view_document", {"reference_code": "SE/RA/310187/1", "pages": "7"})
+        view_id = doc.structured_content["view_id"]
+        _state_mod._latest_view_by_session.clear()
+
+        ok = await client.call_tool("viewer_set_highlight", {"highlight_term": "trolldom", "view_id": view_id})
+        assert not ok.is_error
+
+        state = await client.call_tool("get_viewer_state", {"view_id": view_id})
+        assert state.structured_content["highlight_term"] == "trolldom"
+
+
 # ── view_document_urls ────────────────────────────────────────────────
 
 
