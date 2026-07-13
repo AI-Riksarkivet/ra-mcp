@@ -2107,7 +2107,7 @@ wheels = [
 
 [[package]]
 name = "ra-mcp"
-version = "0.15.3"
+version = "0.15.4"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
