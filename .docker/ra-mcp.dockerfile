@@ -78,6 +78,16 @@ RUN if command -v addgroup >/dev/null 2>&1 && command -v adduser >/dev/null 2>&1
         useradd -u 1000 -g ra-mcp -s /bin/sh -m ra-mcp; \
     fi
 
+# Purge perl-base to clear several unfixed HIGH/CRITICAL CVEs (e.g. CVE-2026-42496,
+# CVE-2026-8376). The runtime is pure Python (ra-serve) and never invokes perl; perl-base
+# is marked Essential but has no installed reverse-deps in slim, so --allow-remove-essential
+# removes it without cascade. This MUST run after the user-creation step above: on Debian
+# addgroup/adduser are perl scripts, so purging perl first breaks them.
+RUN if command -v apt-get >/dev/null 2>&1; then \
+        apt-get purge -y --allow-remove-essential perl-base && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
 WORKDIR /app
 
 # Copy only what's needed at runtime (--chown avoids a separate chown layer)
