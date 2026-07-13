@@ -13,7 +13,7 @@ requires-python = ">=3.13"
 license = "Apache-2.0"
 dependencies = [
     "ra-mcp-faltjagare-lib",
-    "fastmcp==3.4.2",
+    "fastmcp==3.4.4",
 ]
 
 [tool.uv.sources]
