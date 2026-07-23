@@ -5,6 +5,7 @@ Provides the search_transcribed tool with pagination and formatting helpers.
 """
 
 import logging
+import re
 from typing import Annotated
 
 from fastmcp import Context, FastMCP
@@ -25,12 +26,44 @@ logger = logging.getLogger("ra_mcp.search.tool")
 
 _VALID_SORT_VALUES = {"relevance", "timeAsc", "timeDesc", "alphaAsc", "alphaDesc"}
 
+# Swedish archival reference codes look like "SE/RA/420422", "SE/LLA/10933/F II a"
+# or "SE/O258G/GSA/1061": country "SE", a short institution code (letters and/or
+# digits — municipal archives like O258G contain digits), then an optional
+# archive/series/volume path. A bare prefix like "SE/RA" is equally pathological
+# as free text, so it is matched too. The 2-6 length cap keeps prose run-ins from
+# real NAD descriptions (e.g. "SE/Admavdelning") searchable. Pattern validated
+# against 303K distinct codes extracted from NAD EAD XML (99.996% before widening).
+_REFERENCE_CODE_PATTERN = re.compile(r"^SE/[A-Za-zÅÄÖåäö0-9]{2,6}(?:/\S|/?$)", re.IGNORECASE)
+
+
+def _looks_like_reference_code(keyword: str) -> bool:
+    """Return True if the keyword is an archival reference code (signum), not a search term.
+
+    Reference codes must never be sent to the free-text search API: it tokenizes them
+    (SE, RA, single letters like "F"/"II"/"a") and OR-matches nearly the entire catalog,
+    yielding multi-second, multi-megabyte responses with useless results. Such codes are
+    resolved by browse_document (OAI-PMH), not by search.
+    """
+    return bool(_REFERENCE_CODE_PATTERN.match(keyword.strip()))
+
 
 def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25) -> str | None:
     """Validate common search inputs. Returns an error string or None if valid."""
     if not keyword or not keyword.strip():
         mark_span_error("keyword must not be empty", error_type="validation")
         return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
+    if _looks_like_reference_code(keyword):
+        mark_span_error("keyword is an archival reference code", error_type="validation")
+        return PlainTextFormatter().format_error_message(
+            f"'{keyword.strip()}' looks like an archival reference code, not a search term. "
+            "The search API only does free-text matching and cannot look up records by reference code — "
+            "it would match the entire catalog and be very slow.",
+            error_suggestions=[
+                f"To find records under this code, search the exact phrase in quotes: keyword='\"{keyword.strip()}\"'",
+                f"To read a volume's pages, use browse_document with reference_code='{keyword.strip()}'",
+                "To search by content instead, use plain keywords (e.g. a name, place, or subject)",
+            ],
+        )
     query_error = validate_search_query(keyword)
     if query_error:
         mark_span_error(query_error, error_type="validation")
