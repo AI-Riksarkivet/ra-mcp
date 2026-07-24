@@ -55,7 +55,9 @@ def _looks_like_reference_code(keyword: str) -> bool:
 # ('pest smitta' = 33 = 'pest + smitta') and '|' is silently dropped, so OR can
 # only be expressed as separate searches. Only the uppercase operator idiom is
 # blocked: lowercase and/not are real Swedish words (duck, seine net). Quoted
-# phrases are exact literal searches, so operators inside quotes are harmless.
+# segments are excluded from the operator scan: their contents are matched
+# literally (metadata reference-code lookup), never parsed as operators — and
+# transcribed searches reject quotes wholesale in a separate check anyway.
 _QUOTED_PHRASE_PATTERN = re.compile(r'"[^"]*"')
 _BOOLEAN_SYNTAX_PATTERN = re.compile(r"\b(?:AND|OR|NOT)\b|\|")
 
@@ -65,8 +67,16 @@ def _looks_like_boolean_query(keyword: str) -> bool:
     return bool(_BOOLEAN_SYNTAX_PATTERN.search(_QUOTED_PHRASE_PATTERN.sub(" ", keyword)))
 
 
-def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25) -> str | None:
-    """Validate common search inputs. Returns an error string or None if valid."""
+def _validate_search_input(
+    keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25, transcribed: bool = False
+) -> str | None:
+    """Validate common search inputs. Returns an error string or None if valid.
+
+    transcribed=True applies transcribed_text-specific rules: quoted phrases are
+    rejected because the transcription index has no phrase matching — a phrase
+    occurring verbatim and adjacent still returns 0 hits (verified 2026-07-24
+    with "Venerisk smitta"), a silent false negative worse than an error.
+    """
     if not keyword or not keyword.strip():
         mark_span_error("keyword must not be empty", error_type="validation")
         return PlainTextFormatter().format_error_message("keyword must not be empty", error_suggestions=["Provide a search term, e.g. 'Stockholm'"])
@@ -77,9 +87,19 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
             "The search API only does free-text matching and cannot look up records by reference code — "
             "it would match the entire catalog and be very slow.",
             error_suggestions=[
-                f"To find records under this code, search the exact phrase in quotes: keyword='\"{keyword.strip()}\"'",
+                f"To find records under this code, use search_metadata with keyword='\"{keyword.strip()}\"' — quoted code lookup works only in metadata search",
                 f"To read a volume's pages, use browse_document with reference_code='{keyword.strip()}'",
                 "To search by content instead, use plain keywords (e.g. a name, place, or subject)",
+            ],
+        )
+    if transcribed and '"' in keyword:
+        mark_span_error("quoted phrase in transcribed search", error_type="validation")
+        return PlainTextFormatter().format_error_message(
+            "Quoted phrases return no results in transcribed text search — the transcription index has no "
+            "phrase matching, so even a phrase that occurs verbatim on a page yields 0 hits.",
+            error_suggestions=[
+                "Remove the quotes: space-separated terms already require ALL words in the same document",
+                "To look up a reference code, use search_metadata (quotes work there) or browse_document",
             ],
         )
     if _looks_like_boolean_query(keyword):
@@ -90,7 +110,7 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
             error_suggestions=[
                 "Terms are combined automatically — keyword='pest smitta' requires BOTH words in a document",
                 "There is no OR: run separate searches instead, one per alternative term",
-                "Exact phrases in quotes (keyword='\"Ostindiska kompaniet\"'), fuzzy term~1 and wildcard troll* all work",
+                "Fuzzy (term~1) and wildcards (troll*, st?ckholm) also work",
             ],
         )
     query_error = validate_search_query(keyword)
@@ -98,7 +118,7 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
         mark_span_error(query_error, error_type="validation")
         return PlainTextFormatter().format_error_message(
             query_error,
-            error_suggestions=['Pair every quote character; keep the query to plain terms, "phrases", term~1 fuzzy or troll* wildcards.'],
+            error_suggestions=["Keep the query to plain terms, term~1 fuzzy or troll* wildcards."],
         )
     if offset < 0:
         mark_span_error(f"offset must be >= 0, got {offset}", error_type="validation")
@@ -138,9 +158,10 @@ def register_search_tool(mcp: FastMCP) -> None:
             "IMPORTANT: Transcriptions are AI-generated (HTR/OCR) and contain recognition errors — "
             "always use fuzzy search (~) to compensate for misread characters and increase hits.\n"
             "Query syntax: space-separated terms are ALL required (pest smitta = documents containing both); "
-            'wildcards (troll*), fuzzy (stockholm~1) and exact phrases ("Ostindiska kompaniet") work. '
+            "wildcards (troll*, st?ckholm) and fuzzy (stockholm~1) work. "
             "Boolean operators do NOT exist — AND/OR/NOT are matched as literal words and flood the results; "
-            "for OR-logic run one search per alternative. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
+            "for OR-logic run one search per alternative. Quoted phrases return 0 results on transcribed text — never quote. "
+            "Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
             "Paginate with offset (0, 50, 100...). Session dedup: re-calling returns stubs for already-seen documents."
         ),
     )
@@ -148,7 +169,7 @@ def register_search_tool(mcp: FastMCP) -> None:
         keyword: Annotated[
             str,
             Field(
-                description='Search terms — all terms must match (implicit AND). Wildcards (*), fuzzy (~) and "exact phrases" supported; AND/OR/NOT are NOT (use separate searches for OR).'
+                description="Search terms — all terms must match (implicit AND). Wildcards (*, ?) and fuzzy (~1) supported; AND/OR/NOT and quoted phrases are NOT (use separate searches for OR; quotes always yield 0 here)."
             ),
         ],
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
@@ -167,7 +188,7 @@ def register_search_tool(mcp: FastMCP) -> None:
         This tool searches only transcribed text (not metadata).
         For metadata search, use search_metadata instead.
         """
-        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort, limit)
+        validation_error = _validate_search_input(keyword, offset, year_min, year_max, sort, limit, transcribed=True)
         if validation_error:
             return validation_error
 
@@ -246,7 +267,8 @@ def register_search_tool(mcp: FastMCP) -> None:
             "Covers 2M+ records when only_digitised=False, including non-digitised materials. "
             "Use the dedicated name parameter for person searches and place parameter for place searches — these can be combined with keyword.\n"
             "Does NOT search transcribed page text — use search_transcribed for that. "
-            'Same query syntax as search_transcribed: all terms required, wildcards/fuzzy/"phrases" work, AND/OR/NOT do not. '
+            "Query syntax: all terms required (implicit AND), wildcards and fuzzy work, AND/OR/NOT do not. "
+            "Quotes match only reference codes (keyword='\"SE/RA/720660\"' lists an archive's volumes) — quoted title phrases return 0, use plain terms. "
             "Session dedup: re-calling returns stubs for already-seen documents.\n"
             "Important: name and place filter a dedicated metadata field that is sparsely populated. "
             "Most person/place matches are NOT digitised, so set only_digitised=False when using name or place to avoid empty results."
@@ -256,7 +278,7 @@ def register_search_tool(mcp: FastMCP) -> None:
         keyword: Annotated[
             str,
             Field(
-                description='Free-text search across all metadata fields — all terms must match. Wildcards (*), fuzzy (~) and "exact phrases" supported; AND/OR/NOT are NOT.'
+                description="Free-text search across all metadata fields — all terms must match. Wildcards (*) and fuzzy (~) supported; AND/OR/NOT are NOT. Quotes only for reference codes ('\"SE/RA/720660\"')."
             ),
         ],
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],

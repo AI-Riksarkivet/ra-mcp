@@ -137,12 +137,36 @@ def test_validate_search_input_accepts_space_separated_terms() -> None:
     assert _validate_search_input("pest smitta", offset=0, year_min=None, year_max=None) is None
 
 
+# Quoted phrases never match in transcribed search: "Venerisk smitta" occurs
+# verbatim and adjacent in SE/HLA/1070112/B/B I/2 page 392, yet
+# transcribed_text="venerisk smitta" (any casing) returns 0 while the unquoted
+# pair returns 34 (verified 2026-07-24). On the metadata field, quotes DO match
+# reference codes ("SE/RA/720660" → 48 child volumes) but not title phrases
+# ("Handlingar till brevdiariet" → 0 despite being a verbatim title).
+@pytest.mark.parametrize(
+    "keyword",
+    [
+        pytest.param('"venerisk smitta"', id="quoted-phrase"),
+        pytest.param('"SE/RA/720660"', id="quoted-reference-code"),
+    ],
+)
+def test_transcribed_rejects_quoted_keyword(keyword: str) -> None:
+    error = _validate_search_input(keyword, offset=0, year_min=None, year_max=None, transcribed=True)
+    assert error is not None
+    assert "quote" in error.lower()
+
+
+def test_metadata_accepts_quoted_reference_code() -> None:
+    assert _validate_search_input('"SE/RA/720660"', offset=0, year_min=None, year_max=None) is None
+
+
 def test_validate_search_input_rejects_reference_code_with_alternatives() -> None:
     error = _validate_search_input("SE/RA/25.3", offset=0, year_min=None, year_max=None)
     assert error is not None
     assert "browse_document" in error
-    # Must offer the quoted-phrase escape hatch, which does work against the API
+    # The quoted-code lookup only works in metadata search — the suggestion must say so
     assert '"SE/RA/25.3"' in error
+    assert "search_metadata" in error
 
 
 def test_validate_search_input_accepts_normal_keyword() -> None:

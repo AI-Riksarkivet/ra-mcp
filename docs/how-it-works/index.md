@@ -32,7 +32,7 @@ When you ask Claude *"Find documents about trolldom"*, the AI:
 
 ### search_transcribed
 
-Searches AI-transcribed text across millions of digitised historical document pages. Space-separated terms are all required (implicit AND); wildcards, fuzzy matching, exact phrases, and date filtering are supported (boolean operators are not — the API matches them as literal words).
+Searches AI-transcribed text across millions of digitised historical document pages. Space-separated terms are all required (implicit AND); wildcards, fuzzy matching, and date filtering are supported (boolean operators and quoted phrases are not — operators are matched as literal words, and quoted phrases always return 0 on transcribed text).
 
 **Example query flow:**
 

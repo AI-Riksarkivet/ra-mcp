@@ -20,7 +20,7 @@ than the modern region name:
 | You want… | Search instead for | Why |
 |-----------|--------------------|-----|
 | Dalarna | `Kopparbergs~1` | *Kopparbergs län*, used until 1997 |
-| Västra Götaland | `Skaraborgs`, `Älvsborgs`, `"Göteborgs och Bohus"` — one search each | Merged from three older *län* in 1998 |
+| Västra Götaland | `Skaraborgs`, `Älvsborgs`, `Bohus` — one search each | Merged from three older *län* in 1998 |
 | Skåne | `Malmöhus`, then `Kristianstads` | Merged in 1997 |
 
 Rough rule for administrative names: **before 1634** think *landskap*, **1634–1997**

@@ -6,14 +6,14 @@ Detailed parameter reference for all MCP tools provided by ra-mcp.
 
 ## search_transcribed
 
-Search AI-transcribed text in digitised historical documents from the Swedish National Archives. Space-separated terms are all required (implicit AND); wildcards, fuzzy and exact phrases are supported. Boolean operators (`AND`/`OR`/`NOT`) are **not** — the API matches them as literal words, so such queries are rejected with a corrective message.
+Search AI-transcribed text in digitised historical documents from the Swedish National Archives. Space-separated terms are all required (implicit AND); wildcards and fuzzy are supported. Boolean operators (`AND`/`OR`/`NOT`) and quoted phrases are **not** — operators are matched as literal words and quoted phrases always return 0 on transcribed text, so both are rejected with a corrective message.
 
 !!! warning "Transcriptions are AI-generated"
     All searchable text was produced by HTR (Handwritten Text Recognition) and OCR models. These transcriptions contain recognition errors — misread characters, merged or split words, and garbled passages are common. **Always use fuzzy search (`~`)** to compensate for errors and significantly increase hits. For example, `stockholm~1` instead of `Stockholm`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `keyword` | str | *(required)* | Search terms — all must match (implicit AND). Supports wildcards (`*`, `?`), fuzzy (`~1`), exact phrases (`"..."`). No `AND`/`OR`/`NOT`; for OR run separate searches. |
+| `keyword` | str | *(required)* | Search terms — all must match (implicit AND). Supports wildcards (`*`, `?`) and fuzzy (`~1`). No `AND`/`OR`/`NOT` and no quoted phrases; for OR run separate searches. |
 | `offset` | int | *(required)* | Pagination start position. Use 0 for first page, then 50, 100, etc. |
 | `limit` | int | 25 | Maximum documents to return per query. |
 | `sort` | str | `relevance` | Sort order: `relevance`, `timeAsc`, `timeDesc`, `alphaAsc`, `alphaDesc`. |

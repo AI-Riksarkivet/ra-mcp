@@ -35,7 +35,6 @@ Every syntax claim below is verified against the live API.
 |--------|---------|---------|
 | Single term | `Stockholm` | Find the word |
 | Several terms | `pest smitta` | ALL terms required in the same document (implicit AND) |
-| Exact phrase | `"Ostindiska kompaniet"` | Words adjacent, in this order |
 | Wildcard | `troll*`, `st?ckholm`, `*holm` | `*` = many chars, `?` = one char |
 | Fuzzy | `Stockholm~1` | Similar words (edit distance) |
 
@@ -47,9 +46,13 @@ Every syntax claim below is verified against the live API.
   33-document conjunction `pest smitta`. The server rejects such queries.
 - **OR-logic has no syntax at all.** Run one search per alternative term
   instead: search `troll*`, then `häx*`, and merge what you learn.
-- **Proximity `"a b"~10`.** The slop is not honored — the query behaves as the
-  exact phrase. Use plain multi-term search (`kyrka stöld` = both words
-  anywhere in the volume) or an exact phrase instead.
+- **Quoted phrases on transcribed text.** They always return 0 — even a phrase
+  that occurs verbatim and adjacent on a page ("Venerisk smitta") yields no
+  hits. Never quote in `search_transcribed`; use plain multi-term search
+  (`kyrka stöld` = both words anywhere in the volume). In `search_metadata`,
+  quotes work only for reference codes: `"SE/RA/720660"` lists an archive's
+  volumes, but quoted title phrases return 0.
+- **Proximity `"a b"~10`.** Not honored — returns 0 like any quoted phrase.
 - **Boosting (`term^4`).** Unverified; adds nothing. Leave it out.
 
 ## Transcription Quality — Why Fuzzy Search Matters

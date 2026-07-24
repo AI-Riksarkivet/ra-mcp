@@ -32,15 +32,15 @@ is not a full Solr/Lucene endpoint):
 |--------|---------|---------|
 | Exact term | `Stockholm` | Find exact word |
 | Several terms | `pest smitta` | All terms required in the same document (implicit AND) |
-| Exact phrase | `"Ostindiska kompaniet"` | Words adjacent, in this order |
 | Wildcard | `troll*`, `St?ckholm` | Pattern matching (`*` = many chars, `?` = one) |
 | Fuzzy | `Stockholm~1` | Similar words (edit distance) |
 
 Boolean operators (`AND`/`OR`/`NOT`) are **not supported** — the API matches
 them as literal words (`and` alone matches 1.6M volumes), so such queries are
 rejected with a corrective message. There is no OR syntax: run one search per
-alternative term instead. Proximity (`"a b"~10`) is not honored either; the
-query behaves as the exact phrase.
+alternative term instead. Quoted phrases and proximity (`"a b"~10`) always
+return 0 on transcribed text — even for a phrase that occurs verbatim on a
+page — so quoted queries are rejected too.
 
 !!! tip "Use fuzzy search for better results"
     Transcriptions are AI-generated (HTR/OCR) and contain recognition errors. Use fuzzy matching (`~1`) to catch misread characters: `stockholm~1` finds "Stockholm", "Stockholn", "Stookholm", etc.

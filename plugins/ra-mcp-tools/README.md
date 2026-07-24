@@ -14,7 +14,7 @@ Install via Claude Code:
 
 ### `/archive-search`
 
-Essential pre-search guide. Covers tool selection (`search_transcribed` vs `search_metadata`), the verified query syntax (implicit AND between terms, wildcards, fuzzy, exact phrases — no boolean operators), fuzzy matching for OCR/HTR errors, old Swedish spelling variants (präst/prest, silver/silfver), and pagination workflows.
+Essential pre-search guide. Covers tool selection (`search_transcribed` vs `search_metadata`), the verified query syntax (implicit AND between terms, wildcards, fuzzy — no boolean operators, no quoted phrases), fuzzy matching for OCR/HTR errors, old Swedish spelling variants (präst/prest, silver/silfver), and pagination workflows.
 
 **Trigger phrases**: search, find, look up, discover, query, search archives, find person, find place, trolldom, bouppteckning, dombok
 
