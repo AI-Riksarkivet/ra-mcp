@@ -47,6 +47,24 @@ def _looks_like_reference_code(keyword: str) -> bool:
     return bool(_REFERENCE_CODE_PATTERN.match(keyword.strip()))
 
 
+# The search API has no boolean parser: AND/OR/NOT are matched as literal words
+# ('and' alone matches 1.63M transcribed volumes — HTR noise plus names like
+# "And." for Anders — so 'pest AND smitta' degenerates to ~1.64M hits and a
+# multi-megabyte response; verified 2026-07-24: 'xyzzyqq AND smitta' → 1,642,572
+# while 'xyzzyqq' → 0). Space-separated terms already form a conjunction
+# ('pest smitta' = 33 = 'pest + smitta') and '|' is silently dropped, so OR can
+# only be expressed as separate searches. Only the uppercase operator idiom is
+# blocked: lowercase and/not are real Swedish words (duck, seine net). Quoted
+# phrases are exact literal searches, so operators inside quotes are harmless.
+_QUOTED_PHRASE_PATTERN = re.compile(r'"[^"]*"')
+_BOOLEAN_SYNTAX_PATTERN = re.compile(r"\b(?:AND|OR|NOT)\b|\|")
+
+
+def _looks_like_boolean_query(keyword: str) -> bool:
+    """Return True if the keyword uses boolean syntax the search API cannot parse."""
+    return bool(_BOOLEAN_SYNTAX_PATTERN.search(_QUOTED_PHRASE_PATTERN.sub(" ", keyword)))
+
+
 def _validate_search_input(keyword: str, offset: int, year_min: int | None, year_max: int | None, sort: str = "relevance", limit: int = 25) -> str | None:
     """Validate common search inputs. Returns an error string or None if valid."""
     if not keyword or not keyword.strip():
@@ -64,12 +82,23 @@ def _validate_search_input(keyword: str, offset: int, year_min: int | None, year
                 "To search by content instead, use plain keywords (e.g. a name, place, or subject)",
             ],
         )
+    if _looks_like_boolean_query(keyword):
+        mark_span_error("keyword uses unsupported boolean syntax", error_type="validation")
+        return PlainTextFormatter().format_error_message(
+            "The search API has no boolean operators: AND, OR, NOT and | are matched as literal words "
+            "('and' alone matches 1.6 million records), which floods the results with noise.",
+            error_suggestions=[
+                "Terms are combined automatically — keyword='pest smitta' requires BOTH words in a document",
+                "There is no OR: run separate searches instead, one per alternative term",
+                "Exact phrases in quotes (keyword='\"Ostindiska kompaniet\"'), fuzzy term~1 and wildcard troll* all work",
+            ],
+        )
     query_error = validate_search_query(keyword)
     if query_error:
         mark_span_error(query_error, error_type="validation")
         return PlainTextFormatter().format_error_message(
             query_error,
-            error_suggestions=["Group Boolean logic with matching parentheses, e.g. (Stockholm OR Göteborg), and pair every quote."],
+            error_suggestions=['Pair every quote character; keep the query to plain terms, "phrases", term~1 fuzzy or troll* wildcards.'],
         )
     if offset < 0:
         mark_span_error(f"offset must be >= 0, got {offset}", error_type="validation")
@@ -108,14 +137,19 @@ def register_search_tool(mcp: FastMCP) -> None:
             "Search AI-transcribed text in digitised historical documents from the Swedish National Archives. "
             "IMPORTANT: Transcriptions are AI-generated (HTR/OCR) and contain recognition errors — "
             "always use fuzzy search (~) to compensate for misread characters and increase hits.\n"
-            'Supports Solr syntax: wildcards (troll*), fuzzy (stockholm~1), Boolean ((A AND B)), proximity ("term1 term2"~10). '
-            "Always group Boolean queries with outer parentheses. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
+            "Query syntax: space-separated terms are ALL required (pest smitta = documents containing both); "
+            'wildcards (troll*), fuzzy (stockholm~1) and exact phrases ("Ostindiska kompaniet") work. '
+            "Boolean operators do NOT exist — AND/OR/NOT are matched as literal words and flood the results; "
+            "for OR-logic run one search per alternative. Use fuzzy (~) for OCR/HTR errors and old Swedish variants (präst/prest, silver/silfver).\n"
             "Paginate with offset (0, 50, 100...). Session dedup: re-calling returns stubs for already-seen documents."
         ),
     )
     async def search_transcribed(
         keyword: Annotated[
-            str, Field(description='Search term or Solr query. Supports wildcards (*), fuzzy (~), Boolean (AND/OR/NOT), proximity ("term1 term2"~N).')
+            str,
+            Field(
+                description='Search terms — all terms must match (implicit AND). Wildcards (*), fuzzy (~) and "exact phrases" supported; AND/OR/NOT are NOT (use separate searches for OR).'
+            ),
         ],
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
         limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,
@@ -212,13 +246,19 @@ def register_search_tool(mcp: FastMCP) -> None:
             "Covers 2M+ records when only_digitised=False, including non-digitised materials. "
             "Use the dedicated name parameter for person searches and place parameter for place searches — these can be combined with keyword.\n"
             "Does NOT search transcribed page text — use search_transcribed for that. "
-            "Same Solr syntax as search_transcribed. Session dedup: re-calling returns stubs for already-seen documents.\n"
+            'Same query syntax as search_transcribed: all terms required, wildcards/fuzzy/"phrases" work, AND/OR/NOT do not. '
+            "Session dedup: re-calling returns stubs for already-seen documents.\n"
             "Important: name and place filter a dedicated metadata field that is sparsely populated. "
             "Most person/place matches are NOT digitised, so set only_digitised=False when using name or place to avoid empty results."
         ),
     )
     async def search_metadata(
-        keyword: Annotated[str, Field(description="Free-text search across all metadata fields. Supports Solr syntax (wildcards, fuzzy, Boolean).")],
+        keyword: Annotated[
+            str,
+            Field(
+                description='Free-text search across all metadata fields — all terms must match. Wildcards (*), fuzzy (~) and "exact phrases" supported; AND/OR/NOT are NOT.'
+            ),
+        ],
         offset: Annotated[int, Field(description="Pagination start position. Use 0 for first page, then 50, 100, etc.")],
         only_digitised: Annotated[bool, Field(description="True = digitised materials only. False = all 2M+ records including non-digitised.")] = True,
         limit: Annotated[int, Field(description="Maximum documents to return per query.")] = 25,

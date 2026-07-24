@@ -3,7 +3,7 @@
 import pytest
 from fastmcp import Client
 
-from ra_mcp_search_mcp.search_tool import _looks_like_reference_code, _validate_search_input
+from ra_mcp_search_mcp.search_tool import _looks_like_boolean_query, _looks_like_reference_code, _validate_search_input
 from ra_mcp_search_mcp.tools import search_mcp
 
 
@@ -79,6 +79,62 @@ def test_reference_code_is_detected(keyword: str) -> None:
 )
 def test_normal_keyword_is_not_reference_code(keyword: str) -> None:
     assert _looks_like_reference_code(keyword) is False
+
+
+# The API has no boolean query parser: AND/OR/NOT are matched as literal words.
+# Verified against the live API (2026-07-24): 'xyzzyqq AND smitta' → 1,642,572
+# hits while 'xyzzyqq' alone → 0 ('and' alone matches 1.63M transcribed volumes
+# — HTR noise plus names like "And." for Anders). Space-separated terms are
+# already a conjunction ('pest smitta' = 33 = 'pest + smitta'), and '|' is
+# silently dropped, so there is no OR syntax at all — OR must become separate
+# searches. Wildcards (*), fuzzy (~N) and quoted phrases DO work.
+@pytest.mark.parametrize(
+    "keyword",
+    [
+        pytest.param("pest AND smitta", id="word-and"),
+        pytest.param("(pest~1 AND smitta~1)", id="word-and-fuzzy-parens"),
+        pytest.param("kaffe OR caffe", id="word-or"),
+        pytest.param("(häxprocess OR trolldomsmål)", id="word-or-parens"),
+        pytest.param("smitta NOT venerisk", id="word-not"),
+        pytest.param("pest | smitta", id="pipe"),
+    ],
+)
+def test_boolean_syntax_is_detected(keyword: str) -> None:
+    assert _looks_like_boolean_query(keyword) is True
+
+
+@pytest.mark.parametrize(
+    "keyword",
+    [
+        pytest.param("pest smitta", id="space-separated-conjunction"),
+        pytest.param("trolldom~1", id="fuzzy"),
+        pytest.param("trolldo*", id="wildcard"),
+        pytest.param('"pest smitta"', id="quoted-phrase"),
+        pytest.param('"pest AND smitta"', id="quoted-phrase-containing-operator"),
+        # Lowercase and/or/not are real Swedish words (and = duck, not = seine
+        # net) and must stay searchable; only the uppercase operator idiom is blocked.
+        pytest.param("and", id="lowercase-and-is-swedish"),
+        pytest.param("not", id="lowercase-not-is-swedish"),
+        pytest.param("Anders och Greta", id="swedish-conjunction"),
+        pytest.param("GRAND HOTEL", id="uppercase-word-containing-and"),
+        pytest.param("NOTARIUS PUBLICUS", id="uppercase-word-starting-with-not"),
+    ],
+)
+def test_normal_keyword_is_not_boolean_syntax(keyword: str) -> None:
+    assert _looks_like_boolean_query(keyword) is False
+
+
+def test_validate_search_input_rejects_boolean_query_with_alternatives() -> None:
+    error = _validate_search_input("pest AND smitta", offset=0, year_min=None, year_max=None)
+    assert error is not None
+    # Must teach the syntax that actually works: plain terms are ANDed already,
+    # and OR has to become separate searches.
+    assert "pest smitta" in error
+    assert "separate" in error.lower()
+
+
+def test_validate_search_input_accepts_space_separated_terms() -> None:
+    assert _validate_search_input("pest smitta", offset=0, year_min=None, year_max=None) is None
 
 
 def test_validate_search_input_rejects_reference_code_with_alternatives() -> None:
