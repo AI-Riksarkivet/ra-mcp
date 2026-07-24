@@ -5,7 +5,7 @@ Search transcribed historical documents.
 ```bash
 ra search "Stockholm"
 ra search "trolldom" --limit 50
-ra search "((Stockholm OR Göteborg) AND troll*)"
+ra search "Stockholm troll*"
 ra search "Stockholm" --text --include-all-materials
 ra search "Stockholm" --max-hits-per-vol 1 --limit 100
 ```
@@ -25,23 +25,26 @@ ra search "Stockholm" --max-hits-per-vol 1 --limit 100
 
 ## Search Syntax
 
-The search supports full Solr query syntax:
+The search API is a plain free-text engine (verified against the live API — it
+is not a full Solr/Lucene endpoint):
 
 | Syntax | Example | Meaning |
 |--------|---------|---------|
 | Exact term | `Stockholm` | Find exact word |
-| Wildcard | `troll*`, `St?ckholm` | Pattern matching |
+| Several terms | `pest smitta` | All terms required in the same document (implicit AND) |
+| Exact phrase | `"Ostindiska kompaniet"` | Words adjacent, in this order |
+| Wildcard | `troll*`, `St?ckholm` | Pattern matching (`*` = many chars, `?` = one) |
 | Fuzzy | `Stockholm~1` | Similar words (edit distance) |
-| Proximity | `"Stockholm trolldom"~10` | Two terms within N words |
-| Boolean AND | `(Stockholm AND trolldom)` | Both terms required |
-| Boolean OR | `(Stockholm OR Göteborg)` | Either term |
-| Boolean NOT | `(Stockholm NOT trolldom)` | Exclude term |
 
-Always wrap Boolean queries in parentheses: `((A OR B) AND C*)`.
+Boolean operators (`AND`/`OR`/`NOT`) are **not supported** — the API matches
+them as literal words (`and` alone matches 1.6M volumes), so such queries are
+rejected with a corrective message. There is no OR syntax: run one search per
+alternative term instead. Proximity (`"a b"~10`) is not honored either; the
+query behaves as the exact phrase.
 
 !!! tip "Use fuzzy search for better results"
     Transcriptions are AI-generated (HTR/OCR) and contain recognition errors. Use fuzzy matching (`~1`) to catch misread characters: `stockholm~1` finds "Stockholm", "Stockholn", "Stookholm", etc.
 
-Malformed queries (unbalanced parentheses or quotes, e.g. `(((`) are rejected with a clear message rather than silently returning unintended results.
+Malformed queries (unbalanced parentheses or quotes, e.g. `(((`) and boolean-operator queries are rejected with a clear message rather than silently returning unintended results.
 
 For historical place names and why fuzzy search matters so much on HTR text, see [Search Tips](../how-it-works/search-tips.md).

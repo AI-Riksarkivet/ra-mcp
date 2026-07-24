@@ -32,7 +32,7 @@ When you ask Claude *"Find documents about trolldom"*, the AI:
 
 ### search_transcribed
 
-Searches AI-transcribed text across millions of digitised historical document pages. Supports advanced Solr query syntax including wildcards, fuzzy matching, boolean operators, proximity searches, and date filtering.
+Searches AI-transcribed text across millions of digitised historical document pages. Space-separated terms are all required (implicit AND); wildcards, fuzzy matching, exact phrases, and date filtering are supported (boolean operators are not — the API matches them as literal words).
 
 **Example query flow:**
 

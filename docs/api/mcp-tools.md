@@ -8,8 +8,9 @@ end-user parameter documentation see the [Tools reference](../tools/tools.md).
 
 Source: [`packages/mcps/search-mcp/src/ra_mcp_search_mcp/search_tool.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/mcps/search-mcp/src/ra_mcp_search_mcp/search_tool.py)
 
-Registers `search_transcribed` (full-text over AI-transcribed pages, Solr
-syntax) and `search_metadata` (titles, names, places). Results are rendered by
+Registers `search_transcribed` (full-text over AI-transcribed pages; implicit
+AND between terms, wildcards/fuzzy/phrases, no boolean operators) and
+`search_metadata` (titles, names, places). Results are rendered by
 the package `PlainTextFormatter`
 ([`formatter.py`](https://github.com/AI-Riksarkivet/ra-mcp/blob/main/packages/mcps/search-mcp/src/ra_mcp_search_mcp/formatter.py)).
 

@@ -68,7 +68,7 @@ uv pip install "ra-mcp[cli,tui]"
 ```bash
 # Search transcribed documents
 ra search "trolldom"
-ra search "((Stockholm OR Göteborg) AND troll*)"
+ra search "Stockholm troll*"
 
 # Browse specific pages
 ra browse "SE/RA/310187/1" --pages "7,8,52" --search-term "trolldom"

@@ -20,8 +20,8 @@ than the modern region name:
 | You want… | Search instead for | Why |
 |-----------|--------------------|-----|
 | Dalarna | `Kopparbergs~1` | *Kopparbergs län*, used until 1997 |
-| Västra Götaland | `(Skaraborgs OR Älvsborgs OR "Göteborgs och Bohus")` | Merged from three older *län* in 1998 |
-| Skåne | `(Malmöhus OR Kristianstads)` | Merged in 1997 |
+| Västra Götaland | `Skaraborgs`, `Älvsborgs`, `"Göteborgs och Bohus"` — one search each | Merged from three older *län* in 1998 |
+| Skåne | `Malmöhus`, then `Kristianstads` | Merged in 1997 |
 
 Rough rule for administrative names: **before 1634** think *landskap*, **1634–1997**
 think *län*, **after 1997** think *regioner*. When in doubt, search the older name.
@@ -29,7 +29,7 @@ think *län*, **after 1997** think *regioner*. When in doubt, search the older n
 ## Use fuzzy search (`~1`) for HTR variants
 
 Because transcriptions are machine-read from old handwriting, an exact search
-misses every misread spelling. Adding `~1` (Solr fuzzy, edit-distance 1) catches
+misses every misread spelling. Adding `~1` (fuzzy match, edit-distance 1) catches
 them. For "Leksand", fuzzy search returns **~85% more hits** than exact:
 
 ```
@@ -58,15 +58,20 @@ Fuzzy search does admit some false positives (`lekande` = "playing", `lesande` =
 **default to `~1`** and skim; for precision, drop it.
 
 The same idea covers spelling reforms even without HTR error, e.g. `präst`/`prest`,
-`silver`/`silfver`. Group alternatives with Boolean when you know them:
-`(präst OR prest)`.
+`silver`/`silfver`. A single fuzzy or wildcard term often covers both (`präst~1`,
+`silf*`); otherwise run one search per variant — the API has no OR operator
+(`AND`/`OR`/`NOT` are matched as literal words and such queries are rejected).
 
 ## Combining the two
 
-The techniques stack. To sweep Dalarna church records broadly:
+The techniques stack: space-separated terms are all required (implicit AND), so
+add terms to narrow. To sweep Dalarna church records broadly, one search per
+region variant:
 
 ```bash
-ra search "(Kopparbergs~1 OR Dalarna) AND (kyrka~1 OR socken~1)"
+ra search "Kopparbergs~1 kyrka~1"
+ra search "Kopparbergs~1 socken~1"
+ra search "Dalarna kyrka~1"
 ```
 
 See [`ra search`](../cli/search.md) for the full flag reference, and

@@ -41,7 +41,7 @@ If you use ra-mcp on **claude.ai** (or any MCP client that isn't Claude Code), y
 
 ## /archive-search
 
-Essential pre-search guide — load before calling `search_transcribed` or `search_metadata`. Covers tool selection (`search_transcribed` vs `search_metadata`), search strategy, Solr query syntax, wildcards, fuzzy matching for OCR/HTR errors, old Swedish spelling variants (präst/prest, silver/silfver), proximity search, Boolean operators, and pagination workflows.
+Essential pre-search guide — load before calling `search_transcribed` or `search_metadata`. Covers tool selection (`search_transcribed` vs `search_metadata`), search strategy, the verified query syntax (implicit AND between terms, wildcards, fuzzy, exact phrases — no boolean operators), fuzzy matching for OCR/HTR errors, old Swedish spelling variants (präst/prest, silver/silfver), and pagination workflows.
 
 ## /archive-research
 

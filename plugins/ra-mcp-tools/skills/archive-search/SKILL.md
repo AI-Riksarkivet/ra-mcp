@@ -2,7 +2,7 @@
 name: archive-search
 description: >
   How to query the Riksarkivet search tools — load BEFORE calling
-  search_transcribed or search_metadata. Picks the right tool and builds Solr
+  search_transcribed or search_metadata. Picks the right tool and builds
   queries with the fuzzy, wildcard, and old-Swedish-spelling tactics that AI
   transcription errors demand.
   Use when the user wants to search, find, or look up documents, people, places,
@@ -19,12 +19,38 @@ Search strategy, syntax, and best practices for the Riksarkivet search tools
 
 | Research goal | Tool | Key params |
 |--------------|------|-----------|
-| Find text mentions in court records | search_transcribed | keyword (Solr syntax) |
+| Find text mentions in court records | search_transcribed | keyword |
 | Find a person by name | search_metadata | name="Svensson" |
 | Find documents from a place | search_metadata | place="Norrköping" |
 | Find documents by title/type | search_metadata | keyword="bouppteckning" |
 | Church records, estate inventories | search_metadata | keyword + place (not AI-transcribed) |
 | Read full page content | browse_document | reference_code, pages |
+
+## Query Syntax — What Actually Works
+
+The search API is a plain free-text engine, NOT a full Solr/Lucene endpoint.
+Every syntax claim below is verified against the live API.
+
+| Syntax | Example | Meaning |
+|--------|---------|---------|
+| Single term | `Stockholm` | Find the word |
+| Several terms | `pest smitta` | ALL terms required in the same document (implicit AND) |
+| Exact phrase | `"Ostindiska kompaniet"` | Words adjacent, in this order |
+| Wildcard | `troll*`, `st?ckholm`, `*holm` | `*` = many chars, `?` = one char |
+| Fuzzy | `Stockholm~1` | Similar words (edit distance) |
+
+**NOT supported — never use:**
+
+- **`AND` / `OR` / `NOT` / `|` / parentheses.** There is no boolean parser. The
+  words AND/OR/NOT are searched as literal text: `and` alone matches 1.6M
+  volumes, so `pest AND smitta` returns ~1.64M junk hits instead of the
+  33-document conjunction `pest smitta`. The server rejects such queries.
+- **OR-logic has no syntax at all.** Run one search per alternative term
+  instead: search `troll*`, then `häx*`, and merge what you learn.
+- **Proximity `"a b"~10`.** The slop is not honored — the query behaves as the
+  exact phrase. Use plain multi-term search (`kyrka stöld` = both words
+  anywhere in the volume) or an exact phrase instead.
+- **Boosting (`term^4`).** Unverified; adds nothing. Leave it out.
 
 ## Transcription Quality — Why Fuzzy Search Matters
 
@@ -42,130 +68,47 @@ Without fuzzy search, you will **miss many relevant results** because the transc
 of the exact word you're looking for may contain errors.
 
 **Rule of thumb**: Use `~1` (edit distance 1) for short words, `~2` for longer words or
-very old/damaged documents. Combine with wildcards for maximum coverage:
-`(troll*~1 OR häx*~1)`.
+very old/damaged documents. For stem variants use a wildcard instead: `troll*`.
 
 ## Search Strategy for Maximum Discovery
 
 1. **Start with transcribed text**: `search_transcribed(keyword, offset=0)` for initial hits
 2. **Check metadata too**: `search_metadata` to find documents by title, person, or place
 3. **Paginate**: Increase offset by 50 (50, 100, 150...) to discover more matches
-4. **Explore related terms**: Search for similar/related words to gather comprehensive context
-   - Historical variants and spellings (e.g., "trolldom" + "häxa" + "trollkona")
-   - Synonyms and related concepts (e.g., "satan" + "djäfvul" for devil-related terms)
-   - Different word forms (e.g., "trolleri" + "trollkonst" for witchcraft variants)
+4. **Explore related terms — one search each** (this replaces OR):
+   - Historical variants and spellings (e.g., "trolldom", then "häxa", then "trollkona")
+   - Synonyms and related concepts (e.g., "satan", then "djäfvul" for devil-related terms)
+   - Different word forms (e.g., "trolleri", then "trollkonst")
    - Period-appropriate terminology and archaic spellings
-5. **Drill down**: Note reference codes and page numbers from results, then use `browse_document` to examine interesting matches in full
-
-## Critical Search Rules
-
-- **Always group Boolean queries** with parentheses:
-  `((skatt* OR guld*) AND (stöld* OR stul*))` — omitting outer parens returns 0 results
-- **Use fuzzy search for AI transcription errors**: All text is AI-generated and contains recognition errors.
-  `((stöld~2 OR tjufnad~2) AND (silver* OR guld*))` catches misreads and misspellings
-- **Account for old Swedish spelling**: Historical documents use archaic forms.
-  `(((präst* OR prest*) OR (kyrko* OR kyrck*)) AND ((silver* OR silfv*) OR (guld* OR gull*)))`
-
-## Search Syntax Quick Reference
-
-| Syntax | Example | Meaning |
-|--------|---------|---------|
-| Exact term | `Stockholm` | Find exact word |
-| Wildcard | `Stock*`, `St?ckholm`, `*holm` | Match patterns (* = many chars, ? = one) |
-| Fuzzy | `Stockholm~` or `Stockholm~1` | Similar words (edit distance) |
-| Proximity | `"Stockholm trolldom"~10` | Two terms within N words |
-| Boolean AND | `(Stockholm AND trolldom)` | Both terms required |
-| Boolean OR | `(Stockholm OR Göteborg)` | Either term |
-| Boolean NOT | `(Stockholm NOT trolldom)` | Exclude term |
-| Boosting | `Stockholm^4 trol*` | Increase relevance weight |
-| Complex | `((troll* OR häx*) AND (Stockholm OR Göteborg))` | Combine operators |
+5. **Narrow with more terms**: adding a word tightens the search — `pest smitta`
+   returns only documents containing both
+6. **Drill down**: Note reference codes and page numbers from results, then use
+   `browse_document` to examine interesting matches in full
 
 ## Old Swedish Spelling Variants
 
-Common spelling pairs to search for — always try both modern and archaic forms:
+Common spelling pairs to search for — always try both modern and archaic forms
+(as separate searches, or covered by one wildcard/fuzzy term):
 
-| Modern | Archaic / Variant | Context |
-|--------|-------------------|---------|
-| präst | prest | Priest |
-| silver | silfver, silfv | Silver |
-| guld | gull | Gold |
-| kyrka | kyrcka, kyrck | Church |
-| kvinna | qvinna, qwinna | Woman |
-| stöld | stöld, tiufnad, tjufnad | Theft |
-| häxa | häxa, hexa | Witch |
-| trolldom | trolldom, trulldom | Witchcraft |
-| djävul | djäfvul, diefvul | Devil |
-| ä | æ, e | Vowel variant |
-| ö | ø, o | Vowel variant |
-| v | f, fv, w | Consonant variant |
-| k | ck, c | Consonant variant |
+| Modern | Archaic / Variant | Covered by |
+|--------|-------------------|-----------|
+| präst | prest | `pr?st` or `präst~1` |
+| silver | silfver, silfv | `sil*er` or `silf*` |
+| guld | gull | `gul*` |
+| kyrka | kyrcka, kyrck | `kyrk*` or `kyrck*` |
+| kvinna | qvinna, qwinna | `q*inna` or `kvinna~1` |
+| stöld | tiufnad, tjufnad | separate searches |
+| häxa | hexa | `h?xa` |
+| trolldom | trulldom | `tr?lldom` |
+| djävul | djäfvul, diefvul | `dj?f*` + separate searches |
 
-## Proximity Search
-
-Proximity search finds two terms within a specified word distance of each other.
-
-### Rules
-
-- Always wrap both terms in quotes: `"term1 term2"~N` (correct) vs `term1 term2~N` (wrong)
-- Only 2 terms work reliably: `"kyrka stöld"~10` (correct) vs `"kyrka silver stöld"~10` (unreliable)
-- Distance: `~3` = tight, `~10` = paragraph-level, `~50` = page-level
-
-### Working Examples
-
-**Crime & Punishment:**
-```
-"tredje stöld"~5           # Third-time theft
-"dömd hänga"~10            # Sentenced to hang
-"inbrott natt*"~5          # Burglary at night
-"kyrka stöld"~10           # Church theft
-```
-
-**Values & Items:**
-```
-"hundra daler"~3           # Hundred dalers
-"stor* stöld*"~5           # Major theft
-"guld* ring*"~10           # Gold ring
-"silver* kalk*"~10         # Silver chalice
-```
-
-**Complex Combinations** (Boolean outside quotes):
-```
-("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*
-("inbrott natt*"~5) AND (guld* OR silver*)
-("första resan" AND stöld*) OR ("tredje stöld"~5)
-```
-
-### Troubleshooting
-
-If proximity search returns no results:
-1. **Check your quotes** — must wrap both terms in `"..."`
-2. **Reduce to 2 terms** — drop extra words from the phrase
-3. **Try exact terms first** — before adding wildcards
-4. **Increase distance** — try `~10` instead of `~3`
-5. **Simplify wildcards** — use wildcard on one term only
-
-### Reliability by Pattern
-
-| Pattern | Example | Reliability |
-|---------|---------|-------------|
-| Exact + Exact | `"hundra daler"~3` | Most reliable |
-| Exact + Wildcard | `"inbrott natt*"~5` | Reliable |
-| Wildcard + Wildcard | `"stor* stöld*"~5` | Sometimes works |
-
-### Layering Strategy
-
-Build from simple to complex, verifying results at each step:
-```
-Step 1: "kyrka stöld"~10
-Step 2: ("kyrka stöld"~10 OR "kyrka tjuv*"~10)
-Step 3: (("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*)
-Step 4: (("kyrka stöld"~10 OR "kyrka tjuv*"~10) AND 17*) AND (guld* OR silver*)
-```
+General letter drift: ä↔æ/e, ö↔ø/o, v↔f/fv/w, k↔ck/c — `?` and `~1` absorb most of it.
 
 ## Best Practices
 
 - **Wildcards for word variations**: `troll*` finds "trolldom", "trolleri", "trollkona"
 - **Fuzzy for AI transcription errors**: `Stockholm~1` catches HTR/OCR misreads
+- **Multi-term to require co-occurrence**: `kyrka stöld silver` = volumes containing all three
 - **Year filtering**: Use `year_min`/`year_max` to narrow time periods
 - **Sorting**: `sort="timeAsc"` for earliest mentions, `sort="timeDesc"` for most recent
 - **Metadata search**: Use dedicated `name` and `place` parameters in `search_metadata`
