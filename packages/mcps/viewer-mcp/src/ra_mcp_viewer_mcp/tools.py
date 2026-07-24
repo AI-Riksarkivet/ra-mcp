@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
@@ -30,7 +31,29 @@ RESOURCE_URI = "ui://document-viewer/mcp-app.html"
 # Declaring them lets the browser fetch size-bounded IIIF images directly rather
 # than the server proxying full-resolution scans as base64 (MCP Apps external-URL
 # delivery — see fetchers.build_page_data / load_thumbnails).
-_VIEWER_CSP = ResourceCSP(resource_domains=["https://lbiiif.riksarkivet.se", "https://sok.riksarkivet.se"])
+# Beyond the Riksarkivet hosts, the defaults cover partner archives whose records
+# (reached e.g. via Archives Portal Europe) expose IIIF manifests or direct images
+# that view_manifest / view_document_urls can already display.
+_DEFAULT_RESOURCE_DOMAINS = [
+    "https://lbiiif.riksarkivet.se",
+    "https://sok.riksarkivet.se",
+    "https://access.iisg.amsterdam",  # IISG Amsterdam (IIIF)
+    "https://service.archief.nl",  # Nationaal Archief NL (direct images)
+    "https://www.e-manuscripta.ch",  # ETH Zürich via e-manuscripta (IIIF)
+    "https://www.swiss-archives.ch",  # Swiss Federal Archives (direct images)
+    "https://images.memorix.nl",  # Picturae Memorix (Regionaal Archief Tilburg a.o.)
+    "https://query.an.etat.lu",  # Archives nationales de Luxembourg (direct images)
+]
+
+
+def _viewer_resource_domains() -> list[str]:
+    """Default image-host allowlist, extendable via RA_MCP_VIEWER_RESOURCE_DOMAINS
+    (comma-separated origins) without a code change."""
+    extra = [d.strip() for d in os.environ.get("RA_MCP_VIEWER_RESOURCE_DOMAINS", "").split(",")]
+    return _DEFAULT_RESOURCE_DOMAINS + [d for d in extra if d and d not in _DEFAULT_RESOURCE_DOMAINS]
+
+
+_VIEWER_CSP = ResourceCSP(resource_domains=_viewer_resource_domains())
 
 
 @mcp.tool(

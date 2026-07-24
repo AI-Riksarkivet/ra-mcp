@@ -624,3 +624,36 @@ async def test_search_all_pages_case_insensitive(mock_fetchers):
 
     assert result_lower.structured_content["totalMatches"] == result_upper.structured_content["totalMatches"]
     assert result_lower.structured_content["totalMatches"] > 0
+
+
+# -- CSP resource domains --
+
+
+def test_viewer_resource_domains_defaults_include_ra_and_partner_hosts():
+    from ra_mcp_viewer_mcp.tools import _viewer_resource_domains
+
+    domains = _viewer_resource_domains()
+    assert "https://lbiiif.riksarkivet.se" in domains
+    assert "https://sok.riksarkivet.se" in domains
+    # Partner IIIF/image hosts reachable from APE records
+    assert "https://access.iisg.amsterdam" in domains
+    assert "https://service.archief.nl" in domains
+
+
+def test_viewer_resource_domains_extends_from_env(monkeypatch):
+    from ra_mcp_viewer_mcp.tools import _viewer_resource_domains
+
+    monkeypatch.setenv("RA_MCP_VIEWER_RESOURCE_DOMAINS", "https://iiif.example.org, https://img.other.eu")
+    domains = _viewer_resource_domains()
+    assert "https://iiif.example.org" in domains
+    assert "https://img.other.eu" in domains
+    assert "https://lbiiif.riksarkivet.se" in domains
+
+
+def test_viewer_resource_domains_ignores_blank_env_entries(monkeypatch):
+    from ra_mcp_viewer_mcp.tools import _viewer_resource_domains
+
+    monkeypatch.setenv("RA_MCP_VIEWER_RESOURCE_DOMAINS", " ,, https://iiif.example.org ,")
+    domains = _viewer_resource_domains()
+    assert "https://iiif.example.org" in domains
+    assert "" not in domains
