@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/glama%2FAI-Riksarkivet%2Foxenstierna.svg)](https://mcptoplist.com/server/glama%2FAI-Riksarkivet%2Foxenstierna)
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/AI-Riksarkivet/ra-mcp/main/docs/assets/logo-rm-bg.png" alt="RA-MCP Logo" width="350">
 </div>
