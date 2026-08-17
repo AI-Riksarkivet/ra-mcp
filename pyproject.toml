@@ -24,11 +24,11 @@ dependencies = [
     "ra-mcp-wincars-mcp",
     "ra-mcp-sj-mcp",
     "ra-mcp-tora-mcp",
-    "starlette>=1.4.1",
+    "starlette>=1.6.0",
     "opentelemetry-sdk>=1.44.0",
     "opentelemetry-exporter-otlp>=1.44.0",
     "cryptography>=50.0.0",
-    "fastmcp==3.4.6",
+    "fastmcp==3.4.7",
     "requests>=2.34.2",
     "py-key-value-aio[disk]>=0.4.5",
 ]
@@ -88,7 +88,7 @@ dev = [
     "Pygments>=2.20.0",
 ]
 docs = [
-    "zensical>=0.0.53",
+    "zensical>=0.0.54",
     # NOTE: mkdocstrings autodoc is intentionally not used — zensical 0.0.23's
     # compat bridge crashes on `:::` blocks and aborts the whole build. The API
     # pages under docs/api/ are hand-curated instead. See zensical.toml.
