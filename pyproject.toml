@@ -27,7 +27,7 @@ dependencies = [
     "starlette>=1.3.1",
     "opentelemetry-sdk>=1.43.0",
     "opentelemetry-exporter-otlp>=1.43.0",
-    "cryptography>=49.0.0",
+    "cryptography>=50.0.0",
     "fastmcp==3.4.4",
     "requests>=2.34.2",
     "py-key-value-aio[disk]>=0.4.5",
