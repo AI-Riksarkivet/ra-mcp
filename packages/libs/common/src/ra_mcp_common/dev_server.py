@@ -10,14 +10,26 @@ from __future__ import annotations
 
 import argparse
 import os
-from typing import Protocol
+from typing import Literal, Protocol
 
 
 class _RunnableServer(Protocol):
     """The FastMCP-style ``run()`` surface this entrypoint needs (kept structural
-    so ``ra_mcp_common`` stays fastmcp-free)."""
+    so ``ra_mcp_common`` stays fastmcp-free).
 
-    def run(self, **kwargs: object) -> None: ...
+    Parameters are spelled out rather than folded into ``**kwargs``: fastmcp >= 3.4.7
+    types ``transport`` as a ``Literal`` of transport names, so a protocol taking
+    ``**kwargs: object`` is no longer satisfiable by ``FastMCP.run``.
+    """
+
+    def run(
+        self,
+        transport: Literal["stdio", "streamable-http"] | None = None,
+        *,
+        host: str = ...,
+        port: int = ...,
+        path: str = ...,
+    ) -> None: ...
 
 
 def run_dev_server(mcp: _RunnableServer, *, description: str, default_port: int) -> None:
