@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "^1.7.4",
-    "pdfjs-dist": "^6.1.200",
+    "pdfjs-dist": "^6.2.108",
     "svelte": "^5.56.4"
   },
   "devDependencies": {

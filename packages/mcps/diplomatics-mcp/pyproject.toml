@@ -14,7 +14,7 @@ license = "Apache-2.0"
 dependencies = [
     "ra-mcp-diplomatics-lib",
     "ra-mcp-viewer-mcp",
-    "fastmcp==3.4.4",
+    "fastmcp==3.4.7",
 ]
 
 [tool.uv.sources]

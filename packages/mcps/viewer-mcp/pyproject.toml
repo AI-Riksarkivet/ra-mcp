@@ -5,7 +5,7 @@ description = "Riksarkivet Document Viewer - Interactive annotation visualizatio
 requires-python = ">=3.13"
 dependencies = [
     "httpx[http2]>=0.28.0",
-    "fastmcp==3.4.4",
+    "fastmcp==3.4.7",
     "py-key-value-aio[memory]>=0.4.4",
     "ra-mcp-browse-lib",
     "ra-mcp-iiif-lib",
