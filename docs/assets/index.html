@@ -88,7 +88,7 @@
     <div class="logo">
       <img class="logo-svg" src="https://github.com/AI-Riksarkivet/ra-mcp/blob/main/docs/assets/ra.svg?raw=true" alt="Swedish Crown">
       <h1 class="logo-text">RA-MCP</h1>
-      <p class="muted">Access transcribed historical documents from the Swedish National Archives</p>
+      <p class="muted">Search transcribed documents, catalogue metadata and historical registers from the Swedish National Archives</p>
     </div>
 
     <section class="card">
@@ -111,16 +111,72 @@
 
     <section class="card">
       <h2>Tools</h2>
+      <p class="muted">Grouped by source. Every tool returns results as text/markdown; viewer tools also open an interactive app in supporting clients.</p>
+
+      <h3>Transcriptions &amp; catalogue</h3>
       <ul>
-        <li><code>search_transcribed</code> &mdash; Full-text search across digitised documents</li>
-        <li><code>search_metadata</code> &mdash; Search titles, names, and places</li>
-        <li><code>browse_document</code> &mdash; View page transcriptions by reference code</li>
+        <li><code>search_transcribed</code> &mdash; Full-text search in AI-transcribed (HTR/OCR) documents</li>
+        <li><code>search_metadata</code> &mdash; Search titles, names, places and descriptions in the catalogue (2M+ records)</li>
+        <li><code>browse_document</code> &mdash; Read page transcriptions by reference code</li>
       </ul>
+
+      <h3>Document viewer</h3>
+      <ul>
+        <li><code>view_document</code> / <code>view_document_urls</code> / <code>view_manifest</code> / <code>view_bild</code> &mdash; Open pages with zoomable images and text-layer overlays (by reference code, raw URLs, IIIF manifest, or bild_id)</li>
+        <li><code>viewer_navigate</code> / <code>viewer_navigate_urls</code> / <code>viewer_go_to_page</code> / <code>viewer_set_highlight</code> / <code>viewer_reopen</code> &mdash; Drive an already-open viewer</li>
+      </ul>
+
+      <h3>PDF guides</h3>
+      <ul>
+        <li><code>search_guides</code> &mdash; Search all Riksarkivet PDF guides at once</li>
+        <li><code>list_pdfs</code> / <code>display_pdf</code> / <code>search_pdf</code> / <code>read_pdf_page</code> / <code>pdf_go_to_page</code> / <code>pdf_set_search</code> &mdash; Open, search and read a PDF in the interactive viewer</li>
+      </ul>
+
+      <h3>Biography &amp; medieval sources</h3>
+      <ul>
+        <li><code>search_sbl</code> / <code>view_sbl_article</code> &mdash; Svenskt biografiskt lexikon (9,400+ articles)</li>
+        <li><code>diplomatics_search_sdhk</code> &mdash; SDHK medieval charters before 1540 (44,000+)</li>
+        <li><code>diplomatics_search_mpo</code> &mdash; MPO medieval parchment fragments (23,000+)</li>
+      </ul>
+
+      <h3>People registers</h3>
+      <ul>
+        <li><code>dds_search_fodelse</code> / <code>dds_search_vigsel</code> / <code>dds_search_doda</code> &mdash; Church records: births, marriages, deaths (2.5M records, 1600s&ndash;1951)</li>
+        <li><code>court_search_domboksregister</code> / <code>court_search_medelstad</code> &mdash; Court records 1611&ndash;1750</li>
+        <li><code>sjomanshus_search_liggare</code> / <code>sjomanshus_search_matrikel</code> &mdash; Seamen's voyages and registrations</li>
+        <li><code>aktiebolag_search_bolag</code> / <code>aktiebolag_search_styrelse</code> &mdash; Joint-stock companies and board members 1901&ndash;1935</li>
+        <li><code>faltjagare_search_faltjagare</code> &mdash; Jämtland field regiment soldiers 1645&ndash;1901</li>
+        <li><code>suffrage_search_rostratt</code> / <code>suffrage_search_fkpr</code> &mdash; Women's suffrage petition 1913&ndash;1914 and FKPR members</li>
+      </ul>
+
+      <h3>Places, vehicles &amp; infrastructure</h3>
+      <ul>
+        <li><code>tora_search_tora</code> &mdash; Geocode historical places (51,000 settlements, WGS84)</li>
+        <li><code>rosenberg_search_rosenberg</code> &mdash; Rosenberg's geographical lexicon (66,000 places)</li>
+        <li><code>wincars_search_wincars</code> &mdash; Norrland vehicle register 1916&ndash;1972 (1.5M vehicles)</li>
+        <li><code>sj_search_juda</code> / <code>sj_search_ritningar</code> &mdash; SJ railway properties and technical drawings</li>
+      </ul>
+
+      <h3>Special collections</h3>
+      <ul>
+        <li><code>filmcensur_search_filmreg</code> &mdash; Film censorship records 1911&ndash;2011 (60,000 films)</li>
+        <li><code>specialsok_search_fangrullor</code> &mdash; Östersund prison records 1810&ndash;1900</li>
+        <li><code>specialsok_search_flygvapen</code> &mdash; Military aviation accidents 1912&ndash;2007</li>
+        <li><code>specialsok_search_kurhuset</code> &mdash; Hospital patient records 1817&ndash;1866</li>
+        <li><code>specialsok_search_press</code> &mdash; Government press conferences 1993&ndash;2017</li>
+        <li><code>specialsok_search_video</code> &mdash; Video rental stores 1991&ndash;1994</li>
+      </ul>
+
+      <p class="muted">The viewers also expose internal helpers (<code>load_page</code>, <code>load_thumbnails</code>, <code>search_all_pages</code>, <code>get_page_blocks</code>, <code>get_viewer_state</code>, <code>read_pdf_bytes</code>, <code>get_pdf_state</code>, <code>load_sbl_article</code>, <code>get_sbl_state</code>) used by the embedded apps, not meant to be called directly.</p>
+
       <div>
         <span class="badge">Full-text search</span>
-        <span class="badge">ALTO XML</span>
+        <span class="badge">Catalogue metadata</span>
         <span class="badge">IIIF images</span>
-        <span class="badge">Solr syntax</span>
+        <span class="badge">Interactive viewers</span>
+        <span class="badge">Church &amp; court records</span>
+        <span class="badge">Medieval charters</span>
+        <span class="badge">Geocoding</span>
       </div>
     </section>
 
