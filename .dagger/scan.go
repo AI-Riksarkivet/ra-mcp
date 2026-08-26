@@ -253,10 +253,12 @@ func (m *RaMcp) ExtractProvenanceAttestation(
 		fullRef = "docker.io/" + imageRef
 	}
 
-	// Get crane binary
+	// Get crane binary. Pinned: upstream moved the binary from /ko-app/crane
+	// to /crane when they stopped building the image with ko (v0.21+), which
+	// broke this step on ":latest".
 	craneBinary := dag.Container().
-		From("gcr.io/go-containerregistry/crane:latest").
-		File("/ko-app/crane")
+		From("gcr.io/go-containerregistry/crane:v0.22.0").
+		File("/crane")
 
 	// Use crane and jq to extract provenance from BuildKit attestations
 	extractContainer := dag.Container().
