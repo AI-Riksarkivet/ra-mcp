@@ -13,6 +13,7 @@ The core modules connect to several Riksarkivet APIs:
 | **IIIF** | `lbiiif.riksarkivet.se` | High-resolution document images and collection manifests |
 | **OAI-PMH** | `oai-pmh.riksarkivet.se/OAI` | Document metadata and collection structure |
 | **Bildvisaren** | `sok.riksarkivet.se/bildvisning` | Interactive image viewer (links provided in results) |
+| **TORA SPARQL** (`tora` module) | `tora.entryscape.net/store/sparql` | Geocode historical places — 51K settlements with WGS84 coordinates (`search_tora`) |
 
 Most of this data comes from the [Riksarkivet Data Platform](https://github.com/Riksarkivet/dataplattform/wiki), which hosts AI-transcribed materials from the Swedish National Archives. HTR re-transcription is delegated to the [HTRflow](https://pypi.org/project/htrflow/) Gradio Space.
 
@@ -37,7 +38,6 @@ The optional dataset modules query **local LanceDB tables** rather than a live A
 | **DDS church records** (`dds`) | ~2.5M births, deaths, marriages (1600s–1900s) | `search_fodelse`, `search_doda`, `search_vigsel` |
 | **Wincars** (`wincars`) | Norrland vehicle registrations 1916–1972 (~1.5M across 5 counties) | `search_wincars` |
 | **SJ railway** (`sj`) | Properties (198K JUDA) and technical drawings (118K FIRA/SIRA) | `search_juda`, `search_ritningar` |
-| **TORA** (`tora`) | 51K settlements with coordinates (historical-place geocoding) | `search_tora` |
 
 In addition, the optional `label` module is not a dataset but an integration that imports pages to a Label Studio instance for human annotation (`import_to_label_studio`).
 
