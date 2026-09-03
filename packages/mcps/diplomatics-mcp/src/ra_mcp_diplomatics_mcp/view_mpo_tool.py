@@ -33,7 +33,8 @@ def register_view_mpo_tool(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="view_mpo",
-        tags={"diplomatics", "mpo", "viewer"},
+        tags={"mpo", "viewer"},
+        title="View MPO parchment fragment",
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "View an MPO parchment fragment in the document viewer with full codicological metadata. "

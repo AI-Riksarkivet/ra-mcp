@@ -34,6 +34,7 @@ def register_view_sdhk_tool(mcp: FastMCP) -> None:
     @mcp.tool(
         name="view_sdhk",
         tags={"diplomatics", "sdhk", "viewer"},
+        title="View SDHK medieval charter",
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "View a digitized SDHK charter in the document viewer with full metadata. "
