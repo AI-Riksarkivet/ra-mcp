@@ -25,6 +25,7 @@ def register_sdhk_tool(mcp: FastMCP) -> None:
     @mcp.tool(
         name="search_sdhk",
         tags={"diplomatics", "sdhk", "search"},
+        title="Search SDHK medieval charters",
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search SDHK (Diplomatarium Suecanum) — 44,000+ medieval Swedish charters dated before 1540. "
