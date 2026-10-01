@@ -28,7 +28,7 @@ dependencies = [
     "opentelemetry-sdk>=1.44.0",
     "opentelemetry-exporter-otlp>=1.44.0",
     "cryptography>=50.0.0",
-    "fastmcp==3.4.7",
+    "fastmcp==4.0.9",
     "requests>=2.34.2",
     "py-key-value-aio[disk]>=0.4.5",
 ]
