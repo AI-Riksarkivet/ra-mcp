@@ -1,0 +1,14 @@
+# Keep local build artifacts out of the image build context. The production stage
+# copies packages/ wholesale, so without this a local `make build-ui` (which leaves
+# node_modules under packages/mcps/*-mcp) ships every npm dependency, dev ones
+# included, into the final image. Tracked dist/ bundles (sbl-mcp) stay in.
+.git
+.claude/worktrees
+.dagger
+**/.venv
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+*.log
