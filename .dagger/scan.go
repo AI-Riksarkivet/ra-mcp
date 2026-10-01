@@ -253,12 +253,20 @@ func (m *RaMcp) ExtractProvenanceAttestation(
 		fullRef = "docker.io/" + imageRef
 	}
 
-	// Get crane binary. Pinned: upstream moved the binary from /ko-app/crane
-	// to /crane when they stopped building the image with ko (v0.21+), which
-	// broke this step on ":latest".
-	craneBinary := dag.Container().
-		From("gcr.io/go-containerregistry/crane:v0.22.0").
-		File("/crane")
+	// Get the crane binary. The tag is pinned, and the binary's path is read from
+	// the image's own entrypoint rather than hardcoded: upstream has shipped it
+	// both as /ko-app/crane (ko builds, which is what v0.22.0 resolves to today)
+	// and as /crane, and a wrong guess fails the whole publish job after the
+	// image is already pushed (v0.17.3 and v0.17.4 both hit this).
+	craneImage := dag.Container().From("gcr.io/go-containerregistry/crane:v0.22.0")
+	entrypoint, err := craneImage.Entrypoint(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("read crane image entrypoint: %w", err)
+	}
+	if len(entrypoint) == 0 {
+		return nil, fmt.Errorf("crane image has no entrypoint, cannot locate the binary")
+	}
+	craneBinary := craneImage.File(entrypoint[0])
 
 	// Use crane and jq to extract provenance from BuildKit attestations
 	extractContainer := dag.Container().
@@ -300,8 +308,7 @@ echo "Provenance extracted successfully"
 	provenanceFile := extractContainer.File("/provenance.intoto.jsonl")
 
 	// Export to output path
-	_, err := provenanceFile.Export(ctx, outputPath)
-	if err != nil {
+	if _, err = provenanceFile.Export(ctx, outputPath); err != nil {
 		return nil, fmt.Errorf("failed to export provenance: %w", err)
 	}
 
