@@ -62,6 +62,10 @@ members = [
     "ra-mcp-wincars-mcp",
     "ra-mcp-xml",
 ]
+constraints = [
+    { name = "pyjwt", specifier = ">=2.15.1" },
+    { name = "urllib3", specifier = ">=2.8.0" },
+]
 
 [[package]]
 name = "aiofile"
