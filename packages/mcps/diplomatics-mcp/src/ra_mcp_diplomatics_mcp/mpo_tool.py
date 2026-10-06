@@ -24,7 +24,8 @@ def register_mpo_tool(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="search_mpo",
-        tags={"diplomatics", "mpo", "search"},
+        tags={"mpo", "search"},
+        title="Search MPO parchment fragments",
         annotations={"readOnlyHint": True, "openWorldHint": True},
         description=(
             "Search MPO (Medeltida Pergamentomslag) — 23,000+ medieval parchment fragments used as bookbinding covers. "
