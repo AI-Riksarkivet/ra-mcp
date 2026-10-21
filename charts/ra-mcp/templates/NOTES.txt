@@ -18,4 +18,4 @@ ra-mcp has been deployed!
 {{- end }}
 
 2. Connect Claude Code to the MCP server:
-  claude mcp add --transport sse ra-mcp http://127.0.0.1:{{ .Values.service.port }}/sse
+  claude mcp add --transport http ra-mcp http://127.0.0.1:{{ .Values.service.port }}/mcp
