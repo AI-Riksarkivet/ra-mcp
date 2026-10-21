@@ -19,6 +19,10 @@ describe("parsePolygonPoints", () => {
   it("tolerates extra whitespace and skips malformed pairs", () => {
     expect(parsePolygonPoints("  10,20   bad 30,40  ")).toEqual([10, 20, 30, 40]);
   });
+
+  it("skips a lone number with no y coordinate", () => {
+    expect(parsePolygonPoints("10,20 30 40,50")).toEqual([10, 20, 40, 50]);
+  });
 });
 
 describe("pointInPolygon", () => {
