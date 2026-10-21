@@ -27,7 +27,7 @@ export function resizeHandle(
     dragging = true;
     dragStartX = e.clientX;
     // Read the parent's computed content width (matches the style:width prop)
-    dragStartWidth = parseFloat(getComputedStyle(element.parentElement!).width) || 0;
+    dragStartWidth = Number.parseFloat(getComputedStyle(element.parentElement!).width) || 0;
     element.setPointerCapture(e.pointerId);
     current.onResizeStart?.();
   }

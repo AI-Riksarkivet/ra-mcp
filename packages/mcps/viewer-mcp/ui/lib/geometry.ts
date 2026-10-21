@@ -19,7 +19,7 @@ export function parsePolygonPoints(polygon: string): number[] {
   const pts: number[] = [];
   for (const pair of polygon.trim().split(/\s+/)) {
     const [x, y] = pair.split(",").map(Number);
-    if (!isNaN(x) && !isNaN(y)) pts.push(x, y);
+    if (Number.isFinite(x) && Number.isFinite(y)) pts.push(x, y);
   }
   return pts;
 }
