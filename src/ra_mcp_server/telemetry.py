@@ -149,5 +149,5 @@ def shutdown_telemetry() -> None:
                 provider.force_flush(timeout_millis=5000)
             provider.shutdown()
         except Exception:
-            pass
+            logger.debug("OTel provider shutdown failed — continuing with the rest", exc_info=True)
     _providers.clear()
