@@ -16,13 +16,15 @@ ingress:
   hosts: []
   tls: []
 
-resources: {}
-  # limits:
-  #   cpu: 500m
-  #   memory: 256Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# Idle RSS with every module loaded is ~230Mi; the limit leaves room for
+# LanceDB queries and PDF rendering. No CPU limit, so bursts aren't throttled.
+# The CPU request is also what autoscaling's utilization target is measured against.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
 
 autoscaling:
   enabled: false
@@ -49,10 +51,15 @@ tolerations: []
 affinity: {}
 podAnnotations: {}
 
+# The server never talks to the Kubernetes API.
+automountServiceAccountToken: false
+
 podSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
   runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false
