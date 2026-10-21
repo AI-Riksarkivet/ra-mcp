@@ -24,13 +24,13 @@ dependencies = [
     "ra-mcp-wincars-mcp",
     "ra-mcp-sj-mcp",
     "ra-mcp-tora-mcp",
-    "starlette>=1.6.0",
-    "opentelemetry-sdk>=1.44.0",
-    "opentelemetry-exporter-otlp>=1.44.0",
-    "cryptography>=50.0.0",
-    "fastmcp==3.4.7",
+    "starlette>=1.8.0",
+    "opentelemetry-sdk>=1.45.1",
+    "opentelemetry-exporter-otlp>=1.45.1",
+    "cryptography>=50.0.2",
+    "fastmcp==4.1.1",
     "requests>=2.34.2",
-    "py-key-value-aio[disk]>=0.4.5",
+    "py-key-value-aio[disk]>=0.4.6",
 ]
 
 license = "Apache-2.0"
@@ -85,11 +85,11 @@ dev = [
     "ra-mcp-search-cli",
     "ra-mcp-browse-cli",
     "ra-mcp-tui",
-    "Pygments>=2.20.0",
+    "Pygments>=2.21.0",
     "types-defusedxml>=0.7.0.20260504",
 ]
 docs = [
-    "zensical>=0.0.54",
+    "zensical>=0.0.71",
     # NOTE: mkdocstrings autodoc is intentionally not used — zensical 0.0.23's
     # compat bridge crashes on `:::` blocks and aborts the whole build. The API
     # pages under docs/api/ are hand-curated instead. See zensical.toml.
