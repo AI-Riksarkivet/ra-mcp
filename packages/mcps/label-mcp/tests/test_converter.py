@@ -3,6 +3,7 @@
 import json
 
 import pytest
+from defusedxml import EntitiesForbidden
 
 from ra_mcp_label_mcp.converter import (
     _int,
@@ -277,6 +278,14 @@ def test_parse_alto_missing_filename():
 def test_parse_alto_no_page_raises():
     with pytest.raises(ValueError, match="No <Page> element"):
         parse_alto(ALTO_NO_PAGE)
+
+
+def test_parse_alto_refuses_entity_declarations():
+    bomb = """<?xml version="1.0"?>
+<!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;&lol;">]>
+<alto><Layout><Page WIDTH="1" HEIGHT="1">&lol2;</Page></Layout></alto>"""
+    with pytest.raises(EntitiesForbidden):
+        parse_alto(bomb)
 
 
 # ---------------------------------------------------------------------------

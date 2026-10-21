@@ -1,7 +1,9 @@
 """Tests for OAI-PMH client with mocked HTTP."""
 
 import httpx
+import pytest
 import respx
+from defusedxml import EntitiesForbidden
 
 from ra_mcp_common.http_client import HTTPClient
 from ra_mcp_oai_pmh_lib import OAIPMHClient, OAIPMHMetadata
@@ -114,3 +116,21 @@ async def test_extract_manifest_id(respx_mock, oai_pmh_xml):
         await http.aclose()
 
     assert result == "R0001203"
+
+
+@respx.mock(assert_all_called=False)
+async def test_make_request_refuses_entity_declarations(respx_mock):
+    bomb = b"""<?xml version="1.0"?>
+<!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;&lol;">]>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"><GetRecord>&lol2;</GetRecord></OAI-PMH>"""
+    respx_mock.get(OAI_BASE_URL).mock(return_value=httpx.Response(200, content=bomb))
+
+    http = HTTPClient()
+    client = OAIPMHClient(http)
+    try:
+        with pytest.raises(Exception, match="OAI-PMH request failed") as exc_info:
+            await client._make_request({"verb": "GetRecord", "identifier": IDENTIFIER})
+    finally:
+        await http.aclose()
+
+    assert isinstance(exc_info.value.__cause__, EntitiesForbidden)

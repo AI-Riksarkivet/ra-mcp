@@ -2221,6 +2221,7 @@ dev = [
     { name = "respx" },
     { name = "ruff" },
     { name = "ty" },
+    { name = "types-defusedxml" },
 ]
 docs = [
     { name = "zensical" },
@@ -2287,6 +2288,7 @@ dev = [
     { name = "respx", specifier = ">=0.23.1" },
     { name = "ruff" },
     { name = "ty" },
+    { name = "types-defusedxml", specifier = ">=0.7.0.20260504" },
 ]
 docs = [{ name = "zensical", specifier = ">=0.0.54" }]
 
@@ -2650,6 +2652,7 @@ name = "ra-mcp-label-mcp"
 version = "0.8.0"
 source = { editable = "packages/mcps/label-mcp" }
 dependencies = [
+    { name = "defusedxml" },
     { name = "fastmcp" },
     { name = "httpx" },
     { name = "label-studio-sdk" },
@@ -2659,6 +2662,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "fastmcp", specifier = "==3.4.7" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "label-studio-sdk", specifier = ">=2.0.17" },
@@ -2671,11 +2675,15 @@ name = "ra-mcp-oai-pmh-lib"
 version = "0.3.0"
 source = { editable = "packages/libs/oai-pmh-lib" }
 dependencies = [
+    { name = "defusedxml" },
     { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ra-mcp-common", editable = "packages/libs/common" }]
+requires-dist = [
+    { name = "defusedxml", specifier = ">=0.7.1" },
+    { name = "ra-mcp-common", editable = "packages/libs/common" },
+]
 
 [[package]]
 name = "ra-mcp-pdf-mcp"
@@ -3096,12 +3104,14 @@ name = "ra-mcp-xml"
 version = "0.3.0"
 source = { editable = "packages/libs/xml-lib" }
 dependencies = [
+    { name = "defusedxml" },
     { name = "pydantic" },
     { name = "ra-mcp-common" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "ra-mcp-common", editable = "packages/libs/common" },
 ]
@@ -3545,6 +3555,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a5/ca/0d9d822fd8a4c7e830cba36a2557b070d4b4a9558a0460377a61f8fb315d/typer_slim-0.21.2.tar.gz", hash = "sha256:78f20d793036a62aaf9c3798306142b08261d4b2a941c6e463081239f062a2f9", size = 120497, upload-time = "2026-02-10T19:33:45.836Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/03/e09325cfc40a33a82b31ba1a3f1d97e85246736856a45a43b19fcb48b1c2/typer_slim-0.21.2-py3-none-any.whl", hash = "sha256:4705082bb6c66c090f60e47c8be09a93158c139ce0aa98df7c6c47e723395e5f", size = 56790, upload-time = "2026-02-10T19:33:47.221Z" },
+]
+
+[[package]]
+name = "types-defusedxml"
+version = "0.7.0.20260504"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/d2/4553c8fa9cdebfe1e84b950cf790a4d2376a97fa016e43f7c65323fa6c7d/types_defusedxml-0.7.0.20260504.tar.gz", hash = "sha256:2ab2828a3f97111ba1c16cee273ad4124a831fc9198c41bf8368ff6ea48ad300", size = 10729, upload-time = "2026-05-04T05:22:50.192Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bf/2d/8a4b5ba1d732b8bc691f0efbb1c6f77cb5f6f473b2afe181d83d910773c5/types_defusedxml-0.7.0.20260504-py3-none-any.whl", hash = "sha256:a959e3a0a43b93e464bd625d91ec9193a2703ddc10443bdd627792485fae0b10", size = 13467, upload-time = "2026-05-04T05:22:49.319Z" },
 ]
 
 [[package]]

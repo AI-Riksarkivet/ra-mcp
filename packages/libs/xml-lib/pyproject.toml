@@ -4,6 +4,7 @@ version = "0.3.0"
 description = "ALTO and PAGE XML client for Riksarkivet transcribed documents"
 requires-python = ">=3.13"
 dependencies = [
+    "defusedxml>=0.7.1",
     "pydantic>=2.0.0",
     "ra-mcp-common",
 ]
