@@ -4,6 +4,7 @@ version = "0.3.0"
 description = "OAI-PMH client for Riksarkivet metadata"
 requires-python = ">=3.13"
 dependencies = [
+    "defusedxml>=0.7.1",
     "ra-mcp-common",
 ]
 license = "Apache-2.0"

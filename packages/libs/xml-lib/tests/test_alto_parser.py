@@ -1,5 +1,8 @@
 """Tests for ALTO v4 and PAGE XML parsing."""
 
+import pytest
+from defusedxml import EntitiesForbidden
+
 from ra_mcp_xml.parser import detect_and_parse, parse_alto_xml, parse_page_xml
 
 
@@ -140,3 +143,23 @@ def test_detect_and_parse_transkribus(alto_transkribus_xml):
     data = detect_and_parse(alto_transkribus_xml)
     assert len(data.text_lines) == 58
     assert data.text_lines[0].transcription == "8."
+
+
+# -- Untrusted input ----------------------------------------------------------
+
+_ENTITY_XML = """<?xml version="1.0"?>
+<!DOCTYPE lolz [<!ENTITY lol "lol"><!ENTITY lol2 "&lol;&lol;&lol;&lol;">]>
+<{root}><Page WIDTH="1" HEIGHT="1">&lol2;</Page></{root}>"""
+
+
+@pytest.mark.parametrize(
+    "parse,root",
+    [
+        pytest.param(parse_alto_xml, "alto", id="alto"),
+        pytest.param(parse_page_xml, "PcGts", id="page"),
+    ],
+)
+def test_parse_refuses_entity_declarations(parse, root):
+    """Text-layer URLs come from tool callers, so entity expansion (XML bombs) is refused."""
+    with pytest.raises(EntitiesForbidden):
+        parse(_ENTITY_XML.format(root=root))

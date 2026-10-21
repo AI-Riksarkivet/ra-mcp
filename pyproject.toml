@@ -86,6 +86,7 @@ dev = [
     "ra-mcp-browse-cli",
     "ra-mcp-tui",
     "Pygments>=2.20.0",
+    "types-defusedxml>=0.7.0.20260504",
 ]
 docs = [
     "zensical>=0.0.54",
@@ -196,7 +197,6 @@ ignore = [
     "S104",   # bind-all-interfaces — intentional for server
     "S310",   # url-open — http_client's purpose is to open URLs
     "S110",   # try-except-pass — acceptable in shutdown/cleanup code
-    "S314",   # xml-parse — XML from Riksarkivet APIs is trusted; defusedxml is a separate decision
     "SIM108", # ternary — if/else blocks are often more readable
     "RET504", # unnecessary-assign — useful for readability/debugging
     "EM101",  # raw-string-in-exception — too noisy, low value

@@ -1,7 +1,8 @@
 import json
 import logging
 import uuid
-import xml.etree.ElementTree as ET
+
+from defusedxml.ElementTree import fromstring
 
 
 logger = logging.getLogger("ra_mcp.label.converter")
@@ -47,7 +48,7 @@ def parse_alto(alto_xml: str) -> dict:
     Returns dict with keys: filename, page_width, page_height, textlines.
     Each textline has: points (list of (x,y) tuples), text, id.
     """
-    root = ET.fromstring(alto_xml)
+    root = fromstring(alto_xml)
 
     # Fall back to no-namespace queries if the document lacks xmlns
     ns = _NS_ALTO if root.tag.startswith("{") else {}

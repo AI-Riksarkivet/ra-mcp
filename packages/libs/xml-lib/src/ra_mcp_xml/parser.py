@@ -1,6 +1,8 @@
 import logging
 import xml.etree.ElementTree as ET
 
+from defusedxml.ElementTree import fromstring
+
 from ra_mcp_xml.models import TextLayer, TextLine
 
 
@@ -108,7 +110,7 @@ def _float(value: str | None) -> float | None:
 
 def parse_alto_xml(xml_string: str) -> TextLayer:
     """Parse ALTO XML (v2/v3/v4) into a TextLayer. Joins word-level Strings per TextLine."""
-    root = ET.fromstring(xml_string)
+    root = fromstring(xml_string)
 
     ns = _detect_alto_ns(root)
     prefix = "a:" if ns else ""
@@ -166,7 +168,7 @@ def parse_alto_xml(xml_string: str) -> TextLayer:
 
 def parse_page_xml(xml_string: str) -> TextLayer:
     """Parse PAGE XML (PcGts) into a TextLayer. Computes bounding box from Coords polygon."""
-    root = ET.fromstring(xml_string)
+    root = fromstring(xml_string)
 
     ns = _NS_PAGE if root.tag.startswith("{") else {}
     prefix = "p:" if ns else ""

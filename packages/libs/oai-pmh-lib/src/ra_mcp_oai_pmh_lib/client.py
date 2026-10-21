@@ -5,6 +5,7 @@ OAI-PMH client for Riksarkivet.
 import logging
 import xml.etree.ElementTree as ET
 
+from defusedxml.ElementTree import fromstring
 from opentelemetry.trace import StatusCode
 
 from ra_mcp_common.http_client import HTTPClient
@@ -92,7 +93,7 @@ class OAIPMHClient:
         """Make an OAI-PMH request and return parsed XML."""
         try:
             xml_bytes = await self.http_client.get_xml(self.base_url, params=params, timeout=30)
-            xml_root = ET.fromstring(xml_bytes)
+            xml_root = fromstring(xml_bytes)
             self._check_oai_errors(xml_root)
             return xml_root
         except Exception as e:
