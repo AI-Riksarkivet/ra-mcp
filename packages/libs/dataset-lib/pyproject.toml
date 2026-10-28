@@ -7,7 +7,7 @@ dependencies = [
     "lancedb>=0.20,<1",
     "pyarrow>=18,<25",
     "pydantic>=2,<3",
-    "opentelemetry-api>=1.28.0",
+    "opentelemetry-api>=1.45.1",
     "ra-mcp-common",
 ]
 license = "Apache-2.0"
