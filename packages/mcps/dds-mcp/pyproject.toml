@@ -16,7 +16,7 @@ requires-python = ">=3.13"
 license = "Apache-2.0"
 dependencies = [
     "ra-mcp-dds-lib",
-    "fastmcp==3.4.7",
+    "fastmcp==3.4.10",
 ]
 
 [tool.uv.sources]
