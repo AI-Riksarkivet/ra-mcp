@@ -1,12 +1,14 @@
-ARG BASE_IMAGE=python:3.13-slim
-ARG BUILDER_IMAGE=${BASE_IMAGE}
-ARG PRODUCTION_IMAGE=${BASE_IMAGE}
+# Base for the builder and production stages. The default is the digest-pinned
+# `base-default` stage below, so Dependabot's docker updater can move the pin (it only
+# reads FROM lines). Pass --build-arg BASE_IMAGE=<image> to build on another base,
+# e.g. python:3.13-alpine or a Chainguard image.
+ARG BASE_IMAGE=base-default
 
 # --- Stage 1: Build ALL MCP App frontends (Svelte/Vite): viewer + pdf + sbl ---
 # Every one must be built here — each vite build emits src/<pkg>/dist/mcp-app.html, which the
 # wheel picks up (tool.hatch.build artifacts). Omitting one makes that App's ui:// resource
 # 500 at runtime (FileNotFoundError). Keep this in lockstep with `make build-ui`.
-FROM node:22-alpine AS frontend-builder
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS frontend-builder
 
 # viewer-mcp UI -> /viewer/src/ra_mcp_viewer_mcp/dist
 WORKDIR /viewer
@@ -32,8 +34,11 @@ COPY packages/mcps/sbl-mcp/tsconfig.json packages/mcps/sbl-mcp/vite.config.ts pa
 COPY packages/mcps/sbl-mcp/ui ./ui
 RUN npm run build
 
+# --- Default base image (see BASE_IMAGE above) ---
+FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90 AS base-default
+
 # --- Stage 2: Build Python workspace with uv ---
-FROM ${BUILDER_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.5 /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1
@@ -56,7 +61,7 @@ RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
 
 
 # --- Stage 3: Production runtime ---
-FROM ${PRODUCTION_IMAGE} AS production
+FROM ${BASE_IMAGE} AS production
 
 # Install runtime dependencies based on base image
 # Alpine uses apk, Wolfi/Chainguard use apk, Debian uses apt
