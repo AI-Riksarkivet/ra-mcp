@@ -632,22 +632,21 @@ async def test_search_all_pages_case_insensitive(mock_fetchers):
 def test_viewer_resource_domains_defaults_include_ra_and_partner_hosts():
     from ra_mcp_viewer_mcp.tools import _viewer_resource_domains
 
-    domains = _viewer_resource_domains()
-    assert "https://lbiiif.riksarkivet.se" in domains
-    assert "https://sok.riksarkivet.se" in domains
+    # Compared as sets of whole origins, so each assertion is exact membership and cannot
+    # be mistaken for a substring match on a URL.
+    domains = set(_viewer_resource_domains())
+    assert {"https://lbiiif.riksarkivet.se", "https://sok.riksarkivet.se"} <= domains
     # Partner IIIF/image hosts reachable from APE records
-    assert "https://access.iisg.amsterdam" in domains
-    assert "https://service.archief.nl" in domains
+    assert {"https://access.iisg.amsterdam", "https://service.archief.nl"} <= domains
 
 
 def test_viewer_resource_domains_extends_from_env(monkeypatch):
     from ra_mcp_viewer_mcp.tools import _viewer_resource_domains
 
     monkeypatch.setenv("RA_MCP_VIEWER_RESOURCE_DOMAINS", "https://iiif.example.org, https://img.other.eu")
-    domains = _viewer_resource_domains()
-    assert "https://iiif.example.org" in domains
-    assert "https://img.other.eu" in domains
-    assert "https://lbiiif.riksarkivet.se" in domains
+    domains = set(_viewer_resource_domains())
+    assert {"https://iiif.example.org", "https://img.other.eu"} <= domains
+    assert {"https://lbiiif.riksarkivet.se"} <= domains
 
 
 def test_viewer_resource_domains_ignores_blank_env_entries(monkeypatch):
@@ -655,5 +654,5 @@ def test_viewer_resource_domains_ignores_blank_env_entries(monkeypatch):
 
     monkeypatch.setenv("RA_MCP_VIEWER_RESOURCE_DOMAINS", " ,, https://iiif.example.org ,")
     domains = _viewer_resource_domains()
-    assert "https://iiif.example.org" in domains
+    assert domains.count("https://iiif.example.org") == 1
     assert "" not in domains
