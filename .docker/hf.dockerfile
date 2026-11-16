@@ -10,7 +10,7 @@
 # RA_MCP_STAGE_DATASETS=1      enable boot-time staging (see ra_mcp_common.datasets)
 # RA_MCP_STAGE_DIR=/data-local writable target on the ephemeral disk
 # RA_MCP_STAGE_ONLY=a,b        (optional) only stage these datasets
-FROM riksarkivet/ra-mcp:v0.18.0
+FROM riksarkivet/ra-mcp:v0.18.0@sha256:8e27d2a85453ba250a26829e24ad5d7eb855fcfc2c2eafb5f0adb98cdad7a954
 
 USER root
 RUN mkdir -p /data-local && chown ra-mcp:ra-mcp /data-local
