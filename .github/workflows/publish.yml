@@ -61,8 +61,6 @@ jobs:
           tags: |
             riksarkivet/ra-mcp:${{ steps.version.outputs.tag }}
             riksarkivet/ra-mcp:latest
-          build-args: |
-            BASE_IMAGE=python:3.13-slim
           platforms: linux/amd64
           sbom: true                    # ✅ Generate SBOM attestation
           provenance: mode=max          # ✅ Generate SLSA provenance (max detail)
