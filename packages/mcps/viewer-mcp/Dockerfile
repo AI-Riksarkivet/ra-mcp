@@ -1,5 +1,5 @@
 # Build frontend
-FROM node:22-alpine AS frontend-builder
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS frontend-builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
@@ -8,7 +8,7 @@ COPY ui ./ui
 RUN npm run build
 
 # Build Python dependencies
-FROM python:3.13-alpine AS python-builder
+FROM python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e AS python-builder
 WORKDIR /app
 RUN apk add --no-cache gcc musl-dev libffi-dev
 COPY --from=ghcr.io/astral-sh/uv:latest /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
@@ -19,7 +19,7 @@ COPY --from=frontend-builder /app/src/ra_mcp_viewer_mcp/dist/ ./src/ra_mcp_viewe
 RUN uv sync --frozen --no-cache --no-dev --no-editable
 
 # Final runtime image
-FROM python:3.13-alpine
+FROM python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e
 WORKDIR /app
 RUN apk add --no-cache ca-certificates libffi libgcc libstdc++
 RUN addgroup -g 1000 mcp-app && adduser -u 1000 -G mcp-app -s /bin/sh -D mcp-app
