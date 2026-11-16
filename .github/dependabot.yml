@@ -33,9 +33,13 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # Docker dependencies
+  # Docker base images. The Dockerfiles live under .docker/ and in viewer-mcp, not at
+  # the repository root, and their FROM lines are pinned by digest: Dependabot moves
+  # the tag and the digest together.
   - package-ecosystem: "docker"
-    directory: "/"
+    directories:
+      - "/.docker"
+      - "/packages/mcps/viewer-mcp"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -47,20 +51,9 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # Go dependencies (for Dagger). Both .dagger modules carry the grpc critical,
-  # so monitor both — the viewer-mcp one was previously invisible to Dependabot
-  # and would silently drift back into criticals.
-  - package-ecosystem: "gomod"
-    directories:
-      - "/.dagger"
-      - "/packages/mcps/viewer-mcp/.dagger"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "dagger"
-    commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
+  # No "gomod" entry for the two Dagger modules (.dagger, packages/mcps/viewer-mcp/.dagger):
+  # their generated bindings (internal/dagger, dagger.gen.go) are not committed, so
+  # Dependabot cannot resolve the module and every update run fails. Alerts for both
+  # go.mod files still arrive through the dependency graph. Bump them by hand: generate
+  # the bindings with `dagger develop`, then `go get` and `go mod tidy` in the module
+  # directory.
