@@ -20,12 +20,12 @@ Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
 
 ## Running the Server
 
-The viewer and PDF modules ship Svelte UIs that must be built into single HTML files before
+The viewer, PDF and SBL modules ship Svelte UIs that must be built into single HTML files before
 serving. Run `make build-ui` once (and after any UI change) before `ra serve`; the `make serve`
 and `make serve-http` targets do this for you.
 
 ```bash
-# Build the viewer + PDF MCP App UIs (Svelte → HTML)
+# Build the viewer, PDF and SBL MCP App UIs (Svelte → HTML)
 make build-ui
 
 # MCP server (stdio, the default) — for Claude Desktop integration

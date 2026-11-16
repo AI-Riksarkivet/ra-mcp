@@ -4,12 +4,14 @@
 install:
 	uv sync
 
-# Build viewer UI (Svelte → single HTML file)
+# Build the MCP App UIs (Svelte → single HTML file each): viewer, pdf, sbl
 build-ui:
 	npm install --prefix packages/mcps/viewer-mcp
 	npm run build --prefix packages/mcps/viewer-mcp
 	npm install --prefix packages/mcps/pdf-mcp
 	npm run build --prefix packages/mcps/pdf-mcp
+	npm install --prefix packages/mcps/sbl-mcp
+	npm run build --prefix packages/mcps/sbl-mcp
 
 # Run MCP server (stdio transport)
 serve: build-ui

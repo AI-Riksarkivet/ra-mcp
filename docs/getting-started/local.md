@@ -48,7 +48,7 @@ git clone https://github.com/AI-Riksarkivet/ra-mcp.git
 cd ra-mcp
 uv sync
 
-# Build the viewer-mcp and pdf-mcp App UIs (required before serving, or the MCP App UIs won't be built)
+# Build the viewer-mcp, pdf-mcp and sbl-mcp App UIs (required before serving, or the MCP App UIs won't be built)
 make build-ui
 
 # Run MCP server on HTTP
