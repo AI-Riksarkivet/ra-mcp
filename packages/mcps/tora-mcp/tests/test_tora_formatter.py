@@ -48,7 +48,7 @@ def test_format_multiple_results():
 
 def test_format_includes_wikidata_when_present():
     text = format_tora_results("Test", [_make_place(wikidata_url="https://www.wikidata.org/wiki/Q123")])
-    assert "wikidata.org" in text
+    assert "Wikidata: https://www.wikidata.org/wiki/Q123" in text.splitlines()
 
 
 def test_format_omits_wikidata_when_empty():
