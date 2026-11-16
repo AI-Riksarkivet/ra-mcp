@@ -65,7 +65,7 @@ def register_view_tool(mcp: FastMCP) -> None:
     def get_ui_resource() -> str:
         html_path = DIST_DIR / "mcp-app.html"
         if not html_path.exists():
-            msg = f"UI resource not found: {html_path}. Run 'npm run build' in packages/sbl-mcp/"
+            msg = f"UI resource not found: {html_path}. Run 'make build-ui' from the repository root"
             raise FileNotFoundError(msg)
         return html_path.read_text(encoding="utf-8")
 

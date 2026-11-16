@@ -146,7 +146,7 @@ cd ra-mcp
 # Install dependencies (syncs workspace packages)
 uv sync
 
-# Build the viewer-mcp and pdf-mcp App UIs (npm build of both UIs).
+# Build the viewer-mcp, pdf-mcp and sbl-mcp App UIs (npm build of each UI).
 # Required before `ra serve`, or the MCP App UIs won't be built.
 make build-ui
 ```

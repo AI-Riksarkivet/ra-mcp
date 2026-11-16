@@ -74,7 +74,7 @@ python -m ra_mcp_sbl_mcp.server --port 3004
 python -m ra_mcp_sbl_mcp.server --stdio
 ```
 
-The viewer UI is served from a built bundle in `src/ra_mcp_sbl_mcp/dist/`; run `npm run build` in `packages/sbl-mcp/` if the resource is missing.
+The viewer UI is served from a built bundle in `src/ra_mcp_sbl_mcp/dist/`. The bundle is not tracked in git: the image build and `make build-ui` produce it, so run `make build-ui` from the repository root if the resource is missing.
 
 ## Dependencies
 

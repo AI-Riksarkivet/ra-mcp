@@ -2,9 +2,9 @@ ARG BASE_IMAGE=python:3.13-slim
 ARG BUILDER_IMAGE=${BASE_IMAGE}
 ARG PRODUCTION_IMAGE=${BASE_IMAGE}
 
-# --- Stage 1: Build BOTH MCP App frontends (Svelte/Vite): viewer + pdf ---
-# Both must be built here — each vite build emits src/<pkg>/dist/mcp-app.html, which the
-# wheel picks up (tool.hatch.build artifacts). Omitting either makes that App's ui:// resource
+# --- Stage 1: Build ALL MCP App frontends (Svelte/Vite): viewer + pdf + sbl ---
+# Every one must be built here — each vite build emits src/<pkg>/dist/mcp-app.html, which the
+# wheel picks up (tool.hatch.build artifacts). Omitting one makes that App's ui:// resource
 # 500 at runtime (FileNotFoundError). Keep this in lockstep with `make build-ui`.
 FROM node:22-alpine AS frontend-builder
 
@@ -24,6 +24,14 @@ COPY packages/mcps/pdf-mcp/tsconfig.json packages/mcps/pdf-mcp/vite.config.ts pa
 COPY packages/mcps/pdf-mcp/ui ./ui
 RUN npm run build
 
+# sbl-mcp UI -> /sbl/src/ra_mcp_sbl_mcp/dist
+WORKDIR /sbl
+COPY packages/mcps/sbl-mcp/package*.json ./
+RUN npm ci
+COPY packages/mcps/sbl-mcp/tsconfig.json packages/mcps/sbl-mcp/vite.config.ts packages/mcps/sbl-mcp/mcp-app.html ./
+COPY packages/mcps/sbl-mcp/ui ./ui
+RUN npm run build
+
 # --- Stage 2: Build Python workspace with uv ---
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -37,10 +45,11 @@ COPY packages/ ./packages/
 COPY src/ ./src/
 COPY README.md LICENSE ./
 
-# Copy BOTH built frontends into their packages before uv sync, so --no-editable includes
-# each dist/mcp-app.html in the wheel (viewer AND pdf — the pdf one was previously missing).
+# Copy every built frontend into its package before uv sync, so --no-editable includes
+# each dist/mcp-app.html in the wheel.
 COPY --from=frontend-builder /viewer/src/ra_mcp_viewer_mcp/dist/ ./packages/mcps/viewer-mcp/src/ra_mcp_viewer_mcp/dist/
 COPY --from=frontend-builder /pdf/src/ra_mcp_pdf_mcp/dist/ ./packages/mcps/pdf-mcp/src/ra_mcp_pdf_mcp/dist/
+COPY --from=frontend-builder /sbl/src/ra_mcp_sbl_mcp/dist/ ./packages/mcps/sbl-mcp/src/ra_mcp_sbl_mcp/dist/
 
 # Sync workspace packages with diplomatics extra (--no-editable makes .venv self-contained)
 RUN uv sync --frozen --no-cache --no-dev --no-editable --extra diplomatics
