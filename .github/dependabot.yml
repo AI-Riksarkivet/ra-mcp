@@ -44,6 +44,15 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 5
+    # A new Python or Node feature release is a deliberate change, not a routine bump
+    # (the auto-merge workflow would merge a Python 3.13 -> 3.14 base as a "minor"
+    # update without ever building the image). Only digest and patch updates of the
+    # pinned tags are proposed.
+    ignore:
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
       - "docker"
