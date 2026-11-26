@@ -30,6 +30,12 @@ Swedish archival record-type and administrative-history guide. Maps research top
 
 **Trigger phrases**: what records exist, which archive, document types, court records, church records, folkbokföring, bouppteckning, dombok, husförhörslängd, mantalslängd, Swedish administrative history
 
+### `/apis`
+
+Guide to using APIs from Riksarkivet, for data both available and not available from MCP tools.
+
+**Trigger phrases**: apis, code, visualization, program, iiif, oai-pmh, rdf, json, xml
+
 ### `/htr-transcription`
 
 HTR workflow guide. Covers the full pipeline: determine image source, batch all images into a single `htr_transcribe` call, present results as an inline artifact with the interactive viewer. Documents language options (Swedish, Norwegian, English, medieval), layout modes, export formats (ALTO XML, PAGE XML, JSON), and custom HTRflow YAML pipelines.
